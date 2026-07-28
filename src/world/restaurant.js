@@ -1,0 +1,712 @@
+// The dining room: build grid, seating, the service loop, and everything the
+// player taps during a shift.
+
+import { HALF_H, depthOf, tileAt, toScreen } from './iso.js';
+import { Room } from './room.js';
+import { Fx } from '../gfx/fx.js';
+import { Kitchen } from './kitchen.js';
+import { spring } from '../core/tween.js';
+import { CS, Customer, rollGuest } from './customer.js';
+import { clamp, money, neighbours, range, rnd, tileDist, uid } from '../core/util.js';
+import { FURNITURE_BY_ID, STYLE_BY_ID } from '../data/catalog.js';
+import { contactShadow, drawIcon, drawSprite, sticker, text } from '../gfx/paint.js';
+
+export const FURN_SCALE = 0.66;
+const HANGING = new Set(['pendant_lamp', 'wall_clock', 'coral_sconce']);
+const FLAT = new Set(['rug']);
+
+const PATIENCE_BASE = { [CS.QUEUE]: 26, [CS.ORDER]: 22, [CS.WAIT]: 36 };
+
+export class Restaurant {
+  constructor(game) {
+    this.game = game;
+    this.assets = game.assets;
+    this.state = game.state;
+    this.fx = new Fx();   // each zone keeps its own particles
+    this.sfx = game.sfx;
+    this.tweens = game.tweens;
+
+    this.cols = 9;
+    this.rows = 9;
+    this.room = new Room(this.assets, { kind: 'cafe', cols: this.cols, rows: this.rows });
+
+    this.grid = new Map();       // "c,r" -> furniture record
+    this.tables = [];
+    this.seats = [];             // { c, r, f, table, taken, dirty }
+    this.passes = [];
+    this.kitchen = new Kitchen(this);
+    this.guests = [];
+
+    this.ghost = null;           // { id, style, flip, c, r, ok }
+    this.selection = null;       // { c, r } furniture inspector target
+    this.spawnT = 0;
+    this.autoSeatT = 0;
+    this.autoServeT = 0;
+    this.served = 0;
+    this.earned = 0;
+    this.walkouts = 0;
+    this.starsToday = 0;
+
+    this.#computeEntry();
+    this.rebuild();
+  }
+
+  /* ------------------------------------------------------------- structure */
+
+  #computeEntry() {
+    const p = this.room.entryPoint();
+    const t = tileAt(p.x, p.y + HALF_H);
+    this.entry = { c: clamp(t.c, 0, this.cols - 1), r: clamp(t.r, 0, this.rows - 1) };
+    this.entryWorld = p;
+  }
+
+  key(c, r) { return `${c},${r}`; }
+  at(c, r) { return this.grid.get(this.key(c, r)) ?? null; }
+
+  /** Re-index furniture and work out which chairs belong to which table. */
+  rebuild() {
+    this.grid.clear();
+    for (const f of this.state.furniture) {
+      f.item = FURNITURE_BY_ID[f.id];
+      if (!f.item) continue;
+      f.style = f.style ?? 'standard';
+      f.uid ??= uid('f');
+      f.sq ??= { value: 1, vel: 0 };
+      this.grid.set(this.key(f.c, f.r), f);
+    }
+
+    // carry seat occupancy across the rebuild so nobody is thrown out mid-meal
+    const prevSeats = new Map((this.seats ?? []).map((s) => [this.key(s.c, s.r), s]));
+    this.tables = [];
+    this.seats = [];
+    this.passes = [];
+
+    for (const f of this.grid.values()) {
+      if (f.item.kind === 'pass') this.passes.push(f);
+      if (f.item.kind === 'table') this.tables.push({ f, c: f.c, r: f.r, seats: [] });
+    }
+    for (const f of this.grid.values()) {
+      if (f.item.kind !== 'seat') continue;
+      const table = this.tables.find((t) => neighbours(t).some((n) => n.c === f.c && n.r === f.r));
+      const old = prevSeats.get(this.key(f.c, f.r));
+      const seat = {
+        c: f.c, r: f.r, f, table: table ?? null,
+        taken: old?.taken ?? null, dirty: old?.dirty ?? 0,
+      };
+      this.seats.push(seat);
+      table?.seats.push(seat);
+    }
+    this.kitchen.setPasses(this.passes.map((p) => ({ c: p.c, r: p.r })));
+    this.kitchen.relayout();
+  }
+
+  get seatCount() { return this.seats.filter((s) => s.table).length; }
+  get hasPass() { return this.passes.length > 0; }
+
+  /** Solid tiles block movement; guests walk through each other happily. */
+  walkable = (c, r) => this.room.inside(c, r) && !this.grid.has(this.key(c, r));
+
+  freeSeats() {
+    return this.seats.filter((s) => s.table && !s.taken && s.dirty <= 0);
+  }
+
+  /* ------------------------------------------------------------- placement */
+
+  beginPlace(id, style = 'standard') {
+    const item = FURNITURE_BY_ID[id];
+    if (!item) return;
+    this.ghost = { id, item, style, flip: false, c: null, r: null, ok: false, t: 0 };
+    this.selection = null;
+  }
+
+  cancelPlace() { this.ghost = null; }
+
+  rotateGhost() { if (this.ghost) this.ghost.flip = !this.ghost.flip; }
+
+  moveGhost(world) {
+    if (!this.ghost) return;
+    const t = tileAt(world.x, world.y);
+    this.ghost.c = t.c;
+    this.ghost.r = t.r;
+    this.ghost.ok = this.canPlace(t.c, t.r);
+  }
+
+  canPlace(c, r) {
+    if (!this.room.inside(c, r)) return false;
+    if (this.grid.has(this.key(c, r))) return false;
+    if (c === this.entry.c && r === this.entry.r) return false;   // keep the doorway clear
+    return true;
+  }
+
+  /** Commit the ghost. Returns the spent cost, or 0 if it could not be placed. */
+  commitPlace() {
+    const g = this.ghost;
+    if (!g || !g.ok) return 0;
+    const cost = Math.round(g.item.cost * (STYLE_BY_ID[g.style]?.costMul ?? 1));
+    if (!this.state.spend(cost)) return 0;
+
+    const rec = { c: g.c, r: g.r, id: g.id, style: g.style, flip: g.flip, uid: uid('f'), sq: { value: 0.4, vel: 0 } };
+    this.state.furniture.push(rec);
+    this.rebuild();
+
+    const s = toScreen(g.c, g.r);
+    this.fx.puff(s.x, s.y + 6, 6, 14);
+    this.fx.ripple(s.x, s.y, 'rgba(255,248,220,0.9)', 0.4, 90);
+    this.fx.kick(3.5);
+    this.sfx.play('place');
+    this.state.save();
+    return cost;
+  }
+
+  /** Remove furniture, refunding most of what it cost. */
+  sell(rec) {
+    const i = this.state.furniture.indexOf(rec);
+    if (i < 0) return 0;
+    // never strand a seated guest
+    if (this.seats.some((s) => s.f === rec && s.taken)) return -1;
+    const refund = Math.round(rec.item.cost * (STYLE_BY_ID[rec.style]?.costMul ?? 1) * 0.6);
+    this.state.furniture.splice(i, 1);
+    this.rebuild();
+    this.state.earn(refund);
+    const s = toScreen(rec.c, rec.r);
+    this.fx.puff(s.x, s.y, 7, 15);
+    this.fx.coins(s.x, s.y - 30, 3, 40);
+    this.sfx.play('coin');
+    this.state.save();
+    return refund;
+  }
+
+  /** Swap a piece to a fancier finish, paying the difference. */
+  restyle(rec, styleId) {
+    const from = STYLE_BY_ID[rec.style]?.costMul ?? 1;
+    const to = STYLE_BY_ID[styleId]?.costMul ?? 1;
+    const diff = Math.max(0, Math.round(rec.item.cost * (to - from)));
+    if (!this.state.spend(diff)) return false;
+    rec.style = styleId;
+    rec.sq = { value: 0.55, vel: 0 };
+    this.rebuild();
+    const s = toScreen(rec.c, rec.r);
+    this.fx.stars(s.x, s.y - 40, 8);
+    this.fx.ripple(s.x, s.y, 'rgba(248,209,103,0.9)', 0.5, 110);
+    this.sfx.play('star');
+    this.state.save();
+    return true;
+  }
+
+  /* --------------------------------------------------------------- service */
+
+  startService() {
+    this.kitchen.reset();
+    this.guests.length = 0;
+    for (const s of this.seats) { s.taken = null; s.dirty = 0; }
+    this.served = 0; this.earned = 0; this.walkouts = 0; this.starsToday = 0;
+    this.spawnT = 1.2;
+  }
+
+  stopService() {
+    for (const g of this.guests) g.dead = true;
+    this.guests.length = 0;
+    this.kitchen.reset();
+    for (const s of this.seats) { s.taken = null; s.dirty = 0; }
+  }
+
+  get open() { return this.state.phase === 'open'; }
+
+  /** How long a guest will sit in a given state before giving up. */
+  patienceSeconds(cstate, guest = null) {
+    const base = PATIENCE_BASE[cstate] ?? 26;
+    return base * this.state.patienceMult * (guest?.seatPatience ?? 1);
+  }
+
+  cookProgress(customer) { return this.kitchen.progressFor(customer.id); }
+
+  #maxGuests() { return clamp(this.seatCount + 3, 3, 10); }
+
+  #spawn() {
+    const g = rollGuest(this.assets);
+    const c = new Customer(this, g.sprite, {
+      tile: this.entry,
+      pos: { x: this.entryWorld.x, y: this.entryWorld.y - 4 },
+      patience: g.patience,
+    });
+    c.eatTime = g.eatTime;
+    c.fussy = g.fussy;
+    c.arrive();
+    this.guests.push(c);
+
+    const spot = this.#queueSpot();
+    c.setState(CS.ENTER);
+    if (!c.walkTo(spot, this.walkable)) { c.tile = { ...spot }; c.setState(CS.QUEUE); }
+    this.sfx.play('pop');
+  }
+
+  #queueSpot() {
+    const taken = new Set(this.guests
+      .filter((g) => g.state === CS.QUEUE || g.state === CS.ENTER)
+      .map((g) => (g.path.length ? this.key(g.path[g.path.length - 1].c, g.path[g.path.length - 1].r) : this.key(g.tile.c, g.tile.r))));
+    const e = this.entry;
+    // spaced two tiles apart where possible — adjacent iso tiles are only half a
+    // sprite width apart, so a tight queue turns into one pile of guests
+    const cands = [
+      e, { c: e.c + 2, r: e.r }, { c: e.c, r: e.r + 2 }, { c: e.c - 2, r: e.r },
+      { c: e.c + 2, r: e.r + 2 }, { c: e.c + 1, r: e.r }, { c: e.c, r: e.r + 1 },
+      { c: e.c + 3, r: e.r + 1 }, { c: e.c + 1, r: e.r + 2 },
+    ];
+    for (const t of cands) {
+      if (this.walkable(t.c, t.r) && !taken.has(this.key(t.c, t.r))) return t;
+    }
+    return e;
+  }
+
+  /** Send a waiting guest to a seat. Returns a reason string on failure. */
+  seatGuest(guest, seat = null) {
+    if (guest.state !== CS.QUEUE) return 'busy';
+    const options = this.freeSeats();
+    if (!options.length) return 'noseats';
+    const target = seat ?? options
+      .map((s) => ({ s, score: tileDist(guest.tile, s) - (s.c + s.r > s.table.c + s.table.r ? 2.5 : 0) }))
+      .reduce((a, b) => (b.score < a.score ? b : a)).s;
+    if (target.taken || target.dirty > 0 || !target.table) return 'taken';
+    if (!guest.walkTo(target, this.walkable)) return 'blocked';
+
+    target.taken = guest.id;
+    guest.seatPatience = target.f?.item?.patience ?? 1;
+    guest.seat = target;
+    guest.table = target.table;
+    guest.setState(CS.WALK);
+    this.sfx.play('select');
+    const s = toScreen(target.c, target.r);
+    this.fx.ripple(s.x, s.y, 'rgba(139,187,106,0.9)', 0.45, 86);
+    return null;
+  }
+
+  /** Longest-waiting guest, for the "tap an empty seat" shortcut. */
+  neediestGuest() {
+    return this.guests
+      .filter((g) => g.state === CS.QUEUE)
+      .sort((a, b) => a.patience - b.patience)[0] ?? null;
+  }
+
+  onArrived(guest) {
+    switch (guest.state) {
+      case CS.ENTER:
+        guest.setState(CS.QUEUE);
+        break;
+      case CS.WALK: {
+        guest.seated = true;
+        guest.setState(CS.SEAT);
+        guest.sq.vel -= 7;
+        const t = guest.table;
+        if (t) {
+          const dx = toScreen(t.c, t.r).x - guest.pos.x;
+          if (Math.abs(dx) > 2) guest.face = dx > 0 ? 1 : -1;
+        }
+        break;
+      }
+      case CS.LEAVE:
+        this.#despawn(guest);
+        break;
+    }
+  }
+
+  /** Pick what they fancy off the live menu, weighted by how fussy they are. */
+  beginOrder(guest) {
+    const dishes = this.state.availableDishes();
+    if (!dishes.length) {
+      this.#leave(guest, 'nofood');
+      return;
+    }
+    const bias = 0.4 + guest.fussy * 1.5 + this.state.rating * 0.25;
+    let total = 0;
+    const weighted = dishes.map((d) => {
+      const w = Math.pow(d.price, bias) * (1 + d.left * 0.05);
+      total += w;
+      return { d, w };
+    });
+    let roll = rnd() * total;
+    let chosen = weighted[weighted.length - 1].d;
+    for (const { d, w } of weighted) { roll -= w; if (roll <= 0) { chosen = d; break; } }
+
+    guest.dish = chosen.id;
+    this.state.stock[chosen.id] -= 1;
+    if (this.state.stock[chosen.id] <= 0) delete this.state.stock[chosen.id];
+    guest.setState(CS.ORDER);
+    guest.sq.vel -= 4;
+  }
+
+  /** Player tapped the order bubble — the ticket goes to the chef. */
+  sendOrder(guest) {
+    if (guest.state !== CS.ORDER || guest.ordered) return false;
+    guest.ordered = true;
+    guest.setState(CS.WAIT);
+    const dur = this.state.prepOf(guest.dish) * this.state.orderSpeed;
+    this.kitchen.addTicket(guest, guest.dish, dur);
+    this.sfx.play('order');
+    this.fx.pop(guest.pos.x, guest.headY - 20, 'Order!', { color: '#e4652f', size: 17, rise: 34, max: 0.7 });
+    return true;
+  }
+
+  /** Hand a finished plate to a guest who is waiting on that dish. */
+  deliver(plate, guest) {
+    if (!guest || guest.state !== CS.WAIT) return false;
+    if (guest.dish !== plate.recipeId) return false;
+    this.kitchen.remove(plate);
+    guest.plate = plate.recipeId;
+    guest.bites = 0;
+    guest.biteT = 0;
+    guest.setState(CS.EAT);
+    guest.sq.vel -= 9;
+    this.fx.sparkles(guest.pos.x, guest.headY + 12, 7, 20);
+    this.fx.hearts(guest.pos.x, guest.headY - 6, 2);
+    this.sfx.play('slurp');
+    return true;
+  }
+
+  /** Meal over: pay out on how briskly they were served. */
+  finishMeal(guest) {
+    guest.setState(CS.DONE);
+    const price = this.state.priceOf(guest.dish);
+    const speed = 0.75 + 0.6 * clamp(guest.patience, 0, 1);
+    const tableTip = STYLE_BY_ID[guest.seat?.f?.style]?.tip ?? 1;
+    const pay = Math.max(1, Math.round(price * speed * this.state.tipMult * (1 + (tableTip - 1) * 0.4)));
+    const stars = guest.patience > 0.3
+      ? this.state.starsOf(guest.dish) + (STYLE_BY_ID[guest.seat?.f?.style]?.star ?? 0) + this.state.bonusStar
+      : 0;
+
+    this.state.earn(pay);
+    this.state.addStars(stars);
+    this.state.stats.served += 1;
+    this.served += 1;
+    this.earned += pay;
+    this.starsToday += stars;
+
+    this.fx.coins(guest.pos.x, guest.headY + 10, 5 + Math.min(6, Math.floor(pay / 18)), 62);
+    this.fx.pop(guest.pos.x, guest.headY - 24, `+${money(pay)}`, { color: '#b8481c', size: 23 });
+    if (stars > 0) {
+      this.fx.stars(guest.pos.x, guest.headY - 6, 4 + stars);
+      this.fx.pop(guest.pos.x + 46, guest.headY - 6, `+${stars}★`, { color: '#c8992c', size: 17, rise: 44, max: 0.9 });
+    }
+    this.fx.hearts(guest.pos.x, guest.headY - 10, 3);
+    this.sfx.play('cash');
+    this.game.bumpCoinChip();
+
+    this.tweens.after(0.9, () => { if (!guest.dead) this.#leave(guest, 'happy'); });
+  }
+
+  /** Patience hit zero. */
+  walkOut(guest) {
+    if (guest.state === CS.LEAVE || guest.state === CS.DONE) return;
+    // the dish was never cooked, so put the serving back on the menu
+    if (guest.dish && !this.kitchen.plates.some((p) => p.customerId === guest.id)) {
+      this.state.stock[guest.dish] = (this.state.stock[guest.dish] ?? 0) + 1;
+    }
+    this.kitchen.dropTicketsFor(guest.id);
+    this.state.addStars(-2);
+    this.state.stats.walkouts += 1;
+    this.walkouts += 1;
+    this.fx.pop(guest.pos.x, guest.headY - 20, '−2★', { color: '#b8481c', stroke: '#fff0e4', size: 19 });
+    this.fx.puff(guest.pos.x, guest.pos.y, 5, 12);
+    this.sfx.play('sad');
+    this.#leave(guest, 'cross');
+  }
+
+  #leave(guest, why) {
+    guest.mood = why === 'cross' ? 'cross' : 'ok';
+    guest.patience = Math.max(guest.patience, 0.001);
+    if (guest.seat) {
+      guest.seat.taken = null;
+      guest.seat.dirty = why === 'cross' ? 0.2 : this.state.cleanTime;
+      guest.seat = null;
+    }
+    guest.seated = false;
+    guest.seatPatience = 1;
+    guest.setState(CS.LEAVE);
+    if (!guest.walkTo(this.entry, this.walkable)) this.#despawn(guest);
+  }
+
+  #despawn(guest) {
+    guest.dead = true;
+    this.tweens.to(guest, { alpha: 0 }, 0.28, { onDone: () => { guest.alpha = 0; } });
+    this.fx.puff(guest.pos.x, guest.pos.y, 4, 10);
+    this.tweens.after(0.3, () => {
+      const i = this.guests.indexOf(guest);
+      if (i >= 0) this.guests.splice(i, 1);
+    });
+  }
+
+  /* ---------------------------------------------------------------- update */
+
+  update(dt, t) {
+    this.room.pulse = t;
+    if (this.ghost) this.ghost.t += dt;
+
+    for (const f of this.grid.values()) if (f.sq) spring(f.sq, 1, dt, 210, 18);
+    for (const s of this.seats) if (s.dirty > 0) s.dirty = Math.max(0, s.dirty - dt);
+
+    this.kitchen.update(dt);
+
+    for (let i = this.guests.length - 1; i >= 0; i--) {
+      const g = this.guests[i];
+      if (g.dead) continue;
+      g.update(dt);
+    }
+
+    if (!this.open) return;
+
+    // arrivals
+    const stock = this.state.stockCount;
+    const pending = this.guests.filter((g) => g.state !== CS.LEAVE && g.state !== CS.DONE).length;
+    if (stock > 0 && pending < this.#maxGuests() && this.seatCount > 0 && this.hasPass) {
+      this.spawnT -= dt;
+      if (this.spawnT <= 0) {
+        this.spawnT = this.state.arrivalGap * range(0.8, 1.25);
+        this.#spawn();
+      }
+    }
+
+    // staff automation
+    if (this.state.autoSeat) {
+      this.autoSeatT -= dt;
+      if (this.autoSeatT <= 0) {
+        this.autoSeatT = 2.4;
+        const g = this.neediestGuest();
+        if (g && this.freeSeats().length) this.seatGuest(g);
+      }
+    }
+    if (this.state.autoServe) {
+      this.autoServeT -= dt;
+      if (this.autoServeT <= 0) {
+        this.autoServeT = 1.8;
+        const plate = this.kitchen.plates[0];
+        if (plate) {
+          const target = this.guests.find((g) => g.state === CS.WAIT && g.dish === plate.recipeId);
+          if (target) this.deliver(plate, target);
+        }
+      }
+      // the server also rings in orders that have been sitting
+      const idle = this.guests.find((g) => g.state === CS.ORDER && g.stateT > 3.5);
+      if (idle) this.sendOrder(idle);
+    }
+
+    // shift ends once the menu is empty and the room has cleared
+    if (stock === 0 && this.guests.length === 0 && this.kitchen.queued === 0 && this.kitchen.plates.length === 0) {
+      this.game.closeService('soldout');
+    }
+  }
+
+  /* ------------------------------------------------------------------ taps */
+
+  /** Grab a plate for dragging. */
+  grab(world) {
+    if (this.ghost) return null;
+    const plate = this.kitchen.plateAt(world);
+    if (!plate) return null;
+    this.kitchen.clearSelection();
+    plate.held = true;
+    plate.sq.vel -= 5;
+    this.sfx.play('tap');
+    return plate;
+  }
+
+  dragTo(plate, world) { plate.x = world.x; plate.y = world.y; }
+
+  /** Release a dragged plate: deliver if it landed on the right guest. */
+  drop(plate, world, moved) {
+    plate.held = false;
+    if (!moved) {
+      plate.selected = true;
+      this.game.toast('Now tap the guest who ordered it');
+      return;
+    }
+    const guest = this.guestAt(world) ?? this.guests.find(
+      (g) => g.state === CS.WAIT && g.dish === plate.recipeId && Math.hypot(g.pos.x - world.x, g.drawY - 40 - world.y) < 74,
+    );
+    if (guest && this.deliver(plate, guest)) return;
+    plate.sq.vel -= 4;
+    this.sfx.play('no');
+    this.fx.pop(plate.homeX, plate.homeY - 40, 'Not theirs!', { color: '#b8481c', size: 15, rise: 30, max: 0.7 });
+  }
+
+  guestAt(world) {
+    for (let i = this.guests.length - 1; i >= 0; i--) {
+      const g = this.guests[i];
+      if (!g.dead && (g.hitTest(world) || g.bubbleHit(world))) return g;
+    }
+    return null;
+  }
+
+  seatAt(c, r) { return this.seats.find((s) => s.c === c && s.r === r) ?? null; }
+
+  /** Single tap in the world. Returns a hint string for the HUD, or null. */
+  tap(world) {
+    if (this.ghost) {
+      this.moveGhost(world);
+      if (!this.ghost.ok) { this.sfx.play('no'); return 'That spot is taken'; }
+      const spent = this.commitPlace();
+      if (!spent) { this.sfx.play('no'); return 'Not enough sand dollars'; }
+      return null;
+    }
+
+    // a selected plate is waiting to be handed over
+    const held = this.kitchen.selected;
+    if (held) {
+      const guest = this.guestAt(world);
+      if (guest && this.deliver(held, guest)) { this.kitchen.clearSelection(); return null; }
+      const plate = this.kitchen.plateAt(world);
+      if (plate === held) { held.selected = false; return null; }
+      this.kitchen.clearSelection();
+      if (!guest) return null;
+    }
+
+    const plate = this.kitchen.plateAt(world);
+    if (plate) { this.kitchen.clearSelection(); plate.selected = true; this.sfx.play('tap'); return 'Tap the guest who ordered it'; }
+
+    const guest = this.guestAt(world);
+    if (guest) {
+      if (guest.state === CS.ORDER) { this.sendOrder(guest); return null; }
+      if (guest.state === CS.QUEUE) {
+        const err = this.seatGuest(guest);
+        if (err === 'noseats') { this.sfx.play('no'); return 'No free seats — build more chairs'; }
+        if (err === 'blocked') { this.sfx.play('no'); return "Can't reach that seat"; }
+        return null;
+      }
+      if (guest.state === CS.WAIT) return 'Their dish is still cooking';
+      return null;
+    }
+
+    const t = tileAt(world.x, world.y);
+    const seat = this.seatAt(t.c, t.r);
+    if (seat && seat.table && !seat.taken && seat.dirty <= 0) {
+      const g = this.neediestGuest();
+      if (g) { this.seatGuest(g, seat); return null; }
+    }
+
+    const f = this.at(t.c, t.r);
+    if (f) {
+      if (this.state.phase === 'open') return 'Rearranging can wait until closing';
+      this.selection = f;
+      this.sfx.play('tap');
+      this.game.openFurniture(f);
+      return null;
+    }
+    this.selection = null;
+    return null;
+  }
+
+  /* ------------------------------------------------------------------ draw */
+
+  /** Flat floor decals — drawn with the floor, under everything. */
+  drawFloorItems(ctx) {
+    for (const f of this.grid.values()) {
+      if (!FLAT.has(f.id)) continue;
+      const s = this.assets.get(this.styleGroup(f), f.id);
+      if (!s) continue;
+      const p = toScreen(f.c, f.r);
+      drawIcon(ctx, s, p.x, p.y, 128 * 1.05, { alpha: 0.95 });
+    }
+  }
+
+  styleGroup(f) { return STYLE_BY_ID[f.style]?.group ?? 'furniture'; }
+
+  /** Push depth-sorted draw jobs onto the renderer's list. */
+  collect(ctx, list, t) {
+    for (const f of this.grid.values()) {
+      if (FLAT.has(f.id)) continue;
+      const s = this.assets.get(this.styleGroup(f), f.id);
+      if (!s) continue;
+      const p = toScreen(f.c, f.r);
+      const hang = HANGING.has(f.id);
+      const y = hang ? p.y - 132 : p.y + HALF_H * 0.36;
+      const sq = f.sq?.value ?? 1;
+      const isSel = this.selection === f;
+      list.push({
+        d: depthOf(f.c, f.r, hang ? 40 : 0),
+        fn: () => {
+          if (!hang) contactShadow(ctx, p.x, p.y + HALF_H * 0.34, s.fw * FURN_SCALE * 0.34, 0, 0.2);
+          drawSprite(ctx, s, 0, p.x, y, {
+            scale: FURN_SCALE,
+            scaleY: sq, scaleX: 2 - sq,
+            flipX: !!f.flip,
+            glow: isSel ? '#f8d167' : null,
+            glowWidth: 3.5,
+          });
+        },
+      });
+    }
+
+    // the chef sorts on their own tile behind the counter; plates go on top of it
+    if (this.passes.length) {
+      const p0 = this.passes[0];
+      const ct = this.kitchen.chefTile;
+      if (ct) list.push({ d: depthOf(ct.c, ct.r, 10), fn: () => this.kitchen.drawChef(ctx) });
+      list.push({ d: depthOf(p0.c, p0.r, 60), fn: () => this.kitchen.drawPlates(ctx, t) });
+    }
+
+    for (const g of this.guests) {
+      if (g.dead && g.alpha <= 0.01) continue;
+      const hi = this.#isHighlighted(g);
+      list.push({ d: g.depth, fn: () => g.draw(ctx, hi) });
+    }
+  }
+
+  #isHighlighted(g) {
+    if (g.state === CS.ORDER) return true;
+    if (g.state === CS.QUEUE && this.freeSeats().length > 0) return true;
+    const sel = this.kitchen.selected;
+    return !!(sel && g.state === CS.WAIT && g.dish === sel.recipeId);
+  }
+
+  /** Ghost preview + tile marks, drawn on the floor above the room. */
+  drawBuildLayer(ctx, t) {
+    const g = this.ghost;
+    if (!g || g.c === null) return;
+    Room.markTile(ctx, g.c, g.r, g.ok ? 'ok' : 'bad', t);
+    const s = this.assets.get(STYLE_BY_ID[g.style]?.group ?? 'furniture', g.id);
+    if (!s) return;
+    const p = toScreen(g.c, g.r);
+    const hang = HANGING.has(g.id);
+    ctx.save();
+    ctx.globalAlpha = 0.72;
+    drawSprite(ctx, s, 0, p.x, hang ? p.y - 132 : p.y + HALF_H * 0.36, {
+      scale: FURN_SCALE,
+      scaleY: 1 + Math.sin(t * 6) * 0.03,
+      flipX: g.flip,
+      glow: g.ok ? '#8bbb6a' : '#e4652f',
+      glowWidth: 3,
+    });
+    ctx.restore();
+  }
+
+  /** Seat availability pips and dirty-table markers. */
+  drawHints(ctx, t) {
+    if (this.state.phase !== 'open') {
+      for (const s of this.seats) {
+        if (s.table) continue;
+        const p = toScreen(s.c, s.r);
+        sticker(ctx, p.x - 13, p.y - 108, 26, 24, { r: 8, fill: '#fbe0d6', lift: 3 });
+        text(ctx, '?', p.x, p.y - 95, { size: 16, fill: '#b8481c' });
+      }
+      return;
+    }
+    const anyQueue = this.guests.some((g) => g.state === CS.QUEUE);
+    for (const s of this.seats) {
+      if (!s.table) continue;
+      const p = toScreen(s.c, s.r);
+      if (s.dirty > 0) {
+        const bob = Math.sin(t * 6) * 2;
+        sticker(ctx, p.x - 16, p.y - 84 + bob, 32, 26, { r: 9, fill: '#efe0c4', lift: 3 });
+        text(ctx, '✦', p.x, p.y - 70 + bob, { size: 15, fill: '#8a6647' });
+      } else if (!s.taken && anyQueue) {
+        Room.glowTile(ctx, s.c, s.r, 'rgba(139,187,106,0.35)', t);
+      }
+    }
+  }
+
+  drawOverlays(ctx, t) {
+    for (const g of this.guests) if (!g.dead) g.drawOverlay(ctx, t);
+    this.kitchen.drawOverlay(ctx);
+  }
+
+  /** Bounds used for camera framing. */
+  bounds() { return this.room.bounds(); }
+}

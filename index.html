@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<meta name="theme-color" content="#f4e7cd">
+<title>Bubbleworks Harbor — Restaurant Tycoon</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<div id="app">
+  <canvas id="stage"></canvas>
+
+  <!-- ---------------------------------------------------------------- HUD -->
+  <div id="hud">
+
+    <div class="corner top-left">
+      <div class="chip" id="chip-coins">
+        <i class="ico ico-sand"></i><b data-bind="coins">300</b>
+      </div>
+      <div class="chip chip-sm" id="chip-stars">
+        <i class="ico ico-star"></i><b data-bind="stars">0</b>
+      </div>
+      <div class="chip chip-sm chip-ghost" id="chip-day">
+        <span data-bind="phase">Day 1 · Prep</span>
+      </div>
+    </div>
+
+    <div class="corner top-right">
+      <button class="round" id="btn-pantry" title="Pantry"><i class="ico ico-crate"></i></button>
+      <button class="round" id="btn-sound" title="Sound"><i class="ico ico-sound"></i></button>
+      <button class="round" id="btn-help" title="How to play"><i class="ico ico-help"></i></button>
+    </div>
+
+    <div class="zoneswitch" id="zoneswitch">
+      <button data-zone="restaurant" class="on">Restaurant</button>
+      <button data-zone="factory">Factory</button>
+    </div>
+
+    <div class="corner bottom-left">
+      <button class="pill pill-lg" id="btn-menu">Menu</button>
+    </div>
+
+    <div class="corner bottom-right">
+      <button class="round round-lg" id="btn-build">
+        <i class="ico ico-hammer"></i><span class="cap">Build</span>
+      </button>
+      <button class="round round-lg" id="btn-recipes">
+        <i class="ico ico-book"></i><span class="cap">Recipes</span>
+        <span class="badge hidden" data-bind="menu-badge">0</span>
+      </button>
+      <button class="pill pill-go" id="btn-service">Open!</button>
+    </div>
+
+    <div class="servicebar hidden" id="servicebar">
+      <div class="sb-row">
+        <span class="sb-label">Served</span>
+        <b data-bind="served">0</b>
+        <span class="sb-sep"></span>
+        <span class="sb-label">Earned</span>
+        <b data-bind="earned">0</b>
+        <span class="sb-sep"></span>
+        <span class="sb-label">Stock</span>
+        <b data-bind="stock">0</b>
+      </div>
+    </div>
+
+    <div id="toasts"></div>
+    <div id="hint" class="hint hidden"></div>
+
+    <div id="placebar" class="placebar hidden">
+      <span id="placebar-label">Tap a tile to place</span>
+      <button class="pill pill-sm" id="placebar-rotate">Rotate</button>
+      <button class="pill pill-sm pill-quiet" id="placebar-done">Done</button>
+    </div>
+  </div>
+
+  <!-- ------------------------------------------------------------- sheets -->
+  <div id="scrim" class="hidden"></div>
+  <div id="sheet" class="sheet hidden" role="dialog" aria-modal="true">
+    <div class="sheet-grip"></div>
+    <header class="sheet-head">
+      <h2 id="sheet-title">Panel</h2>
+      <button class="round round-sm" id="sheet-close"><i class="ico ico-x"></i></button>
+    </header>
+    <div class="sheet-tabs" id="sheet-tabs"></div>
+    <div class="sheet-body" id="sheet-body"></div>
+    <footer class="sheet-foot hidden" id="sheet-foot"></footer>
+  </div>
+
+  <div id="boot" class="boot">
+    <div class="boot-card">
+      <div class="boot-logo">
+        <span class="bl-1">Bubbleworks</span>
+        <span class="bl-2">Harbor</span>
+      </div>
+      <div class="boot-bar"><i id="boot-fill"></i></div>
+      <p id="boot-msg">Filling the tanks…</p>
+    </div>
+  </div>
+</div>
+
+<script type="module" src="src/main.js"></script>
+<noscript><p style="padding:2rem;font:16px system-ui">This game needs JavaScript enabled.</p></noscript>
+</body>
+</html>
