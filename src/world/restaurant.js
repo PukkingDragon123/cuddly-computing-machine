@@ -675,36 +675,45 @@ export class Restaurant {
       glowWidth: 3,
     });
     ctx.restore();
+    Room.outlineTile(ctx, g.c, g.r, g.ok ? 'ok' : 'bad', t);
   }
 
-  /** Seat availability pips and dirty-table markers. */
+  /** Floor-level marks: a soft glow under seats a waiting guest could take. */
   drawHints(ctx, t) {
-    if (this.state.phase !== 'open') {
-      for (const s of this.seats) {
-        if (s.table) continue;
-        const p = toScreen(s.c, s.r);
-        sticker(ctx, p.x - 13, p.y - 108, 26, 24, { r: 8, fill: '#fbe0d6', lift: 3 });
-        text(ctx, '?', p.x, p.y - 95, { size: 16, fill: '#b8481c' });
-      }
-      return;
-    }
-    const anyQueue = this.guests.some((g) => g.state === CS.QUEUE);
+    if (this.state.phase !== 'open') return;
+    if (!this.guests.some((g) => g.state === CS.QUEUE)) return;
     for (const s of this.seats) {
-      if (!s.table) continue;
-      const p = toScreen(s.c, s.r);
-      if (s.dirty > 0) {
-        const bob = Math.sin(t * 6) * 2;
-        sticker(ctx, p.x - 16, p.y - 84 + bob, 32, 26, { r: 9, fill: '#efe0c4', lift: 3 });
-        text(ctx, '✦', p.x, p.y - 70 + bob, { size: 15, fill: '#8a6647' });
-      } else if (!s.taken && anyQueue) {
+      if (s.table && !s.taken && s.dirty <= 0) {
         Room.glowTile(ctx, s.c, s.r, 'rgba(139,187,106,0.35)', t);
       }
     }
   }
 
+  /**
+   * Bubbles, meters and tile badges — drawn after every sprite so a tall chair
+   * never hides the marker telling you what is wrong with it.
+   */
   drawOverlays(ctx, t) {
     for (const g of this.guests) if (!g.dead) g.drawOverlay(ctx, t);
     this.kitchen.drawOverlay(ctx);
+
+    if (this.state.phase !== 'open') {
+      for (const s of this.seats) {
+        if (s.table) continue;
+        const p = toScreen(s.c, s.r);
+        const bob = Math.sin(t * 5 + s.c) * 2;
+        sticker(ctx, p.x - 15, p.y - 154 + bob, 30, 26, { r: 9, fill: '#fbe0d6', lift: 3 });
+        text(ctx, '?', p.x, p.y - 140 + bob, { size: 17, fill: '#b8481c' });
+      }
+      return;
+    }
+    for (const s of this.seats) {
+      if (!s.table || s.dirty <= 0) continue;
+      const p = toScreen(s.c, s.r);
+      const bob = Math.sin(t * 6) * 2;
+      sticker(ctx, p.x - 17, p.y - 150 + bob, 34, 26, { r: 9, fill: '#efe0c4', lift: 3 });
+      text(ctx, '✦', p.x, p.y - 136 + bob, { size: 15, fill: '#8a6647' });
+    }
   }
 
   /** Bounds used for camera framing. */

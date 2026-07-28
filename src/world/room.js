@@ -370,16 +370,33 @@ export class Room {
   static markTile(ctx, c, r, tone = 'ok', pulse = 0) {
     const { x, y } = toScreen(c, r);
     const colors = {
-      ok:   ['rgba(139,187,106,0.42)', '#5f8f3f'],
-      bad:  ['rgba(224,132,100,0.45)', '#bd6144'],
-      pick: ['rgba(248,209,103,0.5)', '#c8992c'],
-    }[tone] ?? ['rgba(255,255,255,0.35)', '#fff'];
-    const k = 1 + pulse * 0.05;
+      ok:   ['rgba(139,187,106,0.55)', '#4d7a34'],
+      bad:  ['rgba(224,132,100,0.58)', '#a83f1c'],
+      pick: ['rgba(248,209,103,0.6)', '#b8891c'],
+    }[tone] ?? ['rgba(255,255,255,0.4)', '#fff'];
     ctx.save();
-    diamond(ctx, x, y, HALF_W * k - 3, HALF_H * k - 2);
+    diamond(ctx, x, y, HALF_W - 3, HALF_H - 2);
     ctx.fillStyle = colors[0]; ctx.fill();
-    ctx.strokeStyle = colors[1]; ctx.lineWidth = 3; ctx.setLineDash([9, 7]);
-    ctx.lineDashOffset = -pulse * 14;
+    // dark backing stroke keeps the dashes legible over any floor tile
+    ctx.strokeStyle = 'rgba(61,44,28,0.5)'; ctx.lineWidth = 6; ctx.stroke();
+    ctx.strokeStyle = colors[1]; ctx.lineWidth = 3.5; ctx.setLineDash([10, 7]);
+    ctx.lineDashOffset = -pulse * 16;
+    ctx.stroke();
+    ctx.restore();
+  }
+
+  /**
+   * Just the dashed outline of a build tile. Drawn again on top of the ghost
+   * sprite, which is tall enough to hide the marker underneath it.
+   */
+  static outlineTile(ctx, c, r, tone = 'ok', pulse = 0) {
+    const { x, y } = toScreen(c, r);
+    const line = { ok: '#4d7a34', bad: '#a83f1c', pick: '#b8891c' }[tone] ?? '#fff';
+    ctx.save();
+    diamond(ctx, x, y, HALF_W - 3, HALF_H - 2);
+    ctx.strokeStyle = 'rgba(61,44,28,0.55)'; ctx.lineWidth = 6; ctx.stroke();
+    ctx.strokeStyle = line; ctx.lineWidth = 3.5; ctx.setLineDash([10, 7]);
+    ctx.lineDashOffset = -pulse * 16;
     ctx.stroke();
     ctx.restore();
   }

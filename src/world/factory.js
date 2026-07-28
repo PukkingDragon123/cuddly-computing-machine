@@ -447,11 +447,6 @@ export class Factory {
     }
     ctx.restore();
 
-    if (m.blocked) {
-      const bob = Math.sin(this.game.time * 7) * 2;
-      sticker(ctx, s.x - 12, s.y - 46 + bob, 24, 22, { r: 8, fill: '#f6cfc2', lift: 3 });
-      text(ctx, '!', s.x, s.y - 35 + bob, { size: 15, fill: '#b8481c' });
-    }
   }
 
   collect(ctx, list, t) {
@@ -514,7 +509,14 @@ export class Factory {
   /** Progress rings, buffers and jam warnings. */
   drawOverlays(ctx, t) {
     for (const m of this.grid.values()) {
-      if (m.kind === 'belt') continue;
+      if (m.kind === 'belt') {
+        if (!m.blocked) continue;
+        const s = toScreen(m.c, m.r);
+        const bob = Math.sin(t * 7) * 2;
+        sticker(ctx, s.x - 12, s.y - 52 + bob, 24, 22, { r: 8, fill: '#f6cfc2', lift: 3 });
+        text(ctx, '!', s.x, s.y - 41 + bob, { size: 15, fill: '#b8481c' });
+        continue;
+      }
       const s = toScreen(m.c, m.r);
 
       if (m.kind === 'silo') {
@@ -591,6 +593,7 @@ export class Factory {
       glow: g.ok ? '#8bbb6a' : '#e4652f', glowWidth: 3,
     });
     ctx.restore();
+    Room.outlineTile(ctx, g.c, g.r, g.ok ? 'ok' : 'bad', t);
     if (g.kind !== 'silo') this.#arrow(ctx, s, g.dir, g.ok ? '#5f8f3f' : '#b8481c');
   }
 

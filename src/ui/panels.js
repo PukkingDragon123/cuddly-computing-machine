@@ -654,12 +654,12 @@ export class Panels {
       title: 'How to Play',
       body: [
         h('div.note', null, 'Everything costs ', h('b', null, 'sand dollars'), ' — furniture, machines, recipes and crew alike.'),
-        step(1, 'Build the works', 'In the Factory, place a machine, drag a belt from it, and end the belt at a Pantry Intake. Ingredients fill your pantry on their own.'),
-        step(2, 'Plate up the menu', 'In the Menu Book, set how many of each dish to make. Ingredients come out of the pantry right away.'),
-        step(3, 'Open up', 'Guests wander in. Tap a waiting guest to seat them at a free chair.'),
-        step(4, 'Take the order', 'Tap the ! bubble over a seated guest to send the ticket to the chef.'),
-        step(5, 'Run the plate', 'Drag the finished dish off the kitchen pass onto the guest who ordered it.'),
-        step(6, 'Get paid', 'The faster you serve, the more they leave. Slow service loses stars.'),
+        step(1, 'Plate up the menu', 'Open the Menu Book and set how many of each dish to make. Ingredients come out of your pantry right away.'),
+        step(2, 'Open up', 'Guests wander in and wait by the door. Tap one to seat them at a free chair.'),
+        step(3, 'Take the order', 'Tap the ! bubble over a seated guest to send the ticket to the chef.'),
+        step(4, 'Run the plate', 'Drag the finished dish off the kitchen pass onto the guest who ordered it.'),
+        step(5, 'Get paid', 'The faster you serve, the more they leave. Slow service loses stars.'),
+        step(6, 'Build the works', 'Once the till is healthy, head to the Factory: place a machine, drag a belt from it, and end the belt at a Pantry Intake. Ingredients then fill your pantry for free.'),
         h('div.note', null, 'Fancier tables and more decor raise ', h('b', null, 'ambience'), ', which brings guests in quicker and makes them tip better. Hire crew to automate seating, serving and the works.'),
       ],
     });
