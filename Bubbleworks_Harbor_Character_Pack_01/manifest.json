@@ -1,0 +1,306 @@
+{
+  "pack": "Bubbleworks Harbor Character Sprite Pack 01",
+  "format": "RGBA PNG",
+  "sheet_size": [
+    1152,
+    384
+  ],
+  "frame_cell_size": [
+    384,
+    384
+  ],
+  "columns": 3,
+  "customers": {
+    "frame_order": [
+      "idle",
+      "walk",
+      "eat"
+    ],
+    "count": 15
+  },
+  "staff": {
+    "frame_order": [
+      "idle",
+      "walk",
+      "work"
+    ],
+    "count": 10
+  },
+  "characters": [
+    {
+      "number": 1,
+      "category": "customers",
+      "name": "Sea-bunny nudibranch",
+      "file": "customers/01_sea_bunny_nudibranch.png",
+      "frame_order": [
+        "idle",
+        "walk",
+        "eat"
+      ]
+    },
+    {
+      "number": 2,
+      "category": "customers",
+      "name": "Dumbo octopus",
+      "file": "customers/02_dumbo_octopus.png",
+      "frame_order": [
+        "idle",
+        "walk",
+        "eat"
+      ]
+    },
+    {
+      "number": 3,
+      "category": "customers",
+      "name": "Hermit crab",
+      "file": "customers/03_hermit_crab.png",
+      "frame_order": [
+        "idle",
+        "walk",
+        "eat"
+      ]
+    },
+    {
+      "number": 4,
+      "category": "customers",
+      "name": "Pufferfish",
+      "file": "customers/04_pufferfish.png",
+      "frame_order": [
+        "idle",
+        "walk",
+        "eat"
+      ]
+    },
+    {
+      "number": 5,
+      "category": "customers",
+      "name": "Sea otter",
+      "file": "customers/05_sea_otter.png",
+      "frame_order": [
+        "idle",
+        "walk",
+        "eat"
+      ]
+    },
+    {
+      "number": 6,
+      "category": "customers",
+      "name": "Manta ray",
+      "file": "customers/06_manta_ray.png",
+      "frame_order": [
+        "idle",
+        "walk",
+        "eat"
+      ]
+    },
+    {
+      "number": 7,
+      "category": "customers",
+      "name": "Whale shark",
+      "file": "customers/07_whale_shark.png",
+      "frame_order": [
+        "idle",
+        "walk",
+        "eat"
+      ]
+    },
+    {
+      "number": 8,
+      "category": "customers",
+      "name": "Moon jellyfish",
+      "file": "customers/08_moon_jellyfish.png",
+      "frame_order": [
+        "idle",
+        "walk",
+        "eat"
+      ]
+    },
+    {
+      "number": 9,
+      "category": "customers",
+      "name": "Seahorse",
+      "file": "customers/09_seahorse.png",
+      "frame_order": [
+        "idle",
+        "walk",
+        "eat"
+      ]
+    },
+    {
+      "number": 10,
+      "category": "customers",
+      "name": "Horseshoe crab",
+      "file": "customers/10_horseshoe_crab.png",
+      "frame_order": [
+        "idle",
+        "walk",
+        "eat"
+      ]
+    },
+    {
+      "number": 11,
+      "category": "customers",
+      "name": "Lobster",
+      "file": "customers/11_lobster.png",
+      "frame_order": [
+        "idle",
+        "walk",
+        "eat"
+      ]
+    },
+    {
+      "number": 12,
+      "category": "customers",
+      "name": "Blobfish",
+      "file": "customers/12_blobfish.png",
+      "frame_order": [
+        "idle",
+        "walk",
+        "eat"
+      ]
+    },
+    {
+      "number": 13,
+      "category": "customers",
+      "name": "Green sea turtle",
+      "file": "customers/13_green_sea_turtle.png",
+      "frame_order": [
+        "idle",
+        "walk",
+        "eat"
+      ]
+    },
+    {
+      "number": 14,
+      "category": "customers",
+      "name": "Anglerfish",
+      "file": "customers/14_anglerfish.png",
+      "frame_order": [
+        "idle",
+        "walk",
+        "eat"
+      ]
+    },
+    {
+      "number": 15,
+      "category": "customers",
+      "name": "Cleaner shrimp",
+      "file": "customers/15_cleaner_shrimp.png",
+      "frame_order": [
+        "idle",
+        "walk",
+        "eat"
+      ]
+    },
+    {
+      "number": 1,
+      "category": "staff",
+      "name": "Oyster host",
+      "file": "staff/01_oyster_host.png",
+      "frame_order": [
+        "idle",
+        "walk",
+        "work"
+      ]
+    },
+    {
+      "number": 2,
+      "category": "staff",
+      "name": "Cuttlefish server",
+      "file": "staff/02_cuttlefish_server.png",
+      "frame_order": [
+        "idle",
+        "walk",
+        "work"
+      ]
+    },
+    {
+      "number": 3,
+      "category": "staff",
+      "name": "Sea lion dishwasher",
+      "file": "staff/03_sea_lion_dishwasher.png",
+      "frame_order": [
+        "idle",
+        "walk",
+        "work"
+      ]
+    },
+    {
+      "number": 4,
+      "category": "staff",
+      "name": "Octopus head chef",
+      "file": "staff/04_octopus_head_chef.png",
+      "frame_order": [
+        "idle",
+        "walk",
+        "work"
+      ]
+    },
+    {
+      "number": 5,
+      "category": "staff",
+      "name": "Moray eel noodle cook",
+      "file": "staff/05_moray_eel_noodle_cook.png",
+      "frame_order": [
+        "idle",
+        "walk",
+        "work"
+      ]
+    },
+    {
+      "number": 6,
+      "category": "staff",
+      "name": "Walrus grill cook",
+      "file": "staff/06_walrus_grill_cook.png",
+      "frame_order": [
+        "idle",
+        "walk",
+        "work"
+      ]
+    },
+    {
+      "number": 7,
+      "category": "staff",
+      "name": "Hammerhead mechanic",
+      "file": "staff/07_hammerhead_mechanic.png",
+      "frame_order": [
+        "idle",
+        "walk",
+        "work"
+      ]
+    },
+    {
+      "number": 8,
+      "category": "staff",
+      "name": "Giant isopod boiler operator",
+      "file": "staff/08_giant_isopod_boiler_operator.png",
+      "frame_order": [
+        "idle",
+        "walk",
+        "work"
+      ]
+    },
+    {
+      "number": 9,
+      "category": "staff",
+      "name": "Swordfish quality inspector",
+      "file": "staff/09_swordfish_quality_inspector.png",
+      "frame_order": [
+        "idle",
+        "walk",
+        "work"
+      ]
+    },
+    {
+      "number": 10,
+      "category": "staff",
+      "name": "Orca harbor manager",
+      "file": "staff/10_orca_harbor_manager.png",
+      "frame_order": [
+        "idle",
+        "walk",
+        "work"
+      ]
+    }
+  ]
+}
