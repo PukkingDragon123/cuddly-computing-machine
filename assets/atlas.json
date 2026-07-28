@@ -1,0 +1,1060 @@
+{
+ "furniture": [
+  {
+   "id": "table_square",
+   "src": "furniture/table_square.png",
+   "w": 244,
+   "h": 204
+  },
+  {
+   "id": "table_round",
+   "src": "furniture/table_round.png",
+   "w": 172,
+   "h": 204
+  },
+  {
+   "id": "chair_a",
+   "src": "furniture/chair_a.png",
+   "w": 131,
+   "h": 204
+  },
+  {
+   "id": "chair_b",
+   "src": "furniture/chair_b.png",
+   "w": 130,
+   "h": 204
+  },
+  {
+   "id": "counter",
+   "src": "furniture/counter.png",
+   "w": 227,
+   "h": 204
+  },
+  {
+   "id": "display_case",
+   "src": "furniture/display_case.png",
+   "w": 188,
+   "h": 204
+  },
+  {
+   "id": "bench",
+   "src": "furniture/bench.png",
+   "w": 207,
+   "h": 204
+  },
+  {
+   "id": "stool",
+   "src": "furniture/stool.png",
+   "w": 116,
+   "h": 204
+  },
+  {
+   "id": "plant",
+   "src": "furniture/plant.png",
+   "w": 101,
+   "h": 204
+  },
+  {
+   "id": "chalkboard",
+   "src": "furniture/chalkboard.png",
+   "w": 151,
+   "h": 204
+  },
+  {
+   "id": "pendant_lamp",
+   "src": "furniture/pendant_lamp.png",
+   "w": 156,
+   "h": 204
+  },
+  {
+   "id": "floor_lamp",
+   "src": "furniture/floor_lamp.png",
+   "w": 78,
+   "h": 204
+  },
+  {
+   "id": "rug",
+   "src": "furniture/rug.png",
+   "w": 290,
+   "h": 204
+  },
+  {
+   "id": "wall_clock",
+   "src": "furniture/wall_clock.png",
+   "w": 171,
+   "h": 186
+  },
+  {
+   "id": "coral_sconce",
+   "src": "furniture/coral_sconce.png",
+   "w": 128,
+   "h": 204
+  },
+  {
+   "id": "condiment_tray",
+   "src": "furniture/condiment_tray.png",
+   "w": 228,
+   "h": 204
+  }
+ ],
+ "furniture_coral": [
+  {
+   "id": "table_square",
+   "src": "furniture_coral/table_square.png",
+   "w": 229,
+   "h": 204
+  },
+  {
+   "id": "table_round",
+   "src": "furniture_coral/table_round.png",
+   "w": 181,
+   "h": 204
+  },
+  {
+   "id": "chair_a",
+   "src": "furniture_coral/chair_a.png",
+   "w": 140,
+   "h": 204
+  },
+  {
+   "id": "chair_b",
+   "src": "furniture_coral/chair_b.png",
+   "w": 137,
+   "h": 204
+  },
+  {
+   "id": "counter",
+   "src": "furniture_coral/counter.png",
+   "w": 211,
+   "h": 204
+  },
+  {
+   "id": "display_case",
+   "src": "furniture_coral/display_case.png",
+   "w": 185,
+   "h": 204
+  },
+  {
+   "id": "bench",
+   "src": "furniture_coral/bench.png",
+   "w": 226,
+   "h": 204
+  },
+  {
+   "id": "stool",
+   "src": "furniture_coral/stool.png",
+   "w": 131,
+   "h": 204
+  },
+  {
+   "id": "plant",
+   "src": "furniture_coral/plant.png",
+   "w": 124,
+   "h": 204
+  },
+  {
+   "id": "chalkboard",
+   "src": "furniture_coral/chalkboard.png",
+   "w": 161,
+   "h": 204
+  },
+  {
+   "id": "pendant_lamp",
+   "src": "furniture_coral/pendant_lamp.png",
+   "w": 138,
+   "h": 204
+  },
+  {
+   "id": "floor_lamp",
+   "src": "furniture_coral/floor_lamp.png",
+   "w": 79,
+   "h": 204
+  },
+  {
+   "id": "rug",
+   "src": "furniture_coral/rug.png",
+   "w": 289,
+   "h": 204
+  },
+  {
+   "id": "wall_clock",
+   "src": "furniture_coral/wall_clock.png",
+   "w": 180,
+   "h": 204
+  },
+  {
+   "id": "coral_sconce",
+   "src": "furniture_coral/coral_sconce.png",
+   "w": 155,
+   "h": 204
+  },
+  {
+   "id": "condiment_tray",
+   "src": "furniture_coral/condiment_tray.png",
+   "w": 258,
+   "h": 204
+  }
+ ],
+ "furniture_whale": [
+  {
+   "id": "table_square",
+   "src": "furniture_whale/table_square.png",
+   "w": 230,
+   "h": 204
+  },
+  {
+   "id": "table_round",
+   "src": "furniture_whale/table_round.png",
+   "w": 181,
+   "h": 204
+  },
+  {
+   "id": "chair_a",
+   "src": "furniture_whale/chair_a.png",
+   "w": 141,
+   "h": 204
+  },
+  {
+   "id": "chair_b",
+   "src": "furniture_whale/chair_b.png",
+   "w": 141,
+   "h": 204
+  },
+  {
+   "id": "counter",
+   "src": "furniture_whale/counter.png",
+   "w": 226,
+   "h": 204
+  },
+  {
+   "id": "display_case",
+   "src": "furniture_whale/display_case.png",
+   "w": 181,
+   "h": 204
+  },
+  {
+   "id": "bench",
+   "src": "furniture_whale/bench.png",
+   "w": 213,
+   "h": 204
+  },
+  {
+   "id": "stool",
+   "src": "furniture_whale/stool.png",
+   "w": 138,
+   "h": 204
+  },
+  {
+   "id": "plant",
+   "src": "furniture_whale/plant.png",
+   "w": 120,
+   "h": 204
+  },
+  {
+   "id": "chalkboard",
+   "src": "furniture_whale/chalkboard.png",
+   "w": 154,
+   "h": 204
+  },
+  {
+   "id": "pendant_lamp",
+   "src": "furniture_whale/pendant_lamp.png",
+   "w": 148,
+   "h": 204
+  },
+  {
+   "id": "floor_lamp",
+   "src": "furniture_whale/floor_lamp.png",
+   "w": 82,
+   "h": 204
+  },
+  {
+   "id": "rug",
+   "src": "furniture_whale/rug.png",
+   "w": 287,
+   "h": 204
+  },
+  {
+   "id": "wall_clock",
+   "src": "furniture_whale/wall_clock.png",
+   "w": 192,
+   "h": 204
+  },
+  {
+   "id": "coral_sconce",
+   "src": "furniture_whale/coral_sconce.png",
+   "w": 142,
+   "h": 204
+  },
+  {
+   "id": "condiment_tray",
+   "src": "furniture_whale/condiment_tray.png",
+   "w": 245,
+   "h": 204
+  }
+ ],
+ "machines": [
+  {
+   "id": "berry_tumbler",
+   "src": "machines/berry_tumbler.png",
+   "w": 198,
+   "h": 214
+  },
+  {
+   "id": "citrus_press",
+   "src": "machines/citrus_press.png",
+   "w": 198,
+   "h": 214
+  },
+  {
+   "id": "pineapple_slicer",
+   "src": "machines/pineapple_slicer.png",
+   "w": 209,
+   "h": 214
+  },
+  {
+   "id": "onion_boiler",
+   "src": "machines/onion_boiler.png",
+   "w": 209,
+   "h": 214
+  },
+  {
+   "id": "ice_mill",
+   "src": "machines/ice_mill.png",
+   "w": 221,
+   "h": 214
+  },
+  {
+   "id": "rice_grinder",
+   "src": "machines/rice_grinder.png",
+   "w": 182,
+   "h": 214
+  },
+  {
+   "id": "egg_roller",
+   "src": "machines/egg_roller.png",
+   "w": 222,
+   "h": 214
+  },
+  {
+   "id": "cream_churn",
+   "src": "machines/cream_churn.png",
+   "w": 195,
+   "h": 214
+  },
+  {
+   "id": "butter_roller",
+   "src": "machines/butter_roller.png",
+   "w": 224,
+   "h": 214
+  },
+  {
+   "id": "cheese_press",
+   "src": "machines/cheese_press.png",
+   "w": 189,
+   "h": 214
+  }
+ ],
+ "ingredients": [
+  {
+   "id": "shrimp",
+   "src": "ingredients/shrimp.png",
+   "w": 168,
+   "h": 132
+  },
+  {
+   "id": "crab",
+   "src": "ingredients/crab.png",
+   "w": 160,
+   "h": 132
+  },
+  {
+   "id": "lobster_tail",
+   "src": "ingredients/lobster_tail.png",
+   "w": 151,
+   "h": 132
+  },
+  {
+   "id": "squid",
+   "src": "ingredients/squid.png",
+   "w": 123,
+   "h": 132
+  },
+  {
+   "id": "octopus_leg",
+   "src": "ingredients/octopus_leg.png",
+   "w": 116,
+   "h": 132
+  },
+  {
+   "id": "scallop",
+   "src": "ingredients/scallop.png",
+   "w": 160,
+   "h": 132
+  },
+  {
+   "id": "clam",
+   "src": "ingredients/clam.png",
+   "w": 138,
+   "h": 132
+  },
+  {
+   "id": "oyster",
+   "src": "ingredients/oyster.png",
+   "w": 137,
+   "h": 132
+  },
+  {
+   "id": "salmon",
+   "src": "ingredients/salmon.png",
+   "w": 166,
+   "h": 132
+  },
+  {
+   "id": "tuna",
+   "src": "ingredients/tuna.png",
+   "w": 154,
+   "h": 132
+  },
+  {
+   "id": "kelp",
+   "src": "ingredients/kelp.png",
+   "w": 128,
+   "h": 132
+  },
+  {
+   "id": "sea_grapes",
+   "src": "ingredients/sea_grapes.png",
+   "w": 139,
+   "h": 132
+  },
+  {
+   "id": "nori",
+   "src": "ingredients/nori.png",
+   "w": 154,
+   "h": 132
+  },
+  {
+   "id": "lemon",
+   "src": "ingredients/lemon.png",
+   "w": 144,
+   "h": 132
+  },
+  {
+   "id": "coconut",
+   "src": "ingredients/coconut.png",
+   "w": 144,
+   "h": 132
+  },
+  {
+   "id": "tomato",
+   "src": "ingredients/tomato.png",
+   "w": 141,
+   "h": 132
+  },
+  {
+   "id": "cabbage",
+   "src": "ingredients/cabbage.png",
+   "w": 147,
+   "h": 132
+  },
+  {
+   "id": "potato",
+   "src": "ingredients/potato.png",
+   "w": 148,
+   "h": 132
+  },
+  {
+   "id": "carrot",
+   "src": "ingredients/carrot.png",
+   "w": 135,
+   "h": 132
+  },
+  {
+   "id": "strawberry",
+   "src": "ingredients/strawberry.png",
+   "w": 153,
+   "h": 132
+  },
+  {
+   "id": "blueberry",
+   "src": "ingredients/blueberry.png",
+   "w": 176,
+   "h": 132
+  },
+  {
+   "id": "lime",
+   "src": "ingredients/lime.png",
+   "w": 138,
+   "h": 132
+  },
+  {
+   "id": "pineapple",
+   "src": "ingredients/pineapple.png",
+   "w": 114,
+   "h": 132
+  },
+  {
+   "id": "onion",
+   "src": "ingredients/onion.png",
+   "w": 120,
+   "h": 132
+  },
+  {
+   "id": "rice",
+   "src": "ingredients/rice.png",
+   "w": 140,
+   "h": 132
+  },
+  {
+   "id": "flour",
+   "src": "ingredients/flour.png",
+   "w": 138,
+   "h": 132
+  },
+  {
+   "id": "egg",
+   "src": "ingredients/egg.png",
+   "w": 161,
+   "h": 132
+  },
+  {
+   "id": "milk",
+   "src": "ingredients/milk.png",
+   "w": 76,
+   "h": 132
+  },
+  {
+   "id": "butter",
+   "src": "ingredients/butter.png",
+   "w": 164,
+   "h": 132
+  },
+  {
+   "id": "cheese",
+   "src": "ingredients/cheese.png",
+   "w": 160,
+   "h": 132
+  }
+ ],
+ "food": [
+  {
+   "id": "oyster_plate",
+   "src": "food/oyster_plate.png",
+   "w": 128,
+   "h": 136
+  },
+  {
+   "id": "crab_burger",
+   "src": "food/crab_burger.png",
+   "w": 155,
+   "h": 136
+  },
+  {
+   "id": "coral_platter",
+   "src": "food/coral_platter.png",
+   "w": 137,
+   "h": 136
+  },
+  {
+   "id": "kelp_ramen",
+   "src": "food/kelp_ramen.png",
+   "w": 127,
+   "h": 136
+  },
+  {
+   "id": "scallop_tart",
+   "src": "food/scallop_tart.png",
+   "w": 144,
+   "h": 136
+  },
+  {
+   "id": "shrimp_toast",
+   "src": "food/shrimp_toast.png",
+   "w": 153,
+   "h": 136
+  },
+  {
+   "id": "puffer_burger",
+   "src": "food/puffer_burger.png",
+   "w": 123,
+   "h": 136
+  },
+  {
+   "id": "kelp_fries",
+   "src": "food/kelp_fries.png",
+   "w": 125,
+   "h": 136
+  },
+  {
+   "id": "octopus_skewer",
+   "src": "food/octopus_skewer.png",
+   "w": 103,
+   "h": 136
+  },
+  {
+   "id": "miso_chowder",
+   "src": "food/miso_chowder.png",
+   "w": 133,
+   "h": 136
+  },
+  {
+   "id": "starfish_cookie",
+   "src": "food/starfish_cookie.png",
+   "w": 122,
+   "h": 136
+  },
+  {
+   "id": "clam_congee",
+   "src": "food/clam_congee.png",
+   "w": 135,
+   "h": 136
+  },
+  {
+   "id": "sea_roll",
+   "src": "food/sea_roll.png",
+   "w": 143,
+   "h": 136
+  },
+  {
+   "id": "reef_soda",
+   "src": "food/reef_soda.png",
+   "w": 118,
+   "h": 136
+  },
+  {
+   "id": "anchor_pretzel",
+   "src": "food/anchor_pretzel.png",
+   "w": 141,
+   "h": 136
+  },
+  {
+   "id": "mermaid_pop",
+   "src": "food/mermaid_pop.png",
+   "w": 94,
+   "h": 136
+  },
+  {
+   "id": "lobster_roll",
+   "src": "food/lobster_roll.png",
+   "w": 144,
+   "h": 136
+  },
+  {
+   "id": "scallop_bowl",
+   "src": "food/scallop_bowl.png",
+   "w": 158,
+   "h": 136
+  },
+  {
+   "id": "kelp_latte",
+   "src": "food/kelp_latte.png",
+   "w": 141,
+   "h": 136
+  },
+  {
+   "id": "pearl_boba",
+   "src": "food/pearl_boba.png",
+   "w": 99,
+   "h": 136
+  },
+  {
+   "id": "tide_sundae",
+   "src": "food/tide_sundae.png",
+   "w": 104,
+   "h": 136
+  },
+  {
+   "id": "taiyaki",
+   "src": "food/taiyaki.png",
+   "w": 154,
+   "h": 136
+  },
+  {
+   "id": "cinnamon_swirls",
+   "src": "food/cinnamon_swirls.png",
+   "w": 158,
+   "h": 136
+  },
+  {
+   "id": "treasure_bento",
+   "src": "food/treasure_bento.png",
+   "w": 128,
+   "h": 136
+  }
+ ],
+ "customers": [
+  {
+   "id": "01_sea_bunny_nudibranch",
+   "name": "Sea-bunny nudibranch",
+   "src": "customers/01_sea_bunny_nudibranch.png",
+   "fw": 118,
+   "fh": 176,
+   "frames": [
+    "idle",
+    "walk",
+    "eat"
+   ]
+  },
+  {
+   "id": "02_dumbo_octopus",
+   "name": "Dumbo octopus",
+   "src": "customers/02_dumbo_octopus.png",
+   "fw": 172,
+   "fh": 176,
+   "frames": [
+    "idle",
+    "walk",
+    "eat"
+   ]
+  },
+  {
+   "id": "03_hermit_crab",
+   "name": "Hermit crab",
+   "src": "customers/03_hermit_crab.png",
+   "fw": 197,
+   "fh": 176,
+   "frames": [
+    "idle",
+    "walk",
+    "eat"
+   ]
+  },
+  {
+   "id": "04_pufferfish",
+   "name": "Pufferfish",
+   "src": "customers/04_pufferfish.png",
+   "fw": 216,
+   "fh": 176,
+   "frames": [
+    "idle",
+    "walk",
+    "eat"
+   ]
+  },
+  {
+   "id": "05_sea_otter",
+   "name": "Sea otter",
+   "src": "customers/05_sea_otter.png",
+   "fw": 135,
+   "fh": 176,
+   "frames": [
+    "idle",
+    "walk",
+    "eat"
+   ]
+  },
+  {
+   "id": "06_manta_ray",
+   "name": "Manta ray",
+   "src": "customers/06_manta_ray.png",
+   "fw": 223,
+   "fh": 176,
+   "frames": [
+    "idle",
+    "walk",
+    "eat"
+   ]
+  },
+  {
+   "id": "07_whale_shark",
+   "name": "Whale shark",
+   "src": "customers/07_whale_shark.png",
+   "fw": 175,
+   "fh": 176,
+   "frames": [
+    "idle",
+    "walk",
+    "eat"
+   ]
+  },
+  {
+   "id": "08_moon_jellyfish",
+   "name": "Moon jellyfish",
+   "src": "customers/08_moon_jellyfish.png",
+   "fw": 163,
+   "fh": 176,
+   "frames": [
+    "idle",
+    "walk",
+    "eat"
+   ]
+  },
+  {
+   "id": "09_seahorse",
+   "name": "Seahorse",
+   "src": "customers/09_seahorse.png",
+   "fw": 123,
+   "fh": 176,
+   "frames": [
+    "idle",
+    "walk",
+    "eat"
+   ]
+  },
+  {
+   "id": "10_horseshoe_crab",
+   "name": "Horseshoe crab",
+   "src": "customers/10_horseshoe_crab.png",
+   "fw": 184,
+   "fh": 176,
+   "frames": [
+    "idle",
+    "walk",
+    "eat"
+   ]
+  },
+  {
+   "id": "11_lobster",
+   "name": "Lobster",
+   "src": "customers/11_lobster.png",
+   "fw": 155,
+   "fh": 176,
+   "frames": [
+    "idle",
+    "walk",
+    "eat"
+   ]
+  },
+  {
+   "id": "12_blobfish",
+   "name": "Blobfish",
+   "src": "customers/12_blobfish.png",
+   "fw": 182,
+   "fh": 176,
+   "frames": [
+    "idle",
+    "walk",
+    "eat"
+   ]
+  },
+  {
+   "id": "13_green_sea_turtle",
+   "name": "Green sea turtle",
+   "src": "customers/13_green_sea_turtle.png",
+   "fw": 152,
+   "fh": 176,
+   "frames": [
+    "idle",
+    "walk",
+    "eat"
+   ]
+  },
+  {
+   "id": "14_anglerfish",
+   "name": "Anglerfish",
+   "src": "customers/14_anglerfish.png",
+   "fw": 189,
+   "fh": 176,
+   "frames": [
+    "idle",
+    "walk",
+    "eat"
+   ]
+  },
+  {
+   "id": "15_cleaner_shrimp",
+   "name": "Cleaner shrimp",
+   "src": "customers/15_cleaner_shrimp.png",
+   "fw": 118,
+   "fh": 176,
+   "frames": [
+    "idle",
+    "walk",
+    "eat"
+   ]
+  }
+ ],
+ "staff": [
+  {
+   "id": "01_oyster_host",
+   "name": "Oyster host",
+   "src": "staff/01_oyster_host.png",
+   "fw": 152,
+   "fh": 184,
+   "frames": [
+    "idle",
+    "walk",
+    "work"
+   ]
+  },
+  {
+   "id": "02_cuttlefish_server",
+   "name": "Cuttlefish server",
+   "src": "staff/02_cuttlefish_server.png",
+   "fw": 161,
+   "fh": 184,
+   "frames": [
+    "idle",
+    "walk",
+    "work"
+   ]
+  },
+  {
+   "id": "03_sea_lion_dishwasher",
+   "name": "Sea lion dishwasher",
+   "src": "staff/03_sea_lion_dishwasher.png",
+   "fw": 165,
+   "fh": 184,
+   "frames": [
+    "idle",
+    "walk",
+    "work"
+   ]
+  },
+  {
+   "id": "04_octopus_head_chef",
+   "name": "Octopus head chef",
+   "src": "staff/04_octopus_head_chef.png",
+   "fw": 153,
+   "fh": 184,
+   "frames": [
+    "idle",
+    "walk",
+    "work"
+   ]
+  },
+  {
+   "id": "05_moray_eel_noodle_cook",
+   "name": "Moray eel noodle cook",
+   "src": "staff/05_moray_eel_noodle_cook.png",
+   "fw": 136,
+   "fh": 184,
+   "frames": [
+    "idle",
+    "walk",
+    "work"
+   ]
+  },
+  {
+   "id": "06_walrus_grill_cook",
+   "name": "Walrus grill cook",
+   "src": "staff/06_walrus_grill_cook.png",
+   "fw": 177,
+   "fh": 184,
+   "frames": [
+    "idle",
+    "walk",
+    "work"
+   ]
+  },
+  {
+   "id": "07_hammerhead_mechanic",
+   "name": "Hammerhead mechanic",
+   "src": "staff/07_hammerhead_mechanic.png",
+   "fw": 218,
+   "fh": 184,
+   "frames": [
+    "idle",
+    "walk",
+    "work"
+   ]
+  },
+  {
+   "id": "08_giant_isopod_boiler_operator",
+   "name": "Giant isopod boiler operator",
+   "src": "staff/08_giant_isopod_boiler_operator.png",
+   "fw": 214,
+   "fh": 184,
+   "frames": [
+    "idle",
+    "walk",
+    "work"
+   ]
+  },
+  {
+   "id": "09_swordfish_quality_inspector",
+   "name": "Swordfish quality inspector",
+   "src": "staff/09_swordfish_quality_inspector.png",
+   "fw": 216,
+   "fh": 184,
+   "frames": [
+    "idle",
+    "walk",
+    "work"
+   ]
+  },
+  {
+   "id": "10_orca_harbor_manager",
+   "name": "Orca harbor manager",
+   "src": "staff/10_orca_harbor_manager.png",
+   "fw": 220,
+   "fh": 184,
+   "frames": [
+    "idle",
+    "walk",
+    "work"
+   ]
+  }
+ ],
+ "rooms": [
+  {
+   "id": "cafe",
+   "src": "rooms/cafe.png",
+   "w": 1422,
+   "h": 1086
+  },
+  {
+   "id": "factory",
+   "src": "rooms/factory.png",
+   "w": 1324,
+   "h": 1176
+  }
+ ],
+ "decals": [
+  {
+   "id": "cafe_porthole_l",
+   "room": "cafe",
+   "kind": "porthole",
+   "facing": "left",
+   "src": "decals/cafe_porthole_l.png",
+   "w": 81,
+   "h": 95
+  },
+  {
+   "id": "cafe_door_r",
+   "room": "cafe",
+   "kind": "door",
+   "facing": "right",
+   "src": "decals/cafe_door_r.png",
+   "w": 117,
+   "h": 258
+  },
+  {
+   "id": "cafe_window_r",
+   "room": "cafe",
+   "kind": "window",
+   "facing": "right",
+   "src": "decals/cafe_window_r.png",
+   "w": 168,
+   "h": 242
+  },
+  {
+   "id": "factory_porthole_l",
+   "room": "factory",
+   "kind": "porthole",
+   "facing": "left",
+   "src": "decals/factory_porthole_l.png",
+   "w": 218,
+   "h": 246
+  },
+  {
+   "id": "factory_porthole_r",
+   "room": "factory",
+   "kind": "porthole",
+   "facing": "right",
+   "src": "decals/factory_porthole_r.png",
+   "w": 158,
+   "h": 241
+  },
+  {
+   "id": "factory_hatch_r",
+   "room": "factory",
+   "kind": "hatch",
+   "facing": "right",
+   "src": "decals/factory_hatch_r.png",
+   "w": 170,
+   "h": 350
+  }
+ ]
+}
