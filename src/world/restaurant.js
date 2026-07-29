@@ -1,17 +1,18 @@
 // The dining room: build grid, seating, the service loop, and everything the
 // player taps during a shift.
 
-import { HALF_H, depthOf, tileAt, toScreen } from './iso.js';
+import { FURN_SCALE, HALF_H, depthOf, tileAt, toScreen } from './iso.js';
 import { Room } from './room.js';
+import { seatSideFor, seatTilesOf } from './seating.js';
 import { Fx } from '../gfx/fx.js';
 import { Kitchen } from './kitchen.js';
 import { spring } from '../core/tween.js';
 import { CS, Customer, rollGuest } from './customer.js';
-import { clamp, money, neighbours, range, rnd, tileDist, uid } from '../core/util.js';
+import { clamp, money, range, rnd, tileDist, uid } from '../core/util.js';
 import { FURNITURE_BY_ID, STYLE_BY_ID, groupFor } from '../data/catalog.js';
 import { drawIcon, drawSprite, squash, sticker, text } from '../gfx/paint.js';
 
-export const FURN_SCALE = 0.66;
+export { FURN_SCALE };
 
 const PATIENCE_BASE = { [CS.QUEUE]: 26, [CS.ORDER]: 22, [CS.WAIT]: 36 };
 
@@ -87,7 +88,7 @@ export class Restaurant {
     }
     for (const f of this.grid.values()) {
       if (f.item.kind !== 'seat') continue;
-      const table = this.tables.find((t) => neighbours(t).some((n) => n.c === f.c && n.r === f.r));
+      const table = this.tables.find((t) => seatSideFor(f.c, f.r, t));
       const old = prevSeats.get(this.key(f.c, f.r));
       const seat = {
         c: f.c, r: f.r, f, table: table ?? null,
@@ -105,24 +106,23 @@ export class Restaurant {
   /**
    * Turn a chair to face its table and shuffle it clear of the tabletop.
    *
-   * Orientation is chosen on the horizontal direction to the table, which is the
-   * axis the eye reads, and picks a genuinely drawn facing rather than mirroring.
+   * The facing comes straight off which side of the table the chair took, so it
+   * is always a drawing that genuinely looks that way rather than a mirror.
    */
   #orientSeat(seat) {
     const f = seat.f;
     f.facing = null;
     f.nudge = null;
+    f.bias = 0;
     if (!seat.table) return;
 
-    const chair = toScreen(seat.c, seat.r);
-    const table = toScreen(seat.table.c, seat.table.r);
-    // the pack ships both facings, so a chair can genuinely turn to its table
-    if (typeof f.item.sprite !== 'string') f.facing = table.x > chair.x ? 'r' : 'l';
-    // neighbouring tiles are only half a sprite width apart in x, so shuffle the
-    // seat clear of the tabletop
-    const dx = chair.x - table.x, dy = chair.y - table.y;
-    const len = Math.hypot(dx, dy) || 1;
-    f.nudge = { x: (dx / len) * 11, y: (dy / len) * 11 };
+    const side = seatSideFor(seat.c, seat.r, seat.table);
+    if (!side) return;
+    if (typeof f.item.sprite !== 'string') f.facing = side.facing;
+    // each side carries its own offset: tiles are only half a sprite apart one
+    // way and a whole tile the other, so one nudge rule cannot serve both
+    f.nudge = side.nudge;
+    f.bias = side.bias;
   }
 
   /** Match the room's doors and windows to the finish the room mostly uses. */
@@ -297,7 +297,7 @@ export class Restaurant {
     const options = this.freeSeats();
     if (!options.length) return 'noseats';
     const target = seat ?? options
-      .map((s) => ({ s, score: tileDist(guest.tile, s) - (s.c + s.r > s.table.c + s.table.r ? 2.5 : 0) }))
+      .map((s) => ({ s, score: tileDist(guest.tile, s) }))
       .reduce((a, b) => (b.score < a.score ? b : a)).s;
     if (target.taken || target.dirty > 0 || !target.table) return 'taken';
     if (!guest.walkTo(target, this.walkable)) return 'blocked';
@@ -329,6 +329,9 @@ export class Restaurant {
         guest.seated = true;
         guest.setState(CS.SEAT);
         guest.sq.vel -= 3;
+        // sit them on the chair, which was shuffled off its tile centre
+        const n = guest.seat?.f?.nudge;
+        if (n) { guest.pos.x += n.x; guest.pos.y += n.y; }
         const t = guest.table;
         if (t) {
           const dx = toScreen(t.c, t.r).x - guest.pos.x;
@@ -668,7 +671,7 @@ export class Restaurant {
       const { sx, sy } = squash(f.sq?.value ?? 1);
       const isSel = this.selection === f;
       list.push({
-        d: depthOf(f.c, f.r, hang ? 40 : 0),
+        d: depthOf(f.c, f.r, hang ? 40 : (f.bias ?? 0)),
         fn: () => {
           drawSprite(ctx, s, 0, nx, y, {
             scale: FURN_SCALE,
@@ -706,7 +709,9 @@ export class Restaurant {
   /** Ghost preview + tile marks, drawn on the floor above the room. */
   drawBuildLayer(ctx, t) {
     const g = this.ghost;
-    if (!g || g.c === null) return;
+    if (!g) return;
+    this.drawSeatSpots(ctx, t);
+    if (g.c === null) return;
     Room.markTile(ctx, g.c, g.r, g.ok ? 'ok' : 'bad', t);
     const s = this.#ghostSprite(g);
     if (!s) return;
@@ -729,10 +734,27 @@ export class Restaurant {
   #ghostSprite(g) {
     const probe = { item: g.item, style: g.style, flip: g.flip, facing: null };
     if (g.item.kind === 'seat' && typeof g.item.sprite !== 'string') {
-      const table = this.tables.find((tb) => neighbours(tb).some((n) => n.c === g.c && n.r === g.r));
-      if (table) probe.facing = toScreen(table.c, table.r).x > toScreen(g.c, g.r).x ? 'r' : 'l';
+      for (const tb of this.tables) {
+        const side = seatSideFor(g.c, g.r, tb);
+        if (side) { probe.facing = side.facing; break; }
+      }
     }
     return this.spriteFor(probe);
+  }
+
+  /**
+   * While a chair is on the cursor, mark the tiles around each table that would
+   * actually turn it into a seat — the art only faces two ways, so the far sides
+   * of a table are decor rather than seating and it should be obvious which.
+   */
+  drawSeatSpots(ctx, t) {
+    if (this.ghost?.item?.kind !== 'seat') return;
+    for (const tb of this.tables) {
+      for (const s of seatTilesOf(tb)) {
+        if (!this.canPlace(s.c, s.r)) continue;
+        Room.glowTile(ctx, s.c, s.r, 'rgba(139,187,106,0.30)', t);
+      }
+    }
   }
 
   /** Floor-level marks: a soft glow under seats a waiting guest could take. */

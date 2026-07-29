@@ -224,17 +224,29 @@ export class Room {
     return { x: a.x + (b.x - a.x) * u, y: a.y + (b.y - a.y) * u - v };
   }
 
+  /**
+   * Joinery is drawn as a flat elevation — a door or window seen square on, with
+   * only a little frame thickness — so pasting it upright on a wall that recedes
+   * leaves it floating at the wrong angle. Shearing it onto the wall's own basis
+   * lays it flat: a step sideways along the wall drops by half a step, the same
+   * 2:1 slope the tile grid uses.
+   */
   #fixture(ctx, d) {
     const sprite = this.assets.get(this.fixtureGroup, d.id);
     if (!sprite) return;
     const p = this.#wallPoint(d.wall, d.u, d.v);
+    const slope = (d.wall === 'left' ? -1 : 1) * (HALF_H / HALF_W);
+    ctx.save();
+    ctx.translate(p.x, p.y);
+    ctx.transform(1, slope, 0, 1, 0, 0);
     // floor-anchored joinery (doors) stands on the floor line; wall-mounted
     // pieces are centred on their height
-    drawSprite(ctx, sprite, 0, p.x, p.y, {
+    drawSprite(ctx, sprite, 0, 0, 0, {
       scale: d.scale ?? 1,
       anchorY: d.anchor === 'floor' ? 1 : 0.5,
       flipX: !!d.mirror,
     });
+    ctx.restore();
   }
 
   /** Two brass-collared tubes running under the factory cornice. */
