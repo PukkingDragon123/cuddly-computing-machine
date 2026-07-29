@@ -36,7 +36,7 @@ up to four hours of catch-up.
 | **Service** | Drag the finished dish off the kitchen pass onto the guest who ordered it. Tap-then-tap works too. |
 | **Payment** | Guests pay on how briskly they were served. Let a patience meter empty and they walk out, costing reputation. |
 
-Fancier furniture finishes (Driftwood → Coral → Whalebone) and decor raise the
+Fancier furniture finishes (Seaside Pine → Cosy Cottage → Antique) and decor raise the
 room's **ambience**, which pulls guests in faster, stretches their patience and
 grows their tips. Hiring crew automates the fiddly parts: the Oyster Host seats
 guests, the Cuttlefish Server runs plates, cooks add parallel burners, the
@@ -51,7 +51,7 @@ you're placing, `Esc` to cancel.
 index.html            markup for the canvas plus the DOM HUD
 styles.css            the sticker UI: chunky brown outlines, cream panels
 assets/               generated sprites + atlas.json  (see tools/)
-tools/slice_assets.py regenerates assets/ from the source art pack
+tools/                slicers that regenerate assets/ from the source art packs
 src/
   main.js             boot, asset loading, fixed-step loop
   game.js             zones, camera, input routing, day cycle
@@ -68,23 +68,33 @@ the rounded-sticker styling and native scrolling.
 
 ### Notes on the art
 
-`Bubbleworks_Harbor_Character_Pack_01/` is the source pack: flat JPEG contact
-sheets on a magenta chroma key or the cream paper backdrop, plus 3-frame
-character strips (idle / walk / eat).
+Two source packs, both sliced into `assets/` with `assets/atlas.json` as the
+index:
 
-`tools/slice_assets.py` lifts each backdrop, buckets ink blobs into grid cells
-so hand-laid items never clip their neighbours, trims every sprite, and writes
-`assets/atlas.json`. Re-run it after changing the pack:
+- `Bubbleworks_Harbor_Character_Pack_01/` — guests, staff, ingredients, food and
+  factory machines. Flat JPEG contact sheets on a magenta key or the cream paper
+  backdrop, plus 3-frame character strips (idle / walk / eat).
+- `art_pack_02/` — the dining room: furniture in three finishes, wall joinery
+  (doors, windows, counters) in two woods, and three more guests. Every piece of
+  furniture ships a left- and a right-facing drawing, so a chair genuinely turns
+  to face its table instead of being mirrored.
 
 ```sh
 pip install pillow numpy scipy
-python3 tools/slice_assets.py
+python3 tools/slice_assets.py    # character pack
+python3 tools/slice_pack02.py    # furniture, joinery, extra guests
 ```
 
-The two isometric room plates are hand-drawn, so their floors don't sit on a
-consistent lattice. Rooms are therefore **generated** — checkerboard floor,
-scalloped border, sheared walls with cornice and baseboard, all in the plates'
-own palette — while the painted doors, windows and portholes are cut out of the
-plates and stuck back onto the generated walls. That keeps build tiles perfectly
-aligned at any room size without losing the hand-painted charm. The whole room
-is rasterised once into an offscreen canvas and blitted per frame.
+Both lift the backdrop, group ink blobs so hand-laid items never clip their
+neighbours, trim every sprite, and merge into the atlas. The second also
+despills: a lamp's clear glass shows the magenta backdrop straight through, so
+those pixels are turned back into translucent glass rather than left as a pink
+dome.
+
+Rooms are **generated** — checkerboard floor, scalloped border, sheared walls
+with cornice and baseboard — because the original painted room plates are
+hand-drawn and their floors don't sit on a consistent lattice, so build tiles
+could never line up with them. The doors and windows set into those walls are
+real sprites from the fixture sheets, so the joinery changes wood along with
+whatever finish the dining room mostly uses. The whole room is rasterised once
+into an offscreen canvas and blitted per frame.

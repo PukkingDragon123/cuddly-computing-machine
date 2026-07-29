@@ -297,7 +297,7 @@ export class Customer {
 
     const icx = cx, icy = box.y + box.h / 2;
     if (this.state === CS.QUEUE) {
-      const chair = this.zone.assets.get('furniture', 'chair_a');
+      const chair = this.zone.assets.get('furn_plain', 'chair_r');
       if (chair) drawIcon(ctx, chair, icx, icy + 2, 36);
       text(ctx, '?', icx + 19, icy - 13, { size: 17, fill: '#e4652f', stroke: '#fff8e6', lw: 4 });
     } else {

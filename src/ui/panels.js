@@ -9,9 +9,13 @@ import {
 } from '../data/recipes.js';
 import {
   BELT, FURNITURE, MACHINES, MACHINE_MAX_LEVEL, SILO, STAFF, STYLES, STYLE_BY_ID,
-  costOf, machineInterval, machineUpgradeCost, starsOf,
+  costOf, groupFor, machineInterval, machineUpgradeCost, starsOf,
 } from '../data/catalog.js';
 import { DIR_NAMES } from '../world/factory.js';
+
+/** Thumbnail sprite for a catalogue entry — pairs show their right-facing art. */
+const spriteIdOf = (item) =>
+  (typeof item.sprite === 'string' ? item.sprite : item.sprite.r ?? item.sprite.l);
 
 export class Panels {
   constructor(game) {
@@ -19,7 +23,7 @@ export class Panels {
     this.hud = game.hud;
     this.state = game.state;
     this.assets = game.assets;
-    this.buildStyle = 'standard';
+    this.buildStyle = 'plain';
     this.buildTab = 'seating';
     this.factoryTab = 'belt';
     this.recipeTab = 'menu';
@@ -81,7 +85,6 @@ export class Panels {
     };
     const kinds = groups[this.buildTab] ?? groups.seating;
     const items = FURNITURE.filter((f) => kinds.includes(f.kind));
-    const style = STYLE_BY_ID[this.buildStyle];
 
     const body = [
       h('div.note', null,
@@ -92,7 +95,7 @@ export class Panels {
         const cost = costOf(item, this.buildStyle);
         const stars = starsOf(item, this.buildStyle);
         return this.#card({
-          src: this.assets.url(style.group, item.id),
+          src: this.assets.url(groupFor(item, this.buildStyle), spriteIdOf(item)),
           title: item.label,
           sub: item.blurb,
           tags: [this.#cost(cost), stars > 0 ? tag(`${stars}★`, 'tag-star') : null].filter(Boolean),
@@ -150,7 +153,7 @@ export class Panels {
       body = [
         h('div.note', null, 'Anything a belt drops into the intake lands in your ', h('b', null, 'pantry'), ' and can be cooked with.'),
         this.#card({
-          src: this.assets.url('furniture', SILO.sprite),
+          src: this.assets.url(SILO.group, SILO.sprite),
           title: SILO.label,
           sub: SILO.blurb,
           tags: [this.#cost(SILO.cost)],
@@ -488,7 +491,7 @@ export class Panels {
       const isCur = st.id === rec.style;
       const downgrade = st.costMul < cur.costMul;
       return this.#card({
-        src: this.assets.url(st.group, item.id),
+        src: this.assets.url(item.set === 'fixt' ? st.fixt : st.furn, spriteIdOf(item)),
         title: st.label,
         sub: `${starsOf(item, st.id)}★ ambience${item.kind === 'table' ? ` · tips ×${st.tip.toFixed(2)}` : ''}`,
         tags: isCur ? [tag('Fitted', 'tag-ok')] : downgrade ? [tag('Already fancier', 'tag-need')] : [this.#cost(diff)],

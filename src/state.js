@@ -3,14 +3,17 @@
 import { Bus, clamp } from './core/util.js';
 import { INGREDIENTS, DAILY_DELIVERY } from './data/ingredients.js';
 import { RECIPE_BY_ID, priceAt, prepAt, starsAt } from './data/recipes.js';
-import { FURNITURE_BY_ID, STYLE_BY_ID, STAFF_BY_ID } from './data/catalog.js';
+import {
+  FURNITURE_BY_ID, STYLE_BY_ID, STAFF_BY_ID, LEGACY_FURNITURE, LEGACY_STYLES,
+} from './data/catalog.js';
 
 const KEY = 'bubbleworks.harbor.save.v1';
+const VERSION = 2;
 export const SAVE_KEY = KEY;
 
 function fresh() {
   return {
-    v: 1,
+    v: VERSION,
     coins: 320,
     stars: 0,
     day: 1,
@@ -23,16 +26,40 @@ function fresh() {
     staff: [],
     // the free starter kitchen: a pass, one table, two chairs
     furniture: [
-      { c: 1, r: 1, id: 'counter', style: 'standard', flip: false },
-      { c: 4, r: 4, id: 'table_square', style: 'standard', flip: false },
-      { c: 3, r: 4, id: 'chair_a', style: 'standard', flip: true },
-      { c: 5, r: 4, id: 'chair_a', style: 'standard', flip: false },
+      { c: 1, r: 1, id: 'pass_counter', style: 'plain', flip: false },
+      { c: 4, r: 4, id: 'round_table', style: 'plain', flip: false },
+      { c: 3, r: 4, id: 'chair', style: 'plain', flip: false },
+      { c: 5, r: 4, id: 'chair', style: 'plain', flip: false },
     ],
     machines: [],
     seenHelp: false,
     lastSeen: Date.now(),
     stats: { served: 0, walkouts: 0, earned: 0, best: 0 },
   };
+}
+
+/**
+ * Bring a v1 save onto the second art pack. Old furniture ids and finishes no
+ * longer exist, and silently dropping them would empty the player's dining room,
+ * so each is mapped to its closest new equivalent.
+ */
+function migrate(data) {
+  data.furniture = (data.furniture ?? [])
+    .map((f) => ({
+      ...f,
+      id: LEGACY_FURNITURE[f.id] ?? f.id,
+      style: LEGACY_STYLES[f.style] ?? f.style ?? 'plain',
+    }))
+    .filter((f) => FURNITURE_BY_ID[f.id]);
+  // two legacy pieces can collapse onto one tile; keep the first of each
+  const seen = new Set();
+  data.furniture = data.furniture.filter((f) => {
+    const k = `${f.c},${f.r}`;
+    if (seen.has(k)) return false;
+    seen.add(k);
+    return true;
+  });
+  data.v = VERSION;
 }
 
 export class GameState {
@@ -48,7 +75,8 @@ export class GameState {
       const raw = localStorage.getItem(KEY);
       if (!raw) return new GameState();
       const data = JSON.parse(raw);
-      if (data?.v !== 1) return new GameState();
+      if (!data?.v || data.v > VERSION) return new GameState();
+      if (data.v < VERSION) migrate(data);
       // a save written mid-service resumes in prep so nothing is half-running
       if (data.phase !== 'prep') { data.phase = 'prep'; data.stock = {}; }
       return new GameState(data);
@@ -61,7 +89,7 @@ export class GameState {
     // strip runtime-only fields (sprite refs, springs, belt contents) so the
     // save stays small and reloads clean
     const data = {
-      v: 1,
+      v: VERSION,
       coins: this.coins, stars: this.stars, day: this.day, phase: this.phase,
       pantry: this.pantry, unlocked: this.unlocked, levels: this.levels,
       menu: this.menu, stock: this.stock, staff: this.staff,

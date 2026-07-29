@@ -1,5 +1,9 @@
 #!/usr/bin/env python3
-"""Slice the Bubbleworks Harbor art pack into game-ready transparent PNGs.
+"""Slice the Bubbleworks Harbor character pack into game-ready PNGs.
+
+Covers the guests, staff, ingredients, food and factory machines. The furniture,
+wall joinery and room plates that this pack also shipped are superseded by
+art_pack_02 — see tools/slice_pack02.py.
 
 Source sheets ship as flat JPEGs on either a magenta chroma key or the cream
 paper backdrop. This walks each sheet, lifts the background, cuts the grid,
@@ -157,21 +161,6 @@ def bucket_blobs(img: Image.Image, cols: int, rows: int, min_area: int):
     return lbl, alpha, buckets
 
 
-def keep_main_blobs(mask: Image.Image, min_frac: float) -> Image.Image:
-    """Drop specks — keeps blobs at least `min_frac` of the largest blob's area.
-
-    Cropping a fixture out of a wall snags slivers of cornice and pilaster along
-    the way; they're always tiny next to the fixture itself.
-    """
-    arr = np.asarray(mask)
-    ink = arr > 24
-    lbl, n = ndimage.label(ink)
-    if n <= 1:
-        return mask
-    areas = ndimage.sum(ink, lbl, range(1, n + 1))
-    cutoff = areas.max() * min_frac
-    keep = [i + 1 for i in range(n) if areas[i] >= cutoff]
-    return Image.fromarray(np.where(np.isin(lbl, keep), arr, 0).astype(np.uint8), mode="L")
 
 
 def content_box(img: Image.Image, threshold: int = 12):
@@ -220,39 +209,6 @@ class Sheet:
 
 SHEETS = [
     Sheet(
-        src="additional_assets/06_standard_furniture_asset_sheet.jpeg",
-        mode="magenta", cols=4, rows=4, out_dir="furniture",
-        names=[
-            "table_square", "table_round", "chair_a", "chair_b",
-            "counter", "display_case", "bench", "stool",
-            "plant", "chalkboard", "pendant_lamp", "floor_lamp",
-            "rug", "wall_clock", "coral_sconce", "condiment_tray",
-        ],
-        max_h=200,
-    ),
-    Sheet(
-        src="additional_assets/03_coral_furniture_asset_sheet.jpeg",
-        mode="magenta", cols=4, rows=4, out_dir="furniture_coral",
-        names=[
-            "table_square", "table_round", "chair_a", "chair_b",
-            "counter", "display_case", "bench", "stool",
-            "plant", "chalkboard", "pendant_lamp", "floor_lamp",
-            "rug", "wall_clock", "coral_sconce", "condiment_tray",
-        ],
-        max_h=200,
-    ),
-    Sheet(
-        src="additional_assets/02_whale_luxury_furniture_asset_sheet.jpeg",
-        mode="magenta", cols=4, rows=4, out_dir="furniture_whale",
-        names=[
-            "table_square", "table_round", "chair_a", "chair_b",
-            "counter", "display_case", "bench", "stool",
-            "plant", "chalkboard", "pendant_lamp", "floor_lamp",
-            "rug", "wall_clock", "coral_sconce", "condiment_tray",
-        ],
-        max_h=200,
-    ),
-    Sheet(
         src="additional_assets/01_factory_machines_asset_sheet.jpeg",
         mode="magenta", cols=5, rows=2, out_dir="machines",
         names=[
@@ -292,71 +248,7 @@ SHEETS = [
     ),
 ]
 
-ROOMS = [
-    ("additional_assets/05_cafe_room_empty_isometric.jpeg", "rooms/cafe.png", 1086),
-    ("additional_assets/04_factory_room_empty_isometric.jpeg", "rooms/factory.png", 1176),
-]
 
-# The painted rooms are hand-laid, so their floors don't sit on a consistent
-# lattice — the game builds its walls procedurally instead. These crops lift the
-# hand-drawn fixtures back out so the generated walls keep the painted charm.
-# Rects are measured against the cut-out assets/rooms/*.png. `facing` records
-# which wall the art's perspective already matches.
-DECALS = [
-    ("cafe", "porthole", "left", (258, 312, 360, 416)),
-    ("cafe", "door", "right", (722, 162, 888, 434)),
-    ("cafe", "window", "right", (1024, 296, 1222, 558)),
-    ("factory", "porthole", "left", (104, 324, 336, 578)),
-    ("factory", "porthole", "right", (774, 218, 932, 464)),
-    ("factory", "hatch", "right", (962, 326, 1152, 682)),
-]
-
-
-def is_wall_or_trim(rgb: np.ndarray) -> np.ndarray:
-    """Match the flat mint wall and coral baseboard the fixtures are set into."""
-    r = rgb[..., 0].astype(np.int16)
-    g = rgb[..., 1].astype(np.int16)
-    b = rgb[..., 2].astype(np.int16)
-    mint = (g >= r - 6) & (g >= b) & (g > 170) & (g < 240) & (abs(r - b) < 24) & ((g - b) < 42)
-    coral = (r > 190) & ((r - g) > 45) & ((g - b) > 4) & (g > 100) & (g < 190)
-    return mint | coral
-
-
-def slice_decals(manifest: dict) -> None:
-    os.makedirs(os.path.join(OUT, "decals"), exist_ok=True)
-    out = []
-    seen: dict[str, int] = {}
-    for room, kind, facing, rect in DECALS:
-        room_img = Image.open(os.path.join(OUT, f"rooms/{room}.png")).convert("RGBA")
-        crop = room_img.crop(rect)
-
-        rgb = np.asarray(crop.convert("RGB"))
-        a0 = np.asarray(crop.getchannel("A"))
-        # already-transparent pixels count as background so the flood can start
-        candidate = is_wall_or_trim(rgb) | (a0 < 40)
-        bg = flood_from_border(candidate)
-
-        alpha = np.where(bg, 0, a0).astype(np.uint8)
-        am = Image.fromarray(alpha, mode="L").filter(ImageFilter.MinFilter(3))
-        am = am.filter(ImageFilter.GaussianBlur(0.6))
-        cut = crop.copy()
-        cut.putalpha(keep_main_blobs(am, 0.08))
-
-        box = content_box(cut)
-        if box:
-            cut = cut.crop(box)
-
-        slug = f"{room}_{kind}_{facing[0]}"
-        seen[slug] = seen.get(slug, 0) + 1
-        if seen[slug] > 1:
-            slug = f"{slug}{seen[slug]}"
-        rel = f"decals/{slug}.png"
-        cut.save(os.path.join(OUT, rel))
-        out.append({"id": slug, "room": room, "kind": kind, "facing": facing,
-                    "src": rel, "w": cut.width, "h": cut.height})
-
-    manifest["decals"] = out
-    print(f"  decals: {len(out)}")
 
 
 def slice_sheets(manifest: dict) -> None:
@@ -440,20 +332,6 @@ def slice_characters(manifest: dict) -> None:
     print(f"  customers: {len(out['customers'])}  staff: {len(out['staff'])}")
 
 
-def slice_rooms(manifest: dict) -> None:
-    os.makedirs(os.path.join(OUT, "rooms"), exist_ok=True)
-    rooms = []
-    for src, rel, target_h in ROOMS:
-        img = lift_background(Image.open(os.path.join(PACK, src)), "cream", feather=0.5)
-        box = content_box(img)
-        if box:
-            img = img.crop(box)
-        img = fit_height(img, target_h)
-        img.save(os.path.join(OUT, rel))
-        rooms.append({"id": os.path.splitext(os.path.basename(rel))[0],
-                      "src": rel, "w": img.width, "h": img.height})
-    manifest["rooms"] = rooms
-    print(f"  rooms: {len(rooms)}")
 
 
 def main() -> None:
@@ -463,10 +341,6 @@ def main() -> None:
     slice_sheets(manifest)
     print("slicing characters…")
     slice_characters(manifest)
-    print("slicing rooms…")
-    slice_rooms(manifest)
-    print("slicing decals…")
-    slice_decals(manifest)
 
     with open(os.path.join(OUT, "atlas.json"), "w") as fh:
         json.dump(manifest, fh, indent=1)

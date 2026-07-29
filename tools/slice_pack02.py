@@ -1,0 +1,271 @@
+#!/usr/bin/env python3
+"""Slice art_pack_02 — the warm-wood furniture, fixtures and extra guests.
+
+These sheets are magenta-keyed PNGs. Furniture comes on a strict 4x6 grid where
+each item ships a left- and a right-facing variant; fixtures sit on a hand-laid
+layout, so those are matched to named positions instead. Output merges into
+assets/atlas.json alongside the character pack.
+
+    python3 tools/slice_pack02.py
+"""
+
+from __future__ import annotations
+
+import json
+import os
+
+import numpy as np
+from PIL import Image, ImageFilter
+from scipy import ndimage
+
+ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+PACK = os.path.join(ROOT, 'art_pack_02')
+OUT = os.path.join(ROOT, 'assets')
+
+# ---------------------------------------------------------------- layouts ---
+
+# Every furniture sheet uses this grid. Column pairs are the two facings of one
+# piece: `_l` reads as facing screen-left, `_r` facing screen-right.
+FURN_COLS = [125, 346, 563, 777]
+FURN_ROWS = [115, 311, 505, 697, 883, 1080]
+FURN_NAMES = [
+    ['cabinet_l',     'cabinet_r',     'chair_l',    'chair_r'],
+    ['drawers_l',     'drawers_r',     'armchair_l', 'armchair_r'],
+    ['shelf_l',       'shelf_r',       'lamp_l',     'lamp_r'],
+    ['rug',           'rug_rolled',    'ornament',   'ornament_mat'],
+    ['game_table_l',  'game_table_r',  'books',      'books_lean'],
+    ['round_table_l', 'round_table_r', 'mirror',     'mirror_wide'],
+]
+
+FURNITURE_SHEETS = [
+    ('furniture_plain_sheet.png',   'furn_plain'),
+    ('furniture_cottage_sheet.png', 'furn_cottage'),
+    ('furniture_antique_sheet.png', 'furn_antique'),
+]
+
+# Hand-laid fixture layout, matched by nearest centre. Facings were measured off
+# the sprites' top-edge slope: a right-wall fixture slopes down-right.
+FIXTURE_POS = [
+    ('window_plain_r', 121, 173),
+    ('window_bay_r',   345, 174),
+    ('door_closed_l',  556, 206),
+    ('door_open_r',    774, 209),
+    ('window_palm_r',  121, 466),
+    ('window_open_r',  317, 483),
+    ('door_open_l',    556, 583),
+    ('door_closed_r',  774, 583),
+    ('key_rack',       545, 846),
+    ('pass_counter',   663, 958),
+    ('host_desk',      264, 1001),
+]
+
+FIXTURE_SHEETS = [
+    ('fixtures_oak_sheet.png',    'fixt_oak'),
+    ('fixtures_walnut_sheet.png', 'fixt_walnut'),
+]
+
+# Three more guests, same idle / walk / eat order as the character pack.
+GUEST_SHEET = ('customers_02_sheet.jpeg', 3, 3,
+               ['16_tuna', '17_clownfish', '18_angelfish'])
+
+MAX_H = {'furniture': 210, 'fixture': 300, 'wall': 300}
+
+
+# ------------------------------------------------------------ background ----
+
+def lift_magenta(img: Image.Image, feather: float = 0.7) -> Image.Image:
+    """Knock out the magenta chroma key. Never flood-fills — the key can be
+    enclosed by artwork (between chair spindles, inside an open door frame)."""
+    rgb = np.asarray(img.convert('RGB')).astype(np.int16)
+    r, g, b = rgb[..., 0], rgb[..., 1], rgb[..., 2]
+    hot = np.minimum(r, b)
+    bg = (hot > 120) & ((hot - g) > 60)
+    a = Image.fromarray(np.where(bg, 0, 255).astype(np.uint8), mode='L')
+    a = a.filter(ImageFilter.MinFilter(3))          # eat the chroma fringe
+    if feather:
+        a = a.filter(ImageFilter.GaussianBlur(feather))
+
+    # Despill. A soft glow — a lamp bulb, a shadow edge — blends with the key
+    # instead of matching it, so it survives the colour test as a magenta halo.
+    # Lift the green back and fade the worst of it out. The threshold keeps
+    # legitimately pink artwork (upholstery flowers, book covers) untouched.
+    tint = np.clip(hot - g, 0, 255)
+    strength = np.clip((tint - 45) / 120.0, 0, 1)
+    keep = ~bg
+    g2 = np.where(keep, g + tint * strength, g)
+    r2 = np.where(keep, r - tint * strength * 0.35, r)
+    b2 = np.where(keep, b - tint * strength * 0.35, b)
+    fixed = np.stack([r2, g2, b2], axis=-1).clip(0, 255).astype(np.uint8)
+
+    out = Image.fromarray(fixed, mode='RGB').convert('RGBA')
+    faded = (np.asarray(a).astype(np.float32) * (1 - strength * 0.85)).clip(0, 255)
+    out.putalpha(Image.fromarray(faded.astype(np.uint8), mode='L'))
+    return out
+
+
+# Sprites whose bodies are largely clear glass: the backdrop legitimately shows
+# through them, so the conservative despill leaves a solid pink dome. These get
+# an aggressive pass that turns the tinted area back into translucent glass.
+GLASSY = {'lamp_l', 'lamp_r'}
+
+
+def despill_hard(img: Image.Image) -> Image.Image:
+    rgba = np.asarray(img.convert('RGBA')).astype(np.float32)
+    r, g, b, a = rgba[..., 0], rgba[..., 1], rgba[..., 2], rgba[..., 3]
+    tint = np.clip(np.minimum(r, b) - g, 0, 255)
+    strength = np.clip(tint / 70.0, 0, 1)
+    out = np.stack([
+        r - tint * strength * 0.5,
+        g + tint * strength,
+        b - tint * strength * 0.5,
+        a * (1 - strength * 0.92),
+    ], axis=-1).clip(0, 255).astype(np.uint8)
+    return Image.fromarray(out, mode='RGBA')
+
+
+def components(img: Image.Image, min_frac: float = 0.004):
+    """Labelled ink blobs with their centres, largest-noise removed."""
+    alpha = np.asarray(img.getchannel('A'))
+    ink = alpha > 40
+    ink = ndimage.binary_opening(ink, np.ones((3, 3)))
+    lbl, n = ndimage.label(ink)
+    if n == 0:
+        return lbl, alpha, []
+    areas = ndimage.sum(ink, lbl, range(1, n + 1))
+    cutoff = ink.sum() * min_frac
+    found = []
+    for i, sl in enumerate(ndimage.find_objects(lbl)):
+        if areas[i] < cutoff:
+            continue
+        ys, xs = sl
+        found.append({
+            'id': i + 1,
+            'cx': (xs.start + xs.stop) / 2,
+            'cy': (ys.start + ys.stop) / 2,
+            'box': (xs.start, ys.start, xs.stop, ys.stop),
+        })
+    return lbl, alpha, found
+
+
+def cut(img: Image.Image, lbl, alpha, ids, max_h: int, pad: int = 2) -> Image.Image:
+    """Crop just the given blobs, trimmed and padded."""
+    keep = np.isin(lbl, ids)
+    layer = img.copy()
+    layer.putalpha(Image.fromarray(np.where(keep, alpha, 0).astype(np.uint8), mode='L'))
+    a = np.asarray(layer.getchannel('A'))
+    ys, xs = np.nonzero(a > 12)
+    layer = layer.crop((int(xs.min()), int(ys.min()), int(xs.max()) + 1, int(ys.max()) + 1))
+    if layer.height > max_h:
+        s = max_h / layer.height
+        layer = layer.resize((max(1, round(layer.width * s)), max_h), Image.LANCZOS)
+    out = Image.new('RGBA', (layer.width + pad * 2, layer.height + pad * 2))
+    out.paste(layer, (pad, pad))
+    return out
+
+
+# ---------------------------------------------------------------- slicing ---
+
+def slice_furniture(manifest):
+    for fname, group in FURNITURE_SHEETS:
+        img = lift_magenta(Image.open(os.path.join(PACK, fname)))
+        lbl, alpha, found = components(img)
+        os.makedirs(os.path.join(OUT, group), exist_ok=True)
+        entries = []
+        for row, names in enumerate(FURN_NAMES):
+            for col, name in enumerate(names):
+                tx, ty = FURN_COLS[col], FURN_ROWS[row]
+                near = [f for f in found
+                        if abs(f['cx'] - tx) < 110 and abs(f['cy'] - ty) < 95]
+                if not near:
+                    print(f'  ! {group}/{name}: nothing near ({tx},{ty})')
+                    continue
+                sprite = cut(img, lbl, alpha, [f['id'] for f in near], MAX_H['furniture'])
+                if name in GLASSY:
+                    sprite = despill_hard(sprite)
+                rel = f'{group}/{name}.png'
+                sprite.save(os.path.join(OUT, rel))
+                entries.append({'id': name, 'src': rel, 'w': sprite.width, 'h': sprite.height})
+        manifest[group] = entries
+        print(f'  {group}: {len(entries)} sprites')
+
+
+def slice_fixtures(manifest):
+    for fname, group in FIXTURE_SHEETS:
+        img = lift_magenta(Image.open(os.path.join(PACK, fname)))
+        lbl, alpha, found = components(img)
+        os.makedirs(os.path.join(OUT, group), exist_ok=True)
+        entries = []
+        for name, tx, ty in FIXTURE_POS:
+            near = min(found, key=lambda f: (f['cx'] - tx) ** 2 + (f['cy'] - ty) ** 2)
+            if (near['cx'] - tx) ** 2 + (near['cy'] - ty) ** 2 > 90 ** 2:
+                print(f'  ! {group}/{name}: nothing near ({tx},{ty})')
+                continue
+            cap = MAX_H['fixture'] if name in ('pass_counter', 'host_desk') else MAX_H['wall']
+            sprite = cut(img, lbl, alpha, [near['id']], cap)
+            rel = f'{group}/{name}.png'
+            sprite.save(os.path.join(OUT, rel))
+            entries.append({'id': name, 'src': rel, 'w': sprite.width, 'h': sprite.height})
+        manifest[group] = entries
+        print(f'  {group}: {len(entries)} sprites')
+
+
+def slice_guests(manifest):
+    fname, cols, rows, names = GUEST_SHEET
+    img = lift_magenta(Image.open(os.path.join(PACK, fname)), feather=0.9)
+    cw, ch = img.width / cols, img.height / rows
+    os.makedirs(os.path.join(OUT, 'customers'), exist_ok=True)
+    entries = list(manifest.get('customers', []))
+    for row, slug in enumerate(names):
+        frames = []
+        for col in range(cols):
+            cell = img.crop((round(col * cw), round(row * ch),
+                             round((col + 1) * cw), round((row + 1) * ch)))
+            frames.append(cell)
+        # one shared crop box across the three frames keeps the animation steady
+        boxes = []
+        for f in frames:
+            a = np.asarray(f.getchannel('A'))
+            ys, xs = np.nonzero(a > 24)
+            if len(xs):
+                boxes.append((xs.min(), ys.min(), xs.max() + 1, ys.max() + 1))
+        if not boxes:
+            continue
+        box = (min(b[0] for b in boxes), min(b[1] for b in boxes),
+               max(b[2] for b in boxes), max(b[3] for b in boxes))
+        cropped = [f.crop(box) for f in frames]
+        scale = 176 / cropped[0].height
+        fw, fh = max(1, round(cropped[0].width * scale)), 176
+        cropped = [f.resize((fw, fh), Image.LANCZOS) for f in cropped]
+        strip = Image.new('RGBA', (fw * 3, fh))
+        for i, f in enumerate(cropped):
+            strip.paste(f, (i * fw, 0))
+        rel = f'customers/{slug}.png'
+        strip.save(os.path.join(OUT, rel))
+        entries = [e for e in entries if e['id'] != slug]
+        entries.append({'id': slug, 'name': slug.split('_', 1)[1].title(), 'src': rel,
+                        'fw': fw, 'fh': fh, 'frames': ['idle', 'walk', 'eat']})
+    manifest['customers'] = entries
+    print(f"  customers: {len(entries)} total")
+
+
+def main():
+    path = os.path.join(OUT, 'atlas.json')
+    manifest = json.load(open(path)) if os.path.exists(path) else {}
+    print('slicing furniture…')
+    slice_furniture(manifest)
+    print('slicing fixtures…')
+    slice_fixtures(manifest)
+    print('slicing guests…')
+    slice_guests(manifest)
+
+    # the old furniture finishes and painted wall decals are gone
+    for dead in ('furniture', 'furniture_coral', 'furniture_whale', 'decals', 'rooms'):
+        manifest.pop(dead, None)
+
+    with open(path, 'w') as fh:
+        json.dump(manifest, fh, indent=1)
+    print('groups:', {k: len(v) for k, v in manifest.items()})
+
+
+if __name__ == '__main__':
+    main()

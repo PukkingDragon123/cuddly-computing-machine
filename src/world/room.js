@@ -1,43 +1,44 @@
-// The room itself: checkerboard floor, two back walls, and the hand-painted
-// fixtures dropped onto them.
+// The room itself: checkerboard floor, two back walls, and the joinery set into
+// them.
 //
-// The floor is generated rather than blitted so tiles line up exactly with the
-// build grid at any room size, but the doors, windows and portholes are the
-// original painted art lifted out of the source plates.
+// The floor and walls are generated so tiles line up exactly with the build grid
+// at any room size, while the doors and windows are real sprites from the fixture
+// sheets — which means they change wood along with the furniture.
 
 import { HALF_H, HALF_W, TILE_H, toScreen } from './iso.js';
 import { INK, diamond, drawSprite, ellipse, roundRectPath } from '../gfx/paint.js';
 import { TAU } from '../core/util.js';
 
 const PALETTE = {
-  floorA: '#f2e3c4',
-  floorB: '#c9dac8',
-  grout: 'rgba(120,104,74,0.16)',
-  border: '#f6ead0',
-  rim: '#e2d1a8',
-  rimDark: '#bda87c',
+  floorA: '#f6ead4',
+  floorB: '#d6bd98',
+  grout: 'rgba(122,96,66,0.15)',
+  border: '#f8eeda',
+  rim: '#cdb391',
+  rimDark: '#a98f6d',
 };
 
 const CAFE = {
   ...PALETTE,
-  wallL: '#bfd2be',
-  wallR: '#ccddca',
-  cornice: '#f3e0bf',
-  corniceTop: '#fbeed6',
-  base: '#e08464',
-  baseDark: '#c76e50',
+  wallL: '#e7d9c1',
+  wallR: '#f1e5d0',
+  cornice: '#faf2e2',
+  corniceTop: '#fdf8ec',
+  base: '#a9784f',
+  baseDark: '#875c3a',
   pipes: false,
 };
 
 const FACTORY = {
   ...PALETTE,
-  floorB: '#cbd8c3',
-  wallL: '#bdd0bc',
-  wallR: '#c9dac6',
-  cornice: '#f3e2c3',
-  corniceTop: '#fbeed6',
-  base: '#e08464',
-  baseDark: '#c76e50',
+  floorA: '#e9dcc2',
+  floorB: '#cdbb9c',
+  wallL: '#d9cfba',
+  wallR: '#e5dcc8',
+  cornice: '#f6eddc',
+  corniceTop: '#fbf5e8',
+  base: '#8d7b62',
+  baseDark: '#6f6049',
   pipes: true,
 };
 
@@ -48,26 +49,24 @@ const THICK = 0.3;      // wall thickness, in tiles, for the top face
 const RIM_H = 15;       // floor slab thickness at the front edges
 
 /**
- * Wall fixture placement. `u` runs 0..1 along the wall from the back corner,
- * `v` is height above the floor, and `scale` fits the painted art (drawn for a
- * taller wall than the generated one) into the field between baseboard and
- * cornice. Floor-anchored fixtures stand on the floor line.
+ * Built-in wall joinery, taken from the fixture sheets. `u` runs 0..1 along the
+ * wall from the back corner and `v` is height above the floor. The art is drawn
+ * for one wall each — right-wall pieces slope down-right — so left-wall
+ * placements mirror a right-facing sprite.
  */
-const DECALS = {
+const FIXTURES = {
   cafe: [
-    { id: 'cafe_door_r', wall: 'right', u: 0.34, v: 0, scale: 0.62, anchor: 'floor' },
-    { id: 'cafe_window_r', wall: 'right', u: 0.74, v: 100, scale: 0.6 },
-    { id: 'cafe_porthole_l', wall: 'left', u: 0.42, v: 112, scale: 1 },
+    { id: 'door_open_r', wall: 'right', u: 0.3, v: 0, scale: 0.62, anchor: 'floor', entry: true },
+    { id: 'window_bay_r', wall: 'right', u: 0.72, v: 104, scale: 0.62 },
+    { id: 'window_palm_r', wall: 'left', u: 0.42, v: 104, scale: 0.62, mirror: true },
+    { id: 'window_plain_r', wall: 'left', u: 0.78, v: 104, scale: 0.55, mirror: true },
   ],
   factory: [
-    { id: 'factory_hatch_r', wall: 'right', u: 0.72, v: 0, scale: 0.46, anchor: 'floor' },
-    { id: 'factory_porthole_r', wall: 'right', u: 0.3, v: 104, scale: 0.55 },
-    { id: 'factory_porthole_l', wall: 'left', u: 0.4, v: 100, scale: 0.55 },
+    { id: 'door_closed_r', wall: 'right', u: 0.74, v: 0, scale: 0.6, anchor: 'floor', entry: true },
+    { id: 'window_plain_r', wall: 'right', u: 0.3, v: 104, scale: 0.58 },
+    { id: 'window_plain_r', wall: 'left', u: 0.4, v: 104, scale: 0.58, mirror: true },
   ],
 };
-
-/** The door guests walk in through — service spawns them here. */
-export const ENTRY_DECAL = { cafe: 'cafe_door_r', factory: 'factory_hatch_r' };
 
 export class Room {
   /**
@@ -80,7 +79,8 @@ export class Room {
     this.cols = cols;
     this.rows = rows;
     this.pal = kind === 'factory' ? FACTORY : CAFE;
-    this.decals = (DECALS[kind] ?? []).map((d) => ({ ...d, sprite: assets.get('decals', d.id) }));
+    this.fixtures = FIXTURES[kind] ?? [];
+    this.fixtureGroup = 'fixt_oak';
     this.cache = null;
     this.#geometry();
   }
@@ -151,18 +151,25 @@ export class Room {
       this.#pipes(ctx, this.N, this.W);
       this.#pipes(ctx, this.N, this.E);
     }
-    for (const d of this.decals) this.#decal(ctx, d);
+    for (const d of this.fixtures) this.#fixture(ctx, d);
   }
 
   /** World point of the entry door, so guests can walk in from it. */
   entryPoint() {
-    const d = this.decals.find((x) => x.anchor === 'floor');
+    const d = this.fixtures.find((x) => x.entry) ?? this.fixtures[0];
     if (!d) return { x: this.N.x, y: this.N.y };
     return this.#wallPoint(d.wall, d.u, 0);
   }
 
+  /** Swap the joinery to match the dining room's finish. */
+  setFixtureGroup(group) {
+    if (group === this.fixtureGroup) return;
+    this.fixtureGroup = group;
+    this.cache = null;
+  }
+
   /**
-   * One back wall as a sheared slab: mint field, coral baseboard, cream cornice
+   * One back wall as a sheared slab: plaster field, wood baseboard, cream cornice
    * and a lighter top face that reads as thickness.
    * `side` is -1 for the left wall, +1 for the right.
    */
@@ -179,16 +186,16 @@ export class Room {
     const topH = WALL_H;
     const fieldTop = topH - CORNICE_H;
 
-    // mint field
+    // wall field
     quad(a, b, up(b, fieldTop), up(a, fieldTop), fill);
 
     // subtle vertical shade toward the corner so the two walls separate
     const g = ctx.createLinearGradient(a.x, a.y, b.x, b.y);
-    g.addColorStop(0, 'rgba(90,110,92,0.13)');
-    g.addColorStop(0.45, 'rgba(90,110,92,0)');
+    g.addColorStop(0, 'rgba(120,92,60,0.12)');
+    g.addColorStop(0.45, 'rgba(120,92,60,0)');
     quad(a, b, up(b, fieldTop), up(a, fieldTop), g);
 
-    // coral baseboard
+    // wood baseboard
     quad(a, b, up(b, BASE_H), up(a, BASE_H), this.pal.base);
     quad(up(a, BASE_H - 3), up(b, BASE_H - 3), up(b, BASE_H), up(a, BASE_H), this.pal.baseDark);
 
@@ -217,19 +224,23 @@ export class Room {
     return { x: a.x + (b.x - a.x) * u, y: a.y + (b.y - a.y) * u - v };
   }
 
-  #decal(ctx, d) {
-    if (!d.sprite) return;
+  #fixture(ctx, d) {
+    const sprite = this.assets.get(this.fixtureGroup, d.id);
+    if (!sprite) return;
     const p = this.#wallPoint(d.wall, d.u, d.v);
-    // floor-anchored fixtures (doors) stand on the floor line; wall-mounted
-    // ones are centred on their height
-    const anchorY = d.anchor === 'floor' ? 1 : 0.5;
-    drawSprite(ctx, d.sprite, 0, p.x, p.y, { scale: d.scale ?? 1, anchorY });
+    // floor-anchored joinery (doors) stands on the floor line; wall-mounted
+    // pieces are centred on their height
+    drawSprite(ctx, sprite, 0, p.x, p.y, {
+      scale: d.scale ?? 1,
+      anchorY: d.anchor === 'floor' ? 1 : 0.5,
+      flipX: !!d.mirror,
+    });
   }
 
   /** Two brass-collared tubes running under the factory cornice. */
   #pipes(ctx, a, b) {
     const h = WALL_H - CORNICE_H - 14;
-    const runs = [{ off: 0, color: '#e79878', dark: '#c4785c' }, { off: 17, color: '#a8c9bd', dark: '#83a79b' }];
+    const runs = [{ off: 0, color: '#c9946a', dark: '#a5744f' }, { off: 17, color: '#b9ae95', dark: '#948a73' }];
     for (const run of runs) {
       const p1 = { x: a.x, y: a.y - h + run.off };
       const p2 = { x: b.x, y: b.y - h + run.off };
@@ -358,8 +369,8 @@ export class Room {
     const oa = { x: a.x + nx * depth, y: a.y + ny * depth };
     const ob = { x: b.x + nx * depth, y: b.y + ny * depth };
     const g = ctx.createLinearGradient(a.x, a.y, oa.x, oa.y);
-    g.addColorStop(0, 'rgba(96,82,58,0.22)');
-    g.addColorStop(1, 'rgba(96,82,58,0)');
+    g.addColorStop(0, 'rgba(118,92,62,0.2)');
+    g.addColorStop(1, 'rgba(118,92,62,0)');
     ctx.beginPath();
     ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y); ctx.lineTo(ob.x, ob.y); ctx.lineTo(oa.x, oa.y);
     ctx.closePath();

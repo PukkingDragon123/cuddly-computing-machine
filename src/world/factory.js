@@ -542,7 +542,7 @@ export class Factory {
 
       const isSel = this.selection === m;
       if (m.kind === 'silo') {
-        const sprite = this.assets.get('furniture', SILO.sprite);
+        const sprite = this.assets.get(SILO.group, SILO.sprite);
         const sq = m.sq?.value ?? 1;
         list.push({
           d: depthOf(m.c, m.r),
@@ -652,7 +652,7 @@ export class Factory {
       return;
     }
     const sprite = g.kind === 'silo'
-      ? this.assets.get('furniture', SILO.sprite)
+      ? this.assets.get(SILO.group, SILO.sprite)
       : this.assets.get('machines', MACHINE_BY_ID[g.id]?.sprite);
     if (!sprite) return;
     ctx.save();
