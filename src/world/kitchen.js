@@ -4,7 +4,7 @@
 import { HALF_H, toScreen } from './iso.js';
 import { rnd, uid } from '../core/util.js';
 import { makeSpring, spring } from '../core/tween.js';
-import { contactShadow, drawIcon, drawSprite, ring, sticker, text } from '../gfx/paint.js';
+import { contactShadow, drawIcon, drawSprite, ring, squash, sticker, text } from '../gfx/paint.js';
 import { CHEF_SPRITE } from '../data/catalog.js';
 
 const PLATE_SIZE = 58;
@@ -80,7 +80,7 @@ export class Kitchen {
     const slots = this.zone.state.cookSlots;
     while (this.cooking.length < slots && this.tickets.length && !this.full) {
       this.cooking.push(this.tickets.shift());
-      this.chefSq.vel -= 4;
+      this.chefSq.vel -= 2;
     }
 
     for (let i = this.cooking.length - 1; i >= 0; i--) {
@@ -102,11 +102,11 @@ export class Kitchen {
     } else {
       this.bobT += dt;
     }
-    spring(this.chefSq, 1, dt);
+    spring(this.chefSq, 1, dt, 150, 15);
 
     for (const p of this.plates) {
       p.age += dt;
-      spring(p.sq, 1, dt);
+      spring(p.sq, 1, dt, 170, 16);
       if (!p.held) {
         p.x += (p.homeX - p.x) * (1 - Math.exp(-16 * dt));
         p.y += (p.homeY - p.y) * (1 - Math.exp(-16 * dt));
@@ -120,14 +120,14 @@ export class Kitchen {
     this.plates.push({
       id: uid('pl'), recipeId: ticket.recipeId, customerId: ticket.customerId,
       slot, x: home.x, y: home.y - 26, homeX: home.x, homeY: home.y,
-      age: 0, held: false, selected: false, sq: makeSpring(0.4), bob: rnd() * 6,
+      age: 0, held: false, selected: false, sq: makeSpring(0.86), bob: rnd() * 6,
     });
     const p = this.chefPos;
     if (p) {
       this.zone.fx.sparkles(home.x, home.y - 10, 6, 14);
       this.zone.fx.ripple(home.x, home.y + 6, 'rgba(255,255,255,0.8)', 0.4, 46);
     }
-    this.chefSq.vel -= 7;
+    this.chefSq.vel -= 3;
     this.zone.sfx.play('ding');
     this.zone.onPlateReady?.(ticket);
   }
@@ -184,12 +184,12 @@ export class Kitchen {
     if (!p || !this.chef) return;
     const cooking = this.cooking.length > 0;
     const bob = Math.sin(this.bobT * 2.4) * (cooking ? 3.5 : 2);
-    contactShadow(ctx, p.x, p.y + HALF_H * 0.3, 26, 0, 0.22);
+    const { sx, sy } = squash(this.chefSq.value);
+    contactShadow(ctx, p.x, p.y + HALF_H * 0.3, 22, 0, 0.14);
     drawSprite(ctx, this.chef, cooking ? 'work' : 'idle', p.x, p.y + HALF_H * 0.3 + bob, {
       scale: 0.74,
-      scaleY: this.chefSq.value,
-      scaleX: 2 - this.chefSq.value,
-      rot: cooking ? Math.sin(this.bobT * 7) * 0.035 : 0,
+      scaleX: sx, scaleY: sy,
+      rot: cooking ? Math.sin(this.bobT * 7) * 0.03 : 0,
       flipX: true,
     });
   }
@@ -200,9 +200,9 @@ export class Kitchen {
       if (!s) continue;
       const float = p.held ? 0 : Math.sin(t * 3 + p.bob) * 2.5;
       const lift = p.held ? 16 : 0;
-      contactShadow(ctx, p.x, p.homeY + 16, p.held ? 16 : 20, p.held ? 0.6 : 0, 0.22);
-      drawIcon(ctx, s, p.x, p.y + float - lift, PLATE_SIZE * (p.held ? 1.14 : 1), {
-        scaleY: p.sq.value, scaleX: 2 - p.sq.value,
+      const { sx, sy } = squash(p.sq.value);
+      drawIcon(ctx, s, p.x, p.y + float - lift, PLATE_SIZE * (p.held ? 1.1 : 1), {
+        scaleX: sx, scaleY: sy,
         glow: p.selected || p.held ? '#f8d167' : (p.age < 1.2 ? '#fff3c8' : null),
         glowWidth: p.selected || p.held ? 4 : 2.5,
       });

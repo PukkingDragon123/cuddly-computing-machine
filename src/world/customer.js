@@ -3,8 +3,8 @@
 
 import { HALF_H, toScreen } from './iso.js';
 import { TAU, clamp, findPath, range, rnd } from '../core/util.js';
-import { makeSpring, spring } from '../core/tween.js';
-import { bubble, contactShadow, drawIcon, drawSprite, meter, ring, text } from '../gfx/paint.js';
+import { Ease, makeSpring, spring } from '../core/tween.js';
+import { bubble, contactShadow, drawIcon, drawSprite, meter, ring, squash, text } from '../gfx/paint.js';
 
 export const CHAR_SCALE = 0.72;
 
@@ -37,8 +37,7 @@ export class Customer {
     this.flip = 0;
     this.bobT = rnd() * TAU;
     this.hopY = 0;
-    this.sq = makeSpring(1);   // vertical squash
-    this.stx = makeSpring(1);  // horizontal stretch
+    this.sq = makeSpring(1);   // squash; width is derived so volume holds
     this.spawn = 0;            // 0..1 pop-in
     this.alpha = 1;
     this.tilt = 0;
@@ -71,7 +70,7 @@ export class Customer {
 
   /** Seated guests ride a little higher so they read as on the chair. */
   get drawY() { return this.pos.y + this.hopY + (this.seated ? -11 : 0); }
-  get headY() { return this.drawY - this.sprite.fh * CHAR_SCALE * this.sq.value - 6; }
+  get headY() { return this.drawY - this.sprite.fh * CHAR_SCALE - 6; }
   /**
    * Painter's-order key on the same scale as depthOf() in iso.js — pos.y is half
    * a tile step, so doubling it lines guests up with furniture. Seated guests get
@@ -147,9 +146,8 @@ export class Customer {
   }
 
   #land() {
-    this.sq.vel -= 5.5;
-    this.stx.vel += 4;
-    this.zone.fx.puff(this.pos.x, this.pos.y + 2, 2, 7);
+    this.sq.vel -= 2.2;
+    this.zone.fx.puff(this.pos.x, this.pos.y + 2, 2, 6);
   }
 
   /* --------------------------------------------------------------- states */
@@ -167,8 +165,7 @@ export class Customer {
     this.bobT += dt;
     if (this.spawn < 1) this.spawn = Math.min(1, this.spawn + dt * 4);
     if (this.flip > 0) this.flip = Math.max(0, this.flip - dt);
-    spring(this.sq, 1, dt);
-    spring(this.stx, 1, dt);
+    spring(this.sq, 1, dt, 150, 15);
 
     const drains = this.state === CS.QUEUE || this.state === CS.ORDER || this.state === CS.WAIT;
     if (drains) {
@@ -177,7 +174,7 @@ export class Customer {
       this.mood = this.patience < 0.3 ? 'cross' : this.patience < 0.6 ? 'rush' : 'ok';
       if (this.patience < 0.3 && !this.impatient) {
         this.impatient = true;
-        this.sq.vel -= 6;
+        this.sq.vel -= 2.4;
       }
     }
 
@@ -224,8 +221,7 @@ export class Customer {
     if (this.biteT >= per && this.bites < BITES) {
       this.biteT -= per;
       this.bites++;
-      this.sq.vel -= 11;
-      this.stx.vel += 8;
+      this.sq.vel -= 3.6;
       this.zone.fx.crumbs(this.pos.x + this.face * 8, this.headY + 34, 4);
       this.zone.sfx.play('chomp');
       if (this.bites % 2 === 0) this.zone.fx.hearts(this.pos.x + this.face * 14, this.headY - 4, 1);
@@ -250,16 +246,18 @@ export class Customer {
   }
 
   draw(ctx, highlight = false) {
-    const pop = this.spawn < 1 ? 1 + (1 - this.spawn) * -0.35 + Math.sin(this.spawn * Math.PI) * 0.28 : 1;
-    const flipK = this.flip > 0 ? Math.abs(Math.cos((1 - this.flip / FLIP_TIME) * Math.PI)) : 1;
-    const scaleY = this.sq.value * pop;
-    const scaleX = this.stx.value * pop * Math.max(0.06, flipK);
+    // scale-in eases once instead of oscillating, so arrivals read as a pop
+    const pop = this.spawn < 1 ? 0.62 + 0.38 * Ease.outBack(this.spawn) : 1;
+    const { sx, sy } = squash(this.sq.value);
+    // paper flip pinches width only, and never all the way to zero
+    const flipK = this.flip > 0 ? 0.34 + 0.66 * Math.abs(Math.cos((1 - this.flip / FLIP_TIME) * Math.PI)) : 1;
 
-    contactShadow(ctx, this.pos.x, this.pos.y + 3, 24 * this.stx.value, -this.hopY / HOP_H, 0.24);
+    contactShadow(ctx, this.pos.x, this.pos.y + 2, 21, -this.hopY / HOP_H, 0.15);
 
     drawSprite(ctx, this.sprite, this.#frame(), this.pos.x, this.drawY, {
       scale: CHAR_SCALE,
-      scaleX, scaleY,
+      scaleX: sx * pop * flipK,
+      scaleY: sy * pop,
       rot: this.tilt,
       alpha: this.alpha,
       flipX: this.face < 0,

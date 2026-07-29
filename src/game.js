@@ -46,6 +46,8 @@ export class Game {
     this.moved = false;
     this.closing = false;
     this.saveT = 0;
+    this.wipe = { v: 0 };   // screen fade for room changes
+    this.wiping = false;
 
     this.bubbles = Array.from({ length: 16 }, () => ({
       x: rnd(), y: rnd(), r: range(3, 9), sp: range(0.012, 0.045), w: range(0, TAU),
@@ -72,6 +74,24 @@ export class Game {
   }
 
   /* ---------------------------------------------------------------- canvas  */
+
+  #bakeBackdrop(w, h) {
+    const cv = document.createElement('canvas');
+    // half resolution is plenty for a smooth gradient and keeps the blit cheap
+    cv.width = Math.max(2, Math.ceil(w / 2));
+    cv.height = Math.max(2, Math.ceil(h / 2));
+    const c = cv.getContext('2d');
+    const g = c.createRadialGradient(
+      cv.width * 0.5, cv.height * 0.22, 20,
+      cv.width * 0.5, cv.height * 0.3, Math.max(cv.width, cv.height) * 0.9,
+    );
+    g.addColorStop(0, '#fdf6e6');
+    g.addColorStop(0.55, '#ecdfc4');
+    g.addColorStop(1, '#d9c8a6');
+    c.fillStyle = g;
+    c.fillRect(0, 0, cv.width, cv.height);
+    this.bg = { cv, w, h };
+  }
 
   #resize() {
     const w = this.canvas.clientWidth || window.innerWidth;
@@ -112,16 +132,27 @@ export class Game {
 
   /* ---------------------------------------------------------------- zones  */
 
+  /** Change room behind a short fade, so the swap doesn't snap. */
   setZone(name) {
     const next = name === 'factory' ? this.factory : this.restaurant;
-    if (next === this.zone) return;
+    if (next === this.zone || this.wiping) return;
     this.zone.cancelPlace?.();
     this.hud.hidePlaceBar();
-    this.zone = next;
-    this.pointer.camera = next.cam;
     this.hud.setZone(name);
     this.sfx.play('whoosh');
-    if (this.hud.isSheetOpen && this.hud.sheetOpen === 'build') this.panels.openBuild(true);
+    this.wiping = true;
+    this.tweens.to(this.wipe, { v: 1 }, 0.15, {
+      ease: 'outQuad',
+      onDone: () => {
+        this.zone = next;
+        this.pointer.camera = next.cam;
+        if (this.hud.isSheetOpen && this.hud.sheetOpen === 'build') this.panels.openBuild(true);
+        this.tweens.to(this.wipe, { v: 0 }, 0.26, {
+          ease: 'outCubic',
+          onDone: () => { this.wiping = false; },
+        });
+      },
+    });
   }
 
   /* ------------------------------------------------------------ placement  */
@@ -230,7 +261,11 @@ export class Game {
     r.startService();
     this.closing = false;
     this.sfx.play('open');
-    this.hud.hint('Doors open! Tap a guest to seat them.', 3.4);
+    this.hud.titleCard(`Day ${this.state.day}`, 'Doors open');
+    // the hint shares the centre of the screen with the card, so let it land after
+    this.tweens.after(2.0, () => {
+      if (this.state.phase === 'open') this.hud.hint('Tap a waiting guest to seat them.', 3.2);
+    });
     this.hud.sync();
   }
 
@@ -250,7 +285,7 @@ export class Game {
     this.state.nextDay();
     this.closing = false;
     this.hud.sync();
-    this.hud.toast(`Day ${this.state.day} — morning delivery arrived`, 'good');
+    this.hud.titleCard(`Day ${this.state.day}`, 'Morning delivery arrived');
     this.sfx.play('ding');
   }
 
@@ -345,20 +380,27 @@ export class Game {
     zone.fx.draw(ctx);
     zone.drawOverlays(ctx, t);
 
+    ctx.setTransform(this.dpr, 0, 0, this.dpr, 0, 0);
+    if (this.wipe.v > 0.002) {
+      ctx.globalAlpha = this.wipe.v;
+      ctx.fillStyle = '#e6d7b8';
+      ctx.fillRect(0, 0, this.view.w, this.view.h);
+      ctx.globalAlpha = 1;
+    }
     ctx.setTransform(1, 0, 0, 1, 0, 0);
   }
 
-  /** Warm paper backdrop with a few drifting bubbles. */
+  /**
+   * Warm paper backdrop with a few drifting bubbles. The gradient only depends
+   * on viewport size, so it is baked once — rebuilding and filling it per frame
+   * cost more than everything else in the scene put together.
+   */
   #backdrop(ctx) {
     const { w, h } = this.view;
     const d = this.dpr;
     ctx.setTransform(d, 0, 0, d, 0, 0);
-    const g = ctx.createRadialGradient(w * 0.5, h * 0.22, 40, w * 0.5, h * 0.3, Math.max(w, h) * 0.9);
-    g.addColorStop(0, '#fdf6e6');
-    g.addColorStop(0.55, '#ecdfc4');
-    g.addColorStop(1, '#d9c8a6');
-    ctx.fillStyle = g;
-    ctx.fillRect(0, 0, w, h);
+    if (!this.bg || this.bg.w !== w || this.bg.h !== h) this.#bakeBackdrop(w, h);
+    ctx.drawImage(this.bg.cv, 0, 0, this.bg.cv.width, this.bg.cv.height, 0, 0, w, h);
 
     ctx.save();
     ctx.globalAlpha = 0.4;

@@ -14,14 +14,16 @@ import {
   machineInterval, machineUpgradeCost,
 } from '../data/catalog.js';
 import {
-  INK, contactShadow, drawIcon, drawSprite, ring, roundRectPath, sticker, text,
+  INK, contactShadow, drawIcon, drawSprite, ring, squash, sticker, text,
 } from '../gfx/paint.js';
 
 export const MACHINE_SCALE = 0.72;
 const BELT_SPEED = 1.05;        // tiles per second
 const ITEM_GAP = 0.36;          // minimum spacing between items on a belt
 const ITEM_SIZE = 38;
-const BELT_LIFT = 15;
+const BELT_LIFT = 13;           // how high items ride above the deck
+const BELT_HALF = 0.34;         // deck half-width, in tiles
+const BELT_RISE = 10;           // slab thickness, px
 
 /** Direction index -> tile step. */
 export const DIRS = [
@@ -33,6 +35,21 @@ export const DIR_NAMES = ['↘', '↙', '↖', '↗'];
 function dirVec(d) {
   const { dc, dr } = DIRS[d];
   return { x: (dc - dr) * HALF_W, y: (dc + dr) * HALF_H };
+}
+
+/** One tile step along each grid axis, in screen pixels. */
+const STEP_C = { x: HALF_W, y: HALF_H };
+const STEP_R = { x: -HALF_W, y: HALF_H };
+const neg = (v) => ({ x: -v.x, y: -v.y });
+
+/**
+ * Along- and across-belt axes for a direction, both in screen pixels. Building
+ * belt corners from these keeps every edge parallel to the grid.
+ */
+function beltAxes(d) {
+  const along = [STEP_C, STEP_R, neg(STEP_C), neg(STEP_R)][d];
+  const across = (d === 0 || d === 2) ? STEP_R : STEP_C;
+  return { along, across };
 }
 
 export class Factory {
@@ -116,7 +133,7 @@ export class Factory {
 
     const rec = {
       c, r, kind: g.kind, id: g.id ?? g.kind, dir, level: 1, t: 0, buf: 0,
-      items: [], uid: uid('m'), sq: { value: 0.45, vel: 0 }, shake: 0,
+      items: [], uid: uid('m'), sq: { value: 0.84, vel: 0 }, shake: 0,
     };
     if (g.kind === 'machine') rec.def = MACHINE_BY_ID[g.id];
     this.state.machines.push(rec);
@@ -184,7 +201,7 @@ export class Factory {
     const cost = machineUpgradeCost(m.def, m.level);
     if (!this.state.spend(cost)) return false;
     m.level += 1;
-    m.sq = { value: 0.55, vel: 0 };
+    m.sq = { value: 0.86, vel: 0 };
     const s = toScreen(m.c, m.r);
     this.fx.stars(s.x, s.y - 60, 7);
     this.sfx.play('star');
@@ -220,7 +237,7 @@ export class Factory {
     this.fx.sparkles(s.x, s.y - 40, 4, 14);
     this.fx.pop(s.x, s.y - 66, `+1`, { color: '#4d7a34', stroke: '#fff8e6', size: 15, rise: 34, max: 0.6 });
     silo.sq = silo.sq ?? { value: 1, vel: 0 };
-    silo.sq.vel -= 5;
+    silo.sq.vel -= 2.2;
     if (this.game.zone === this) this.sfx.play('belt');
   }
 
@@ -235,7 +252,7 @@ export class Factory {
     if (this.ghost) this.ghost.t += dt;
 
     for (const m of this.grid.values()) {
-      if (m.sq) spring(m.sq, 1, dt, 210, 18);
+      if (m.sq) spring(m.sq, 1, dt, 170, 16);
       if (m.shake > 0) m.shake = Math.max(0, m.shake - dt);
     }
 
@@ -292,8 +309,8 @@ export class Factory {
   #emit(m, target) {
     this.#handOff(target, m.def.out);
     m.sq = m.sq ?? { value: 1, vel: 0 };
-    m.sq.vel -= 5;
-    m.shake = 0.2;
+    m.sq.vel -= 2.2;
+    m.shake = 0.14;
     const s = toScreen(m.c, m.r);
     const sprite = this.assets.get('ingredients', m.def.out);
     const d = DIRS[m.dir];
@@ -408,45 +425,98 @@ export class Factory {
     }
   }
 
+  /**
+   * A belt tile as a squared-off isometric slab.
+   *
+   * Corners are built from the tile basis rather than a rotated rounded rect, so
+   * every edge runs along the grid and consecutive belts share their edges
+   * exactly — a straight run reads as one continuous track instead of a string
+   * of lozenges. Rollers only appear where the track actually starts or stops.
+   */
   #belt(ctx, m) {
     const s = toScreen(m.c, m.r);
-    const v = dirVec(m.dir);
-    const len = Math.hypot(v.x, v.y);
-    const ang = Math.atan2(v.y, v.x);
-    const w = 46;
-
-    ctx.save();
-    ctx.translate(s.x, s.y);
-    ctx.rotate(ang);
-    // frame
-    roundRectPath(ctx, -len / 2 - 4, -w / 2, len + 8, w, 12);
-    ctx.fillStyle = '#3f6f6a'; ctx.fill();
-    ctx.strokeStyle = INK; ctx.lineWidth = 2.6; ctx.stroke();
-    // running surface
-    roundRectPath(ctx, -len / 2 - 1, -w / 2 + 6, len + 2, w - 12, 7);
-    ctx.fillStyle = '#5a908a'; ctx.fill();
-    // scrolling chevrons
-    ctx.save();
-    roundRectPath(ctx, -len / 2 - 1, -w / 2 + 6, len + 2, w - 12, 7);
-    ctx.clip();
-    const scroll = (this.game.time * BELT_SPEED * this.state.factorySpeed * len) % 26;
-    ctx.strokeStyle = 'rgba(233,244,236,0.7)';
-    ctx.lineWidth = 4;
-    ctx.lineCap = 'round';
-    for (let x = -len / 2 - 26 + scroll; x < len / 2 + 26; x += 26) {
+    const { along, across } = beltAxes(m.dir);
+    // (a, c) are tile-space: a runs along the belt, c across it
+    const P = (a, c, dy = 0) => ({
+      x: s.x + along.x * a + across.x * c,
+      y: s.y + along.y * a + across.y * c + dy,
+    });
+    const fill = (pts, color) => {
       ctx.beginPath();
-      ctx.moveTo(x - 6, -8); ctx.lineTo(x + 4, 0); ctx.lineTo(x - 6, 8);
+      pts.forEach((q, i) => (i ? ctx.lineTo(q.x, q.y) : ctx.moveTo(q.x, q.y)));
+      ctx.closePath();
+      ctx.fillStyle = color;
+      ctx.fill();
+    };
+    const line = (...pts) => {
+      ctx.beginPath();
+      pts.forEach((q, i) => (i ? ctx.lineTo(q.x, q.y) : ctx.moveTo(q.x, q.y)));
       ctx.stroke();
-    }
-    ctx.restore();
-    // rollers
-    ctx.fillStyle = '#e0b268';
-    for (const e of [-len / 2 - 1, len / 2 + 1]) {
-      roundRectPath(ctx, e - 3.5, -w / 2 + 3, 7, w - 6, 3.5);
-      ctx.fill(); ctx.strokeStyle = INK; ctx.lineWidth = 2; ctx.stroke();
+    };
+
+    const H = BELT_HALF;
+    const step = DIRS[m.dir];
+    const feeder = this.at(m.c - step.dc, m.r - step.dr);
+    // an end is "open" unless another belt continues the run through it, and
+    // only open ends get an outline or a roller — otherwise every tile boundary
+    // draws a seam and a straight run looks like a chain of separate pieces
+    const openIn = !(feeder?.kind === 'belt' && this.outTile(feeder) === m);
+    const openOut = this.outTile(m)?.kind !== 'belt';
+
+    ctx.save();
+    ctx.lineJoin = 'miter';
+    ctx.miterLimit = 4;
+    ctx.lineCap = 'butt';
+    ctx.strokeStyle = INK;
+    ctx.lineWidth = 2.4;
+
+    // front skirt gives the slab its thickness; +c is the camera-facing edge
+    const fl = P(-0.5, H), fr = P(0.5, H);
+    fill([fl, fr, { x: fr.x, y: fr.y + BELT_RISE }, { x: fl.x, y: fl.y + BELT_RISE }], '#2c5450');
+    fill([P(-0.5, -H), P(0.5, -H), fr, fl], '#3a6a65');
+
+    // running surface: inset across the belt only, full length along it
+    const inset = H * 0.64;
+    fill([P(-0.5, -inset), P(0.5, -inset), P(0.5, inset), P(-0.5, inset)], '#5f978f');
+
+    // scrolling arrows, stretched well along the run so they read as chevrons
+    // and not right angles under the isometric skew
+    ctx.save();
+    ctx.beginPath();
+    [P(-0.5, -inset), P(0.5, -inset), P(0.5, inset), P(-0.5, inset)]
+      .forEach((q, i) => (i ? ctx.lineTo(q.x, q.y) : ctx.moveTo(q.x, q.y)));
+    ctx.closePath();
+    ctx.clip();
+    const period = 0.6;
+    const scroll = (this.game.time * BELT_SPEED * this.state.factorySpeed) % period;
+    ctx.strokeStyle = 'rgba(240,250,242,0.82)';
+    ctx.lineWidth = 4.5;
+    for (let a = -0.5 - period + scroll; a < 0.5 + period; a += period) {
+      const spread = inset * 0.72;
+      line(P(a - 0.2, -spread), P(a + 0.12, 0), P(a - 0.2, spread));
     }
     ctx.restore();
 
+    // outline: long rails always, cross edges only where the run stops
+    ctx.strokeStyle = INK;
+    ctx.lineWidth = 2.4;
+    line(P(-0.5, -H), P(0.5, -H));
+    line(fl, fr);
+    line({ x: fl.x, y: fl.y + BELT_RISE }, { x: fr.x, y: fr.y + BELT_RISE });
+    for (const [open, a] of [[openIn, -0.5], [openOut, 0.5]]) {
+      if (!open) continue;
+      const e = P(a, H);
+      line(P(a, -H), e);
+      line(e, { x: e.x, y: e.y + BELT_RISE });
+      const roller = a < 0 ? -0.45 : 0.45;
+      fill([P(roller - 0.05, -H), P(roller + 0.05, -H), P(roller + 0.05, H), P(roller - 0.05, H)], '#e0b268');
+      line(P(roller - 0.05, -H), P(roller - 0.05, H));
+      line(P(roller + 0.05, -H), P(roller + 0.05, H));
+    }
+    // the back corner post only shows where the run starts
+    if (openIn) line(P(-0.5, -H), P(-0.5, H));
+
+    ctx.restore();
   }
 
   collect(ctx, list, t) {
@@ -462,7 +532,7 @@ export class Factory {
           list.push({
             d: depthOf(m.c, m.r, 30 + it.p * 8),
             fn: () => {
-              contactShadow(ctx, x, y + BELT_LIFT - 2, 13, 0, 0.2);
+              contactShadow(ctx, x, y + BELT_LIFT - 3, 11, 0, 0.13);
               drawIcon(ctx, sprite, x, y + Math.sin(t * 6 + it.bob) * 1.6, ITEM_SIZE);
             },
           });
@@ -477,9 +547,9 @@ export class Factory {
         list.push({
           d: depthOf(m.c, m.r),
           fn: () => {
-            contactShadow(ctx, s.x, s.y + HALF_H * 0.34, 40, 0, 0.2);
+            const { sx, sy } = squash(sq);
             drawSprite(ctx, sprite, 0, s.x, s.y + HALF_H * 0.42, {
-              scale: MACHINE_SCALE, scaleY: sq, scaleX: 2 - sq,
+              scale: MACHINE_SCALE, scaleX: sx, scaleY: sy,
               glow: isSel ? '#f8d167' : null, glowWidth: 3.5,
             });
           },
@@ -496,9 +566,9 @@ export class Factory {
       list.push({
         d: depthOf(m.c, m.r),
         fn: () => {
-          contactShadow(ctx, s.x, s.y + HALF_H * 0.34, 44, 0, 0.22);
+          const { sx, sy } = squash(sq);
           drawSprite(ctx, sprite, 0, s.x + jitter, s.y + HALF_H * 0.42 + hum, {
-            scale: MACHINE_SCALE, scaleY: sq, scaleX: 2 - sq,
+            scale: MACHINE_SCALE, scaleX: sx, scaleY: sy,
             glow: isSel ? '#f8d167' : null, glowWidth: 3.5,
           });
         },

@@ -9,7 +9,7 @@ import { spring } from '../core/tween.js';
 import { CS, Customer, rollGuest } from './customer.js';
 import { clamp, money, neighbours, range, rnd, tileDist, uid } from '../core/util.js';
 import { FURNITURE_BY_ID, STYLE_BY_ID } from '../data/catalog.js';
-import { contactShadow, drawIcon, drawSprite, sticker, text } from '../gfx/paint.js';
+import { drawIcon, drawSprite, squash, sticker, text } from '../gfx/paint.js';
 
 export const FURN_SCALE = 0.66;
 const HANGING = new Set(['pendant_lamp', 'wall_clock', 'coral_sconce']);
@@ -69,6 +69,8 @@ export class Restaurant {
     for (const f of this.state.furniture) {
       f.item = FURNITURE_BY_ID[f.id];
       if (!f.item) continue;
+      f.seatSprite = null;   // re-derived below for chairs that have a table
+      f.nudge = null;
       f.style = f.style ?? 'standard';
       f.uid ??= uid('f');
       f.sq ??= { value: 1, vel: 0 };
@@ -95,9 +97,36 @@ export class Restaurant {
       };
       this.seats.push(seat);
       table?.seats.push(seat);
+      this.#orientSeat(seat);
     }
     this.kitchen.setPasses(this.passes.map((p) => ({ c: p.c, r: p.r })));
     this.kitchen.relayout();
+  }
+
+  /**
+   * Turn a chair to face its table and shuffle it clear of the tabletop.
+   *
+   * The art only has two chair angles — `chair_a` faces screen-right, `chair_b`
+   * faces screen-left — so orientation is picked on the horizontal direction to
+   * the table, which is the axis the eye actually reads. Neighbouring tiles are
+   * only half a sprite width apart in x, so without the nudge a chair looks like
+   * it is standing inside the table.
+   */
+  #orientSeat(seat) {
+    const f = seat.f;
+    f.seatSprite = null;
+    f.nudge = null;
+    if (!seat.table) return;
+
+    const chair = toScreen(seat.c, seat.r);
+    const table = toScreen(seat.table.c, seat.table.r);
+    if (f.id === 'chair_a' || f.id === 'chair_b') {
+      f.seatSprite = table.x > chair.x ? 'chair_a' : 'chair_b';
+      f.flip = false;
+    }
+    const dx = chair.x - table.x, dy = chair.y - table.y;
+    const len = Math.hypot(dx, dy) || 1;
+    f.nudge = { x: (dx / len) * 11, y: (dy / len) * 11 };
   }
 
   get seatCount() { return this.seats.filter((s) => s.table).length; }
@@ -145,7 +174,7 @@ export class Restaurant {
     const cost = Math.round(g.item.cost * (STYLE_BY_ID[g.style]?.costMul ?? 1));
     if (!this.state.spend(cost)) return 0;
 
-    const rec = { c: g.c, r: g.r, id: g.id, style: g.style, flip: g.flip, uid: uid('f'), sq: { value: 0.4, vel: 0 } };
+    const rec = { c: g.c, r: g.r, id: g.id, style: g.style, flip: g.flip, uid: uid('f'), sq: { value: 0.82, vel: 0 } };
     this.state.furniture.push(rec);
     this.rebuild();
 
@@ -183,7 +212,7 @@ export class Restaurant {
     const diff = Math.max(0, Math.round(rec.item.cost * (to - from)));
     if (!this.state.spend(diff)) return false;
     rec.style = styleId;
-    rec.sq = { value: 0.55, vel: 0 };
+    rec.sq = { value: 0.86, vel: 0 };
     this.rebuild();
     const s = toScreen(rec.c, rec.r);
     this.fx.stars(s.x, s.y - 40, 8);
@@ -295,7 +324,7 @@ export class Restaurant {
       case CS.WALK: {
         guest.seated = true;
         guest.setState(CS.SEAT);
-        guest.sq.vel -= 7;
+        guest.sq.vel -= 3;
         const t = guest.table;
         if (t) {
           const dx = toScreen(t.c, t.r).x - guest.pos.x;
@@ -331,7 +360,7 @@ export class Restaurant {
     this.state.stock[chosen.id] -= 1;
     if (this.state.stock[chosen.id] <= 0) delete this.state.stock[chosen.id];
     guest.setState(CS.ORDER);
-    guest.sq.vel -= 4;
+    guest.sq.vel -= 2;
   }
 
   /** Player tapped the order bubble — the ticket goes to the chef. */
@@ -355,7 +384,7 @@ export class Restaurant {
     guest.bites = 0;
     guest.biteT = 0;
     guest.setState(CS.EAT);
-    guest.sq.vel -= 9;
+    guest.sq.vel -= 3.5;
     this.fx.sparkles(guest.pos.x, guest.headY + 12, 7, 20);
     this.fx.hearts(guest.pos.x, guest.headY - 6, 2);
     this.sfx.play('slurp');
@@ -440,7 +469,7 @@ export class Restaurant {
     this.room.pulse = t;
     if (this.ghost) this.ghost.t += dt;
 
-    for (const f of this.grid.values()) if (f.sq) spring(f.sq, 1, dt, 210, 18);
+    for (const f of this.grid.values()) if (f.sq) spring(f.sq, 1, dt, 170, 16);
     for (const s of this.seats) if (s.dirty > 0) s.dirty = Math.max(0, s.dirty - dt);
 
     this.kitchen.update(dt);
@@ -612,20 +641,21 @@ export class Restaurant {
   collect(ctx, list, t) {
     for (const f of this.grid.values()) {
       if (FLAT.has(f.id)) continue;
-      const s = this.assets.get(this.styleGroup(f), f.id);
+      const s = this.assets.get(this.styleGroup(f), f.seatSprite ?? f.id);
       if (!s) continue;
       const p = toScreen(f.c, f.r);
       const hang = HANGING.has(f.id);
-      const y = hang ? p.y - 132 : p.y + HALF_H * 0.36;
-      const sq = f.sq?.value ?? 1;
+      // chairs get nudged clear of the table they belong to
+      const nx = p.x + (f.nudge?.x ?? 0);
+      const y = (hang ? p.y - 132 : p.y + HALF_H * 0.36) + (f.nudge?.y ?? 0);
+      const { sx, sy } = squash(f.sq?.value ?? 1);
       const isSel = this.selection === f;
       list.push({
         d: depthOf(f.c, f.r, hang ? 40 : 0),
         fn: () => {
-          if (!hang) contactShadow(ctx, p.x, p.y + HALF_H * 0.34, s.fw * FURN_SCALE * 0.34, 0, 0.2);
-          drawSprite(ctx, s, 0, p.x, y, {
+          drawSprite(ctx, s, 0, nx, y, {
             scale: FURN_SCALE,
-            scaleY: sq, scaleX: 2 - sq,
+            scaleX: sx, scaleY: sy,
             flipX: !!f.flip,
             glow: isSel ? '#f8d167' : null,
             glowWidth: 3.5,
@@ -661,7 +691,7 @@ export class Restaurant {
     const g = this.ghost;
     if (!g || g.c === null) return;
     Room.markTile(ctx, g.c, g.r, g.ok ? 'ok' : 'bad', t);
-    const s = this.assets.get(STYLE_BY_ID[g.style]?.group ?? 'furniture', g.id);
+    const s = this.assets.get(STYLE_BY_ID[g.style]?.group ?? 'furniture', this.#ghostSprite(g));
     if (!s) return;
     const p = toScreen(g.c, g.r);
     const hang = HANGING.has(g.id);
@@ -676,6 +706,14 @@ export class Restaurant {
     });
     ctx.restore();
     Room.outlineTile(ctx, g.c, g.r, g.ok ? 'ok' : 'bad', t);
+  }
+
+  /** Preview a chair already facing whichever table it would join. */
+  #ghostSprite(g) {
+    if (g.id !== 'chair_a' && g.id !== 'chair_b') return g.id;
+    const table = this.tables.find((tb) => neighbours(tb).some((n) => n.c === g.c && n.r === g.r));
+    if (!table) return g.id;
+    return toScreen(table.c, table.r).x > toScreen(g.c, g.r).x ? 'chair_a' : 'chair_b';
   }
 
   /** Floor-level marks: a soft glow under seats a waiting guest could take. */

@@ -30,6 +30,9 @@ export class Hud {
       sheetBody: $('#sheet-body'),
       sheetFoot: $('#sheet-foot'),
       sound: $('#btn-sound'),
+      card: $('#titlecard'),
+      cardMain: $('#titlecard-main'),
+      cardSub: $('#titlecard-sub'),
     };
     this.hintTimer = 0;
     this.sheetOpen = null;
@@ -117,6 +120,20 @@ export class Hud {
       [{ transform: 'scale(1) rotate(0deg)' }, { transform: 'scale(1.18) rotate(-6deg)' }, { transform: 'scale(1)' }],
       { duration: 320, easing: 'cubic-bezier(.2,1.6,.4,1)' },
     );
+  }
+
+  /** Sweep a big label across the middle of the screen, then clear it. */
+  titleCard(main, sub = '') {
+    const el = this.el.card;
+    this.el.cardMain.textContent = main;
+    this.el.cardSub.textContent = sub;
+    show(el, true);
+    // restart the CSS animation even if the card is already showing
+    el.style.animation = 'none';
+    void el.offsetWidth;
+    el.style.animation = '';
+    clearTimeout(this.cardTimer);
+    this.cardTimer = setTimeout(() => show(el, false), 1900);
   }
 
   /* ----------------------------------------------------------------- toasts */

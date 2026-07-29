@@ -39,13 +39,49 @@ export function ellipse(ctx, x, y, rx, ry, fill) {
   ctx.fill();
 }
 
-/** Soft contact shadow. `lift` (0..1) fades and shrinks it as things hop. */
-export function contactShadow(ctx, x, y, rx, lift = 0, alpha = 0.22) {
-  const k = 1 - clamp(lift, 0, 1) * 0.55;
+/**
+ * Soft contact shadow, sat directly under the feet. Deliberately small and
+ * faint — a hard dark ellipse reads as a separate object floating on the floor.
+ * `lift` (0..1) fades and shrinks it through a hop.
+ */
+export function contactShadow(ctx, x, y, rx, lift = 0, alpha = 0.15) {
+  const l = clamp(lift, 0, 1);
+  const a = alpha * (1 - l * 0.6);
+  const r = Math.max(1, rx * (1 - l * 0.3));
+  if (a <= 0.004) return;
+  const stamp = shadowStamp();
   ctx.save();
-  ctx.globalAlpha = alpha * (1 - clamp(lift, 0, 1) * 0.5);
-  ellipse(ctx, x, y, rx * k, rx * k * 0.42, '#5a4326');
+  ctx.globalAlpha = a;
+  ctx.drawImage(stamp, x - r, y - r * 0.38, r * 2, r * 0.76);
   ctx.restore();
+}
+
+// One pre-rendered soft blob, stretched per use — building a radial gradient per
+// shadow per frame measurably costs frames once a room is busy.
+let SHADOW = null;
+function shadowStamp() {
+  if (SHADOW) return SHADOW;
+  const size = 96;
+  SHADOW = document.createElement('canvas');
+  SHADOW.width = SHADOW.height = size;
+  const c = SHADOW.getContext('2d');
+  const g = c.createRadialGradient(size / 2, size / 2, 0, size / 2, size / 2, size / 2);
+  g.addColorStop(0, 'rgba(94,76,50,1)');
+  g.addColorStop(0.55, 'rgba(94,76,50,0.5)');
+  g.addColorStop(1, 'rgba(94,76,50,0)');
+  c.fillStyle = g;
+  c.fillRect(0, 0, size, size);
+  return SHADOW;
+}
+
+/**
+ * Volume-preserving squash from one spring value: what gets shorter gets wider
+ * by the same factor. Clamped, because unbounded springs are what make a sprite
+ * look like it is changing size rather than squashing.
+ */
+export function squash(v, limit = 0.13) {
+  const sy = clamp(v, 1 - limit, 1 + limit);
+  return { sx: 1 / sy, sy };
 }
 
 export function starPath(ctx, x, y, outer, inner = outer * 0.46, points = 5, rot = -Math.PI / 2) {
