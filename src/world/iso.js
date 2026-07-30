@@ -7,9 +7,6 @@ export const TILE_H = 64;
 export const HALF_W = TILE_W / 2;
 export const HALF_H = TILE_H / 2;
 
-/** How large furniture and joinery sprites draw against the tile grid. */
-export const FURN_SCALE = 0.66;
-
 /** Tile (column, row) -> world pixels. Tile centres, not corners. */
 export function toScreen(c, r) {
   return { x: (c - r) * HALF_W, y: (c + r) * HALF_H };

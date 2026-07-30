@@ -77,9 +77,7 @@ index:
 - `art_pack_02/` — the dining room: furniture in three finishes, wall joinery
   (doors, windows, counters) in two woods, and three more guests. Every piece of
   furniture ships a left- and a right-facing drawing, so a chair genuinely turns
-  to face its table instead of being mirrored. There is no back view, though, so
-  a chair only becomes a seat on the five sides of a table one of those two
-  drawings can honestly face — the build cursor glows on them.
+  to face its table instead of being mirrored.
 
 ```sh
 pip install pillow numpy scipy
@@ -97,8 +95,6 @@ Rooms are **generated** — checkerboard floor, scalloped border, sheared walls
 with cornice and baseboard — because the original painted room plates are
 hand-drawn and their floors don't sit on a consistent lattice, so build tiles
 could never line up with them. The doors and windows set into those walls are
-real sprites from the fixture sheets, sheared onto the wall's own 2:1 basis —
-they are drawn as flat elevations, so pasted upright they float at the wrong
-angle. The joinery changes wood along with whatever finish the dining room
-mostly uses. The whole room is rasterised once into an offscreen canvas and
-blitted per frame.
+real sprites from the fixture sheets, so the joinery changes wood along with
+whatever finish the dining room mostly uses. The whole room is rasterised once
+into an offscreen canvas and blitted per frame.

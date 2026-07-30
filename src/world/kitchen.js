@@ -1,16 +1,14 @@
 // The pass: order tickets, the chef working through them, and finished plates
 // waiting to be carried out.
 
-import { FURN_SCALE, HALF_H, toScreen } from './iso.js';
-import { clamp, rnd, uid } from '../core/util.js';
+import { HALF_H, toScreen } from './iso.js';
+import { rnd, uid } from '../core/util.js';
 import { makeSpring, spring } from '../core/tween.js';
-import { drawIcon, drawSprite, ring, squash, sticker, text } from '../gfx/paint.js';
+import { contactShadow, drawIcon, drawSprite, ring, squash, sticker, text } from '../gfx/paint.js';
 import { CHEF_SPRITE } from '../data/catalog.js';
 
 const PLATE_SIZE = 58;
 const PLATES_PER_PASS = 3;
-const CHEF_SCALE = 0.74;
-const CLEAR_H = 40;     // how much of the chef shows above the counter's top edge
 
 export class Kitchen {
   constructor(zone) {
@@ -38,42 +36,17 @@ export class Kitchen {
   get chefTile() {
     const p = this.passes[0];
     if (!p) return null;
-    // straight up-screen first, so he stands centred behind the counter rather
-    // than half beside it
-    const cands = [
-      { c: p.c - 1, r: p.r - 1 }, { c: p.c, r: p.r - 1 },
-      { c: p.c - 1, r: p.r }, { c: p.c, r: p.r + 1 },
-    ];
-    for (const t of cands) {
+    for (const t of [{ c: p.c, r: p.r - 1 }, { c: p.c - 1, r: p.r }, { c: p.c, r: p.r + 1 }]) {
       if (this.zone.room.inside(t.c, t.r) && !this.zone.grid.has(`${t.c},${t.r}`)) return t;
     }
     return { c: p.c, r: p.r };
-  }
-
-  /**
-   * How far to stand the chef up off his tile. The pass is a tall piece of
-   * joinery with a shelf over it, so a chef planted on the floor behind it is a
-   * couple of tentacles and nothing else. Lifting him by whatever the counter
-   * covers puts his head and apron back above the worktop, which is where you
-   * expect to see a cook.
-   */
-  get chefLift() {
-    const pass = this.passes[0] && this.zone.at(this.passes[0].c, this.passes[0].r);
-    const sprite = pass && this.zone.spriteFor(pass);
-    if (!sprite || !this.chef) return 0;
-    const passH = sprite.rect(0).sh * FURN_SCALE;
-    const chefH = this.chef.rect(0).sh * CHEF_SCALE;
-    const t = this.chefTile;
-    const drop = (toScreen(t.c, t.r).y - toScreen(this.passes[0].c, this.passes[0].r).y);
-    // land the top of his head CLEAR_H above the counter's top edge
-    return clamp(drop - chefH + passH + CLEAR_H, 0, 130);
   }
 
   get chefPos() {
     const t = this.chefTile;
     if (!t) return null;
     const s = toScreen(t.c, t.r);
-    return { x: s.x, y: s.y + HALF_H * 0.3 - this.chefLift };
+    return { x: s.x, y: s.y };
   }
 
   /* -------------------------------------------------------------- tickets */
@@ -212,10 +185,9 @@ export class Kitchen {
     const cooking = this.cooking.length > 0;
     const bob = Math.sin(this.bobT * 2.4) * (cooking ? 3.5 : 2);
     const { sx, sy } = squash(this.chefSq.value);
-    // no contact shadow: standing him up behind the counter means his feet are
-    // not on the tile under him, and a shadow there just draws attention to it
-    drawSprite(ctx, this.chef, cooking ? 'work' : 'idle', p.x, p.y + bob, {
-      scale: CHEF_SCALE,
+    contactShadow(ctx, p.x, p.y + HALF_H * 0.3, 22, 0, 0.14);
+    drawSprite(ctx, this.chef, cooking ? 'work' : 'idle', p.x, p.y + HALF_H * 0.3 + bob, {
+      scale: 0.74,
       scaleX: sx, scaleY: sy,
       rot: cooking ? Math.sin(this.bobT * 7) * 0.03 : 0,
       flipX: true,

@@ -40,7 +40,7 @@ export const FURNITURE = [
     label: 'Round Table', cost: 175, star: 2, tip: 1.1, blurb: 'Cosier, and guests tip a little more.' },
 
   { id: 'chair',    kind: 'seat', set: 'furn', sprite: { l: 'chair_l', r: 'chair_r' },
-    label: 'Dining Chair', cost: 50, star: 1, blurb: 'Drop it on a glowing spot by a table to make a seat.' },
+    label: 'Dining Chair', cost: 50, star: 1, blurb: 'Place beside a table to make a seat.' },
   { id: 'armchair', kind: 'seat', set: 'furn', sprite: { l: 'armchair_l', r: 'armchair_r' },
     label: 'Armchair', cost: 120, star: 2, patience: 1.3, blurb: 'Deep and soft — guests wait far longer.' },
 
