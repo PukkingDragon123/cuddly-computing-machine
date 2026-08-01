@@ -201,7 +201,9 @@ def slice_fixtures(manifest):
                 print(f'  ! {group}/{name}: nothing near ({tx},{ty})')
                 continue
             cap = MAX_H['fixture'] if name in ('pass_counter', 'host_desk') else MAX_H['wall']
-            sprite = cut(img, lbl, alpha, [near['id']], cap)
+            # joinery is set into a pale plaster wall, where the leftover chroma
+            # fringe reads as a pink outline, so it gets the aggressive despill
+            sprite = despill_hard(cut(img, lbl, alpha, [near['id']], cap))
             rel = f'{group}/{name}.png'
             sprite.save(os.path.join(OUT, rel))
             entries.append({'id': name, 'src': rel, 'w': sprite.width, 'h': sprite.height})

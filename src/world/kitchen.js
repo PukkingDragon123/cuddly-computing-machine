@@ -9,6 +9,7 @@ import { CHEF_SPRITE } from '../data/catalog.js';
 
 const PLATE_SIZE = 58;
 const PLATES_PER_PASS = 3;
+const PLATE_SHELF = 104;   // height of the counter's worktop above its tile
 
 export class Kitchen {
   constructor(zone) {
@@ -32,11 +33,22 @@ export class Kitchen {
   get capacity() { return Math.max(1, this.passes.length) * PLATES_PER_PASS; }
   get full() { return this.plates.length >= this.capacity; }
 
-  /** Tile the chef works from — the one behind the first pass, if there is one. */
+  /**
+   * Tile the chef works from. He stands on the near side of the pass, in front
+   * of it — the counter is a tall piece with a shelf over it, and anyone put
+   * behind it is a couple of tentacles poking out of the top. Straight in front
+   * first, then either shoulder.
+   */
   get chefTile() {
     const p = this.passes[0];
     if (!p) return null;
-    for (const t of [{ c: p.c, r: p.r - 1 }, { c: p.c - 1, r: p.r }, { c: p.c, r: p.r + 1 }]) {
+    const cands = [
+      { c: p.c + 1, r: p.r + 1 },   // dead centre, in front of the counter
+      { c: p.c + 1, r: p.r },       // in front, off his left
+      { c: p.c, r: p.r + 1 },       // in front, off his right
+      { c: p.c - 1, r: p.r - 1 },   // nothing free out front — tuck in behind
+    ];
+    for (const t of cands) {
       if (this.zone.room.inside(t.c, t.r) && !this.zone.grid.has(`${t.c},${t.r}`)) return t;
     }
     return { c: p.c, r: p.r };
@@ -143,9 +155,10 @@ export class Kitchen {
     const pass = this.passes[Math.floor(slot / PLATES_PER_PASS) % passCount] ?? this.passes[0];
     if (!pass) return { x: 0, y: 0 };
     const s = toScreen(pass.c, pass.r);
-    // fill centre-out so a lone plate sits in the middle of the counter
-    const offset = [0, -36, 36][slot % PLATES_PER_PASS];
-    return { x: s.x + offset, y: s.y - 58 + (offset === 0 ? -4 : 0) };
+    // fill centre-out so a lone plate sits in the middle of the counter, and sit
+    // the row up on the worktop, clear of the chef standing in front
+    const offset = [0, -40, 40][slot % PLATES_PER_PASS];
+    return { x: s.x + offset, y: s.y - PLATE_SHELF + (offset === 0 ? -4 : 0) };
   }
 
   /** Re-seat plates after the pass moves or a plate leaves. */
@@ -178,7 +191,7 @@ export class Kitchen {
 
   /* ----------------------------------------------------------------- draw */
 
-  /** The chef, drawn behind the counter sprite. */
+  /** The chef, out front of the pass where you can actually see him. */
   drawChef(ctx) {
     const p = this.chefPos;
     if (!p || !this.chef) return;

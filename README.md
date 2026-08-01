@@ -32,6 +32,7 @@ up to four hours of catch-up.
 | **Factory** | Place a machine, drag a conveyor away from it, and end the line at a Pantry Intake. Refiners sit mid-line and turn cheap goods into valuable ones. |
 | **Menu Book** | Set how many of each dish to plate up. Ingredients leave the pantry immediately, so only plate what you can sell. Dishes level up with sand dollars plus more of their signature ingredient. |
 | **Open up** | Guests wander in and wait by the door. Tap one to seat them at a free chair, or tap an empty seat to pull in whoever has been waiting longest. |
+| **Seating** | Chairs only become seats on the spots that glow around a table — the ones a chair can actually turn to face. |
 | **Orders** | Tap the `!` bubble over a seated guest to send the ticket to the chef. |
 | **Service** | Drag the finished dish off the kitchen pass onto the guest who ordered it. Tap-then-tap works too. |
 | **Payment** | Guests pay on how briskly they were served. Let a patience meter empty and they walk out, costing reputation. |
@@ -77,7 +78,10 @@ index:
 - `art_pack_02/` — the dining room: furniture in three finishes, wall joinery
   (doors, windows, counters) in two woods, and three more guests. Every piece of
   furniture ships a left- and a right-facing drawing, so a chair genuinely turns
-  to face its table instead of being mirrored.
+  to face its table instead of being mirrored. There is no back view, though —
+  mirroring one facing only produces the other — so a chair becomes a seat on
+  the five sides of a table a real drawing can face, and the build cursor glows
+  on them.
 
 ```sh
 pip install pillow numpy scipy
@@ -95,6 +99,8 @@ Rooms are **generated** — checkerboard floor, scalloped border, sheared walls
 with cornice and baseboard — because the original painted room plates are
 hand-drawn and their floors don't sit on a consistent lattice, so build tiles
 could never line up with them. The doors and windows set into those walls are
-real sprites from the fixture sheets, so the joinery changes wood along with
-whatever finish the dining room mostly uses. The whole room is rasterised once
-into an offscreen canvas and blitted per frame.
+real sprites from the fixture sheets, sheared onto the wall's own 2:1 basis —
+they are drawn as flat elevations, so pasted upright they float at the wrong
+angle. The joinery changes wood along with whatever finish the dining room
+mostly uses. The whole room is rasterised once into an offscreen canvas and
+blitted per frame.

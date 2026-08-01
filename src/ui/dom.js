@@ -44,11 +44,28 @@ export function clear(el) { while (el.firstChild) el.firstChild.remove(); return
 
 export function show(el, on = true) { el.classList.toggle('hidden', !on); }
 
-/** Square art thumbnail backed by a sprite image. */
-export function thumb(src, { wide = false, size = null } = {}) {
-  const el = h('div.thumb', wide ? { class: 'wide' } : null);
-  if (src) el.style.backgroundImage = `url("${src}")`;
-  if (size) el.style.backgroundSize = size;
+/**
+ * Square art well with the sprite standing in it. The sprite goes on a child
+ * rather than the well's own background so the well keeps its lit floor
+ * gradient underneath — cream furniture on a flat cream tile disappears.
+ */
+export function thumb(src, { wide = false, size = null, frames = 1 } = {}) {
+  const el = h(`div.thumb${wide ? '.wide' : ''}`);
+  if (src) {
+    const art = h('i', { style: { backgroundImage: `url("${src}")` } });
+    // Character art is a strip of poses. Blow it up so one frame fills the
+    // well, then slide it so that frame lands centred: background-position
+    // percentages resolve against (box − image), which is negative once the
+    // image is the wider of the two, hence the negative figure.
+    if (frames > 1) {
+      const fill = 0.78;                       // frame width, as a share of the well
+      const x = ((1 - fill) / 2) / (1 - frames * fill) * 100;
+      art.style.backgroundSize = `${frames * fill * 100}% auto`;
+      art.style.backgroundPosition = `${x.toFixed(2)}% 56%`;
+    }
+    if (size) art.style.backgroundSize = size;
+    el.append(art);
+  }
   return el;
 }
 
@@ -59,7 +76,22 @@ export function ingChip(src, label, short = false) {
     label);
 }
 
-export function tag(text, cls = '') { return h(`span.tag${cls ? `.${cls}` : ''}`, null, text); }
+/** Pill of metadata. `ico` names an .ico-* glyph to sit before the label. */
+export function tag(text, cls = '', ico = null) {
+  return h(`span.tag${cls ? `.${cls}` : ''}`, null,
+    ico ? h(`i.ico.ico-${ico}`) : null, text);
+}
+
+/**
+ * Finish picker: the wood itself, not just its name. The bonus is its own
+ * element so a squeezed name ellipses without taking the number with it.
+ */
+export function swatch(label, color, on, onclick, bonus = null) {
+  return h(`button.swatch${on ? '.on' : ''}`, { type: 'button', onclick },
+    h('span.dot', { style: { background: color } }),
+    h('span.lbl', null, label),
+    bonus ? h('span.bonus', null, bonus) : null);
+}
 
 export function stepper(value, { min = 0, max = 99, onChange }) {
   const num = h('span.num', null, String(value));

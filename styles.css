@@ -1,44 +1,65 @@
 /* =====================================================================
-   Bubbleworks Harbor — cosy sticker UI
-   Chunky brown outlines, cream panels, hard bottom shadows. Everything is
-   sized in rem off a viewport-clamped root so one layout serves phone and
+   Bubbleworks Harbor — the sticker UI
+
+   One idea, applied everywhere: every control is a piece of painted wood.
+   Raised things (buttons, cards, chips) have a cream face, a chunky ink
+   outline and a hard shadow directly beneath — no blur, no gradient.
+   Sunken things (tab tracks, meter troughs, art wells) drop the outline and
+   take an inset shadow instead. Keeping those two apart is what stops a
+   screen of rounded rectangles reading as one flat pile.
+
+   Three type sizes, one spacing step, and colour that always means the same
+   thing: sun = money, leaf = go, coral = blocked, mint = a count.
+
+   Sized in rem off a viewport-clamped root so one layout serves phone and
    desktop.
    ===================================================================== */
 
 :root {
   /* paper + panels */
-  --paper: #fbf3e0;
+  --paper: #fdf7e8;
   --panel: #f8ecd4;
-  --panel-2: #f2e2c2;
+  --panel-2: #efdfbe;
   --tan: #e3d0a8;
   --tan-deep: #cbb185;
-  --tan-shadow: #b79a69;
+  --tan-shadow: #ab8a5c;
+
+  /* stained wood, for header bands and rails */
+  --wood: #d9ae76;
+  --wood-deep: #b07f4c;
+  --wood-dark: #8c6038;
 
   /* ink */
-  --ink: #6e4a30;
-  --ink-deep: #543422;
-  --ink-soft: #8a6647;
-  --ink-faint: #b09777;
+  --ink: #5f3d26;
+  --ink-deep: #452c1a;
+  --ink-soft: #7d5a3c;
+  --ink-faint: #a58a68;
 
   /* accents */
   --sun: #f8d167;
-  --sun-deep: #dcab38;
+  --sun-deep: #d4a029;
+  --sun-pale: #fdeec0;
   --tangerine: #e4652f;
   --tangerine-deep: #b8481c;
   --mint: #a9cbb2;
-  --mint-deep: #7fae8d;
-  --coral: #e08464;
+  --mint-deep: #78a888;
+  --coral: #eb9b7c;
   --coral-deep: #bd6144;
-  --sea: #6fb4d8;
-  --sea-deep: #4a8cb0;
+  --coral-pale: #fbdbcd;
   --leaf: #8bbb6a;
-  --leaf-deep: #689447;
+  --leaf-deep: #5f8c40;
+  --leaf-pale: #ddeecc;
 
-  --r-lg: 1.5rem;
-  --r-md: 1.05rem;
-  --r-sm: 0.7rem;
-  --bw: 0.2rem;          /* outline weight */
-  --lift: 0.28rem;       /* hard bottom shadow depth */
+  --r-lg: 1.4rem;
+  --r-md: 0.95rem;
+  --r-sm: 0.6rem;
+  --bw: 0.17rem;         /* outline weight */
+  --lift: 0.26rem;       /* hard bottom shadow depth */
+  --gap: 0.5rem;
+
+  /* the highlight that makes a face look like painted wood rather than a
+     flat fill — a thin light band along the top inside edge */
+  --face: inset 0 0.15rem 0 rgba(255, 255, 255, 0.6);
 
   --safe-t: env(safe-area-inset-top, 0px);
   --safe-b: env(safe-area-inset-bottom, 0px);
@@ -69,28 +90,42 @@ html, body {
   touch-action: none;
 }
 
+:focus { outline: none }
+:focus-visible { outline: 0.18rem solid var(--sea, #4a8cb0); outline-offset: 0.14rem; }
+
+/* Paper grain. One tiny tiled SVG, laid over panels at low opacity so a large
+   cream field has something in it besides flat colour. */
+.grain::after {
+  content: "";
+  position: absolute; inset: 0;
+  pointer-events: none;
+  border-radius: inherit;
+  opacity: 0.5;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='90' height='90'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3'/%3E%3CfeColorMatrix values='0 0 0 0 .38 0 0 0 0 .25 0 0 0 0 .13 0 0 0 .055 0'/%3E%3C/filter%3E%3Crect width='90' height='90' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
 /* ------------------------------------------------------------------ HUD  */
 
 #hud {
   position: absolute; inset: 0;
   pointer-events: none;
-  padding: calc(0.7rem + var(--safe-t)) 0.7rem calc(0.7rem + var(--safe-b));
+  padding: calc(0.6rem + var(--safe-t)) 0.6rem calc(0.6rem + var(--safe-b));
   display: grid;
   grid-template-columns: auto minmax(0, 1fr) auto;
   grid-template-rows: auto minmax(0, 1fr) auto;
-  gap: 0.5rem;
+  gap: var(--gap);
 }
 #hud > * { pointer-events: auto; }
 
-.corner { display: flex; gap: 0.45rem; align-items: flex-start; }
+.corner { display: flex; gap: 0.4rem; align-items: flex-start; }
 .top-left     { grid-area: 1 / 1; flex-direction: column; }
 .top-right    { grid-area: 1 / 3; flex-direction: column; align-items: flex-end; }
 .bottom-left  { grid-area: 3 / 1; align-items: flex-end; }
-.bottom-right { grid-area: 3 / 3; align-items: flex-end; gap: 0.5rem; }
+.bottom-right { grid-area: 3 / 3; align-items: flex-end; gap: 0.45rem; }
 
-/* ------------------------------------------------------------- controls  */
+/* ------------------------------------------------------------- surfaces  */
 
-.chip, .pill, .round, .sheet, .card, .tag {
+.chip, .pill, .round, .tile, .sheet, .card, .tag, .wallet {
   border: var(--bw) solid var(--ink);
   background: var(--panel);
   color: var(--ink-deep);
@@ -98,97 +133,163 @@ html, body {
   font-weight: 800;
 }
 
-.chip {
-  display: flex; align-items: center; gap: 0.35rem;
-  padding: 0.3rem 0.7rem 0.3rem 0.4rem;
+/* wallet ---------------------------------------------------------------- */
+
+/* Coins and stars are one plaque with a carved divider, not two loose pills —
+   they are read together and they never appear apart. */
+.wallet {
+  display: flex; align-items: stretch;
   border-radius: 999px;
-  box-shadow: 0 var(--lift) 0 var(--tan-shadow);
-  font-size: 0.95rem;
-  letter-spacing: 0.01em;
+  box-shadow: 0 var(--lift) 0 var(--tan-shadow), var(--face);
+  overflow: hidden;
+  font-variant-numeric: tabular-nums;
+}
+.wallet .seg {
+  display: flex; align-items: center; gap: 0.3rem;
+  padding: 0.28rem 0.7rem 0.28rem 0.45rem;
+  font-size: 0.95rem; font-weight: 900;
+  white-space: nowrap;
   min-height: 2rem;
+}
+.wallet .seg + .seg {
+  border-left: var(--bw) solid var(--ink);
+  background: var(--sun-pale);
+  padding-left: 0.5rem;
+  min-width: 3.4rem;
+}
+
+.daytag {
+  align-self: flex-start;
+  border-radius: 999px;
+  padding: 0.16rem 0.62rem;
+  background: var(--wood);
+  color: #fff;
+  border: var(--bw) solid var(--ink);
+  box-shadow: 0 0.16rem 0 var(--wood-dark);
+  font-size: 0.72rem; font-weight: 900;
+  letter-spacing: 0.03em;
+  text-shadow: 0 1px 0 rgba(0, 0, 0, 0.25);
+  white-space: nowrap;
+}
+
+/* ------------------------------------------------------------- controls  */
+
+.chip {
+  display: flex; align-items: center; gap: 0.3rem;
+  padding: 0.26rem 0.65rem 0.26rem 0.38rem;
+  border-radius: 999px;
+  box-shadow: 0 var(--lift) 0 var(--tan-shadow), var(--face);
+  font-size: 0.86rem;
+  min-height: 1.8rem;
   white-space: nowrap;
   font-variant-numeric: tabular-nums;
 }
-.chip.chip-sm { font-size: 0.85rem; padding: 0.22rem 0.6rem 0.22rem 0.32rem; min-height: 1.7rem; }
-.chip.chip-ghost { background: var(--tan); color: var(--ink-deep); }
-.chip b { font-weight: 900; }
 
 .pill {
   border-radius: 999px;
-  padding: 0.55rem 1.15rem;
-  font-size: 1rem;
+  padding: 0.5rem 1.1rem;
+  font-size: 0.92rem;
   font-weight: 900;
   letter-spacing: 0.02em;
-  box-shadow: 0 var(--lift) 0 var(--tan-shadow);
+  box-shadow: 0 var(--lift) 0 var(--tan-shadow), var(--face);
   cursor: pointer;
   transition: transform .08s ease, box-shadow .08s ease, filter .12s ease;
 }
-.pill-lg { padding: 0.7rem 1.6rem; font-size: 1.15rem; border-radius: 1.4rem; }
-.pill-sm { padding: 0.35rem 0.8rem; font-size: 0.82rem; }
-.pill-go { background: var(--leaf); color: #fff; box-shadow: 0 var(--lift) 0 var(--leaf-deep); text-shadow: 0 1px 0 rgba(0,0,0,.22); }
-.pill-stop { background: var(--tangerine); color: #fff; box-shadow: 0 var(--lift) 0 var(--tangerine-deep); text-shadow: 0 1px 0 rgba(0,0,0,.22); }
-.pill-sun { background: var(--sun); box-shadow: 0 var(--lift) 0 var(--sun-deep); }
-.pill-quiet { background: var(--tan); box-shadow: 0 var(--lift) 0 var(--tan-shadow); }
+.pill-lg { padding: 0.62rem 1.4rem; font-size: 1.02rem; }
+.pill-sm { padding: 0.32rem 0.75rem; font-size: 0.78rem; box-shadow: 0 0.16rem 0 var(--tan-shadow), var(--face); }
+.pill-go   { background: var(--leaf); color: #fff; box-shadow: 0 var(--lift) 0 var(--leaf-deep), var(--face); text-shadow: 0 1px 0 rgba(0,0,0,.28); }
+.pill-stop { background: var(--tangerine); color: #fff; box-shadow: 0 var(--lift) 0 var(--tangerine-deep), var(--face); text-shadow: 0 1px 0 rgba(0,0,0,.28); }
+.pill-sun  { background: var(--sun); box-shadow: 0 var(--lift) 0 var(--sun-deep), var(--face); }
+.pill-sun.pill-sm  { box-shadow: 0 0.16rem 0 var(--sun-deep), var(--face); }
+.pill-quiet { background: var(--tan); box-shadow: 0 var(--lift) 0 var(--tan-shadow), var(--face); }
+.pill-quiet.pill-sm { box-shadow: 0 0.16rem 0 var(--tan-shadow), var(--face); }
+
+/* the main call to action gets its own weight — everything else steps back */
+#btn-service { padding: 0.66rem 1.5rem; font-size: 1.08rem; letter-spacing: .03em; }
 
 .round {
   position: relative;
-  width: 2.5rem; height: 2.5rem;
+  width: 2.35rem; height: 2.35rem;
   border-radius: 999px;
   display: grid; place-items: center;
-  box-shadow: 0 var(--lift) 0 var(--tan-shadow);
+  box-shadow: 0 var(--lift) 0 var(--tan-shadow), var(--face);
   cursor: pointer;
   transition: transform .08s ease, box-shadow .08s ease;
 }
 .round-sm { width: 2rem; height: 2rem; }
-.round-lg {
-  width: 3.5rem; height: 3.5rem;
-  background: var(--sun);
-  box-shadow: 0 var(--lift) 0 var(--sun-deep);
-  flex-direction: column; gap: 0.05rem;
-}
-.round-lg .cap { font-size: 0.55rem; font-weight: 900; letter-spacing: .03em; text-transform: uppercase; }
 
-.pill:active, .round:active { transform: translateY(var(--lift)); box-shadow: 0 0 0 var(--tan-shadow); }
-.pill[disabled], .round[disabled] { filter: grayscale(.55) opacity(.6); cursor: default; }
-.pill[disabled]:active, .round[disabled]:active { transform: none; box-shadow: 0 var(--lift) 0 var(--tan-shadow); }
+/* Labelled action buttons. These were circles with the caption typeset across
+   them, so "RECIPES" simply ran off the edge — a rounded square gives the word
+   a line of its own to sit on. */
+.tile {
+  position: relative;
+  width: 3.6rem; height: 3.4rem;
+  border-radius: var(--r-md);
+  background: var(--sun);
+  box-shadow: 0 var(--lift) 0 var(--sun-deep), var(--face);
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 0.1rem;
+  cursor: pointer;
+  overflow: visible;
+  transition: transform .08s ease, box-shadow .08s ease;
+}
+.tile .ico { width: 1.45rem; height: 1.45rem; }
+.tile .cap {
+  font-size: 0.55rem; font-weight: 900; letter-spacing: .04em;
+  text-transform: uppercase; line-height: 1;
+  color: var(--ink);
+  max-width: 100%;
+}
+
+.pill:active, .round:active, .tile:active {
+  transform: translateY(var(--lift));
+  box-shadow: 0 0 0 var(--tan-shadow), var(--face);
+}
+.pill[disabled], .round[disabled], .tile[disabled] { filter: grayscale(.5) opacity(.55); cursor: default; }
+.pill[disabled]:active, .round[disabled]:active, .tile[disabled]:active {
+  transform: none; box-shadow: 0 var(--lift) 0 var(--tan-shadow), var(--face);
+}
 
 .badge {
-  position: absolute; top: -0.35rem; right: -0.35rem;
-  min-width: 1.25rem; height: 1.25rem; padding: 0 0.2rem;
+  position: absolute; top: -0.3rem; right: -0.3rem;
+  min-width: 1.2rem; height: 1.2rem; padding: 0 0.2rem;
   border-radius: 999px;
-  border: 0.14rem solid var(--ink);
+  border: 0.13rem solid var(--ink);
   background: var(--tangerine); color: #fff;
-  font-size: 0.7rem; font-weight: 900;
+  font-size: 0.68rem; font-weight: 900;
   display: grid; place-items: center;
   box-shadow: 0 0.12rem 0 var(--tangerine-deep);
 }
 
 /* zone switch ---------------------------------------------------------- */
 
+/* A sunken track with one raised tab riding in it. */
 .zoneswitch {
   grid-area: 1 / 2;
   justify-self: center;
   display: flex;
+  gap: 0.15rem;
   border: var(--bw) solid var(--ink);
   border-radius: 999px;
-  background: var(--tan);
-  box-shadow: 0 var(--lift) 0 var(--tan-shadow);
-  overflow: hidden;
-  height: 2.1rem;
+  background: var(--panel-2);
+  box-shadow: 0 var(--lift) 0 var(--tan-shadow), inset 0 0.16rem 0.2rem rgba(95, 61, 38, .22);
+  padding: 0.16rem;
+  height: 2.15rem;
 }
 .zoneswitch button {
   border: 0; background: transparent;
-  font: inherit; font-weight: 900; font-size: 0.82rem;
+  font: inherit; font-weight: 900; font-size: 0.8rem;
   color: var(--ink-soft);
-  padding: 0 0.95rem;
+  padding: 0 0.9rem;
+  border-radius: 999px;
   cursor: pointer;
   letter-spacing: .02em;
+  transition: background .12s ease, color .12s ease;
 }
 .zoneswitch button.on {
-  background: var(--panel);
+  background: var(--paper);
   color: var(--ink-deep);
-  border-radius: 999px;
-  box-shadow: inset 0 0 0 0.1rem rgba(110,74,48,.18);
+  box-shadow: 0 0.13rem 0 var(--tan-shadow), var(--face);
 }
 
 /* service bar --------------------------------------------------------- */
@@ -197,21 +298,21 @@ html, body {
   grid-area: 2 / 2;
   align-self: start;
   justify-self: center;
-  margin-top: 0.3rem;
+  margin-top: 0.25rem;
 }
 .sb-row {
-  display: flex; align-items: center; gap: 0.45rem;
+  display: flex; align-items: center; gap: 0.4rem;
   border: var(--bw) solid var(--ink);
   border-radius: 999px;
   background: var(--panel);
-  box-shadow: 0 var(--lift) 0 var(--tan-shadow);
-  padding: 0.3rem 0.9rem;
-  font-size: 0.82rem; font-weight: 800;
+  box-shadow: 0 var(--lift) 0 var(--tan-shadow), var(--face);
+  padding: 0.28rem 0.85rem;
+  font-size: 0.8rem; font-weight: 800;
   font-variant-numeric: tabular-nums;
 }
 .sb-label { color: var(--ink-faint); font-weight: 800; }
 .sb-row b { font-weight: 900; }
-.sb-sep { width: 0.14rem; height: 0.9rem; background: var(--tan-deep); border-radius: 2px; }
+.sb-sep { width: 0.13rem; height: 0.85rem; background: var(--tan-deep); border-radius: 2px; }
 
 /* place bar ----------------------------------------------------------- */
 
@@ -221,13 +322,13 @@ html, body {
   justify-self: center; align-self: end;
   margin-bottom: 0.4rem;
   max-width: calc(100% - 1rem);
-  display: flex; align-items: center; gap: 0.5rem;
+  display: flex; align-items: center; gap: 0.45rem;
   border: var(--bw) solid var(--ink);
   border-radius: 999px;
   background: var(--panel);
-  box-shadow: 0 var(--lift) 0 var(--tan-shadow);
-  padding: 0.35rem 0.4rem 0.35rem 1rem;
-  font-size: 0.85rem; font-weight: 800;
+  box-shadow: 0 var(--lift) 0 var(--tan-shadow), var(--face);
+  padding: 0.32rem 0.35rem 0.32rem 0.95rem;
+  font-size: 0.83rem; font-weight: 800;
   animation: popIn .25s cubic-bezier(.2,1.5,.5,1);
 }
 
@@ -240,9 +341,9 @@ html, body {
   border: var(--bw) solid var(--ink);
   border-radius: var(--r-md);
   background: var(--panel);
-  box-shadow: 0 var(--lift) 0 var(--tan-shadow);
-  padding: 0.6rem 1rem;
-  font-size: 0.9rem; font-weight: 800;
+  box-shadow: 0 var(--lift) 0 var(--tan-shadow), var(--face);
+  padding: 0.55rem 0.95rem;
+  font-size: 0.86rem; font-weight: 800;
   line-height: 1.35;
   animation: popIn .3s cubic-bezier(.2,1.5,.5,1);
 }
@@ -258,12 +359,12 @@ html, body {
   border: var(--bw) solid var(--ink);
   border-radius: var(--r-lg);
   background: var(--panel);
-  box-shadow: 0 var(--lift) 0 var(--tan-shadow);
+  box-shadow: 0 var(--lift) 0 var(--tan-shadow), var(--face);
   pointer-events: none;
   animation: cardSweep 1.9s cubic-bezier(.18,1.3,.4,1) both;
 }
-.titlecard b { font-size: 1.9rem; font-weight: 900; line-height: 1; letter-spacing: .01em }
-.titlecard span { font-size: 0.85rem; font-weight: 800; color: var(--ink-soft) }
+.titlecard b { font-size: 1.8rem; font-weight: 900; line-height: 1; letter-spacing: .01em }
+.titlecard span { font-size: 0.82rem; font-weight: 800; color: var(--ink-soft) }
 
 @keyframes cardSweep {
   0%   { transform: translateX(-38%) scale(.9); opacity: 0 }
@@ -278,7 +379,7 @@ html, body {
   grid-area: 2 / 2;
   align-self: start; justify-self: center;
   margin-top: 2.6rem;
-  display: flex; flex-direction: column; gap: 0.35rem;
+  display: flex; flex-direction: column; gap: 0.3rem;
   align-items: center;
   pointer-events: none;
 }
@@ -286,14 +387,14 @@ html, body {
   border: var(--bw) solid var(--ink);
   border-radius: 999px;
   background: var(--panel);
-  box-shadow: 0 var(--lift) 0 var(--tan-shadow);
-  padding: 0.35rem 0.95rem;
-  font-size: 0.85rem; font-weight: 900;
+  box-shadow: 0 var(--lift) 0 var(--tan-shadow), var(--face);
+  padding: 0.32rem 0.9rem;
+  font-size: 0.83rem; font-weight: 900;
   animation: toastIn .3s cubic-bezier(.2,1.6,.5,1) both;
   white-space: nowrap;
 }
-.toast.bad  { background: #f6cfc2; box-shadow: 0 var(--lift) 0 var(--coral-deep); }
-.toast.good { background: #d6ecc8; box-shadow: 0 var(--lift) 0 var(--leaf-deep); }
+.toast.bad  { background: var(--coral-pale); box-shadow: 0 var(--lift) 0 var(--coral-deep), var(--face); }
+.toast.good { background: var(--leaf-pale); box-shadow: 0 var(--lift) 0 var(--leaf-deep), var(--face); }
 .toast.out  { animation: toastOut .25s ease both; }
 
 @keyframes toastIn  { from { transform: translateY(-.6rem) scale(.86); opacity: 0 } }
@@ -304,7 +405,8 @@ html, body {
 
 #scrim {
   position: absolute; inset: 0;
-  background: rgba(74,48,30,.26);
+  background: rgba(58, 36, 20, .34);
+  backdrop-filter: blur(1.5px);
   animation: fade .2s ease both;
 }
 @keyframes fade { from { opacity: 0 } }
@@ -313,13 +415,13 @@ html, body {
   position: absolute;
   left: 50%; bottom: 0;
   transform: translateX(-50%);
-  width: min(34rem, 100%);
-  max-height: min(78%, 44rem);
+  width: min(33rem, 100%);
+  max-height: min(80%, 46rem);
   display: flex; flex-direction: column;
   background: var(--paper);
   border-radius: var(--r-lg) var(--r-lg) 0 0;
   border-bottom: 0;
-  box-shadow: 0 -0.4rem 0 rgba(110,74,48,.12);
+  box-shadow: 0 -0.5rem 1.4rem rgba(58, 36, 20, .22);
   padding-bottom: var(--safe-b);
   animation: sheetIn .34s cubic-bezier(.16,1.3,.4,1) both;
   overflow: hidden;
@@ -329,25 +431,41 @@ html, body {
 @keyframes sheetOut { to   { transform: translate(-50%, 100%) } }
 
 .sheet-grip {
-  width: 3rem; height: 0.3rem; border-radius: 999px;
-  background: var(--tan-deep);
-  margin: 0.5rem auto 0;
-  flex: none;
+  position: absolute; top: 0.45rem; left: 50%;
+  transform: translateX(-50%);
+  width: 2.6rem; height: 0.28rem; border-radius: 999px;
+  background: rgba(255, 255, 255, .5);
+  z-index: 2;
 }
+
+/* The header is a stained board across the top — the strongest tonal break in
+   the panel, so the eye lands on the title before the list. */
 .sheet-head {
-  display: flex; align-items: center; gap: 0.6rem;
-  padding: 0.5rem 0.85rem 0.55rem;
+  display: flex; align-items: center; gap: 0.5rem;
+  padding: 0.95rem 0.75rem 0.55rem;
   flex: none;
+  background: linear-gradient(var(--wood), var(--wood-deep));
+  border-bottom: var(--bw) solid var(--ink);
+  box-shadow: inset 0 0.18rem 0 rgba(255, 255, 255, .28);
 }
 .sheet-head h2 {
-  flex: 1;
-  font-size: 1.2rem; font-weight: 900;
+  flex: 1; min-width: 0;
+  font-size: 1.12rem; font-weight: 900;
   letter-spacing: .01em;
-  color: var(--ink-deep);
+  color: #fff;
+  text-shadow: 0 0.1rem 0 rgba(89, 55, 28, .55);
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
 }
+.sheet-head .round { background: var(--paper) }
+
+/* tab track — sunken, so the live tab reads as sitting proud of it */
 .sheet-tabs {
-  display: flex; gap: 0.35rem;
-  padding: 0 0.85rem 0.5rem;
+  display: flex; gap: 0.2rem;
+  margin: 0.6rem 0.75rem 0.1rem;
+  padding: 0.18rem;
+  border-radius: 999px;
+  background: var(--panel-2);
+  box-shadow: inset 0 0.14rem 0.2rem rgba(95, 61, 38, .2);
   overflow-x: auto;
   flex: none;
   scrollbar-width: none;
@@ -355,126 +473,176 @@ html, body {
 .sheet-tabs::-webkit-scrollbar { display: none }
 .sheet-tabs:empty { display: none }
 .tab {
-  border: var(--bw) solid var(--ink);
-  background: var(--tan);
+  border: 0;
+  background: transparent;
   color: var(--ink-soft);
   border-radius: 999px;
-  padding: 0.3rem 0.85rem;
-  font: inherit; font-weight: 900; font-size: 0.82rem;
+  padding: 0.32rem 0.8rem;
+  font: inherit; font-weight: 900; font-size: 0.8rem;
   cursor: pointer;
   white-space: nowrap;
-  box-shadow: 0 0.16rem 0 var(--tan-shadow);
+  flex: 1 1 auto;
+  transition: background .12s ease, color .12s ease;
 }
-.tab.on { background: var(--sun); color: var(--ink-deep); box-shadow: 0 0.16rem 0 var(--sun-deep); }
+.tab.on {
+  background: var(--paper);
+  color: var(--ink-deep);
+  box-shadow: 0 0.13rem 0 var(--tan-shadow), var(--face);
+}
 
 .sheet-body {
   flex: 1;
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
   touch-action: pan-y;
-  padding: 0 0.85rem 0.85rem;
-  display: flex; flex-direction: column; gap: 0.5rem;
+  padding: 0.6rem 0.75rem 0.85rem;
+  display: flex; flex-direction: column; gap: var(--gap);
 }
 .sheet-foot {
   flex: none;
-  border-top: 0.14rem dashed var(--tan-deep);
-  padding: 0.6rem 0.85rem;
-  display: flex; gap: 0.5rem; align-items: center;
+  border-top: var(--bw) solid var(--tan-deep);
+  background: var(--panel);
+  padding: 0.55rem 0.75rem;
+  display: flex; gap: var(--gap); align-items: center;
 }
 .sheet-foot .grow { flex: 1 }
 
 /* cards --------------------------------------------------------------- */
 
 .card {
+  position: relative;
   border-radius: var(--r-md);
   background: var(--panel);
-  box-shadow: 0 var(--lift) 0 var(--tan-shadow);
-  padding: 0.55rem;
+  box-shadow: 0 var(--lift) 0 var(--tan-shadow), var(--face);
+  padding: 0.5rem 0.6rem;
   display: flex; gap: 0.6rem; align-items: center;
 }
-.card.tap { cursor: pointer; transition: transform .08s ease }
-.card.tap:active { transform: translateY(var(--lift)); box-shadow: 0 0 0 var(--tan-shadow) }
-.card.locked { filter: grayscale(.5) opacity(.72) }
-.card.sel { background: #fdf3cf; box-shadow: 0 var(--lift) 0 var(--sun-deep), inset 0 0 0 0.15rem var(--sun) }
+.card.tap { cursor: pointer; transition: transform .08s ease, box-shadow .08s ease }
+.card.tap:active { transform: translateY(var(--lift)); box-shadow: 0 0 0 var(--tan-shadow), var(--face) }
+.card.locked { filter: grayscale(.45) opacity(.66) }
+.card.sel {
+  background: var(--sun-pale);
+  box-shadow: 0 var(--lift) 0 var(--sun-deep), var(--face), inset 0 0 0 0.14rem var(--sun);
+}
 
+/* The art well is sunken, which reads as a shelf the piece is standing on and
+   gives the sprite a background to separate from. */
 .thumb {
   flex: none;
-  width: 3.4rem; height: 3.4rem;
+  width: 3.9rem; height: 3.9rem;
   border-radius: var(--r-sm);
-  border: 0.15rem solid var(--ink);
-  background: var(--panel-2) center/78% no-repeat;
-  box-shadow: inset 0 -0.2rem 0 rgba(110,74,48,.07);
+  background:
+    radial-gradient(70% 58% at 50% 60%, rgba(255, 253, 244, .95), rgba(255, 253, 244, 0) 72%),
+    var(--tan);
+  background-repeat: no-repeat;
+  box-shadow: inset 0 0.16rem 0.22rem rgba(95, 61, 38, .2), inset 0 -0.1rem 0 rgba(255,255,255,.4);
   display: grid; place-items: center;
   position: relative;
   overflow: hidden;
 }
-.thumb.wide { width: 4.2rem }
-.thumb img { width: 100%; height: 100%; object-fit: contain; image-rendering: auto; }
+.thumb i {
+  width: 100%; height: 100%;
+  background: center 56%/78% auto no-repeat;
+  filter: drop-shadow(0 0.1rem 0.1rem rgba(95, 61, 38, .22));
+}
+.thumb.wide { width: 4.6rem }
+.thumb img { width: 100%; height: 100%; object-fit: contain; }
 
-.card-main { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 0.18rem; }
-.card-title { font-size: 0.95rem; font-weight: 900; line-height: 1.15; }
-.card-sub { font-size: 0.72rem; font-weight: 800; color: var(--ink-faint); line-height: 1.3; }
+.card-main { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 0.16rem; }
+.card-title { font-size: 0.98rem; font-weight: 900; line-height: 1.15; }
+.card-sub { font-size: 0.78rem; font-weight: 700; color: var(--ink-soft); line-height: 1.32; }
 .card-side { flex: none; display: flex; flex-direction: column; gap: 0.3rem; align-items: flex-end; }
 
 .tag {
-  display: inline-flex; align-items: center; gap: 0.22rem;
-  border-width: 0.14rem;
+  display: inline-flex; align-items: center; gap: 0.2rem;
+  border-width: 0.13rem;
   border-radius: 999px;
-  padding: 0.12rem 0.45rem;
-  font-size: 0.7rem; font-weight: 900;
+  padding: 0.1rem 0.45rem;
+  font-size: 0.72rem; font-weight: 900;
   background: var(--tan);
   font-variant-numeric: tabular-nums;
+  box-shadow: 0 0.1rem 0 rgba(95, 61, 38, .2);
+}
+/* longhands only — `background:` here would blank the .ico-* image */
+.tag i {
+  width: 0.85rem; height: 0.85rem; display: block;
+  background-size: contain;
+  margin-left: -0.08rem;
 }
 .tag-cost { background: var(--sun) }
-.tag-star { background: #fbe6a8 }
-.tag-need { background: #f6cfc2 }
-.tag-ok   { background: #d6ecc8 }
+.tag-star { background: var(--sun-pale) }
+.tag-need { background: var(--coral-pale); color: var(--tangerine-deep) }
+.tag-ok   { background: var(--leaf-pale) }
 .tag-mint { background: var(--mint) }
 
 .rowline { display: flex; flex-wrap: wrap; gap: 0.25rem; align-items: center; }
 
 .ing {
-  display: inline-flex; align-items: center; gap: 0.15rem;
-  font-size: 0.7rem; font-weight: 900;
-  background: var(--panel-2);
+  display: inline-flex; align-items: center; gap: 0.12rem;
+  font-size: 0.72rem; font-weight: 900;
+  background: var(--paper);
   border: 0.12rem solid var(--tan-deep);
   border-radius: 999px;
-  padding: 0.08rem 0.4rem 0.08rem 0.1rem;
+  padding: 0.06rem 0.4rem 0.06rem 0.08rem;
 }
-.ing.short { background: #f6cfc2; border-color: var(--coral-deep) }
+.ing.short { background: var(--coral-pale); border-color: var(--coral-deep); color: var(--tangerine-deep) }
 .ing i { width: 1.05rem; height: 1.05rem; background: center/contain no-repeat; display: block; }
 
-.stepper { display: flex; align-items: center; gap: 0.3rem }
-.stepper .num { min-width: 1.8rem; text-align: center; font-weight: 900; font-variant-numeric: tabular-nums }
+.stepper { display: flex; align-items: center; gap: 0.28rem }
+.stepper .num {
+  min-width: 1.9rem; text-align: center;
+  font-weight: 900; font-size: 1rem;
+  font-variant-numeric: tabular-nums;
+}
 .stepper button {
-  width: 1.7rem; height: 1.7rem; border-radius: 999px;
+  width: 1.8rem; height: 1.8rem; border-radius: 999px;
   border: 0.15rem solid var(--ink); background: var(--sun);
-  font: inherit; font-weight: 900; font-size: 1rem; line-height: 1;
-  cursor: pointer; box-shadow: 0 0.14rem 0 var(--sun-deep);
+  font: inherit; font-weight: 900; font-size: 1.05rem; line-height: 1;
+  cursor: pointer; box-shadow: 0 0.14rem 0 var(--sun-deep), var(--face);
   display: grid; place-items: center; color: var(--ink-deep);
 }
 .stepper button:active { transform: translateY(.14rem); box-shadow: none }
-.stepper button[disabled] { filter: grayscale(.6) opacity(.55) }
+.stepper button[disabled] { filter: grayscale(.6) opacity(.5) }
 
 .bar {
   height: 0.5rem; border-radius: 999px;
-  background: var(--tan-deep);
-  border: 0.12rem solid var(--ink);
-  overflow: hidden;
+  background: var(--panel-2);
+  box-shadow: inset 0 0.12rem 0.16rem rgba(95, 61, 38, .28);
 }
 .bar i { display: block; height: 100%; background: var(--leaf); border-radius: 999px }
 
+/* A tip, not a boxed callout — it explains the panel once and then gets out of
+   the way, so it reads as a caption rather than a slab of chrome. The marker is
+   inline so the sentence keeps flowing around it. */
 .note {
-  font-size: 0.78rem; font-weight: 800; color: var(--ink-soft);
-  background: var(--panel-2);
-  border: 0.14rem dashed var(--tan-deep);
-  border-radius: var(--r-sm);
-  padding: 0.5rem 0.65rem;
-  line-height: 1.4;
+  font-size: 0.79rem; font-weight: 700; color: var(--ink-soft);
+  line-height: 1.45;
+  padding: 0 0.15rem 0.1rem;
+}
+.note::before {
+  content: "";
+  display: inline-block;
+  vertical-align: -0.14rem;
+  margin-right: 0.35rem;
+  width: 0.9rem; height: 0.9rem;
+  border-radius: 999px;
+  background: var(--sun) center/0.55rem no-repeat
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 8 20'%3E%3Cpath d='M4 1v11' stroke='%235f3d26' stroke-width='2.6' stroke-linecap='round'/%3E%3Ccircle cx='4' cy='17.5' r='1.6' fill='%235f3d26'/%3E%3C/svg%3E");
+  box-shadow: 0 0 0 0.11rem var(--ink);
 }
 .note b { color: var(--ink-deep) }
-.section { font-size: 0.75rem; font-weight: 900; color: var(--ink-faint); text-transform: uppercase; letter-spacing: .06em; margin-top: 0.25rem }
-.empty { text-align: center; padding: 1.4rem 0.5rem; color: var(--ink-faint); font-weight: 800; font-size: 0.85rem }
+
+.section {
+  font-size: 0.72rem; font-weight: 900; color: var(--ink-faint);
+  text-transform: uppercase; letter-spacing: .08em;
+  margin-top: 0.3rem;
+  display: flex; align-items: center; gap: 0.5rem;
+}
+.section::after {
+  content: ""; flex: 1; height: 0.12rem; border-radius: 2px;
+  background: var(--tan-deep); opacity: .55;
+}
+.empty { text-align: center; padding: 1.5rem 0.5rem; color: var(--ink-faint); font-weight: 800; font-size: 0.85rem }
 
 .grid-ing {
   display: grid;
@@ -485,33 +653,67 @@ html, body {
   border: 0.15rem solid var(--ink);
   border-radius: var(--r-sm);
   background: var(--panel);
-  box-shadow: 0 0.18rem 0 var(--tan-shadow);
+  box-shadow: 0 0.18rem 0 var(--tan-shadow), var(--face);
   padding: 0.3rem 0.2rem 0.25rem;
   text-align: center;
 }
 .ing-cell i { width: 2.1rem; height: 2.1rem; display: block; margin: 0 auto; background: center/contain no-repeat }
 .ing-cell .n { font-size: 0.68rem; font-weight: 900; line-height: 1.1; margin-top: .1rem }
-.ing-cell .q { font-size: 0.78rem; font-weight: 900; color: var(--ink-soft); font-variant-numeric: tabular-nums }
-.ing-cell.zero { filter: grayscale(.6) opacity(.6) }
+.ing-cell .q { font-size: 0.8rem; font-weight: 900; color: var(--ink-soft); font-variant-numeric: tabular-nums }
+.ing-cell.zero { filter: grayscale(.6) opacity(.55) }
 
-.report-row { display: flex; justify-content: space-between; font-size: 0.92rem; font-weight: 900; padding: 0.15rem 0 }
+.report-row { display: flex; justify-content: space-between; font-size: 0.9rem; font-weight: 900; padding: 0.15rem 0 }
 .report-row span { color: var(--ink-soft) }
-.report-row.big { font-size: 1.15rem; border-top: 0.14rem dashed var(--tan-deep); margin-top: 0.3rem; padding-top: 0.45rem }
+.report-row.big {
+  font-size: 1.15rem;
+  border-top: var(--bw) dashed var(--tan-deep);
+  margin-top: 0.3rem; padding-top: 0.45rem;
+}
+
+/* finish swatches ------------------------------------------------------ */
+
+/* The three wood finishes are a visual choice, so the control shows the wood
+   rather than only naming it. */
+.swatches { display: flex; gap: 0.4rem; }
+.swatch {
+  flex: 1;
+  display: flex; align-items: center; gap: 0.35rem;
+  border: var(--bw) solid var(--ink);
+  border-radius: 999px;
+  background: var(--panel);
+  box-shadow: 0 0.18rem 0 var(--tan-shadow), var(--face);
+  padding: 0.22rem 0.5rem 0.22rem 0.24rem;
+  font: inherit; font-weight: 900; font-size: 0.74rem;
+  color: var(--ink-soft);
+  cursor: pointer;
+  min-width: 0;
+  transition: background .12s ease, color .12s ease;
+}
+.swatch .dot {
+  flex: none;
+  width: 1.15rem; height: 1.15rem; border-radius: 999px;
+  border: 0.13rem solid var(--ink);
+  box-shadow: inset 0 -0.18rem 0 rgba(0, 0, 0, .16);
+}
+.swatch .lbl { overflow: hidden; text-overflow: ellipsis; white-space: nowrap }
+.swatch .bonus { flex: none; color: var(--ink-faint); font-size: 0.7rem }
+.swatch.on .bonus { color: var(--ink-deep) }
+.swatch.on { background: var(--sun); color: var(--ink-deep); box-shadow: 0 0.18rem 0 var(--sun-deep), var(--face) }
+.swatch:active { transform: translateY(.16rem); box-shadow: none }
 
 /* --------------------------------------------------------------- icons  */
 
-.ico { width: 1.15rem; height: 1.15rem; display: block; background: center/contain no-repeat }
-.round-lg .ico { width: 1.5rem; height: 1.5rem }
+.ico { width: 1.1rem; height: 1.1rem; display: block; background: center/contain no-repeat }
 
-.ico-sand  { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Ccircle cx='12' cy='12' r='10' fill='%23f8d167' stroke='%236e4a30' stroke-width='2'/%3E%3Cpath d='M12 6.4l1.5 3.1 3.4.5-2.5 2.4.6 3.4-3-1.6-3 1.6.6-3.4L7.1 10l3.4-.5z' fill='%23fff5d4' stroke='%23c8992c' stroke-width='.9'/%3E%3C/svg%3E") }
-.ico-star  { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M12 2.6l2.9 6 6.6.9-4.8 4.6 1.2 6.5L12 17.5 6.1 20.6l1.2-6.5L2.5 9.5l6.6-.9z' fill='%23f8d167' stroke='%236e4a30' stroke-width='1.9' stroke-linejoin='round'/%3E%3C/svg%3E") }
-.ico-crate { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Crect x='3' y='7' width='18' height='13' rx='2' fill='%23e3d0a8' stroke='%236e4a30' stroke-width='2'/%3E%3Cpath d='M3 11h18M9 7v13' stroke='%236e4a30' stroke-width='1.6'/%3E%3Cpath d='M3 7l3-3h12l3 3' fill='%23f8ecd4' stroke='%236e4a30' stroke-width='2' stroke-linejoin='round'/%3E%3C/svg%3E") }
-.ico-sound { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M11 5L6.5 9H3.5v6h3L11 19z' fill='%23f8d167' stroke='%236e4a30' stroke-width='2' stroke-linejoin='round'/%3E%3Cpath d='M15 9.2a4 4 0 010 5.6M17.8 6.6a8 8 0 010 10.8' stroke='%236e4a30' stroke-width='2' fill='none' stroke-linecap='round'/%3E%3C/svg%3E") }
-.ico-mute  { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M11 5L6.5 9H3.5v6h3L11 19z' fill='%23e3d0a8' stroke='%236e4a30' stroke-width='2' stroke-linejoin='round'/%3E%3Cpath d='M15 9.5l5 5M20 9.5l-5 5' stroke='%23bd6144' stroke-width='2.2' stroke-linecap='round'/%3E%3C/svg%3E") }
-.ico-help  { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M8.6 8.6a3.5 3.5 0 116.2 2.7c-1.4 1.3-2.3 1.9-2.3 3.3' fill='none' stroke='%236e4a30' stroke-width='2.4' stroke-linecap='round'/%3E%3Ccircle cx='12.4' cy='18.4' r='1.5' fill='%236e4a30'/%3E%3C/svg%3E") }
-.ico-hammer{ background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M13.6 3.4l7 7-2.6 2.6-2-2-1.6 1.6-3-3L13 8 11 6z' fill='%23f8ecd4' stroke='%236e4a30' stroke-width='2' stroke-linejoin='round'/%3E%3Cpath d='M11.4 11.4L4 18.8l1.6 1.6 7.4-7.4z' fill='%23e08464' stroke='%236e4a30' stroke-width='2' stroke-linejoin='round'/%3E%3C/svg%3E") }
-.ico-book  { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M4 4.6h6.2c1 0 1.8.8 1.8 1.8V20c0-.9-.8-1.6-1.8-1.6H4z' fill='%23f8ecd4' stroke='%236e4a30' stroke-width='2' stroke-linejoin='round'/%3E%3Cpath d='M20 4.6h-6.2c-1 0-1.8.8-1.8 1.8V20c0-.9.8-1.6 1.8-1.6H20z' fill='%23e3d0a8' stroke='%236e4a30' stroke-width='2' stroke-linejoin='round'/%3E%3C/svg%3E") }
-.ico-x     { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M6.5 6.5l11 11M17.5 6.5l-11 11' stroke='%236e4a30' stroke-width='2.8' stroke-linecap='round'/%3E%3C/svg%3E") }
+.ico-sand  { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Ccircle cx='12' cy='12' r='10' fill='%23f8d167' stroke='%235f3d26' stroke-width='2'/%3E%3Cpath d='M12 6.4l1.5 3.1 3.4.5-2.5 2.4.6 3.4-3-1.6-3 1.6.6-3.4L7.1 10l3.4-.5z' fill='%23fff5d4' stroke='%23c8992c' stroke-width='.9'/%3E%3C/svg%3E") }
+.ico-star  { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M12 2.6l2.9 6 6.6.9-4.8 4.6 1.2 6.5L12 17.5 6.1 20.6l1.2-6.5L2.5 9.5l6.6-.9z' fill='%23f8d167' stroke='%235f3d26' stroke-width='1.9' stroke-linejoin='round'/%3E%3C/svg%3E") }
+.ico-crate { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Crect x='3' y='7' width='18' height='13' rx='2' fill='%23e3d0a8' stroke='%235f3d26' stroke-width='2'/%3E%3Cpath d='M3 11h18M9 7v13' stroke='%235f3d26' stroke-width='1.6'/%3E%3Cpath d='M3 7l3-3h12l3 3' fill='%23f8ecd4' stroke='%235f3d26' stroke-width='2' stroke-linejoin='round'/%3E%3C/svg%3E") }
+.ico-sound { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M11 5L6.5 9H3.5v6h3L11 19z' fill='%23f8d167' stroke='%235f3d26' stroke-width='2' stroke-linejoin='round'/%3E%3Cpath d='M15 9.2a4 4 0 010 5.6M17.8 6.6a8 8 0 010 10.8' stroke='%235f3d26' stroke-width='2' fill='none' stroke-linecap='round'/%3E%3C/svg%3E") }
+.ico-mute  { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M11 5L6.5 9H3.5v6h3L11 19z' fill='%23e3d0a8' stroke='%235f3d26' stroke-width='2' stroke-linejoin='round'/%3E%3Cpath d='M15 9.5l5 5M20 9.5l-5 5' stroke='%23bd6144' stroke-width='2.2' stroke-linecap='round'/%3E%3C/svg%3E") }
+.ico-help  { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M8.6 8.6a3.5 3.5 0 116.2 2.7c-1.4 1.3-2.3 1.9-2.3 3.3' fill='none' stroke='%235f3d26' stroke-width='2.4' stroke-linecap='round'/%3E%3Ccircle cx='12.4' cy='18.4' r='1.5' fill='%235f3d26'/%3E%3C/svg%3E") }
+.ico-hammer{ background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M13.6 3.4l7 7-2.6 2.6-2-2-1.6 1.6-3-3L13 8 11 6z' fill='%23fdf7e8' stroke='%235f3d26' stroke-width='2' stroke-linejoin='round'/%3E%3Cpath d='M11.4 11.4L4 18.8l1.6 1.6 7.4-7.4z' fill='%23e08464' stroke='%235f3d26' stroke-width='2' stroke-linejoin='round'/%3E%3C/svg%3E") }
+.ico-book  { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M4 4.6h6.2c1 0 1.8.8 1.8 1.8V20c0-.9-.8-1.6-1.8-1.6H4z' fill='%23fdf7e8' stroke='%235f3d26' stroke-width='2' stroke-linejoin='round'/%3E%3Cpath d='M20 4.6h-6.2c-1 0-1.8.8-1.8 1.8V20c0-.9.8-1.6 1.8-1.6H20z' fill='%23e3d0a8' stroke='%235f3d26' stroke-width='2' stroke-linejoin='round'/%3E%3C/svg%3E") }
+.ico-x     { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M6.5 6.5l11 11M17.5 6.5l-11 11' stroke='%235f3d26' stroke-width='2.8' stroke-linecap='round'/%3E%3C/svg%3E") }
 
 /* --------------------------------------------------------------- boot  */
 
@@ -530,8 +732,8 @@ html, body {
 .boot-bar {
   width: 13rem; height: 0.85rem;
   border: var(--bw) solid var(--ink); border-radius: 999px;
-  background: var(--tan); overflow: hidden; margin: 0 auto;
-  box-shadow: 0 var(--lift) 0 var(--tan-shadow);
+  background: var(--panel-2); overflow: hidden; margin: 0 auto;
+  box-shadow: 0 var(--lift) 0 var(--tan-shadow), inset 0 0.14rem 0.18rem rgba(95,61,38,.25);
 }
 .boot-bar i { display: block; height: 100%; width: 0; background: var(--sun); transition: width .2s ease }
 #boot-msg { margin-top: .7rem; font-weight: 800; font-size: .85rem; color: var(--ink-soft) }
@@ -539,10 +741,13 @@ html, body {
 .hidden { display: none !important }
 
 @media (max-width: 26rem) {
-  .round-lg { width: 3rem; height: 3rem }
-  .round-lg .cap { display: none }
-  .pill-lg { padding: .6rem 1.15rem; font-size: 1rem }
-  .zoneswitch button { padding: 0 .7rem; font-size: .78rem }
-  .sb-row { padding: .28rem .6rem; font-size: .76rem; gap: .32rem }
+  .tile { width: 3.1rem; height: 3rem }
+  .tile .ico { width: 1.25rem; height: 1.25rem }
+  .pill-lg { padding: .55rem 1.05rem; font-size: .95rem }
+  #btn-service { padding: .58rem 1.1rem; font-size: 1rem }
+  .zoneswitch button { padding: 0 .68rem; font-size: .76rem }
+  .sb-row { padding: .26rem .58rem; font-size: .74rem; gap: .3rem }
   .servicebar { margin-top: .15rem }
+  .wallet .seg { font-size: .86rem; padding: .24rem .55rem .24rem .35rem; min-height: 1.8rem }
+  .thumb { width: 3.4rem; height: 3.4rem }
 }

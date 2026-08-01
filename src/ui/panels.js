@@ -1,7 +1,7 @@
 // Every bottom-sheet panel. Each opener builds a spec for Hud.openSheet and
 // registers itself so state changes can re-render in place.
 
-import { bar, h, ingChip, stepper, tag, thumb } from './dom.js';
+import { bar, h, ingChip, stepper, swatch, tag, thumb } from './dom.js';
 import { money } from '../core/util.js';
 import { INGREDIENTS, MARKET_ORDER, ingName } from '../data/ingredients.js';
 import {
@@ -12,6 +12,9 @@ import {
   costOf, groupFor, machineInterval, machineUpgradeCost, starsOf,
 } from '../data/catalog.js';
 import { DIR_NAMES } from '../world/factory.js';
+
+/** The wood each finish is painted in, for the swatch picker. */
+const STYLE_SWATCH = { plain: '#e0c39a', cottage: '#c98d5e', antique: '#7c4a33' };
 
 /** Thumbnail sprite for a catalogue entry — pairs show their right-facing art. */
 const spriteIdOf = (item) =>
@@ -36,8 +39,8 @@ export class Panels {
 
   /* --------------------------------------------------------------- helpers */
 
-  #card({ src, title, sub, tags = [], side = null, onclick = null, cls = '', locked = false, wide = false }) {
-    const t = thumb(src, { wide });
+  #card({ src, title, sub, tags = [], side = null, onclick = null, cls = '', locked = false, wide = false, frames = 1 }) {
+    const t = thumb(src, { wide, frames });
     return h(`div.card${onclick ? '.tap' : ''}${cls ? `.${cls}` : ''}${locked ? '.locked' : ''}`,
       onclick ? { onclick } : null,
       t,
@@ -48,9 +51,11 @@ export class Panels {
       side ? h('div.card-side', null, side) : null);
   }
 
+  /** Price pill. Carries the sand-dollar glyph so a bare number is never
+   *  mistaken for a count, and turns coral the moment you can't afford it. */
   #cost(n) {
     const ok = this.state.coins >= n;
-    return tag(money(n), ok ? 'tag-cost' : 'tag-need');
+    return tag(money(n), ok ? 'tag-cost' : 'tag-need', 'sand');
   }
 
   #ingRow(bill, scale = 1) {
@@ -65,10 +70,12 @@ export class Panels {
   }
 
   #styleRow() {
-    return h('div.rowline', null, STYLES.map((s) => h(
-      `button.tab${this.buildStyle === s.id ? '.on' : ''}`,
-      { type: 'button', onclick: () => { this.buildStyle = s.id; this.openBuild(true); } },
-      `${s.label}${s.star ? ` +${s.star}★` : ''}`,
+    return h('div.swatches', null, STYLES.map((s) => swatch(
+      s.label,
+      STYLE_SWATCH[s.id] ?? '#d9ae76',
+      this.buildStyle === s.id,
+      () => { this.buildStyle = s.id; this.openBuild(true); },
+      s.star ? `+${s.star}★` : null,
     )));
   }
 
@@ -88,8 +95,8 @@ export class Panels {
 
     const body = [
       h('div.note', null,
-        'Pick a finish, then tap a piece and tap the floor. ',
-        h('b', null, 'Chairs must sit next to a table'), ' to become seats.'),
+        'Pick a finish, then tap a piece and tap the floor. A chair only becomes a seat on the ',
+        h('b', null, 'glowing spots'), ' around a table — those are the sides it can turn to face.'),
       this.#styleRow(),
       ...items.map((item) => {
         const cost = costOf(item, this.buildStyle);
@@ -276,7 +283,7 @@ export class Panels {
         src: this.assets.url('food', r.id),
         title: `${r.name}${level > 1 ? ` · Lv${level}` : ''}`,
         sub: `${prepAt(r, level)}s to cook · ${starsAt(r, level)}★`,
-        tags: [tag(money(priceAt(r, level)), 'tag-cost'), ...[...chips.values()].map((c) => c.el)],
+        tags: [tag(money(priceAt(r, level)), 'tag-cost', 'sand'), ...[...chips.values()].map((c) => c.el)],
         side: open ? leftTag : step.el,
         cls: (s.menu[r.id] ?? 0) > 0 ? 'sel' : '',
       });
@@ -450,6 +457,7 @@ export class Panels {
       const hired = s.hasStaff(st.id);
       return this.#card({
         src: this.assets.url('staff', st.sprite),
+        frames: this.assets.frameCount('staff', st.sprite),
         title: st.label,
         sub: st.blurb,
         tags: hired ? [tag('On the crew', 'tag-ok')] : [this.#cost(st.cost)],
@@ -619,7 +627,8 @@ export class Panels {
       title: 'Harbor Menu',
       body: [
         h('div.card', null,
-          thumb(this.assets.url('customers', '05_sea_otter')),
+          thumb(this.assets.url('customers', '05_sea_otter'),
+            { frames: this.assets.frameCount('customers', '05_sea_otter') }),
           h('div.card-main', null,
             h('div.card-title', null, `Day ${s.day} · ${'★'.repeat(s.rating)}`),
             h('div.card-sub', null, `${money(s.stars)} reputation · ${s.stats.served} guests served · ${money(s.stats.earned)} earned all told`))),
@@ -684,7 +693,8 @@ export class Panels {
       title: `Day ${s.day} — ${reason === 'soldout' ? 'Sold Out!' : 'Closing Time'}`,
       body: [
         h('div.card', null,
-          thumb(this.assets.url('staff', '10_orca_harbor_manager')),
+          thumb(this.assets.url('staff', '10_orca_harbor_manager'),
+            { frames: this.assets.frameCount('staff', '10_orca_harbor_manager') }),
           h('div.card-main', null,
             h('div.card-title', null, r.served > 0 ? 'Good shift.' : 'Quiet one.'),
             h('div.card-sub', null, reason === 'soldout'

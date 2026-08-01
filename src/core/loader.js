@@ -53,6 +53,9 @@ export class Assets {
     const s = this.get(group, id);
     return s ? s.img.src : '';
   }
+
+  /** Frames in a sprite's strip — the DOM UI shows only the first one. */
+  frameCount(group, id) { return this.get(group, id)?.count ?? 1; }
 }
 
 export async function loadAssets(onProgress = () => {}) {

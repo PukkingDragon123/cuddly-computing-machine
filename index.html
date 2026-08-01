@@ -15,15 +15,12 @@
   <div id="hud">
 
     <div class="corner top-left">
-      <div class="chip" id="chip-coins">
-        <i class="ico ico-sand"></i><b data-bind="coins">300</b>
+      <!-- coins and stars read together, so they share one plaque -->
+      <div class="wallet">
+        <span class="seg" id="chip-coins"><i class="ico ico-sand"></i><b data-bind="coins">300</b></span>
+        <span class="seg" id="chip-stars"><i class="ico ico-star"></i><b data-bind="stars">0</b></span>
       </div>
-      <div class="chip chip-sm" id="chip-stars">
-        <i class="ico ico-star"></i><b data-bind="stars">0</b>
-      </div>
-      <div class="chip chip-sm chip-ghost" id="chip-day">
-        <span data-bind="phase">Day 1 · Prep</span>
-      </div>
+      <span class="daytag" data-bind="phase">Day 1 · Prep</span>
     </div>
 
     <div class="corner top-right">
@@ -42,10 +39,10 @@
     </div>
 
     <div class="corner bottom-right">
-      <button class="round round-lg" id="btn-build">
+      <button class="tile" id="btn-build">
         <i class="ico ico-hammer"></i><span class="cap">Build</span>
       </button>
-      <button class="round round-lg" id="btn-recipes">
+      <button class="tile" id="btn-recipes">
         <i class="ico ico-book"></i><span class="cap">Recipes</span>
         <span class="badge hidden" data-bind="menu-badge">0</span>
       </button>
@@ -82,11 +79,11 @@
 
   <!-- ------------------------------------------------------------- sheets -->
   <div id="scrim" class="hidden"></div>
-  <div id="sheet" class="sheet hidden" role="dialog" aria-modal="true">
-    <div class="sheet-grip"></div>
+  <div id="sheet" class="sheet grain hidden" role="dialog" aria-modal="true">
     <header class="sheet-head">
+      <div class="sheet-grip"></div>
       <h2 id="sheet-title">Panel</h2>
-      <button class="round round-sm" id="sheet-close"><i class="ico ico-x"></i></button>
+      <button class="round round-sm" id="sheet-close" aria-label="Close"><i class="ico ico-x"></i></button>
     </header>
     <div class="sheet-tabs" id="sheet-tabs"></div>
     <div class="sheet-body" id="sheet-body"></div>
