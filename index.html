@@ -98,10 +98,48 @@
       </div>
       <div class="boot-bar"><i id="boot-fill"></i></div>
       <p id="boot-msg">Filling the tanks…</p>
+      <button id="boot-retry" class="pill pill-sun hidden" type="button">Reload</button>
     </div>
   </div>
 </div>
 
+<!--
+  Boot guard. A module that fails to resolve — a half-cached file graph after a
+  rename, a blocked request — throws before main() ever runs, so nothing inside
+  the module can report it and the loading screen would sit there forever. This
+  is inline on purpose: it cannot itself be the file that failed to arrive.
+-->
+<script>
+(function () {
+  var msg = document.getElementById('boot-msg');
+  var retry = document.getElementById('boot-retry');
+  var shown = false;
+
+  function stuck(text) {
+    if (shown || window.game) return;
+    shown = true;
+    msg.textContent = text;
+    msg.style.color = '#b8481c';
+    retry.classList.remove('hidden');
+  }
+
+  // a hard reload past the cache, since a stale file is the usual cause
+  retry.onclick = function () {
+    var u = location.href.replace(/[?&]r=\d+/, '');
+    location.replace(u + (u.indexOf('?') < 0 ? '?' : '&') + 'r=' + Date.now());
+  };
+
+  window.addEventListener('error', function (e) {
+    if (e.target && e.target !== window && e.target.tagName === 'SCRIPT') {
+      stuck('Could not load the game files. Try reloading.');
+    }
+  }, true);
+
+  window.setTimeout(function () {
+    stuck('This is taking longer than it should. Try reloading.');
+  }, 15000);
+}());
+</script>
 <script type="module" src="src/main.js"></script>
 <noscript><p style="padding:2rem;font:16px system-ui">This game needs JavaScript enabled.</p></noscript>
 </body>

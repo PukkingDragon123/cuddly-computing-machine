@@ -74,7 +74,8 @@ async function main() {
 
 main().catch((err) => {
   console.error(err);
-  msg.textContent = 'Something went wrong loading the harbour.';
+  msg.textContent = `Could not open the harbour — ${err?.message ?? err}`;
   msg.style.color = '#b8481c';
   fill.style.background = '#e4652f';
+  document.getElementById('boot-retry')?.classList.remove('hidden');
 });

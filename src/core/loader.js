@@ -2,12 +2,18 @@
 
 const BASE = 'assets/';
 
+/**
+ * Resolves to null rather than throwing when a sprite is missing. One art file
+ * that failed to reach the browser — a stale CDN copy, a flaky connection —
+ * used to take the whole boot down with it, which is a poor trade for a chair
+ * that would simply not be drawn.
+ */
 function loadImage(src) {
-  return new Promise((resolve, reject) => {
+  return new Promise((resolve) => {
     const img = new Image();
     img.decoding = 'async';
     img.onload = () => resolve(img);
-    img.onerror = () => reject(new Error(`failed to load ${src}`));
+    img.onerror = () => resolve(null);
     img.src = src;
   });
 }
@@ -59,7 +65,9 @@ export class Assets {
 }
 
 export async function loadAssets(onProgress = () => {}) {
-  const atlas = await (await fetch(`${BASE}atlas.json`, { cache: 'no-cache' })).json();
+  const res = await fetch(`${BASE}atlas.json`, { cache: 'no-cache' });
+  if (!res.ok) throw new Error(`atlas.json: HTTP ${res.status}`);
+  const atlas = await res.json();
 
   const jobs = [];
   for (const [group, entries] of Object.entries(atlas)) {
@@ -68,6 +76,7 @@ export async function loadAssets(onProgress = () => {}) {
 
   let done = 0;
   const groups = {};
+  const missing = [];
   const CONCURRENCY = 12;
   let cursor = 0;
 
@@ -75,11 +84,17 @@ export async function loadAssets(onProgress = () => {}) {
     while (cursor < jobs.length) {
       const { group, entry } = jobs[cursor++];
       const img = await loadImage(BASE + entry.src);
-      (groups[group] ??= new Map()).set(entry.id, new Sprite(entry, img));
+      if (img) (groups[group] ??= new Map()).set(entry.id, new Sprite(entry, img));
+      else missing.push(entry.src);
       onProgress(++done / jobs.length, entry.id);
     }
   }
   await Promise.all(Array.from({ length: CONCURRENCY }, worker));
+
+  // every sprite failing means the art never arrived at all, which is worth
+  // saying out loud rather than opening an empty restaurant
+  if (missing.length === jobs.length) throw new Error('no art could be loaded');
+  if (missing.length) console.warn(`${missing.length} sprites missing:`, missing.slice(0, 8));
 
   // keep atlas ordering rather than load-completion ordering
   for (const [group, entries] of Object.entries(atlas)) {
