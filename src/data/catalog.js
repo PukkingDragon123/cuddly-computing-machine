@@ -28,20 +28,21 @@ export const groupFor = (item, styleId) => {
  *   pass  — the kitchen counter; finished plates appear on it
  *   decor — pure ambience, adds passive stars
  *
- * `sprite` is either one id, or `{ l, r }` for the pieces that ship both
- * facings — those get turned to face their table automatically.
- * `hang` draws above the floor (ceiling and wall pieces); `flat` draws under
- * everything, with the floor.
+ * `sprite` is either one id, or `{ f, b }` — the front and back views of a
+ * piece, which with a mirror give all four turns (see world/orient.js). Chairs
+ * turn to face their table on their own; everything else takes the Rotate
+ * button. `hang` draws above the floor (ceiling and wall pieces); `flat` draws
+ * under everything, with the floor.
  */
 export const FURNITURE = [
-  { id: 'game_table',  kind: 'table', set: 'furn', sprite: { l: 'game_table_l', r: 'game_table_r' },
+  { id: 'game_table',  kind: 'table', set: 'furn', sprite: { f: 'game_table_f', b: 'game_table_b' },
     label: 'Games Table', cost: 130, star: 1, blurb: 'Square top — put a chair on any side.' },
-  { id: 'round_table', kind: 'table', set: 'furn', sprite: { l: 'round_table_l', r: 'round_table_r' },
+  { id: 'round_table', kind: 'table', set: 'furn', sprite: { f: 'round_table_f', b: 'round_table_b' },
     label: 'Round Table', cost: 175, star: 2, tip: 1.1, blurb: 'Cosier, and guests tip a little more.' },
 
-  { id: 'chair',    kind: 'seat', set: 'furn', sprite: { l: 'chair_l', r: 'chair_r' },
-    label: 'Dining Chair', cost: 50, star: 1, blurb: 'Drop it on a glowing spot by a table to make a seat.' },
-  { id: 'armchair', kind: 'seat', set: 'furn', sprite: { l: 'armchair_l', r: 'armchair_r' },
+  { id: 'chair',    kind: 'seat', set: 'furn', sprite: { f: 'chair_f', b: 'chair_b' },
+    label: 'Dining Chair', cost: 50, star: 1, blurb: 'Place it beside a table — it turns to face it.' },
+  { id: 'armchair', kind: 'seat', set: 'furn', sprite: { f: 'armchair_f', b: 'armchair_b' },
     label: 'Armchair', cost: 120, star: 2, patience: 1.3, blurb: 'Deep and soft — guests wait far longer.' },
 
   { id: 'pass_counter', kind: 'pass', set: 'fixt', sprite: 'pass_counter',
@@ -49,13 +50,13 @@ export const FURNITURE = [
 
   { id: 'host_desk', kind: 'decor', set: 'fixt', sprite: 'host_desk',
     label: 'Host Desk', cost: 210, star: 3, draw: 0.12, blurb: 'A welcome out front pulls guests in faster.' },
-  { id: 'cabinet',   kind: 'decor', set: 'furn', sprite: { l: 'cabinet_l', r: 'cabinet_r' },
+  { id: 'cabinet',   kind: 'decor', set: 'furn', sprite: { f: 'cabinet_f', b: 'cabinet_b' },
     label: 'Sideboard', cost: 95, star: 2, blurb: 'Handsome by a wall.' },
-  { id: 'drawers',   kind: 'decor', set: 'furn', sprite: { l: 'drawers_l', r: 'drawers_r' },
+  { id: 'drawers',   kind: 'decor', set: 'furn', sprite: { f: 'drawers_f', b: 'drawers_b' },
     label: 'Chest of Drawers', cost: 90, star: 2, blurb: 'Tucks into a corner.' },
-  { id: 'shelf',     kind: 'decor', set: 'furn', sprite: { l: 'shelf_l', r: 'shelf_r' },
+  { id: 'shelf',     kind: 'decor', set: 'furn', sprite: { f: 'shelf_f', b: 'shelf_b' },
     label: 'Basket Shelf', cost: 110, star: 2, order: 0.9, blurb: 'Keeps the kitchen stocked and quicker.' },
-  { id: 'lamp',      kind: 'decor', set: 'furn', sprite: { l: 'lamp_l', r: 'lamp_r' }, hang: true,
+  { id: 'lamp',      kind: 'decor', set: 'furn', sprite: { f: 'lamp_f', b: 'lamp_b' }, hang: true,
     label: 'Pendant Lamp', cost: 115, star: 3, blurb: 'Warm light hanging overhead.' },
   { id: 'rug',       kind: 'decor', set: 'furn', sprite: 'rug', flat: true,
     label: 'Patterned Rug', cost: 80, star: 2, patienceRoom: 1.06, blurb: 'Guests settle in more patiently.' },
@@ -123,7 +124,7 @@ export const MACHINE_BY_ID = Object.fromEntries(MACHINES.map((m) => [m.id, m]));
 
 export const BELT = { id: 'belt', kind: 'belt', label: 'Conveyor', cost: 16, blurb: 'Drag to draw a line of belts.' };
 export const SILO = { id: 'silo', kind: 'silo', label: 'Pantry Intake', cost: 200,
-  group: 'furn_plain', sprite: 'shelf_r', blurb: 'Anything delivered here lands in your pantry.' };
+  group: 'furn_plain', sprite: 'shelf_b', blurb: 'Anything delivered here lands in your pantry.' };
 
 export const MACHINE_MAX_LEVEL = 5;
 export const machineUpgradeCost = (m, level) => Math.round(m.cost * 0.8 * 1.75 ** level);

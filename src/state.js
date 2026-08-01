@@ -6,10 +6,10 @@ import { RECIPE_BY_ID, priceAt, prepAt, starsAt } from './data/recipes.js';
 import {
   FURNITURE_BY_ID, STYLE_BY_ID, STAFF_BY_ID, LEGACY_FURNITURE, LEGACY_STYLES,
 } from './data/catalog.js';
-import { seatSideFor, seatTilesOf } from './world/seating.js';
+import { rotOf } from './world/orient.js';
 
 const KEY = 'bubbleworks.harbor.save.v1';
-const VERSION = 3;
+const VERSION = 4;
 export const SAVE_KEY = KEY;
 
 function fresh() {
@@ -27,36 +27,16 @@ function fresh() {
     staff: [],
     // the free starter kitchen: a pass, one table, two chairs
     furniture: [
-      { c: 1, r: 1, id: 'pass_counter', style: 'plain', flip: false },
-      { c: 4, r: 4, id: 'round_table', style: 'plain', flip: false },
-      { c: 3, r: 4, id: 'chair', style: 'plain', flip: false },
-      { c: 4, r: 3, id: 'chair', style: 'plain', flip: false },
+      { c: 1, r: 1, id: 'pass_counter', style: 'plain', rot: 0 },
+      { c: 4, r: 4, id: 'round_table', style: 'plain', rot: 0 },
+      { c: 3, r: 4, id: 'chair', style: 'plain', rot: 0 },
+      { c: 5, r: 4, id: 'chair', style: 'plain', rot: 0 },
     ],
     machines: [],
     seenHelp: false,
     lastSeen: Date.now(),
     stats: { served: 0, walkouts: 0, earned: 0, best: 0 },
   };
-}
-
-/**
- * v2 -> v3. Seating moved to the sides of a table the chair art can honestly
- * face, which leaves chairs on the far sides as decor. Rather than quietly cost
- * the player seats, walk each one round to a free side that still works.
- */
-function reseat(furniture) {
-  const taken = new Set(furniture.map((f) => `${f.c},${f.r}`));
-  const tables = furniture.filter((f) => FURNITURE_BY_ID[f.id]?.kind === 'table');
-  for (const f of furniture) {
-    if (FURNITURE_BY_ID[f.id]?.kind !== 'seat') continue;
-    const table = tables.find((t) => Math.abs(t.c - f.c) + Math.abs(t.r - f.r) <= 2);
-    if (!table || seatSideFor(f.c, f.r, table)) continue;
-    const spot = seatTilesOf(table).find((s) => !taken.has(`${s.c},${s.r}`));
-    if (!spot) continue;
-    taken.delete(`${f.c},${f.r}`);
-    taken.add(`${spot.c},${spot.r}`);
-    f.c = spot.c; f.r = spot.r;
-  }
 }
 
 /**
@@ -80,7 +60,8 @@ function migrate(data) {
     seen.add(k);
     return true;
   });
-  reseat(data.furniture);
+  // furniture used to store a mirror flag; it now stores one of four turns
+  for (const f of data.furniture) { f.rot = rotOf(f); delete f.flip; }
   data.v = VERSION;
 }
 
@@ -116,7 +97,7 @@ export class GameState {
       pantry: this.pantry, unlocked: this.unlocked, levels: this.levels,
       menu: this.menu, stock: this.stock, staff: this.staff,
       seenHelp: this.seenHelp, stats: this.stats, lastSeen: this.lastSeen ?? Date.now(),
-      furniture: this.furniture.map(({ c, r, id, style, flip }) => ({ c, r, id, style, flip })),
+      furniture: this.furniture.map(({ c, r, id, style, rot }) => ({ c, r, id, style, rot })),
       machines: this.machines.map(({ c, r, kind, id, dir, level, buf }) =>
         ({ c, r, kind, id, dir, level, buf })),
     };

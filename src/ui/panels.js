@@ -16,9 +16,9 @@ import { DIR_NAMES } from '../world/factory.js';
 /** The wood each finish is painted in, for the swatch picker. */
 const STYLE_SWATCH = { plain: '#e0c39a', cottage: '#c98d5e', antique: '#7c4a33' };
 
-/** Thumbnail sprite for a catalogue entry — pairs show their right-facing art. */
+/** Thumbnail sprite for a catalogue entry — pairs show their front view. */
 const spriteIdOf = (item) =>
-  (typeof item.sprite === 'string' ? item.sprite : item.sprite.r ?? item.sprite.l);
+  (typeof item.sprite === 'string' ? item.sprite : item.sprite.f ?? item.sprite.b);
 
 export class Panels {
   constructor(game) {
@@ -95,8 +95,8 @@ export class Panels {
 
     const body = [
       h('div.note', null,
-        'Pick a finish, then tap a piece and tap the floor. A chair only becomes a seat on the ',
-        h('b', null, 'glowing spots'), ' around a table — those are the sides it can turn to face.'),
+        'Pick a finish, then tap a piece and tap the floor. ', h('b', null, 'Rotate'),
+        ' turns it to any of four sides; chairs turn to face their table on their own.'),
       this.#styleRow(),
       ...items.map((item) => {
         const cost = costOf(item, this.buildStyle);

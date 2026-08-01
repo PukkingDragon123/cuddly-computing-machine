@@ -32,7 +32,6 @@ up to four hours of catch-up.
 | **Factory** | Place a machine, drag a conveyor away from it, and end the line at a Pantry Intake. Refiners sit mid-line and turn cheap goods into valuable ones. |
 | **Menu Book** | Set how many of each dish to plate up. Ingredients leave the pantry immediately, so only plate what you can sell. Dishes level up with sand dollars plus more of their signature ingredient. |
 | **Open up** | Guests wander in and wait by the door. Tap one to seat them at a free chair, or tap an empty seat to pull in whoever has been waiting longest. |
-| **Seating** | Chairs only become seats on the spots that glow around a table — the ones a chair can actually turn to face. |
 | **Orders** | Tap the `!` bubble over a seated guest to send the ticket to the chef. |
 | **Service** | Drag the finished dish off the kitchen pass onto the guest who ordered it. Tap-then-tap works too. |
 | **Payment** | Guests pay on how briskly they were served. Let a patience meter empty and they walk out, costing reputation. |
@@ -43,8 +42,8 @@ grows their tips. Hiring crew automates the fiddly parts: the Oyster Host seats
 guests, the Cuttlefish Server runs plates, cooks add parallel burners, the
 Mechanic speeds up the works.
 
-Pinch or scroll to zoom, drag to pan, `Tab` to switch rooms, `R` to rotate what
-you're placing, `Esc` to cancel.
+Pinch or scroll to zoom, drag to pan, `Tab` to switch rooms, `R` to turn what
+you're placing through its four sides, `Esc` to cancel.
 
 ## Layout
 
@@ -77,11 +76,11 @@ index:
   backdrop, plus 3-frame character strips (idle / walk / eat).
 - `art_pack_02/` — the dining room: furniture in three finishes, wall joinery
   (doors, windows, counters) in two woods, and three more guests. Every piece of
-  furniture ships a left- and a right-facing drawing, so a chair genuinely turns
-  to face its table instead of being mirrored. There is no back view, though —
-  mirroring one facing only produces the other — so a chair becomes a seat on
-  the five sides of a table a real drawing can face, and the build cursor glows
-  on them.
+  furniture ships two drawings: `_f` faces screen down-left, `_b` is the same
+  piece turned to face up-right. Mirroring swaps the two ground axes — down-left
+  becomes down-right, up-right becomes up-left — so those two plus a flip give
+  all four isometric turns, every one a real drawing. Rotate cycles them, and a
+  chair picks the one that faces its table.
 
 ```sh
 pip install pillow numpy scipy

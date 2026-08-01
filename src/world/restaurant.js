@@ -3,12 +3,12 @@
 
 import { FURN_SCALE, HALF_H, depthOf, tileAt, toScreen } from './iso.js';
 import { Room } from './room.js';
-import { seatSideFor, seatTilesOf } from './seating.js';
+import { ROT_COUNT, artFor, mirrorAt, rotOf, rotationToward } from './orient.js';
 import { Fx } from '../gfx/fx.js';
 import { Kitchen } from './kitchen.js';
 import { spring } from '../core/tween.js';
 import { CS, Customer, rollGuest } from './customer.js';
-import { clamp, money, range, rnd, tileDist, uid } from '../core/util.js';
+import { clamp, money, neighbours, range, rnd, tileDist, uid } from '../core/util.js';
 import { FURNITURE_BY_ID, STYLE_BY_ID, groupFor } from '../data/catalog.js';
 import { drawIcon, drawSprite, squash, sticker, text } from '../gfx/paint.js';
 
@@ -36,7 +36,7 @@ export class Restaurant {
     this.kitchen = new Kitchen(this);
     this.guests = [];
 
-    this.ghost = null;           // { id, style, flip, c, r, ok }
+    this.ghost = null;           // { id, style, rot, c, r, ok }
     this.selection = null;       // { c, r } furniture inspector target
     this.spawnT = 0;
     this.autoSeatT = 0;
@@ -68,7 +68,7 @@ export class Restaurant {
     for (const f of this.state.furniture) {
       f.item = FURNITURE_BY_ID[f.id];
       if (!f.item) continue;
-      f.facing = null;       // re-derived below for seats that have a table
+      f.rot = rotOf(f);
       f.nudge = null;
       f.style = f.style ?? 'plain';
       f.uid ??= uid('f');
@@ -88,7 +88,7 @@ export class Restaurant {
     }
     for (const f of this.grid.values()) {
       if (f.item.kind !== 'seat') continue;
-      const table = this.tables.find((t) => seatSideFor(f.c, f.r, t));
+      const table = this.tables.find((t) => neighbours(t).some((n) => n.c === f.c && n.r === f.r));
       const old = prevSeats.get(this.key(f.c, f.r));
       const seat = {
         c: f.c, r: f.r, f, table: table ?? null,
@@ -106,23 +106,26 @@ export class Restaurant {
   /**
    * Turn a chair to face its table and shuffle it clear of the tabletop.
    *
-   * The facing comes straight off which side of the table the chair took, so it
-   * is always a drawing that genuinely looks that way rather than a mirror.
+   * Every side of a table is a real drawing: the two that face down-screen come
+   * from the front view, the two that face up-screen from the back view, each
+   * mirrored on one of its sides. So a chair never has to settle for the
+   * nearest facing — it turns to its table whichever side it took.
    */
   #orientSeat(seat) {
     const f = seat.f;
-    f.facing = null;
     f.nudge = null;
-    f.bias = 0;
     if (!seat.table) return;
 
-    const side = seatSideFor(seat.c, seat.r, seat.table);
-    if (!side) return;
-    if (typeof f.item.sprite !== 'string') f.facing = side.facing;
-    // each side carries its own offset: tiles are only half a sprite apart one
-    // way and a whole tile the other, so one nudge rule cannot serve both
-    f.nudge = side.nudge;
-    f.bias = side.bias;
+    const rot = rotationToward(seat.table.c - seat.c, seat.table.r - seat.r);
+    if (rot === null) return;
+    f.rot = rot;
+    // adjacent tiles are only half a sprite apart, so back the chair off along
+    // the line to the table until it clears the tabletop
+    const chair = toScreen(seat.c, seat.r);
+    const table = toScreen(seat.table.c, seat.table.r);
+    const dx = chair.x - table.x, dy = chair.y - table.y;
+    const len = Math.hypot(dx, dy) || 1;
+    f.nudge = { x: (dx / len) * 12, y: (dy / len) * 8 };
   }
 
   /** Match the room's doors and windows to the finish the room mostly uses. */
@@ -148,13 +151,13 @@ export class Restaurant {
   beginPlace(id, style = 'plain') {
     const item = FURNITURE_BY_ID[id];
     if (!item) return;
-    this.ghost = { id, item, style, flip: false, c: null, r: null, ok: false, t: 0 };
+    this.ghost = { id, item, style, rot: 0, c: null, r: null, ok: false, t: 0 };
     this.selection = null;
   }
 
   cancelPlace() { this.ghost = null; }
 
-  rotateGhost() { if (this.ghost) this.ghost.flip = !this.ghost.flip; }
+  rotateGhost() { if (this.ghost) this.ghost.rot = (this.ghost.rot + 1) % ROT_COUNT; }
 
   moveGhost(world) {
     if (!this.ghost) return;
@@ -178,7 +181,7 @@ export class Restaurant {
     const cost = Math.round(g.item.cost * (STYLE_BY_ID[g.style]?.costMul ?? 1));
     if (!this.state.spend(cost)) return 0;
 
-    const rec = { c: g.c, r: g.r, id: g.id, style: g.style, flip: g.flip, uid: uid('f'), sq: { value: 0.82, vel: 0 } };
+    const rec = { c: g.c, r: g.r, id: g.id, style: g.style, rot: g.rot, uid: uid('f'), sq: { value: 0.82, vel: 0 } };
     this.state.furniture.push(rec);
     this.rebuild();
 
@@ -653,20 +656,12 @@ export class Restaurant {
     }
   }
 
-  /**
-   * Sprite for a placed piece. Most furniture ships a left- and a right-facing
-   * variant, so orientation picks a real drawing rather than mirroring one.
-   */
+  /** Sprite for a placed piece, at whatever turn it is set to. */
   spriteFor(f) {
-    const group = groupFor(f.item, f.style);
-    const art = f.item.sprite;
-    if (typeof art === 'string') return this.assets.get(group, art);
-    const side = f.facing ?? (f.flip ? 'l' : 'r');
-    return this.assets.get(group, art[side] ?? art.r ?? art.l);
+    return this.assets.get(groupFor(f.item, f.style), artFor(f.item.sprite, f.rot ?? 0));
   }
 
-  /** Single-sprite pieces still mirror on the Rotate button; pairs never do. */
-  mirrorFor(f) { return typeof f.item.sprite === 'string' ? !!f.flip : false; }
+  mirrorFor(f) { return mirrorAt(f.item.sprite, f.rot ?? 0); }
 
   /** Push depth-sorted draw jobs onto the renderer's list. */
   collect(ctx, list, t) {
@@ -682,7 +677,7 @@ export class Restaurant {
       const { sx, sy } = squash(f.sq?.value ?? 1);
       const isSel = this.selection === f;
       list.push({
-        d: depthOf(f.c, f.r, hang ? 40 : (f.bias ?? 0)),
+        d: depthOf(f.c, f.r, hang ? 40 : 0),
         fn: () => {
           drawSprite(ctx, s, 0, nx, y, {
             scale: FURN_SCALE,
@@ -720,9 +715,7 @@ export class Restaurant {
   /** Ghost preview + tile marks, drawn on the floor above the room. */
   drawBuildLayer(ctx, t) {
     const g = this.ghost;
-    if (!g) return;
-    this.drawSeatSpots(ctx, t);
-    if (g.c === null) return;
+    if (!g || g.c === null) return;
     Room.markTile(ctx, g.c, g.r, g.ok ? 'ok' : 'bad', t);
     const s = this.#ghostSprite(g);
     if (!s) return;
@@ -733,7 +726,7 @@ export class Restaurant {
     drawSprite(ctx, s, 0, p.x, hang ? p.y - 132 : p.y + HALF_H * 0.36, {
       scale: FURN_SCALE,
       scaleY: 1 + Math.sin(t * 6) * 0.03,
-      flipX: typeof g.item.sprite === 'string' ? !!g.flip : false,
+      flipX: mirrorAt(g.item.sprite, this.#ghostRot(g)),
       glow: g.ok ? '#8bbb6a' : '#e4652f',
       glowWidth: 3,
     });
@@ -741,31 +734,17 @@ export class Restaurant {
     Room.outlineTile(ctx, g.c, g.r, g.ok ? 'ok' : 'bad', t);
   }
 
-  /** Preview a chair already facing whichever table it would join. */
+  /** Preview a chair already turned to whichever table it would join. */
   #ghostSprite(g) {
-    const probe = { item: g.item, style: g.style, flip: g.flip, facing: null };
-    if (g.item.kind === 'seat' && typeof g.item.sprite !== 'string') {
-      for (const tb of this.tables) {
-        const side = seatSideFor(g.c, g.r, tb);
-        if (side) { probe.facing = side.facing; break; }
-      }
-    }
-    return this.spriteFor(probe);
+    return this.spriteFor({ item: g.item, style: g.style, rot: this.#ghostRot(g) });
   }
 
-  /**
-   * While a chair is on the cursor, mark the tiles around each table that would
-   * actually turn it into a seat — the art only faces two ways, so the far sides
-   * of a table are decor rather than seating and it should be obvious which.
-   */
-  drawSeatSpots(ctx, t) {
-    if (this.ghost?.item?.kind !== 'seat') return;
-    for (const tb of this.tables) {
-      for (const s of seatTilesOf(tb)) {
-        if (!this.canPlace(s.c, s.r)) continue;
-        Room.glowTile(ctx, s.c, s.r, 'rgba(139,187,106,0.30)', t);
-      }
-    }
+  /** A chair on the cursor faces its table; everything else obeys Rotate. */
+  #ghostRot(g) {
+    if (g.item.kind !== 'seat') return g.rot;
+    const table = this.tables.find((tb) => neighbours(tb).some((n) => n.c === g.c && n.r === g.r));
+    if (!table) return g.rot;
+    return rotationToward(table.c - g.c, table.r - g.r) ?? g.rot;
   }
 
   /** Floor-level marks: a soft glow under seats a waiting guest could take. */

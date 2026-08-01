@@ -731,74 +731,74 @@
  ],
  "furn_plain": [
   {
-   "id": "cabinet_l",
-   "src": "furn_plain/cabinet_l.png",
+   "id": "cabinet_f",
+   "src": "furn_plain/cabinet_f.png",
    "w": 163,
    "h": 165
   },
   {
-   "id": "cabinet_r",
-   "src": "furn_plain/cabinet_r.png",
+   "id": "cabinet_b",
+   "src": "furn_plain/cabinet_b.png",
    "w": 162,
    "h": 165
   },
   {
-   "id": "chair_l",
-   "src": "furn_plain/chair_l.png",
+   "id": "chair_f",
+   "src": "furn_plain/chair_f.png",
    "w": 111,
    "h": 178
   },
   {
-   "id": "chair_r",
-   "src": "furn_plain/chair_r.png",
+   "id": "chair_b",
+   "src": "furn_plain/chair_b.png",
    "w": 112,
    "h": 154
   },
   {
-   "id": "drawers_l",
-   "src": "furn_plain/drawers_l.png",
+   "id": "drawers_f",
+   "src": "furn_plain/drawers_f.png",
    "w": 139,
    "h": 158
   },
   {
-   "id": "drawers_r",
-   "src": "furn_plain/drawers_r.png",
+   "id": "drawers_b",
+   "src": "furn_plain/drawers_b.png",
    "w": 140,
    "h": 158
   },
   {
-   "id": "armchair_l",
-   "src": "furn_plain/armchair_l.png",
+   "id": "armchair_f",
+   "src": "furn_plain/armchair_f.png",
    "w": 162,
    "h": 166
   },
   {
-   "id": "armchair_r",
-   "src": "furn_plain/armchair_r.png",
+   "id": "armchair_b",
+   "src": "furn_plain/armchair_b.png",
    "w": 164,
    "h": 142
   },
   {
-   "id": "shelf_l",
-   "src": "furn_plain/shelf_l.png",
+   "id": "shelf_f",
+   "src": "furn_plain/shelf_f.png",
    "w": 144,
    "h": 188
   },
   {
-   "id": "shelf_r",
-   "src": "furn_plain/shelf_r.png",
+   "id": "shelf_b",
+   "src": "furn_plain/shelf_b.png",
    "w": 144,
    "h": 188
   },
   {
-   "id": "lamp_l",
-   "src": "furn_plain/lamp_l.png",
+   "id": "lamp_f",
+   "src": "furn_plain/lamp_f.png",
    "w": 105,
    "h": 127
   },
   {
-   "id": "lamp_r",
-   "src": "furn_plain/lamp_r.png",
+   "id": "lamp_b",
+   "src": "furn_plain/lamp_b.png",
    "w": 105,
    "h": 121
   },
@@ -827,14 +827,14 @@
    "h": 128
   },
   {
-   "id": "game_table_l",
-   "src": "furn_plain/game_table_l.png",
+   "id": "game_table_f",
+   "src": "furn_plain/game_table_f.png",
    "w": 157,
    "h": 168
   },
   {
-   "id": "game_table_r",
-   "src": "furn_plain/game_table_r.png",
+   "id": "game_table_b",
+   "src": "furn_plain/game_table_b.png",
    "w": 157,
    "h": 168
   },
@@ -851,14 +851,14 @@
    "h": 138
   },
   {
-   "id": "round_table_l",
-   "src": "furn_plain/round_table_l.png",
+   "id": "round_table_f",
+   "src": "furn_plain/round_table_f.png",
    "w": 157,
    "h": 140
   },
   {
-   "id": "round_table_r",
-   "src": "furn_plain/round_table_r.png",
+   "id": "round_table_b",
+   "src": "furn_plain/round_table_b.png",
    "w": 156,
    "h": 139
   },
@@ -877,74 +877,74 @@
  ],
  "furn_cottage": [
   {
-   "id": "cabinet_l",
-   "src": "furn_cottage/cabinet_l.png",
+   "id": "cabinet_f",
+   "src": "furn_cottage/cabinet_f.png",
    "w": 163,
    "h": 165
   },
   {
-   "id": "cabinet_r",
-   "src": "furn_cottage/cabinet_r.png",
+   "id": "cabinet_b",
+   "src": "furn_cottage/cabinet_b.png",
    "w": 162,
    "h": 166
   },
   {
-   "id": "chair_l",
-   "src": "furn_cottage/chair_l.png",
+   "id": "chair_f",
+   "src": "furn_cottage/chair_f.png",
    "w": 114,
    "h": 179
   },
   {
-   "id": "chair_r",
-   "src": "furn_cottage/chair_r.png",
+   "id": "chair_b",
+   "src": "furn_cottage/chair_b.png",
    "w": 113,
    "h": 154
   },
   {
-   "id": "drawers_l",
-   "src": "furn_cottage/drawers_l.png",
+   "id": "drawers_f",
+   "src": "furn_cottage/drawers_f.png",
    "w": 140,
    "h": 158
   },
   {
-   "id": "drawers_r",
-   "src": "furn_cottage/drawers_r.png",
+   "id": "drawers_b",
+   "src": "furn_cottage/drawers_b.png",
    "w": 140,
    "h": 158
   },
   {
-   "id": "armchair_l",
-   "src": "furn_cottage/armchair_l.png",
+   "id": "armchair_f",
+   "src": "furn_cottage/armchair_f.png",
    "w": 163,
    "h": 167
   },
   {
-   "id": "armchair_r",
-   "src": "furn_cottage/armchair_r.png",
+   "id": "armchair_b",
+   "src": "furn_cottage/armchair_b.png",
    "w": 165,
    "h": 143
   },
   {
-   "id": "shelf_l",
-   "src": "furn_cottage/shelf_l.png",
+   "id": "shelf_f",
+   "src": "furn_cottage/shelf_f.png",
    "w": 148,
    "h": 190
   },
   {
-   "id": "shelf_r",
-   "src": "furn_cottage/shelf_r.png",
+   "id": "shelf_b",
+   "src": "furn_cottage/shelf_b.png",
    "w": 148,
    "h": 190
   },
   {
-   "id": "lamp_l",
-   "src": "furn_cottage/lamp_l.png",
+   "id": "lamp_f",
+   "src": "furn_cottage/lamp_f.png",
    "w": 111,
    "h": 148
   },
   {
-   "id": "lamp_r",
-   "src": "furn_cottage/lamp_r.png",
+   "id": "lamp_b",
+   "src": "furn_cottage/lamp_b.png",
    "w": 108,
    "h": 146
   },
@@ -973,14 +973,14 @@
    "h": 124
   },
   {
-   "id": "game_table_l",
-   "src": "furn_cottage/game_table_l.png",
+   "id": "game_table_f",
+   "src": "furn_cottage/game_table_f.png",
    "w": 157,
    "h": 168
   },
   {
-   "id": "game_table_r",
-   "src": "furn_cottage/game_table_r.png",
+   "id": "game_table_b",
+   "src": "furn_cottage/game_table_b.png",
    "w": 157,
    "h": 168
   },
@@ -997,14 +997,14 @@
    "h": 137
   },
   {
-   "id": "round_table_l",
-   "src": "furn_cottage/round_table_l.png",
+   "id": "round_table_f",
+   "src": "furn_cottage/round_table_f.png",
    "w": 125,
    "h": 140
   },
   {
-   "id": "round_table_r",
-   "src": "furn_cottage/round_table_r.png",
+   "id": "round_table_b",
+   "src": "furn_cottage/round_table_b.png",
    "w": 176,
    "h": 149
   },
@@ -1023,74 +1023,74 @@
  ],
  "furn_antique": [
   {
-   "id": "cabinet_l",
-   "src": "furn_antique/cabinet_l.png",
+   "id": "cabinet_f",
+   "src": "furn_antique/cabinet_f.png",
    "w": 163,
    "h": 165
   },
   {
-   "id": "cabinet_r",
-   "src": "furn_antique/cabinet_r.png",
+   "id": "cabinet_b",
+   "src": "furn_antique/cabinet_b.png",
    "w": 163,
    "h": 165
   },
   {
-   "id": "chair_l",
-   "src": "furn_antique/chair_l.png",
+   "id": "chair_f",
+   "src": "furn_antique/chair_f.png",
    "w": 114,
    "h": 175
   },
   {
-   "id": "chair_r",
-   "src": "furn_antique/chair_r.png",
+   "id": "chair_b",
+   "src": "furn_antique/chair_b.png",
    "w": 113,
    "h": 157
   },
   {
-   "id": "drawers_l",
-   "src": "furn_antique/drawers_l.png",
+   "id": "drawers_f",
+   "src": "furn_antique/drawers_f.png",
    "w": 146,
    "h": 152
   },
   {
-   "id": "drawers_r",
-   "src": "furn_antique/drawers_r.png",
+   "id": "drawers_b",
+   "src": "furn_antique/drawers_b.png",
    "w": 145,
    "h": 152
   },
   {
-   "id": "armchair_l",
-   "src": "furn_antique/armchair_l.png",
+   "id": "armchair_f",
+   "src": "furn_antique/armchair_f.png",
    "w": 161,
    "h": 166
   },
   {
-   "id": "armchair_r",
-   "src": "furn_antique/armchair_r.png",
+   "id": "armchair_b",
+   "src": "furn_antique/armchair_b.png",
    "w": 163,
    "h": 141
   },
   {
-   "id": "shelf_l",
-   "src": "furn_antique/shelf_l.png",
+   "id": "shelf_f",
+   "src": "furn_antique/shelf_f.png",
    "w": 144,
    "h": 190
   },
   {
-   "id": "shelf_r",
-   "src": "furn_antique/shelf_r.png",
+   "id": "shelf_b",
+   "src": "furn_antique/shelf_b.png",
    "w": 144,
    "h": 190
   },
   {
-   "id": "lamp_l",
-   "src": "furn_antique/lamp_l.png",
+   "id": "lamp_f",
+   "src": "furn_antique/lamp_f.png",
    "w": 105,
    "h": 133
   },
   {
-   "id": "lamp_r",
-   "src": "furn_antique/lamp_r.png",
+   "id": "lamp_b",
+   "src": "furn_antique/lamp_b.png",
    "w": 104,
    "h": 129
   },
@@ -1119,14 +1119,14 @@
    "h": 128
   },
   {
-   "id": "game_table_l",
-   "src": "furn_antique/game_table_l.png",
+   "id": "game_table_f",
+   "src": "furn_antique/game_table_f.png",
    "w": 157,
    "h": 166
   },
   {
-   "id": "game_table_r",
-   "src": "furn_antique/game_table_r.png",
+   "id": "game_table_b",
+   "src": "furn_antique/game_table_b.png",
    "w": 158,
    "h": 166
   },
@@ -1143,14 +1143,14 @@
    "h": 139
   },
   {
-   "id": "round_table_l",
-   "src": "furn_antique/round_table_l.png",
+   "id": "round_table_f",
+   "src": "furn_antique/round_table_f.png",
    "w": 157,
    "h": 139
   },
   {
-   "id": "round_table_r",
-   "src": "furn_antique/round_table_r.png",
+   "id": "round_table_b",
+   "src": "furn_antique/round_table_b.png",
    "w": 158,
    "h": 139
   },

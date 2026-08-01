@@ -2,8 +2,8 @@
 """Slice art_pack_02 — the warm-wood furniture, fixtures and extra guests.
 
 These sheets are magenta-keyed PNGs. Furniture comes on a strict 4x6 grid where
-each item ships a left- and a right-facing variant; fixtures sit on a hand-laid
-layout, so those are matched to named positions instead. Output merges into
+each item ships a front and a back view; fixtures sit on a hand-laid layout, so
+those are matched to named positions instead. Output merges into
 assets/atlas.json alongside the character pack.
 
     python3 tools/slice_pack02.py
@@ -24,17 +24,21 @@ OUT = os.path.join(ROOT, 'assets')
 
 # ---------------------------------------------------------------- layouts ---
 
-# Every furniture sheet uses this grid. Column pairs are the two facings of one
-# piece: `_l` reads as facing screen-left, `_r` facing screen-right.
+# Every furniture sheet uses this grid. Column pairs are one piece drawn from
+# two opposite sides: `_f` faces screen down-left (an armchair's seat toward
+# you) and `_b` faces up-right (the same armchair from behind). Mirroring
+# either horizontally swaps the two ground axes,
+# which turns down-left into down-right and up-right into up-left — so these
+# two drawings plus a flip cover all four isometric orientations.
 FURN_COLS = [125, 346, 563, 777]
 FURN_ROWS = [115, 311, 505, 697, 883, 1080]
 FURN_NAMES = [
-    ['cabinet_l',     'cabinet_r',     'chair_l',    'chair_r'],
-    ['drawers_l',     'drawers_r',     'armchair_l', 'armchair_r'],
-    ['shelf_l',       'shelf_r',       'lamp_l',     'lamp_r'],
+    ['cabinet_f',     'cabinet_b',     'chair_f',    'chair_b'],
+    ['drawers_f',     'drawers_b',     'armchair_f', 'armchair_b'],
+    ['shelf_f',       'shelf_b',       'lamp_f',     'lamp_b'],
     ['rug',           'rug_rolled',    'ornament',   'ornament_mat'],
-    ['game_table_l',  'game_table_r',  'books',      'books_lean'],
-    ['round_table_l', 'round_table_r', 'mirror',     'mirror_wide'],
+    ['game_table_f',  'game_table_b',  'books',      'books_lean'],
+    ['round_table_f', 'round_table_b', 'mirror',     'mirror_wide'],
 ]
 
 FURNITURE_SHEETS = [
@@ -106,7 +110,7 @@ def lift_magenta(img: Image.Image, feather: float = 0.7) -> Image.Image:
 # Sprites whose bodies are largely clear glass: the backdrop legitimately shows
 # through them, so the conservative despill leaves a solid pink dome. These get
 # an aggressive pass that turns the tinted area back into translucent glass.
-GLASSY = {'lamp_l', 'lamp_r'}
+GLASSY = {'lamp_f', 'lamp_b'}
 
 
 def despill_hard(img: Image.Image) -> Image.Image:
