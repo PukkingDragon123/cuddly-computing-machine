@@ -120,7 +120,21 @@ export const MACHINES = [
   { id: 'cheese_press',     kind: 'processor', label: 'Cheese Press', sprite: 'cheese_press',  inId: 'milk', inQty: 3, out: 'cheese', interval: 4.4, cost: 520 },
 ];
 
-export const MACHINE_BY_ID = Object.fromEntries(MACHINES.map((m) => [m.id, m]));
+/**
+ * Two machines that make something other than food. Neither takes a belt: a
+ * promo stand pays for itself in guests and a computer in research points, so
+ * they sit wherever there is floor and quietly convert time into progress.
+ */
+export const WORKSHOP = [
+  { id: 'promo_stand', kind: 'promo', label: 'Promo Stand', sprite: 'pineapple_slicer',
+    cost: 800, interval: 22, blurb: 'Pastes a poster up by itself every so often, and makes room for one more.' },
+  { id: 'harbour_computer', kind: 'lab', label: 'Harbour Computer', sprite: 'cheese_press',
+    cost: 1200, interval: 14, out: 1,
+    blurb: 'Turns quiet hours into research points to spend on the board.' },
+];
+
+export const ALL_MACHINES = [...MACHINES, ...WORKSHOP];
+export const MACHINE_BY_ID = Object.fromEntries(ALL_MACHINES.map((m) => [m.id, m]));
 
 export const BELT = { id: 'belt', kind: 'belt', label: 'Conveyor', cost: 16, blurb: 'Drag to draw a line of belts.' };
 export const SILO = { id: 'silo', kind: 'silo', label: 'Pantry Intake', cost: 200,
@@ -156,6 +170,8 @@ export const STAFF = [
     cost: 1600, blurb: '+1 reputation star from every guest served.', effect: 'bonusStar' },
   { id: 'orca_manager',   sprite: '10_orca_harbor_manager', label: 'Harbor Manager',
     cost: 2200, blurb: 'Guests tip 15% more.', effect: 'tips', amount: 0.15 },
+  { id: 'gull_courier',   sprite: '02_cuttlefish_server', label: 'Gull Courier',
+    cost: 1300, blurb: 'Runs the flyers out: three fewer taps a poster.', effect: 'flyer' },
 ];
 
 export const STAFF_BY_ID = Object.fromEntries(STAFF.map((s) => [s.id, s]));

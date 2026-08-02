@@ -4,6 +4,7 @@
 import { HALF_H, toScreen } from './iso.js';
 import { TAU, clamp, findPath, range, rnd } from '../core/util.js';
 import { Ease, makeSpring, spring } from '../core/tween.js';
+import { RARITY_BY_ID, rollRarity } from '../data/guests.js';
 import { bubble, contactShadow, drawIcon, drawSprite, meter, ring, squash, text } from '../gfx/paint.js';
 
 export const CHAR_SCALE = 0.72;
@@ -235,6 +236,57 @@ export class Customer {
 
   /* ----------------------------------------------------------------- draw */
 
+  /**
+   * A ring of light on the floor under the rare tiers. It goes under the sprite
+   * rather than around it so a VIP still reads as a VIP while the tap-me glow is
+   * also on them — two glows on the same silhouette just look like a mistake.
+   */
+  #rarityAura(ctx) {
+    const c = this.rarity?.aura;
+    if (!c || this.alpha < 0.05) return;
+    const pulse = 0.62 + Math.sin(this.bobT * 2.2) * 0.14;
+    ctx.save();
+    ctx.globalAlpha = this.alpha * pulse;
+    const g = ctx.createRadialGradient(this.pos.x, this.pos.y + 2, 2, this.pos.x, this.pos.y + 2, 40);
+    g.addColorStop(0, c);
+    g.addColorStop(1, 'rgba(255,255,255,0)');
+    ctx.fillStyle = g;
+    ctx.beginPath();
+    ctx.ellipse(this.pos.x, this.pos.y + 2, 40, 20, 0, 0, TAU);
+    ctx.fill();
+    ctx.restore();
+  }
+
+  /** A little crown or star above the head, so the tier survives a screenshot. */
+  #rarityMark(ctx) {
+    const mark = this.rarity?.mark;
+    if (!mark || this.alpha < 0.05) return;
+    const y = this.headY - 8 + Math.sin(this.bobT * 2.6) * 2;
+    const x = this.pos.x + 20;
+    ctx.save();
+    ctx.globalAlpha = this.alpha;
+    ctx.lineJoin = 'round';
+    ctx.beginPath();
+    if (mark === 'crown') {
+      ctx.moveTo(x - 9, y + 5); ctx.lineTo(x - 9, y - 4); ctx.lineTo(x - 4.5, y);
+      ctx.lineTo(x, y - 6); ctx.lineTo(x + 4.5, y); ctx.lineTo(x + 9, y - 4);
+      ctx.lineTo(x + 9, y + 5);
+    } else {
+      for (let i = 0; i < 10; i++) {
+        const a = -Math.PI / 2 + (i * TAU) / 10;
+        const rr = i % 2 ? 3.4 : 8;
+        ctx[i ? 'lineTo' : 'moveTo'](x + Math.cos(a) * rr, y + Math.sin(a) * rr);
+      }
+    }
+    ctx.closePath();
+    ctx.fillStyle = this.rarity.aura;
+    ctx.fill();
+    ctx.strokeStyle = '#5f3d26';
+    ctx.lineWidth = 2;
+    ctx.stroke();
+    ctx.restore();
+  }
+
   #frame() {
     if (this.state === CS.EAT) return 'eat';
     if (this.state === CS.ENTER || this.state === CS.WALK || this.state === CS.LEAVE) return 'walk';
@@ -253,6 +305,7 @@ export class Customer {
     const flipK = this.flip > 0 ? 0.34 + 0.66 * Math.abs(Math.cos((1 - this.flip / FLIP_TIME) * Math.PI)) : 1;
 
     contactShadow(ctx, this.pos.x, this.pos.y + 2, 21, -this.hopY / HOP_H, 0.15);
+    this.#rarityAura(ctx);
 
     drawSprite(ctx, this.sprite, this.#frame(), this.pos.x, this.drawY, {
       scale: CHAR_SCALE,
@@ -261,9 +314,10 @@ export class Customer {
       rot: this.tilt,
       alpha: this.alpha,
       flipX: this.face < 0,
-      glow: highlight ? '#f8d167' : null,
-      glowWidth: 3.5,
+      glow: highlight ? '#f8d167' : (this.rarity?.aura ?? null),
+      glowWidth: highlight ? 3.5 : 2.6,
     });
+    this.#rarityMark(ctx);
 
     // held dish, shrinking bite by bite
     if (this.state === CS.EAT && this.plate) {
@@ -318,12 +372,20 @@ export class Customer {
 }
 
 /** Random guest flavour — a sprite plus patience and appetite variation. */
-export function rollGuest(assets) {
+/**
+ * Roll up a guest: which species walked in, and how rare a customer they are.
+ * `pull` is the harbour's draw on the rare tiers — reputation, posters and the
+ * trade research all raise it.
+ */
+export function rollGuest(assets, pull = 0) {
   const list = assets.list('customers');
   const sprite = list[(rnd() * list.length) | 0];
+  const rarity = rollRarity(pull, rnd);
   return {
     sprite,
-    patience: range(0.82, 1.3),
+    species: sprite?.id ?? null,
+    rarity,
+    patience: range(0.82, 1.3) * rarity.patience,
     eatTime: range(3.4, 5.2),
     fussy: clamp(rnd(), 0, 1),
   };

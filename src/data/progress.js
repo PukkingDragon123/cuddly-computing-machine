@@ -1,0 +1,115 @@
+// The long game: flyers, research, the shop, and the pottery class.
+
+/* ---------------------------------------------------------------- flyers  */
+
+/**
+ * Nobody walks into a restaurant nobody has heard of. Before opening you post
+ * flyers by hand — ten taps a poster to begin with — and each poster up on the
+ * harbour wall brings a share of the day's trade. Research, crew and a promotion
+ * machine all chip away at the ten, which is the point: the tapping is the
+ * starting state of a job you are meant to automate out of existence.
+ */
+export const FLYER_TAPS = 10;
+export const FLYER_BASE_MAX = 3;
+
+/** Guests per minute a given number of posters is worth. */
+export const flyerDraw = (posters) => posters * 0.55;
+
+/* -------------------------------------------------------------- research  */
+
+/**
+ * Research points come out of a Harbour Computer on the factory floor. Nodes
+ * are deliberately cheap at the start — the first flyer node pays for itself
+ * within a day — because the tree exists to retire chores, not to gate them.
+ */
+export const RESEARCH = [
+  { id: 'flyer_1', label: 'Bigger Print', cost: 6, group: 'flyer',
+    blurb: 'Two fewer taps to finish a poster.' },
+  { id: 'flyer_2', label: 'Stencil Set', cost: 18, group: 'flyer', needs: 'flyer_1',
+    blurb: 'Another three taps off, and room for a fourth poster.' },
+  { id: 'flyer_auto', label: 'Paste Crew', cost: 44, group: 'flyer', needs: 'flyer_2',
+    blurb: 'Posters go up on their own, one every twelve seconds.' },
+
+  { id: 'speed_1', label: 'Greased Bearings', cost: 10, group: 'works',
+    blurb: 'Every machine runs 15% faster.' },
+  { id: 'speed_2', label: 'Harbour Dynamo', cost: 30, group: 'works', needs: 'speed_1',
+    blurb: 'Another 20% on top.' },
+  { id: 'belt_smart', label: 'Sorting Logic', cost: 26, group: 'works',
+    blurb: 'Refiners hold twice as much, so a line never stalls waiting.' },
+
+  { id: 'money_1', label: 'Table Talk', cost: 14, group: 'trade',
+    blurb: 'Guests tip 15% more.' },
+  { id: 'money_2', label: 'Harbour Reputation', cost: 40, group: 'trade', needs: 'money_1',
+    blurb: 'Another 25%, and rare guests turn up more often.' },
+  { id: 'kiln_1', label: 'Hotter Kiln', cost: 22, group: 'trade',
+    blurb: 'Pottery earns experience twice as fast.' },
+];
+
+export const RESEARCH_BY_ID = Object.fromEntries(RESEARCH.map((r) => [r.id, r]));
+
+export const RESEARCH_GROUPS = [
+  { id: 'flyer', label: 'Word of Mouth' },
+  { id: 'works', label: 'The Works' },
+  { id: 'trade', label: 'Trade' },
+];
+
+/* ------------------------------------------------------------------ shop  */
+
+/**
+ * One-off purchases. The area unlocks are the expensive backbone — each one
+ * widens the dining room by two tiles each way, which is the only way to fit
+ * more tables, so everything else in the game feeds into affording them.
+ */
+export const SHOP = [
+  { id: 'area_wharf', label: 'The Wharf Extension', cost: 1400, group: 'area',
+    size: 11, blurb: 'Knock through to the wharf: the dining room grows to 11×11.' },
+  { id: 'area_lantern', label: 'Lantern Terrace', cost: 6500, group: 'area',
+    size: 13, needs: 'area_wharf', blurb: 'Take the terrace too, for a 13×13 room.' },
+
+  { id: 'flyer_board', label: 'Harbour Notice Board', cost: 700, group: 'draw',
+    blurb: 'Room for one more poster than you had.' },
+  { id: 'lantern_string', label: 'String of Lanterns', cost: 1100, group: 'draw',
+    blurb: 'Guests arrive 20% quicker after dark.' },
+
+  { id: 'second_pass', label: 'Second Kitchen Pass', cost: 1800, group: 'kitchen',
+    blurb: 'Three more plates can wait on the pass at once.' },
+  { id: 'wheel', label: "Potter's Wheel", cost: 900, group: 'kitchen',
+    blurb: 'A proper wheel: forging a dish needs one less round at the kiln.' },
+];
+
+export const SHOP_BY_ID = Object.fromEntries(SHOP.map((s) => [s.id, s]));
+
+export const SHOP_GROUPS = [
+  { id: 'area', label: 'Room' },
+  { id: 'draw', label: 'Custom' },
+  { id: 'kitchen', label: 'Kitchen' },
+];
+
+/* --------------------------------------------------------------- pottery  */
+
+/**
+ * A side craft that levels off served guests. It is worth doing for one reason:
+ * at level five the kiln opens, and a forged serving dish is the only permanent
+ * multiplier a single recipe can get.
+ */
+export const POTTERY_XP = [0, 40, 110, 230, 420, 700, 1100, 1650];
+export const FORGE_LEVEL = 5;
+export const MAX_DISH = 3;
+
+export const potteryLevel = (xp) => {
+  let lv = 1;
+  for (let i = 1; i < POTTERY_XP.length; i++) if (xp >= POTTERY_XP[i]) lv = i + 1;
+  return lv;
+};
+
+export const potteryNext = (xp) => POTTERY_XP.find((x) => x > xp) ?? null;
+
+/** What it costs to forge, or to improve, the serving dish for one recipe. */
+export const forgeCost = (tier) => ({
+  coins: Math.round(450 * 2.3 ** tier),
+  clay: 2 + tier * 2,
+});
+
+/** A forged dish raises the recipe's stars and what guests will pay for it. */
+export const dishStars = (tier) => tier;
+export const dishPrice = (tier) => 1 + tier * 0.14;

@@ -127,6 +127,36 @@ def despill_hard(img: Image.Image) -> Image.Image:
     return Image.fromarray(out, mode='RGBA')
 
 
+def edge_slope(img: Image.Image) -> float:
+    """Slope of a fixture's top edge, in pixels down per pixel right.
+
+    The joinery is drawn as flat panels with a slight built-in perspective, and
+    that built-in slope is almost never the 1:2 the wall recedes at. The room
+    shears each piece by the difference, so it has to know what the drawing
+    already does. Theil-Sen rather than a least-squares fit: a swinging casement
+    or a doorknob breaks the top edge, and a median of pairwise slopes shrugs
+    that off where a fit would be dragged sideways by it.
+    """
+    alpha = np.asarray(img.getchannel('A'))
+    xs, ys = [], []
+    for x in range(alpha.shape[1]):
+        col = np.nonzero(alpha[:, x] > 90)[0]
+        if len(col):
+            xs.append(x)
+            ys.append(col[0])
+    if len(xs) < 24:
+        return 0.0
+    xs = np.asarray(xs, float)
+    ys = np.asarray(ys, float)
+    step = max(1, len(xs) // 64)
+    span = alpha.shape[1] * 0.2
+    slopes = [(ys[b] - ys[a]) / (xs[b] - xs[a])
+              for a in range(0, len(xs), step)
+              for b in range(0, len(xs), step)
+              if xs[b] - xs[a] > span]
+    return round(float(np.median(slopes)), 3) if slopes else 0.0
+
+
 def components(img: Image.Image, min_frac: float = 0.004):
     """Labelled ink blobs with their centres, largest-noise removed."""
     alpha = np.asarray(img.getchannel('A'))
@@ -210,7 +240,8 @@ def slice_fixtures(manifest):
             sprite = despill_hard(cut(img, lbl, alpha, [near['id']], cap))
             rel = f'{group}/{name}.png'
             sprite.save(os.path.join(OUT, rel))
-            entries.append({'id': name, 'src': rel, 'w': sprite.width, 'h': sprite.height})
+            entries.append({'id': name, 'src': rel, 'w': sprite.width, 'h': sprite.height,
+                            'slope': edge_slope(sprite)})
         manifest[group] = entries
         print(f'  {group}: {len(entries)} sprites')
 

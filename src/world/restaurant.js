@@ -10,6 +10,7 @@ import { spring } from '../core/tween.js';
 import { CS, Customer, rollGuest } from './customer.js';
 import { clamp, money, neighbours, range, rnd, tileDist, uid } from '../core/util.js';
 import { FURNITURE_BY_ID, STYLE_BY_ID, groupFor } from '../data/catalog.js';
+import { GUEST_BY_ID, RARITY_BY_ID } from '../data/guests.js';
 import { drawIcon, drawSprite, squash, sticker, text } from '../gfx/paint.js';
 
 export { FURN_SCALE };
@@ -259,7 +260,7 @@ export class Restaurant {
   #maxGuests() { return clamp(this.seatCount + 3, 3, 10); }
 
   #spawn() {
-    const g = rollGuest(this.assets);
+    const g = rollGuest(this.assets, this.state.rarityPull);
     const c = new Customer(this, g.sprite, {
       tile: this.entry,
       pos: { x: this.entryWorld.x, y: this.entryWorld.y - 4 },
@@ -267,6 +268,9 @@ export class Restaurant {
     });
     c.eatTime = g.eatTime;
     c.fussy = g.fussy;
+    c.species = g.species;
+    c.rarity = g.rarity;
+    if (c.species) this.state.noteArrival(c.species);
     c.arrive();
     this.guests.push(c);
 
@@ -407,10 +411,25 @@ export class Restaurant {
     const price = this.state.priceOf(guest.dish);
     const speed = 0.75 + 0.6 * clamp(guest.patience, 0, 1);
     const tableTip = STYLE_BY_ID[guest.seat?.f?.style]?.tip ?? 1;
-    const pay = Math.max(1, Math.round(price * speed * this.state.tipMult * (1 + (tableTip - 1) * 0.4)));
+    const rarity = guest.rarity ?? RARITY_BY_ID.common;
+
+    // the diary entry decides the mood, and the mood is worth money: cooking
+    // what somebody actually likes is the difference between a tip and a habit
+    const note = guest.species
+      ? this.state.noteServed(guest.species, guest.dish, rarity.hearts)
+      : { hearts: 0, mood: 'fine', levelled: null };
+    const moodPay = note.mood === 'loved' ? 1.35 : note.mood === 'hated' ? 0.7 : 1;
+
+    const pay = Math.max(1, Math.round(
+      price * speed * this.state.tipMult * (1 + (tableTip - 1) * 0.4) * rarity.pay * moodPay));
     const stars = guest.patience > 0.3
-      ? this.state.starsOf(guest.dish) + (STYLE_BY_ID[guest.seat?.f?.style]?.star ?? 0) + this.state.bonusStar
+      ? this.state.starsOf(guest.dish) + (STYLE_BY_ID[guest.seat?.f?.style]?.star ?? 0)
+        + this.state.bonusStar + (note.mood === 'loved' ? 1 : 0)
       : 0;
+
+    this.state.addPottery(1 + Math.round(rarity.hearts));
+    this.#showMood(guest, note);
+    if (note.levelled) this.#giveGift(guest, note.levelled);
 
     this.state.earn(pay);
     this.state.addStars(stars);
@@ -430,6 +449,31 @@ export class Restaurant {
     this.game.bumpCoinChip();
 
     this.tweens.after(0.9, () => { if (!guest.dead) this.#leave(guest, 'happy'); });
+  }
+
+  /** A little flourish that tells you how the dish landed. */
+  #showMood(guest, note) {
+    if (note.mood === 'loved') {
+      this.fx.hearts(guest.pos.x, guest.headY - 6, 4);
+      this.fx.pop(guest.pos.x - 40, guest.headY - 40, 'Favourite!', {
+        color: '#d0517f', size: 15, rise: 40, max: 1,
+      });
+    } else if (note.mood === 'hated') {
+      this.fx.pop(guest.pos.x - 30, guest.headY - 40, 'Not for them…', {
+        color: '#8a6647', size: 14, rise: 34, max: 0.9,
+      });
+    }
+  }
+
+  /** Friendship ticked over, so they leave something behind. */
+  #giveGift(guest, level) {
+    const gift = this.state.claimGift(level);
+    if (!gift) return;
+    this.fx.stars(guest.pos.x, guest.headY - 20, 10);
+    this.fx.coins(guest.pos.x, guest.headY, 6, 60);
+    this.game.toast(`A gift: ${gift.label}`, 'good');
+    this.game.titleCard('A present!', `${GUEST_BY_ID[guest.species]?.name ?? 'Your guest'} left ${gift.label}`);
+    this.sfx.play('star');
   }
 
   /** Patience hit zero. */
@@ -492,10 +536,11 @@ export class Restaurant {
 
     if (!this.open) return;
 
-    // arrivals
+    // arrivals — no posters up, no trade
     const stock = this.state.stockCount;
     const pending = this.guests.filter((g) => g.state !== CS.LEAVE && g.state !== CS.DONE).length;
-    if (stock > 0 && pending < this.#maxGuests() && this.seatCount > 0 && this.hasPass) {
+    if (stock > 0 && this.state.posters > 0
+        && pending < this.#maxGuests() && this.seatCount > 0 && this.hasPass) {
       this.spawnT -= dt;
       if (this.spawnT <= 0) {
         this.spawnT = this.state.arrivalGap * range(0.8, 1.25);

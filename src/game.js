@@ -33,6 +33,8 @@ export class Game {
 
     this.restaurant = new Restaurant(this);
     this.factory = new Factory(this);
+    // an area unlock from a previous session widens the room before framing
+    this.#applyRoomSize();
     for (const z of [this.restaurant, this.factory]) {
       z.cam = new Camera(this.view);
       z.cam.bounds = z.bounds();
@@ -68,6 +70,7 @@ export class Game {
     });
 
     this.state.bus.on('change', () => { this.hud.sync(); });
+    this.state.bus.on('shop', () => { this.syncRoomSize(); });
     this.hud.sync();
     this.hud.setZone('restaurant');
     this.#catchUp();
@@ -254,6 +257,11 @@ export class Game {
     if (!r.hasPass) { this.hud.toast('You need a Kitchen Pass first', 'bad'); this.openBuild(); return; }
     if (r.seatCount === 0) { this.hud.toast('Put a chair beside a table', 'bad'); this.openBuild(); return; }
     if (this.state.plannedCount === 0) { this.hud.toast('Plate up a menu first', 'bad'); this.openRecipes(); return; }
+    if (this.state.posters === 0) {
+      this.hud.toast('Nobody knows you are open — post a flyer', 'bad');
+      this.hud.pulseFlyer();
+      return;
+    }
 
     this.setZone('restaurant');
     this.cancelPlacement();
@@ -292,6 +300,45 @@ export class Game {
   /* ------------------------------------------------------------ ui bridges */
 
   openBuild() { this.cancelPlacement(); this.panels.openBuild(); }
+  openDiary() { this.panels.openDiary(); }
+  openShop() { this.panels.openShop(); }
+  openResearch() { this.panels.openResearch(); }
+  openPottery() { this.panels.openPottery(); }
+
+  /** One tap on the flyer. Fills a poster, and says so when it does. */
+  tapFlyer() {
+    if (this.state.phase !== 'prep') { this.hud.toast('The flyers are up for today', ''); return; }
+    if (this.state.posters >= this.state.flyerMax) {
+      this.hud.toast('Every board in the harbour is covered', '');
+      return;
+    }
+    const done = this.state.tapFlyer();
+    this.sfx.play(done ? 'star' : 'tap');
+    if (done) {
+      this.hud.toast(`Poster up — ${this.state.posters}/${this.state.flyerMax}`, 'good');
+      this.restaurant.fx.stars(0, 0, 6);
+    }
+    this.hud.sync();
+  }
+
+  /** Area unlocks widen the dining room, so the grid has to follow. */
+  syncRoomSize() {
+    if (!this.#applyRoomSize()) return;
+    this.restaurant.cam.bounds = this.restaurant.bounds();
+    this.restaurant.framed = false;
+    this.hud.toast('The dining room just got bigger', 'good');
+  }
+
+  #applyRoomSize() {
+    const size = this.state.roomSize;
+    const r = this.restaurant;
+    if (r.cols === size && r.rows === size) return false;
+    r.cols = size;
+    r.rows = size;
+    r.room.resize(size, size);
+    r.rebuild();
+    return true;
+  }
   openRecipes() { this.cancelPlacement(); this.panels.openRecipes(); }
   openPantry() { this.panels.openPantry(); }
   openCrew() { this.panels.openCrew(); }
@@ -303,6 +350,7 @@ export class Game {
   onSheetClosed() { this.restaurant.selection = null; this.factory.selection = null; }
 
   toast(text, kind = '') { this.hud.toast(text, kind); }
+  titleCard(main, sub = '') { this.hud.titleCard(main, sub); }
 
   celebrate(text) {
     this.hud.toast(text, 'good');
@@ -339,9 +387,19 @@ export class Game {
     this.zone.cam.update(dt);
 
     if (this.state.phase === 'open') this.hud.sync();
+    this.#autoPost(dt);
 
     this.saveT += dt;
     if (this.saveT > 12) { this.saveT = 0; this.#save(); }
+  }
+
+  /** The Paste Crew: once researched, posters go up without you. */
+  #autoPost(dt) {
+    if (!this.state.autoPost || this.state.phase !== 'prep') return;
+    this.postT = (this.postT ?? 0) + dt;
+    if (this.postT < 12) return;
+    this.postT = 0;
+    if (this.state.addPoster()) this.hud.sync();
   }
 
   #save() {

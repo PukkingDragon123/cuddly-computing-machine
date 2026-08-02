@@ -1172,67 +1172,78 @@
    "id": "window_plain_r",
    "src": "fixt_oak/window_plain_r.png",
    "w": 164,
-   "h": 300
+   "h": 300,
+   "slope": 0.583
   },
   {
    "id": "window_bay_r",
    "src": "fixt_oak/window_bay_r.png",
    "w": 164,
-   "h": 299
+   "h": 299,
+   "slope": 0.583
   },
   {
    "id": "door_closed_l",
    "src": "fixt_oak/door_closed_l.png",
    "w": 123,
-   "h": 304
+   "h": 304,
+   "slope": -0.556
   },
   {
    "id": "door_open_r",
    "src": "fixt_oak/door_open_r.png",
    "w": 120,
-   "h": 304
+   "h": 304,
+   "slope": 0.556
   },
   {
    "id": "window_palm_r",
    "src": "fixt_oak/window_palm_r.png",
    "w": 164,
-   "h": 299
+   "h": 299,
+   "slope": 0.581
   },
   {
    "id": "window_open_r",
    "src": "fixt_oak/window_open_r.png",
    "w": 203,
-   "h": 304
+   "h": 304,
+   "slope": 0.177
   },
   {
    "id": "door_open_l",
    "src": "fixt_oak/door_open_l.png",
    "w": 123,
-   "h": 304
+   "h": 304,
+   "slope": -0.556
   },
   {
    "id": "door_closed_r",
    "src": "fixt_oak/door_closed_r.png",
    "w": 123,
-   "h": 304
+   "h": 304,
+   "slope": 0.552
   },
   {
    "id": "key_rack",
    "src": "fixt_oak/key_rack.png",
    "w": 115,
-   "h": 129
+   "h": 129,
+   "slope": -0.547
   },
   {
    "id": "pass_counter",
    "src": "fixt_oak/pass_counter.png",
    "w": 299,
-   "h": 304
+   "h": 304,
+   "slope": -0.711
   },
   {
    "id": "host_desk",
    "src": "fixt_oak/host_desk.png",
    "w": 318,
-   "h": 304
+   "h": 304,
+   "slope": -0.404
   }
  ],
  "fixt_walnut": [
@@ -1240,67 +1251,78 @@
    "id": "window_plain_r",
    "src": "fixt_walnut/window_plain_r.png",
    "w": 164,
-   "h": 300
+   "h": 300,
+   "slope": 0.585
   },
   {
    "id": "window_bay_r",
    "src": "fixt_walnut/window_bay_r.png",
    "w": 164,
-   "h": 300
+   "h": 300,
+   "slope": 0.583
   },
   {
    "id": "door_closed_l",
    "src": "fixt_walnut/door_closed_l.png",
    "w": 123,
-   "h": 304
+   "h": 304,
+   "slope": -0.554
   },
   {
    "id": "door_open_r",
    "src": "fixt_walnut/door_open_r.png",
    "w": 121,
-   "h": 304
+   "h": 304,
+   "slope": 0.556
   },
   {
    "id": "window_palm_r",
    "src": "fixt_walnut/window_palm_r.png",
    "w": 164,
-   "h": 300
+   "h": 300,
+   "slope": 0.581
   },
   {
    "id": "window_open_r",
    "src": "fixt_walnut/window_open_r.png",
    "w": 203,
-   "h": 304
+   "h": 304,
+   "slope": 0.176
   },
   {
    "id": "door_open_l",
    "src": "fixt_walnut/door_open_l.png",
    "w": 122,
-   "h": 304
+   "h": 304,
+   "slope": -0.558
   },
   {
    "id": "door_closed_r",
    "src": "fixt_walnut/door_closed_r.png",
    "w": 123,
-   "h": 304
+   "h": 304,
+   "slope": 0.554
   },
   {
    "id": "key_rack",
    "src": "fixt_walnut/key_rack.png",
    "w": 117,
-   "h": 130
+   "h": 130,
+   "slope": -0.545
   },
   {
    "id": "pass_counter",
    "src": "fixt_walnut/pass_counter.png",
    "w": 299,
-   "h": 304
+   "h": 304,
+   "slope": -0.712
   },
   {
    "id": "host_desk",
    "src": "fixt_walnut/host_desk.png",
    "w": 317,
-   "h": 304
+   "h": 304,
+   "slope": -0.4
   }
  ]
 }

@@ -31,6 +31,7 @@ up to four hours of catch-up.
 |---|---|
 | **Factory** | Place a machine, drag a conveyor away from it, and end the line at a Pantry Intake. Refiners sit mid-line and turn cheap goods into valuable ones. |
 | **Menu Book** | Set how many of each dish to plate up. Ingredients leave the pantry immediately, so only plate what you can sell. Dishes level up with sand dollars plus more of their signature ingredient. |
+| **Flyers** | Nobody comes to a place they have not heard of. Tap the flyer to post one — ten taps to begin with, fewer as you research it, none once a Promo Stand does it for you. Posters come down overnight. |
 | **Open up** | Guests wander in and wait by the door. Tap one to seat them at a free chair, or tap an empty seat to pull in whoever has been waiting longest. |
 | **Orders** | Tap the `!` bubble over a seated guest to send the ticket to the chef. |
 | **Service** | Drag the finished dish off the kitchen pass onto the guest who ordered it. Tap-then-tap works too. |
@@ -41,6 +42,20 @@ room's **ambience**, which pulls guests in faster, stretches their patience and
 grows their tips. Hiring crew automates the fiddly parts: the Oyster Host seats
 guests, the Cuttlefish Server runs plates, cooks add parallel burners, the
 Mechanic speeds up the works.
+
+## The long game
+
+| | |
+|---|---|
+| **Guest Diary** | Every species has a flavour they love and one they cannot stand. Serving the right one is triple hearts and a better tip, and it is the only way to learn what that flavour was. Fill the hearts and they start bringing presents. |
+| **Rarity** | A gold crown is a **VIP** — double pay, less patience. A violet star is **Mythical**, at four times over. A busy, well-reviewed harbour draws more of both. |
+| **Research** | A Harbour Computer on the factory floor banks points while you work. Spend them on flyers, machine speed and trade. |
+| **Pottery** | Serving levels the class. At level five the kiln opens: spend clay and money, stop the needle in the band, and one recipe gains a star and a permanent price rise. |
+| **Shop** | Knocking through to the wharf and then the terrace grows the dining room from 9×9 to 13×13 — the only way to fit more tables. |
+
+The ladder is deliberate: the flyer starts as ten taps a morning, and almost
+everything you buy exists to take that job — and the seating, the serving and
+the pantry runs — off your hands.
 
 Pinch or scroll to zoom, drag to pan, `Tab` to switch rooms, `R` to turn what
 you're placing through its four sides, `Esc` to cancel.
@@ -60,7 +75,7 @@ src/
   gfx/                canvas drawing kit and the particle system
   world/              iso math, procedural rooms, guests, kitchen, factory
   ui/                 HUD and the bottom-sheet panels
-  data/               ingredients, recipes, buildables, staff
+  data/               ingredients, recipes, buildables, staff, guests, progress
 ```
 
 The world is a single `<canvas>`; the HUD and panels are real DOM so CSS can do
@@ -98,8 +113,12 @@ Rooms are **generated** — checkerboard floor, scalloped border, sheared walls
 with cornice and baseboard — because the original painted room plates are
 hand-drawn and their floors don't sit on a consistent lattice, so build tiles
 could never line up with them. The doors and windows set into those walls are
-real sprites from the fixture sheets, sheared onto the wall's own 2:1 basis —
-they are drawn as flat elevations, so pasted upright they float at the wrong
-angle. The joinery changes wood along with whatever finish the dining room
-mostly uses. The whole room is rasterised once into an offscreen canvas and
+real sprites from the fixture sheets, sheared onto the wall's own 2:1 basis.
+They are drawn as flat elevations carrying a built-in perspective of roughly
+0.58 down per across, where the wall recedes at exactly 0.5 — so the shear is
+the *difference* between the two, not the wall's full slope, or the piece ends
+up plunging at nearly twice the angle of the plaster behind it. The slicer
+measures each drawing's own slope (Theil–Sen over its top edge, which shrugs
+off a swinging casement) and writes it into the atlas. The joinery changes wood
+along with whatever finish the dining room mostly uses. The whole room is rasterised once into an offscreen canvas and
 blitted per frame.

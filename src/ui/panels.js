@@ -9,8 +9,15 @@ import {
 } from '../data/recipes.js';
 import {
   BELT, FURNITURE, MACHINES, MACHINE_MAX_LEVEL, SILO, STAFF, STYLES, STYLE_BY_ID,
-  costOf, groupFor, machineInterval, machineUpgradeCost, starsOf,
+  WORKSHOP, costOf, groupFor, machineInterval, machineUpgradeCost, starsOf,
 } from '../data/catalog.js';
+import {
+  GUESTS, MAX_FRIEND, TASTES, heartsToNext,
+} from '../data/guests.js';
+import {
+  FORGE_LEVEL, MAX_DISH, RESEARCH, RESEARCH_BY_ID, RESEARCH_GROUPS, SHOP,
+  SHOP_BY_ID, SHOP_GROUPS, forgeCost, potteryLevel, potteryNext,
+} from '../data/progress.js';
 import { DIR_NAMES } from '../world/factory.js';
 
 /** The wood each finish is painted in, for the swatch picker. */
@@ -39,8 +46,8 @@ export class Panels {
 
   /* --------------------------------------------------------------- helpers */
 
-  #card({ src, title, sub, tags = [], side = null, onclick = null, cls = '', locked = false, wide = false, frames = 1 }) {
-    const t = thumb(src, { wide, frames });
+  #card({ src, title, sub, tags = [], side = null, onclick = null, cls = '', locked = false, wide = false, frames = 1, icon = null }) {
+    const t = icon ? h('div.thumb.icon', null, h(`i.ico.ico-${icon}`)) : thumb(src, { wide, frames });
     return h(`div.card${onclick ? '.tap' : ''}${cls ? `.${cls}` : ''}${locked ? '.locked' : ''}`,
       onclick ? { onclick } : null,
       t,
@@ -135,6 +142,7 @@ export class Panels {
       { id: 'producer', label: 'Machines' },
       { id: 'processor', label: 'Refiners' },
       { id: 'store', label: 'Storage' },
+      { id: 'workshop', label: 'Workshop' },
     ];
     let body = [];
 
@@ -155,6 +163,17 @@ export class Panels {
           tags: [tag('50% back', 'tag-ok')],
           onclick: () => this.game.startFactoryErase(),
         }),
+      ];
+    } else if (this.factoryTab === 'workshop') {
+      body = [
+        h('div.note', null, 'Neither of these needs a belt. Drop them anywhere on the floor and they tick away on their own — even with the tab shut.'),
+        ...WORKSHOP.map((m) => this.#card({
+          src: this.assets.url('machines', m.sprite),
+          title: m.label,
+          sub: m.blurb,
+          tags: [this.#cost(m.cost), tag(`every ${m.interval}s`, 'tag-mint')],
+          onclick: () => this.game.startFactoryPlacing('machine', m.id),
+        })),
       ];
     } else if (this.factoryTab === 'store') {
       body = [
@@ -621,7 +640,7 @@ export class Panels {
   openHub() {
     this.reopen = () => this.openHub();
     const s = this.state;
-    const row = (title, sub, onclick, src = null) => this.#card({ src, title, sub, onclick });
+    const row = (title, sub, onclick, icon = null) => this.#card({ title, sub, onclick, icon });
     const spec = {
       key: 'hub',
       title: 'Harbor Menu',
@@ -632,11 +651,22 @@ export class Panels {
           h('div.card-main', null,
             h('div.card-title', null, `Day ${s.day} · ${'★'.repeat(s.rating)}`),
             h('div.card-sub', null, `${money(s.stars)} reputation · ${s.stats.served} guests served · ${money(s.stats.earned)} earned all told`))),
-        row('Menu Book', 'Plate up, upgrade dishes, learn new ones', () => this.openRecipes()),
-        row('Pantry & Market', 'See your stock and buy the sea catch', () => this.openPantry()),
-        row('Crew', 'Hire staff to run the place for you', () => this.openCrew()),
-        row('Build', 'Furniture and machines', () => this.game.openBuild()),
-        row('How to Play', 'The short version', () => this.game.openHelp()),
+        row('Menu Book', 'Plate up, upgrade dishes, learn new ones', () => this.openRecipes(), 'book'),
+        row('Pantry & Market', 'See your stock and buy the sea catch', () => this.openPantry(), 'crate'),
+        row('Crew', 'Hire staff to run the place for you', () => this.openCrew(), 'star'),
+        row('Build', 'Furniture and machines', () => this.game.openBuild(), 'hammer'),
+        h('div.section', null, 'The long game'),
+        row('Guest Diary', `${s.diaryFound}/${GUESTS.length} met · ${s.diaryHearts} hearts collected`,
+          () => this.openDiary(), 'diary'),
+        row('Harbour Shop', 'Extensions, notice boards, a potter\'s wheel',
+          () => this.openShop(), 'shop'),
+        row('Research Board', `${s.research} points to spend`, () => this.openResearch(), 'lab'),
+        row('Pottery Class', s.potteryLv >= FORGE_LEVEL
+          ? `Level ${s.potteryLv} · the kiln is open`
+          : `Level ${s.potteryLv} · the kiln opens at ${FORGE_LEVEL}`,
+        () => this.openPottery(), 'kiln'),
+        h('div.section', null, 'Help'),
+        row('How to Play', 'The short version', () => this.game.openHelp(), 'help'),
         h('div.section', null, 'Danger zone'),
         this.#card({
           title: 'Start over',
@@ -656,6 +686,278 @@ export class Panels {
     this.hud.openSheet(spec);
   }
 
+  /* ---------------------------------------------------------------- diary  */
+
+  /**
+   * One page per species. Everything on it is earned: the name and portrait
+   * appear once they have walked in, and each taste only resolves from "?" once
+   * you have actually served them something they loved or couldn't stand.
+   */
+  openDiary() {
+    this.reopen = () => this.openDiary();
+    const s = this.state;
+    const rows = GUESTS.map((g) => {
+      const page = s.diary[g.id];
+      if (!page) {
+        return this.#card({
+          src: null,
+          title: '???',
+          sub: 'Not seen in the harbour yet.',
+          cls: 'locked',
+        });
+      }
+      const lv = page.level ?? 1;
+      const toNext = heartsToNext(page.hearts);
+      const taste = (known, id) => (known
+        ? tag(TASTES[id].label, 'tag-ok')
+        : tag('?', 'tag-need'));
+      return this.#card({
+        src: this.assets.url('customers', g.id),
+        frames: this.assets.frameCount('customers', g.id),
+        title: `${g.name}  ${'♥'.repeat(lv)}${'·'.repeat(MAX_FRIEND - lv)}`,
+        sub: `Served ${page.served} · ${page.hearts} hearts`
+          + (toNext === null ? ' · best friends' : ` · ${toNext} to level ${lv + 1}`),
+        tags: [
+          h('span.card-sub', null, 'loves'), taste(page.likeSeen, g.loves),
+          h('span.card-sub', null, 'hates'), taste(page.hateSeen, g.loathes),
+        ],
+      });
+    });
+
+    this.hud.openSheet({
+      key: 'diary',
+      title: 'Guest Diary',
+      body: [
+        h('div.note', null, 'Serve a guest the flavour they ', h('b', null, 'love'),
+          ' for triple hearts — and to find out what that flavour is. Every level they leave a present.'),
+        ...rows,
+      ],
+      foot: h('div.rowline', null,
+        h('span.card-sub.grow', null, `${s.diaryFound} of ${GUESTS.length} met`),
+        tag(`${s.diaryHearts} ♥`, 'tag-mint')),
+    });
+  }
+
+  /* ----------------------------------------------------------------- shop  */
+
+  openShop() {
+    this.reopen = () => this.openShop();
+    const s = this.state;
+    const body = [];
+    const shopIcon = { area: 'shop', draw: 'flyer', kitchen: 'kiln' };
+    for (const grp of SHOP_GROUPS) {
+      const items = SHOP.filter((i) => i.group === grp.id);
+      if (!items.length) continue;
+      body.push(h('div.section', null, grp.label));
+      for (const item of items) {
+        const owned = s.hasBought(item.id);
+        const locked = item.needs && !s.hasBought(item.needs);
+        body.push(this.#card({
+          icon: shopIcon[grp.id] ?? 'shop',
+          title: item.label,
+          sub: locked ? `Needs ${SHOP_BY_ID[item.needs].label} first.` : item.blurb,
+          tags: [owned ? tag('Bought', 'tag-ok') : this.#cost(item.cost)],
+          locked: locked || owned,
+          onclick: owned || locked ? null : () => {
+            if (!s.buyShop(item.id)) { this.game.toast('Not enough sand dollars', 'bad'); return; }
+            this.game.toast(`Bought ${item.label}`, 'good');
+            this.openShop();
+          },
+        }));
+      }
+    }
+    this.hud.openSheet({ key: 'shop', title: 'Harbour Shop', body });
+  }
+
+  /* ------------------------------------------------------------- research  */
+
+  openResearch() {
+    this.reopen = () => this.openResearch();
+    const s = this.state;
+    const body = [
+      h('div.note', null, 'A ', h('b', null, 'Harbour Computer'),
+        ' on the factory floor turns quiet hours into points. Spend them here.'),
+    ];
+    const nodeIcon = { flyer: 'flyer', works: 'hammer', trade: 'sand' };
+    for (const grp of RESEARCH_GROUPS) {
+      body.push(h('div.section', null, grp.label));
+      for (const node of RESEARCH.filter((n) => n.group === grp.id)) {
+        const done = s.hasResearch(node.id);
+        const locked = node.needs && !s.hasResearch(node.needs);
+        body.push(this.#card({
+          icon: nodeIcon[grp.id] ?? 'lab',
+          title: node.label,
+          sub: locked ? `Follows ${RESEARCH_BY_ID[node.needs].label}.` : node.blurb,
+          tags: [done ? tag('Done', 'tag-ok')
+            : tag(`${node.cost} rp`, s.research >= node.cost ? 'tag-cost' : 'tag-need')],
+          locked: done || locked,
+          onclick: done || locked ? null : () => {
+            if (!s.buyResearch(node.id)) { this.game.toast('Not enough research', 'bad'); return; }
+            this.game.toast(`Researched ${node.label}`, 'good');
+            this.openResearch();
+          },
+        }));
+      }
+    }
+    this.hud.openSheet({
+      key: 'research',
+      title: 'Research Board',
+      body,
+      foot: h('div.rowline', null,
+        h('span.card-sub.grow', null, 'Points banked'),
+        tag(`${s.research} rp`, 'tag-mint')),
+    });
+  }
+
+  /* -------------------------------------------------------------- pottery  */
+
+  /**
+   * The kiln. Below level five this is just a progress page; at five it becomes
+   * the only way to permanently improve one recipe, which is what makes the
+   * class worth levelling in the first place.
+   */
+  openPottery() {
+    this.reopen = () => this.openPottery();
+    const s = this.state;
+    const lv = s.potteryLv;
+    const next = potteryNext(s.pottery);
+    const open = lv >= FORGE_LEVEL;
+
+    const body = [
+      h('div.card', null,
+        h('div.thumb', null, h('div', {
+          style: { font: '900 1.5rem var(--font)', color: 'var(--ink)' },
+        }, String(lv))),
+        h('div.card-main', null,
+          h('div.card-title', null, `Pottery Class · level ${lv}`),
+          h('div.card-sub', null, next === null
+            ? 'You have learned everything the class can teach.'
+            : `${next - s.pottery} more guests served to reach level ${lv + 1}.`),
+          bar(next === null ? 1 : s.pottery / next)),
+        h('div.card-side', null, tag(`${s.clay} clay`, 'tag-mint'))),
+    ];
+
+    if (!open) {
+      body.push(h('div.note', null, 'Every guest you serve is a little more practice. At ',
+        h('b', null, `level ${FORGE_LEVEL}`),
+        ' the kiln opens and you can forge serving dishes, which raise a recipe\'s stars and price for good.'));
+    } else {
+      body.push(h('div.note', null, 'Pick a dish to forge a new serving plate for. It costs sand dollars and clay, then you take a turn at the wheel — ',
+        h('b', null, 'stop the needle in the band'), '.'));
+      for (const r of RECIPES.filter((x) => s.isUnlocked(x.id))) {
+        const tier = s.dishTier(r.id);
+        const maxed = tier >= MAX_DISH;
+        const cost = forgeCost(tier);
+        const canPay = s.coins >= cost.coins && s.clay >= cost.clay;
+        body.push(this.#card({
+          src: this.assets.url('food', r.id),
+          title: `${r.name}${tier ? `  ${'✦'.repeat(tier)}` : ''}`,
+          sub: maxed
+            ? 'The finest plate in the harbour.'
+            : `Tier ${tier} → ${tier + 1}: +1★ and +14% price.`,
+          tags: maxed ? [tag('MAX', 'tag-star')] : [
+            this.#cost(cost.coins),
+            tag(`${cost.clay} clay`, s.clay >= cost.clay ? 'tag-ok' : 'tag-need'),
+          ],
+          locked: maxed,
+          onclick: maxed ? null : () => {
+            if (!canPay) { this.game.toast('Not enough for that yet', 'bad'); return; }
+            this.#forge(r, tier, cost);
+          },
+        }));
+      }
+    }
+
+    this.hud.openSheet({ key: 'pottery', title: 'Pottery Class', body });
+  }
+
+  /**
+   * The wheel. A needle sweeps the bar and you stop it inside the band; get it
+   * three times (two with a proper wheel bought) and the dish comes out. Miss
+   * and the clay is still spent — that is the tension, and it is why the wheel
+   * upgrade is worth buying.
+   */
+  #forge(recipe, tier, cost) {
+    const s = this.state;
+    const rounds = s.hasBought('wheel') ? 2 : 3;
+    let round = 0;
+    let hits = 0;
+    let raf = 0;
+
+    const needle = h('i.forge-needle');
+    const band = h('i.forge-band');
+    const track = h('div.forge-track', null, band, needle);
+    const label = h('div.card-sub', null, `Round 1 of ${rounds}`);
+    const go = h('button.pill.pill-go', { type: 'button' }, 'Stop!');
+
+    // narrower band and a quicker sweep each round
+    const setup = () => {
+      const width = 30 - round * 7;
+      const left = 8 + Math.random() * (84 - width);
+      band.style.left = `${left}%`;
+      band.style.width = `${width}%`;
+      label.textContent = `Round ${round + 1} of ${rounds}`;
+      return { left, width, speed: 0.55 + round * 0.28 };
+    };
+
+    let cfg = setup();
+    let t = 0;
+    let last = performance.now();
+    const tick = (now) => {
+      t += ((now - last) / 1000) * cfg.speed;
+      last = now;
+      const pos = (1 - Math.cos(t * Math.PI * 2)) / 2;   // ease at both ends
+      needle.style.left = `${pos * 100}%`;
+      needle.dataset.pos = String(pos * 100);
+      raf = requestAnimationFrame(tick);
+    };
+    raf = requestAnimationFrame(tick);
+
+    const finish = (won) => {
+      cancelAnimationFrame(raf);
+      if (!won) {
+        this.game.toast('The pot cracked in the kiln', 'bad');
+        this.game.sfx.play('no');
+        this.openPottery();
+        return;
+      }
+      s.setDishTier(recipe.id, tier + 1);
+      this.game.toast(`${recipe.name} now serves on a tier ${tier + 1} dish`, 'good');
+      this.game.titleCard('Out of the kiln!', `${recipe.name} +1★`);
+      this.game.sfx.play('star');
+      this.openPottery();
+    };
+
+    go.onclick = () => {
+      const pos = Number(needle.dataset.pos ?? 0);
+      const hit = pos >= cfg.left && pos <= cfg.left + cfg.width;
+      if (hit) hits += 1;
+      this.game.sfx.play(hit ? 'ding' : 'no');
+      round += 1;
+      if (!hit || round >= rounds) { finish(hit && hits === rounds); return; }
+      cfg = setup();
+      t = 0;
+    };
+
+    // charge up front: a cracked pot still used the clay
+    s.spend(cost.coins);
+    s.clay -= cost.clay;
+
+    this.hud.openSheet({
+      key: 'forge',
+      title: `At the Wheel · ${recipe.name}`,
+      body: [
+        h('div.note', null, 'Stop the needle inside the band. Every round the band narrows and the needle speeds up.'),
+        h('div.card', null,
+          thumb(this.assets.url('food', recipe.id)),
+          h('div.card-main', null, h('div.card-title', null, recipe.name), label, track)),
+      ],
+      foot: h('div.rowline', null,
+        h('span.card-sub.grow', null, `${cost.coins} sand dollars and ${cost.clay} clay spent`),
+        go),
+    });
+  }
+
   openHelp() {
     this.reopen = () => this.openHelp();
     const step = (n, title, text) => h('div.card', null,
@@ -667,11 +969,21 @@ export class Panels {
       body: [
         h('div.note', null, 'Everything costs ', h('b', null, 'sand dollars'), ' — furniture, machines, recipes and crew alike.'),
         step(1, 'Plate up the menu', 'Open the Menu Book and set how many of each dish to make. Ingredients come out of your pantry right away.'),
-        step(2, 'Open up', 'Guests wander in and wait by the door. Tap one to seat them at a free chair.'),
-        step(3, 'Take the order', 'Tap the ! bubble over a seated guest to send the ticket to the chef.'),
-        step(4, 'Run the plate', 'Drag the finished dish off the kitchen pass onto the guest who ordered it.'),
-        step(5, 'Get paid', 'The faster you serve, the more they leave. Slow service loses stars.'),
-        step(6, 'Build the works', 'Once the till is healthy, head to the Factory: place a machine, drag a belt from it, and end the belt at a Pantry Intake. Ingredients then fill your pantry for free.'),
+        step(2, 'Post a flyer', 'Nobody comes to a place they have not heard of. Tap the flyer by the Menu button until a poster goes up — ten taps to start with, fewer once you research it, and none at all once a Promo Stand or the Paste Crew does it for you. Yesterday\'s posters come down overnight.'),
+        step(3, 'Open up', 'Guests wander in and wait by the door. Tap one to seat them at a free chair.'),
+        step(4, 'Take the order', 'Tap the ! bubble over a seated guest to send the ticket to the chef.'),
+        step(5, 'Run the plate', 'Drag the finished dish off the kitchen pass onto the guest who ordered it.'),
+        step(6, 'Get paid', 'The faster you serve, the more they leave. Slow service loses stars.'),
+        step(7, 'Build the works', 'Once the till is healthy, head to the Factory: place a machine, drag a belt from it, and end the belt at a Pantry Intake. Ingredients then fill your pantry for free. The Workshop tab has a computer that banks research points and a stand that posts your flyers.'),
+        h('div.section', null, 'Getting to know them'),
+        h('div.note', null, 'Every guest has a flavour they ', h('b', null, 'love'),
+          ' and one they cannot stand. Serving the right one is worth triple hearts and a better tip, and it fills in their page in the ',
+          h('b', null, 'Guest Diary'), '. Fill the hearts and they start bringing you presents.'),
+        h('div.note', null, 'Watch for a gold crown or a violet star over someone\'s head: a ',
+          h('b', null, 'VIP'), ' pays double and a ', h('b', null, 'Mythical'),
+          ' guest four times over. A busier harbour draws more of them.'),
+        h('div.note', null, 'Serving also earns ', h('b', null, 'pottery'),
+          ' experience. At level five the kiln opens, and a forged serving dish raises one recipe\'s stars and price for good.'),
         h('div.note', null, 'Fancier tables and more decor raise ', h('b', null, 'ambience'), ', which brings guests in quicker and makes them tip better. Hire crew to automate seating, serving and the works.'),
       ],
     });

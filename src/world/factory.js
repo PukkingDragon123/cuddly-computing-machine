@@ -217,7 +217,7 @@ export class Factory {
     if (m.kind === 'belt') return !m.items.some((it) => it.p < ITEM_GAP);
     if (m.kind === 'silo') return true;
     if (m.kind === 'machine' && m.def?.kind === 'processor') {
-      return m.def.inId === ing && m.buf < m.def.inQty * 3;
+      return m.def.inId === ing && m.buf < m.def.inQty * this.state.bufferSize;
     }
     return false;
   }
@@ -280,6 +280,16 @@ export class Factory {
     for (const m of this.grid.values()) {
       if (m.kind !== 'machine' || !m.def) continue;
       const interval = machineInterval(m.def, m.level, speed);
+
+      // the promo stand and the computer make nothing a belt can carry, so
+      // they tick on their own and hand straight to the save file
+      if (m.def.kind === 'promo' || m.def.kind === 'lab') {
+        m.t += dt;
+        if (m.t >= m.def.interval) { m.t = 0; this.#workshopTick(m); }
+        m.blocked = false;
+        continue;
+      }
+
       const target = this.outTile(m);
       const canPush = target && this.#accepts(target, m.def.out);
 
@@ -304,6 +314,20 @@ export class Factory {
         } else m.blocked = false;
       }
     }
+  }
+
+  /** A promo stand pastes a poster; a computer banks a research point. */
+  #workshopTick(m) {
+    const s = toScreen(m.c, m.r);
+    if (m.def.kind === 'promo') {
+      if (!this.state.addPoster()) return;
+      this.fx.pop(s.x, s.y - 60, 'Poster!', { color: '#e4652f', size: 15, rise: 30, max: 0.8 });
+    } else {
+      this.state.addResearch(m.def.out ?? 1);
+      this.fx.pop(s.x, s.y - 60, `+${m.def.out ?? 1} rp`, { color: '#4a8cb0', size: 15, rise: 30, max: 0.8 });
+    }
+    m.sq = m.sq ?? { value: 1, vel: 0 };
+    m.sq.vel -= 2;
   }
 
   #emit(m, target) {
@@ -352,6 +376,15 @@ export class Factory {
     const banked = {};
     const feed = new Map();     // processor record -> units of its input
 
+    // the computer and the promo stand need no line, so they simply run
+    for (const m of this.grid.values()) {
+      if (m.kind !== 'machine') continue;
+      const runs = Math.floor(seconds / (m.def?.interval ?? Infinity));
+      if (runs <= 0) continue;
+      if (m.def.kind === 'lab') this.state.addResearch(runs * (m.def.out ?? 1));
+      else if (m.def.kind === 'promo') for (let i = 0; i < runs; i++) this.state.addPoster();
+    }
+
     const runsIn = (m) => Math.floor(seconds / machineInterval(m.def, m.level, speed));
 
     for (const m of this.grid.values()) {
@@ -369,8 +402,8 @@ export class Factory {
     for (const [m, supplied] of feed) {
       if (this.#chainEnd(m)?.kind !== 'pantry') continue;
       const runs = Math.min(runsIn(m), Math.floor((supplied + m.buf) / m.def.inQty));
-      if (runs <= 0) { m.buf = Math.min(m.def.inQty * 3, m.buf + supplied); continue; }
-      m.buf = Math.min(m.def.inQty * 3, supplied + m.buf - runs * m.def.inQty);
+      if (runs <= 0) { m.buf = Math.min(m.def.inQty * this.state.bufferSize, m.buf + supplied); continue; }
+      m.buf = Math.min(m.def.inQty * this.state.bufferSize, supplied + m.buf - runs * m.def.inQty);
       banked[m.def.out] = (banked[m.def.out] ?? 0) + runs;
     }
 
@@ -561,7 +594,9 @@ export class Factory {
       const sprite = this.assets.get('machines', m.def.sprite);
       const sq = m.sq?.value ?? 1;
       const jitter = m.shake > 0 ? Math.sin(t * 60) * m.shake * 8 : 0;
-      const running = m.def.kind === 'producer' ? !m.blocked : m.buf >= m.def.inQty && !m.blocked;
+      const running = m.def.kind === 'producer' || m.def.kind === 'promo' || m.def.kind === 'lab'
+        ? !m.blocked
+        : m.buf >= m.def.inQty && !m.blocked;
       const hum = running ? Math.sin(t * 9 + m.c) * 0.8 : 0;
       list.push({
         d: depthOf(m.c, m.r),

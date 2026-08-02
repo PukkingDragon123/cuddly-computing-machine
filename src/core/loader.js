@@ -31,6 +31,8 @@ class Sprite {
     this.fw = entry.fw ?? img.naturalWidth;
     this.fh = entry.fh ?? img.naturalHeight;
     this.count = entry.frames ? entry.frames.length : 1;
+    // slope of the drawing's own top edge, for joinery laid onto a sheared wall
+    this.slope = entry.slope ?? 0;
     this.meta = entry;
   }
   /** Source rect for a frame index or a named frame ("idle" / "walk" / "eat"). */

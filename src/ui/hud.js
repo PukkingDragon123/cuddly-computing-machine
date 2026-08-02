@@ -31,6 +31,9 @@ export class Hud {
       sheetFoot: $('#sheet-foot'),
       sound: $('#btn-sound'),
       card: $('#titlecard'),
+      flyer: $('#btn-flyer'),
+      flyerCount: $('#flyer-count'),
+      flyerFill: $('#flyer-fill'),
       cardMain: $('#titlecard-main'),
       cardSub: $('#titlecard-sub'),
     };
@@ -45,6 +48,8 @@ export class Hud {
     $('#btn-recipes').onclick = () => g.openRecipes();
     $('#btn-menu').onclick = () => g.openHub();
     $('#btn-pantry').onclick = () => g.openPantry();
+    $('#btn-diary').onclick = () => g.openDiary();
+    this.el.flyer.onclick = () => g.tapFlyer();
     $('#btn-help').onclick = () => g.openHelp();
     this.el.sound.onclick = () => g.toggleSound();
     this.el.service.onclick = () => g.toggleService();
@@ -91,6 +96,17 @@ export class Hud {
     const canOpen = planned > 0 && r.seatCount > 0 && r.hasPass;
     this.el.service.disabled = s.phase === 'report' || (!open && !canOpen);
 
+    // flyers: only a job during prep, so the button steps aside once open
+    const max = s.flyerMax;
+    show(this.el.flyer, !open);
+    if (!open) {
+      this.#text('flyerCount', `${s.posters}/${max}`);
+      const pct = s.posters >= max ? 1 : (s.flyer?.taps ?? 0) / s.flyerTaps;
+      const w = `${Math.round(pct * 100)}%`;
+      if (this.el.flyerFill.style.width !== w) this.el.flyerFill.style.width = w;
+      this.el.flyer.classList.toggle('full', s.posters >= max);
+    }
+
     const icon = `ico ico-${this.game.sfx.enabled ? 'sound' : 'mute'}`;
     if (this.el.sound.firstElementChild.className !== icon) {
       this.el.sound.firstElementChild.className = icon;
@@ -112,6 +128,14 @@ export class Hud {
     el.animate(
       [{ transform: 'scale(1)' }, { transform: 'scale(1.14)' }, { transform: 'scale(1)' }],
       { duration: 260, easing: 'cubic-bezier(.2,1.6,.4,1)' },
+    );
+  }
+
+  /** Draw the eye to the flyer when someone tries to open with no posters up. */
+  pulseFlyer() {
+    this.el.flyer.animate(
+      [{ transform: 'scale(1)' }, { transform: 'scale(1.16) rotate(-3deg)' }, { transform: 'scale(1)' }],
+      { duration: 480, iterations: 2, easing: 'cubic-bezier(.2,1.6,.4,1)' },
     );
   }
 

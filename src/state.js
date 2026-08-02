@@ -7,9 +7,16 @@ import {
   FURNITURE_BY_ID, STYLE_BY_ID, STAFF_BY_ID, LEGACY_FURNITURE, LEGACY_STYLES,
 } from './data/catalog.js';
 import { rotOf } from './world/orient.js';
+import {
+  GIFTS, GUEST_BY_ID, HEART_STEPS, MAX_FRIEND, levelForHearts, tasteOf,
+} from './data/guests.js';
+import {
+  FLYER_BASE_MAX, FLYER_TAPS, RESEARCH_BY_ID, SHOP_BY_ID, dishPrice, dishStars,
+  flyerDraw, potteryLevel,
+} from './data/progress.js';
 
 const KEY = 'bubbleworks.harbor.save.v1';
-const VERSION = 4;
+const VERSION = 5;
 export const SAVE_KEY = KEY;
 
 function fresh() {
@@ -33,6 +40,15 @@ function fresh() {
       { c: 5, r: 4, id: 'chair', style: 'plain', rot: 0 },
     ],
     machines: [],
+    // the long game — see data/progress.js
+    diary: {},                       // species id -> { met, served, hearts, level, likeSeen, hateSeen }
+    flyer: { taps: 0, posters: 0 },  // posters go up before the doors open
+    research: 0,
+    researched: [],
+    bought: [],                      // one-off shop purchases
+    pottery: 0,                      // experience in the pottery class
+    clay: 0,
+    dishes: {},                      // recipe id -> forged serving-dish tier
     seenHelp: false,
     lastSeen: Date.now(),
     stats: { served: 0, walkouts: 0, earned: 0, best: 0 },
@@ -62,6 +78,15 @@ function migrate(data) {
   });
   // furniture used to store a mirror flag; it now stores one of four turns
   for (const f of data.furniture) { f.rot = rotOf(f); delete f.flip; }
+  // everything the long game keeps track of, defaulted for an older save
+  data.diary ??= {};
+  data.flyer ??= { taps: 0, posters: 0 };
+  data.research ??= 0;
+  data.researched ??= [];
+  data.bought ??= [];
+  data.pottery ??= 0;
+  data.clay ??= 0;
+  data.dishes ??= {};
   data.v = VERSION;
 }
 
@@ -97,6 +122,9 @@ export class GameState {
       pantry: this.pantry, unlocked: this.unlocked, levels: this.levels,
       menu: this.menu, stock: this.stock, staff: this.staff,
       seenHelp: this.seenHelp, stats: this.stats, lastSeen: this.lastSeen ?? Date.now(),
+      diary: this.diary, flyer: this.flyer, research: this.research,
+      researched: this.researched, bought: this.bought,
+      pottery: this.pottery, clay: this.clay, dishes: this.dishes,
       furniture: this.furniture.map(({ c, r, id, style, rot }) => ({ c, r, id, style, rot })),
       machines: this.machines.map(({ c, r, kind, id, dir, level, buf }) =>
         ({ c, r, kind, id, dir, level, buf })),
@@ -170,9 +198,17 @@ export class GameState {
   isUnlocked(id) { return this.unlocked.includes(id); }
   unlock(id) { if (!this.isUnlocked(id)) { this.unlocked.push(id); this.bus.emit('change'); } }
 
-  priceOf(id) { const r = RECIPE_BY_ID[id]; return r ? priceAt(r, this.levelOf(id)) : 0; }
+  /** Price a guest pays, with any forged serving dish folded in. */
+  priceOf(id) {
+    const r = RECIPE_BY_ID[id];
+    if (!r) return 0;
+    return Math.round(priceAt(r, this.levelOf(id)) * dishPrice(this.dishTier(id)));
+  }
   prepOf(id) { const r = RECIPE_BY_ID[id]; return r ? prepAt(r, this.levelOf(id)) : 3; }
-  starsOf(id) { const r = RECIPE_BY_ID[id]; return r ? starsAt(r, this.levelOf(id)) : 1; }
+  starsOf(id) {
+    const r = RECIPE_BY_ID[id];
+    return r ? starsAt(r, this.levelOf(id)) + dishStars(this.dishTier(id)) : 1;
+  }
 
   /* ---------------------------------------------------------------- staff */
 
@@ -207,6 +243,8 @@ export class GameState {
 
   get tipMult() {
     let m = 1 + this.#staffSum('tips');
+    if (this.hasResearch('money_1')) m *= 1.15;
+    if (this.hasResearch('money_2')) m *= 1.25;
     for (const f of this.furniture) {
       const item = FURNITURE_BY_ID[f.id];
       if (item?.tipRoom) m *= item.tipRoom;
@@ -226,12 +264,23 @@ export class GameState {
     return m;
   }
 
-  /** Seconds between guest arrivals during service. */
+  /**
+   * Seconds between guest arrivals. Posters are the biggest term by design:
+   * a room full of lovely furniture still sits empty if nobody put the word out.
+   */
   get arrivalGap() {
-    let draw = 0;
+    let draw = flyerDraw(this.posters);
     for (const f of this.furniture) draw += FURNITURE_BY_ID[f.id]?.draw ?? 0;
+    if (this.hasBought('lantern_string')) draw += 0.2;
     const base = 6.2 / (1 + this.ambience * 0.02 + draw + Math.min(1.2, this.stars * 0.0025));
-    return clamp(base, 1.5, 7);
+    return clamp(base, 1.2, 7);
+  }
+
+  /** How hard the harbour pulls in rare guests. */
+  get rarityPull() {
+    let pull = Math.min(1.4, this.stars * 0.0015) + this.posters * 0.06;
+    if (this.hasResearch('money_2')) pull += 0.5;
+    return pull;
   }
 
   get orderSpeed() {
@@ -244,11 +293,189 @@ export class GameState {
   }
 
   get cookSlots() { return 1 + this.#staffSum('cookSlot'); }
-  get factorySpeed() { return 1 + this.#staffSum('factorySpeed'); }
+  get factorySpeed() {
+    let m = 1 + this.#staffSum('factorySpeed');
+    if (this.hasResearch('speed_1')) m *= 1.15;
+    if (this.hasResearch('speed_2')) m *= 1.2;
+    return m;
+  }
+  /** Buffer depth on a refiner, so a fed line does not stall. */
+  get bufferSize() { return this.hasResearch('belt_smart') ? 8 : 4; }
   get bonusStar() { return this.#staffSum('bonusStar'); }
   get autoSeat() { return this.hasStaff('oyster_host'); }
   get autoServe() { return this.hasStaff('cuttlefish_server'); }
   get cleanTime() { return this.hasStaff('sea_lion_dish') ? 0.5 : 2.4; }
+
+  /* --------------------------------------------------------------- diary  */
+
+  /** A guest's page, created blank the first time they walk in. */
+  page(speciesId) {
+    return (this.diary[speciesId] ??= {
+      met: 0, served: 0, hearts: 0, level: 1, likeSeen: false, hateSeen: false, gifts: 0,
+    });
+  }
+
+  noteArrival(speciesId) {
+    const p = this.page(speciesId);
+    p.met += 1;
+    this.bus.emit('change');
+  }
+
+  /**
+   * Record a meal. Serving a guest's favourite flavour is worth several hearts
+   * and reveals that half of their page; serving the one they can't stand costs
+   * a heart and reveals the other half. That is the whole loop — the diary
+   * fills in because you experimented, not because you waited.
+   *
+   * @returns {{hearts:number, mood:'loved'|'fine'|'hated', levelled:number|null}}
+   */
+  noteServed(speciesId, recipeId, rarity = 1) {
+    const p = this.page(speciesId);
+    const guest = GUEST_BY_ID[speciesId];
+    const taste = tasteOf(recipeId);
+    let mood = 'fine';
+    let hearts = 1;
+    if (guest && taste === guest.loves) { mood = 'loved'; hearts = 3; p.likeSeen = true; }
+    else if (guest && taste === guest.loathes) { mood = 'hated'; hearts = -1; p.hateSeen = true; }
+
+    hearts = Math.round(hearts * rarity);
+    p.served += 1;
+    p.hearts = Math.max(0, p.hearts + hearts);
+
+    const was = p.level;
+    p.level = levelForHearts(p.hearts);
+    const levelled = p.level > was ? p.level : null;
+    if (levelled) p.gifts = Math.max(p.gifts, p.level - 1);
+
+    this.bus.emit('change');
+    return { hearts, mood, levelled };
+  }
+
+  /** The present a guest hands over on reaching a friendship level. */
+  claimGift(level) {
+    const gift = GIFTS[level - 1];
+    if (!gift) return null;
+    if (gift.kind === 'coins') this.earn(gift.amount);
+    if (gift.kind === 'clay') { this.clay += gift.amount; this.bus.emit('change'); }
+    if (gift.kind === 'research') this.addResearch(gift.amount);
+    return gift;
+  }
+
+  get diaryFound() { return Object.keys(this.diary).length; }
+  get diaryHearts() {
+    return Object.values(this.diary).reduce((n, p) => n + (p.hearts ?? 0), 0);
+  }
+
+  /* -------------------------------------------------------------- flyers  */
+
+  /** Taps to finish one poster, after research and crew have had their say. */
+  get flyerTaps() {
+    let n = FLYER_TAPS;
+    if (this.hasResearch('flyer_1')) n -= 2;
+    if (this.hasResearch('flyer_2')) n -= 3;
+    if (this.hasStaff('gull_courier')) n -= 3;
+    return Math.max(1, n);
+  }
+
+  get flyerMax() {
+    let n = FLYER_BASE_MAX;
+    if (this.hasResearch('flyer_2')) n += 1;
+    if (this.bought.includes('flyer_board')) n += 1;
+    n += this.machines.filter((m) => m.id === 'promo_stand').length;
+    return n;
+  }
+
+  get posters() { return this.flyer?.posters ?? 0; }
+  get autoPost() { return this.hasResearch('flyer_auto'); }
+
+  /** One tap on the flyer. Returns true when that finished a poster. */
+  tapFlyer() {
+    const f = this.flyer;
+    if (f.posters >= this.flyerMax) return false;
+    f.taps += 1;
+    if (f.taps < this.flyerTaps) { this.bus.emit('change'); return false; }
+    f.taps = 0;
+    f.posters += 1;
+    this.bus.emit('change');
+    return true;
+  }
+
+  addPoster() {
+    if (this.flyer.posters >= this.flyerMax) return false;
+    this.flyer.posters += 1;
+    this.flyer.taps = 0;
+    this.bus.emit('change');
+    return true;
+  }
+
+  /* ------------------------------------------------------------ research  */
+
+  hasResearch(id) { return this.researched.includes(id); }
+
+  addResearch(n) {
+    this.research += n;
+    this.bus.emit('change');
+  }
+
+  canResearch(id) {
+    const node = RESEARCH_BY_ID[id];
+    if (!node || this.hasResearch(id)) return false;
+    if (node.needs && !this.hasResearch(node.needs)) return false;
+    return this.research >= node.cost;
+  }
+
+  buyResearch(id) {
+    if (!this.canResearch(id)) return false;
+    this.research -= RESEARCH_BY_ID[id].cost;
+    this.researched.push(id);
+    this.bus.emit('change');
+    this.save();
+    return true;
+  }
+
+  /* ---------------------------------------------------------------- shop  */
+
+  hasBought(id) { return this.bought.includes(id); }
+
+  canBuy(id) {
+    const item = SHOP_BY_ID[id];
+    if (!item || this.hasBought(id)) return false;
+    if (item.needs && !this.hasBought(item.needs)) return false;
+    return this.coins >= item.cost;
+  }
+
+  buyShop(id) {
+    if (!this.canBuy(id)) return false;
+    if (!this.spend(SHOP_BY_ID[id].cost)) return false;
+    this.bought.push(id);
+    this.bus.emit('shop', id);
+    this.bus.emit('change');
+    this.save();
+    return true;
+  }
+
+  /** Dining room size, which the area unlocks widen. */
+  get roomSize() {
+    let size = 9;
+    for (const id of this.bought) size = Math.max(size, SHOP_BY_ID[id]?.size ?? 0);
+    return size;
+  }
+
+  /* ------------------------------------------------------------- pottery  */
+
+  get potteryLv() { return potteryLevel(this.pottery); }
+
+  addPottery(n) {
+    this.pottery += Math.round(n * (this.hasResearch('kiln_1') ? 2 : 1));
+    this.bus.emit('change');
+  }
+
+  dishTier(recipeId) { return this.dishes[recipeId] ?? 0; }
+  setDishTier(recipeId, tier) {
+    this.dishes[recipeId] = tier;
+    this.bus.emit('change');
+    this.save();
+  }
 
   /* ----------------------------------------------------------- day cycle  */
 
@@ -278,12 +505,18 @@ export class GameState {
     this.bus.emit('change');
   }
 
-  /** Advance to tomorrow: clear the menu, drop the morning delivery. */
+  /**
+   * Advance to tomorrow: clear the menu, drop the morning delivery, and take
+   * yesterday's flyers down. Reposting every morning is the chore the whole
+   * automation ladder exists to take off your hands — a promo stand or the
+   * Paste Crew quietly puts them back up while you do something else.
+   */
   nextDay() {
     this.day += 1;
     this.phase = 'prep';
     this.menu = {};
     this.stock = {};
+    this.flyer = { taps: 0, posters: 0 };
     for (const [id, qty] of Object.entries(DAILY_DELIVERY)) this.addIng(id, qty);
     this.bus.emit('phase', 'prep');
     this.bus.emit('change');

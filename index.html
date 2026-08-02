@@ -25,6 +25,7 @@
 
     <div class="corner top-right">
       <button class="round" id="btn-pantry" title="Pantry"><i class="ico ico-crate"></i></button>
+      <button class="round" id="btn-diary" title="Guest diary"><i class="ico ico-diary"></i></button>
       <button class="round" id="btn-sound" title="Sound"><i class="ico ico-sound"></i></button>
       <button class="round" id="btn-help" title="How to play"><i class="ico ico-help"></i></button>
     </div>
@@ -36,6 +37,15 @@
 
     <div class="corner bottom-left">
       <button class="pill pill-lg" id="btn-menu">Menu</button>
+      <!-- posting flyers is the first thing you do each morning, so it sits
+           out on the HUD rather than buried in a panel -->
+      <button class="flyer" id="btn-flyer" title="Post a flyer">
+        <i class="ico ico-flyer"></i>
+        <span class="flyer-body">
+          <b id="flyer-count">0/3</b>
+          <span class="flyer-bar"><i id="flyer-fill"></i></span>
+        </span>
+      </button>
     </div>
 
     <div class="corner bottom-right">
