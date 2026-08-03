@@ -24,8 +24,6 @@
     </div>
 
     <div class="corner top-right">
-      <button class="round" id="btn-pantry" title="Pantry"><i class="ico ico-crate"></i></button>
-      <button class="round" id="btn-diary" title="Guest diary"><i class="ico ico-diary"></i></button>
       <button class="round" id="btn-sound" title="Sound"><i class="ico ico-sound"></i></button>
       <button class="round" id="btn-help" title="How to play"><i class="ico ico-help"></i></button>
     </div>
@@ -35,28 +33,53 @@
       <button data-zone="factory">Factory</button>
     </div>
 
-    <div class="corner bottom-left">
-      <button class="pill pill-lg" id="btn-menu">Menu</button>
-      <!-- posting flyers is the first thing you do each morning, so it sits
-           out on the HUD rather than buried in a panel -->
-      <button class="flyer" id="btn-flyer" title="Post a flyer">
-        <i class="ico ico-flyer"></i>
-        <span class="flyer-body">
-          <b id="flyer-count">0/3</b>
-          <span class="flyer-bar"><i id="flyer-fill"></i></span>
-        </span>
-      </button>
-    </div>
+    <!--
+      One bar along the bottom. Everything the game can open is a single tap
+      from here — the old layout buried half of it behind a Menu sheet, which
+      meant two taps to reach the thing you open most.
+    -->
+    <div id="bottombar">
+      <div class="barrow">
+        <!-- posting flyers is the first job of the morning, so it stays out -->
+        <button class="flyer" id="btn-flyer" title="Post a flyer">
+          <i class="ico ico-flyer"></i>
+          <span class="flyer-body">
+            <b id="flyer-count">0/3</b>
+            <span class="flyer-bar"><i id="flyer-fill"></i></span>
+          </span>
+        </button>
+        <span class="barspace"></span>
+        <button class="pill pill-go" id="btn-service">Open!</button>
+      </div>
 
-    <div class="corner bottom-right">
-      <button class="tile" id="btn-build">
-        <i class="ico ico-hammer"></i><span class="cap">Build</span>
-      </button>
-      <button class="tile" id="btn-recipes">
-        <i class="ico ico-book"></i><span class="cap">Recipes</span>
-        <span class="badge hidden" data-bind="menu-badge">0</span>
-      </button>
-      <button class="pill pill-go" id="btn-service">Open!</button>
+      <nav class="dock" id="dock">
+        <button class="dock-btn" id="btn-build">
+          <i class="ico ico-hammer"></i><span class="cap">Build</span>
+        </button>
+        <button class="dock-btn" id="btn-recipes">
+          <i class="ico ico-book"></i><span class="cap">Menu</span>
+          <span class="badge hidden" data-bind="menu-badge">0</span>
+        </button>
+        <button class="dock-btn" id="btn-diary">
+          <i class="ico ico-diary"></i><span class="cap">Diary</span>
+        </button>
+        <button class="dock-btn" id="btn-pantry">
+          <i class="ico ico-crate"></i><span class="cap">Pantry</span>
+        </button>
+        <button class="dock-btn" id="btn-shop">
+          <i class="ico ico-shop"></i><span class="cap">Shop</span>
+        </button>
+        <button class="dock-btn" id="btn-research">
+          <i class="ico ico-lab"></i><span class="cap">Lab</span>
+          <span class="badge hidden" data-bind="research-badge">0</span>
+        </button>
+        <button class="dock-btn" id="btn-pottery">
+          <i class="ico ico-kiln"></i><span class="cap">Kiln</span>
+        </button>
+        <button class="dock-btn" id="btn-menu">
+          <i class="ico ico-star"></i><span class="cap">More</span>
+        </button>
+      </nav>
     </div>
 
     <div class="servicebar hidden" id="servicebar">

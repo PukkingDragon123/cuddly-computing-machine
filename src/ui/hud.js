@@ -3,6 +3,7 @@
 
 import { $, $$, clear, h, show } from './dom.js';
 import { money } from '../core/util.js';
+import { RESEARCH } from '../data/progress.js';
 
 export class Hud {
   constructor(game) {
@@ -32,6 +33,8 @@ export class Hud {
       sound: $('#btn-sound'),
       card: $('#titlecard'),
       flyer: $('#btn-flyer'),
+      dock: $('#dock'),
+      researchBadge: $('[data-bind="research-badge"]'),
       flyerCount: $('#flyer-count'),
       flyerFill: $('#flyer-fill'),
       cardMain: $('#titlecard-main'),
@@ -44,11 +47,29 @@ export class Hud {
 
   #wire() {
     const g = this.game;
-    $('#btn-build').onclick = () => g.openBuild();
-    $('#btn-recipes').onclick = () => g.openRecipes();
-    $('#btn-menu').onclick = () => g.openHub();
-    $('#btn-pantry').onclick = () => g.openPantry();
-    $('#btn-diary').onclick = () => g.openDiary();
+    // one place to open everything, and one place that knows what is open
+    this.docked = [
+      ['btn-build', 'build', () => g.openBuild()],
+      ['btn-recipes', 'recipes', () => g.openRecipes()],
+      ['btn-diary', 'diary', () => g.openDiary()],
+      ['btn-pantry', 'pantry', () => g.openPantry()],
+      ['btn-shop', 'shop', () => g.openShop()],
+      ['btn-research', 'research', () => g.openResearch()],
+      ['btn-pottery', 'pottery', () => g.openPottery()],
+      ['btn-menu', 'hub', () => g.openHub()],
+    ];
+    for (const [id, key, open] of this.docked) {
+      const el = $(`#${id}`);
+      if (!el) continue;
+      el.dataset.key = key;
+      el.onclick = () => {
+        // tapping the panel that is already up closes it, so the dock works as
+        // a toggle rather than a one-way trip
+        if (this.sheetOpen === key) { this.closeSheet(); return; }
+        this.#popDock(el);
+        open();
+      };
+    }
     this.el.flyer.onclick = () => g.tapFlyer();
     $('#btn-help').onclick = () => g.openHelp();
     this.el.sound.onclick = () => g.toggleSound();
@@ -76,7 +97,7 @@ export class Hud {
     const label = open ? 'Open' : s.phase === 'report' ? 'Closing' : 'Prep';
     const planned = s.plannedCount;
 
-    this.#text('coins', money(s.coins));
+    this.#roll('coins', s.coins);
     this.#text('stars', money(s.stars));
     this.#text('phase', `Day ${s.day} · ${label}`);
 
@@ -89,6 +110,15 @@ export class Hud {
 
     show(this.el.menuBadge, !open && planned > 0);
     this.#text('menuBadge', String(planned));
+
+    // a spendable research point is worth a nudge; a spent one is not
+    const spendable = s.researched
+      ? RESEARCH.some((n) => s.canResearch(n.id))
+      : false;
+    show(this.el.researchBadge, spendable);
+    this.#text('researchBadge', String(s.research));
+
+    this.syncDock();
 
     this.#text('service', open ? 'Close' : 'Open!');
     this.el.service.classList.toggle('pill-go', !open);
@@ -113,9 +143,45 @@ export class Hud {
     }
   }
 
+  /** Restart the squash so a repeat tap still reads as a tap. */
+  #popDock(el) {
+    el.classList.remove('pressed');
+    void el.offsetWidth;
+    el.classList.add('pressed');
+  }
+
+  /** Light up whichever dock button matches the open panel. */
+  syncDock() {
+    for (const [id, key] of this.docked ?? []) {
+      $(`#${id}`)?.classList.toggle('on', this.sheetOpen === key);
+    }
+  }
+
   #text(key, value) {
     const el = this.el[key];
     if (el && el.textContent !== value) el.textContent = value;
+  }
+
+  /**
+   * Count a number up to its new value instead of snapping. Sand dollars are
+   * the score, and watching a payment land is most of the reward for the run
+   * that earned it — a number that simply changes throws that away.
+   */
+  #roll(key, value) {
+    const el = this.el[key];
+    if (!el) return;
+    this.rolls ??= new Map();
+    const from = this.rolls.get(key) ?? value;
+    if (from === value) { this.#text(key, money(value)); this.rolls.set(key, value); return; }
+    // a big jump still lands quickly; a small one is worth watching
+    const step = Math.max(1, Math.ceil(Math.abs(value - from) / 12));
+    const next = value > from ? Math.min(value, from + step) : Math.max(value, from - step);
+    this.rolls.set(key, next);
+    this.#text(key, money(next));
+    if (next !== value) {
+      cancelAnimationFrame(this.rollRaf ?? 0);
+      this.rollRaf = requestAnimationFrame(() => this.sync());
+    }
   }
 
   setZone(zone) {
@@ -229,6 +295,8 @@ export class Hud {
       show(this.el.sheetFoot, true);
     } else show(this.el.sheetFoot, false);
 
+    this.syncDock();
+    document.getElementById('hud').classList.add('sheeting');
     const first = this.el.sheet.classList.contains('hidden');
     show(this.el.sheet, true);
     show(this.el.scrim, true);
@@ -247,6 +315,8 @@ export class Hud {
   closeSheet() {
     if (this.el.sheet.classList.contains('hidden')) return;
     this.sheetOpen = null;
+    this.syncDock();
+    document.getElementById('hud').classList.remove('sheeting');
     this.el.sheet.classList.add('out');
     show(this.el.scrim, false);
     // a panel opened during the slide-out bumps the generation, so this

@@ -4,7 +4,7 @@
 import { HALF_H, toScreen } from './iso.js';
 import { TAU, clamp, findPath, range, rnd } from '../core/util.js';
 import { Ease, makeSpring, spring } from '../core/tween.js';
-import { RARITY_BY_ID, rollRarity } from '../data/guests.js';
+import { COMMON_CAST, RARITY_BY_ID, rollRarity } from '../data/guests.js';
 import { bubble, contactShadow, drawIcon, drawSprite, meter, ring, squash, text } from '../gfx/paint.js';
 
 export const CHAR_SCALE = 0.72;
@@ -378,12 +378,15 @@ export class Customer {
  * trade research all raise it.
  */
 export function rollGuest(assets, pull = 0) {
-  const list = assets.list('customers');
-  const sprite = list[(rnd() * list.length) | 0];
   const rarity = rollRarity(pull, rnd);
+  // a tier with a cast of its own draws from it; the everyday tier draws from
+  // everyone else, so a grandee never wanders in as a regular
+  const pool = rarity.cast ?? COMMON_CAST;
+  const species = pool[(rnd() * pool.length) | 0];
+  const sprite = assets.get('customers', species) ?? assets.list('customers')[0];
   return {
     sprite,
-    species: sprite?.id ?? null,
+    species,
     rarity,
     patience: range(0.82, 1.3) * rarity.patience,
     eatTime: range(3.4, 5.2),

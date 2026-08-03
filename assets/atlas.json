@@ -241,6 +241,18 @@
    "src": "ingredients/cheese.png",
    "w": 160,
    "h": 132
+  },
+  {
+   "id": "ham",
+   "src": "livestock/ham.png",
+   "w": 134,
+   "h": 108
+  },
+  {
+   "id": "roe",
+   "src": "livestock/roe.png",
+   "w": 130,
+   "h": 106
   }
  ],
  "food": [
@@ -387,6 +399,18 @@
    "src": "food/treasure_bento.png",
    "w": 128,
    "h": 136
+  },
+  {
+   "id": "ham_steamer",
+   "src": "livestock/ham.png",
+   "w": 134,
+   "h": 108
+  },
+  {
+   "id": "roe_nigiri",
+   "src": "livestock/roe.png",
+   "w": 130,
+   "h": 106
   }
  ],
  "customers": [
@@ -599,6 +623,54 @@
    "name": "Angelfish",
    "src": "customers/18_angelfish.png",
    "fw": 140,
+   "fh": 176,
+   "frames": [
+    "idle",
+    "walk",
+    "eat"
+   ]
+  },
+  {
+   "id": "19_dolphin",
+   "name": "Dolphin",
+   "src": "customers/19_dolphin.png",
+   "fw": 130,
+   "fh": 176,
+   "frames": [
+    "idle",
+    "walk",
+    "eat"
+   ]
+  },
+  {
+   "id": "20_whale",
+   "name": "Whale",
+   "src": "customers/20_whale.png",
+   "fw": 165,
+   "fh": 176,
+   "frames": [
+    "idle",
+    "walk",
+    "eat"
+   ]
+  },
+  {
+   "id": "21_manatee",
+   "name": "Manatee",
+   "src": "customers/21_manatee.png",
+   "fw": 118,
+   "fh": 176,
+   "frames": [
+    "idle",
+    "walk",
+    "eat"
+   ]
+  },
+  {
+   "id": "22_walrus",
+   "name": "Walrus",
+   "src": "customers/22_walrus.png",
+   "fw": 143,
    "fh": 176,
    "frames": [
     "idle",
@@ -1323,6 +1395,134 @@
    "w": 317,
    "h": 304,
    "slope": -0.4
+  }
+ ],
+ "livestock": [
+  {
+   "id": "hogfish_1",
+   "src": "livestock/hogfish_1.png",
+   "w": 111,
+   "h": 81
+  },
+  {
+   "id": "hogfish_2",
+   "src": "livestock/hogfish_2.png",
+   "w": 115,
+   "h": 84
+  },
+  {
+   "id": "hogfish_3",
+   "src": "livestock/hogfish_3.png",
+   "w": 129,
+   "h": 93
+  },
+  {
+   "id": "hogfish_4",
+   "src": "livestock/hogfish_4.png",
+   "w": 185,
+   "h": 125
+  },
+  {
+   "id": "hogfish_5",
+   "src": "livestock/hogfish_5.png",
+   "w": 184,
+   "h": 124
+  },
+  {
+   "id": "hogfish_6",
+   "src": "livestock/hogfish_6.png",
+   "w": 175,
+   "h": 130
+  },
+  {
+   "id": "ham",
+   "src": "livestock/ham.png",
+   "w": 134,
+   "h": 108
+  },
+  {
+   "id": "cowwhale_1",
+   "src": "livestock/cowwhale_1.png",
+   "w": 118,
+   "h": 98
+  },
+  {
+   "id": "cowwhale_2",
+   "src": "livestock/cowwhale_2.png",
+   "w": 121,
+   "h": 98
+  },
+  {
+   "id": "cowwhale_3",
+   "src": "livestock/cowwhale_3.png",
+   "w": 121,
+   "h": 98
+  },
+  {
+   "id": "cowwhale_4",
+   "src": "livestock/cowwhale_4.png",
+   "w": 191,
+   "h": 130
+  },
+  {
+   "id": "cowwhale_5",
+   "src": "livestock/cowwhale_5.png",
+   "w": 199,
+   "h": 130
+  },
+  {
+   "id": "cowwhale_6",
+   "src": "livestock/cowwhale_6.png",
+   "w": 224,
+   "h": 126
+  },
+  {
+   "id": "milk_jug",
+   "src": "livestock/milk_jug.png",
+   "w": 68,
+   "h": 122
+  },
+  {
+   "id": "roefish_1",
+   "src": "livestock/roefish_1.png",
+   "w": 104,
+   "h": 91
+  },
+  {
+   "id": "roefish_2",
+   "src": "livestock/roefish_2.png",
+   "w": 101,
+   "h": 91
+  },
+  {
+   "id": "roefish_3",
+   "src": "livestock/roefish_3.png",
+   "w": 102,
+   "h": 92
+  },
+  {
+   "id": "roefish_4",
+   "src": "livestock/roefish_4.png",
+   "w": 170,
+   "h": 139
+  },
+  {
+   "id": "roefish_5",
+   "src": "livestock/roefish_5.png",
+   "w": 171,
+   "h": 138
+  },
+  {
+   "id": "roefish_6",
+   "src": "livestock/roefish_6.png",
+   "w": 169,
+   "h": 140
+  },
+  {
+   "id": "roe",
+   "src": "livestock/roe.png",
+   "w": 130,
+   "h": 106
   }
  ]
 }

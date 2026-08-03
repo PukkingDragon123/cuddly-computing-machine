@@ -13,11 +13,14 @@ import {
   BELT, MACHINE_BY_ID, MACHINE_MAX_LEVEL, SILO,
   machineInterval, machineUpgradeCost,
 } from '../data/catalog.js';
+import { PEN_BY_ID, PEN_STAGES, penFrame, penGrowTime, penYieldTime } from '../data/livestock.js';
 import {
   INK, contactShadow, drawIcon, drawSprite, ring, squash, sticker, text,
 } from '../gfx/paint.js';
 
 export const MACHINE_SCALE = 0.72;
+// the livestock art is pixel work at a different scale to the vector machines
+export const PEN_SCALE = 0.62;
 const BELT_SPEED = 1.05;        // tiles per second
 const ITEM_GAP = 0.36;          // minimum spacing between items on a belt
 const ITEM_SIZE = 38;
@@ -88,6 +91,7 @@ export class Factory {
       m.shake ??= 0;
       m.blocked = false;
       if (m.kind === 'machine') m.def = MACHINE_BY_ID[m.id];
+      if (m.kind === 'pen') { m.def = PEN_BY_ID[m.id]; m.grown ??= 0; m.ready ??= 0; }
       this.grid.set(this.key(m.c, m.r), m);
     }
   }
@@ -120,6 +124,7 @@ export class Factory {
     if (!g) return 0;
     if (g.kind === 'belt') return BELT.cost;
     if (g.kind === 'silo') return SILO.cost;
+    if (g.kind === 'pen') return PEN_BY_ID[g.id]?.cost ?? 0;
     return MACHINE_BY_ID[g.id]?.cost ?? 0;
   }
 
@@ -136,6 +141,7 @@ export class Factory {
       items: [], uid: uid('m'), sq: { value: 0.84, vel: 0 }, shake: 0,
     };
     if (g.kind === 'machine') rec.def = MACHINE_BY_ID[g.id];
+    if (g.kind === 'pen') { rec.def = PEN_BY_ID[g.id]; rec.grown = 0; rec.ready = 0; }
     this.state.machines.push(rec);
     this.rebuild();
 
@@ -278,6 +284,21 @@ export class Factory {
     }
 
     for (const m of this.grid.values()) {
+      if (m.kind !== 'pen' || !m.def) continue;
+      if (m.grown < 1) {
+        m.grown = Math.min(1, m.grown + dt / penGrowTime(m.def, speed));
+        if (m.grown >= 1) {
+          m.sq = m.sq ?? { value: 1, vel: 0 };
+          m.sq.vel -= 4;
+          const s = toScreen(m.c, m.r);
+          this.fx.stars(s.x, s.y - 40, 6);
+        }
+        continue;
+      }
+      m.ready = Math.min(1, m.ready + dt / penYieldTime(m.def, speed));
+    }
+
+    for (const m of this.grid.values()) {
       if (m.kind !== 'machine' || !m.def) continue;
       const interval = machineInterval(m.def, m.level, speed);
 
@@ -330,6 +351,23 @@ export class Factory {
     m.sq.vel -= 2;
   }
 
+  /** Collect from a pen. Returns false if there was nothing to collect. */
+  harvest(m) {
+    if (m.kind !== 'pen' || !m.def || (m.ready ?? 0) < 1) return false;
+    m.ready = 0;
+    m.took = (m.took ?? 0) + 1;
+    this.state.addIng(m.def.out, 1);
+    m.sq = m.sq ?? { value: 1, vel: 0 };
+    m.sq.vel -= 5;
+    const s = toScreen(m.c, m.r);
+    const icon = this.assets.get('ingredients', m.def.out);
+    if (icon) this.fx.fly(icon, s.x, s.y - 60);
+    this.fx.sparkles(s.x, s.y - 40, 7, 18);
+    this.sfx.play('ding');
+    this.state.save();
+    return true;
+  }
+
   #emit(m, target) {
     this.#handOff(target, m.def.out);
     m.sq = m.sq ?? { value: 1, vel: 0 };
@@ -375,6 +413,26 @@ export class Factory {
     const speed = this.state.factorySpeed;
     const banked = {};
     const feed = new Map();     // processor record -> units of its input
+
+    // pens need no line either: they grow, then bank a harvest per cycle
+    for (const m of this.grid.values()) {
+      if (m.kind !== 'pen' || !m.def) continue;
+      let left = seconds;
+      const growT = penGrowTime(m.def, speed);
+      if (m.grown < 1) {
+        const need = (1 - m.grown) * growT;
+        if (left < need) { m.grown += left / growT; continue; }
+        left -= need;
+        m.grown = 1;
+      }
+      const cycle = penYieldTime(m.def, speed);
+      const runs = Math.floor((m.ready * cycle + left) / cycle);
+      m.ready = ((m.ready * cycle + left) % cycle) / cycle;
+      if (runs > 0) {
+        banked[m.def.out] = (banked[m.def.out] ?? 0) + runs;
+        m.took = (m.took ?? 0) + runs;
+      }
+    }
 
     // the computer and the promo stand need no line, so they simply run
     for (const m of this.grid.values()) {
@@ -439,6 +497,9 @@ export class Factory {
     }
     const m = this.at(t.c, t.r);
     if (m) {
+      // a full pen empties on a tap rather than opening a panel: the satisfying
+      // thing about a pen is collecting from it, so that gets the direct gesture
+      if (m.kind === 'pen' && this.harvest(m)) return null;
       this.selection = m;
       this.sfx.play('tap');
       this.game.openMachine(m);
@@ -574,6 +635,24 @@ export class Factory {
       }
 
       const isSel = this.selection === m;
+      if (m.kind === 'pen') {
+        const sprite = this.assets.get('livestock', `${m.def?.animal}_${penFrame(m.grown ?? 0)}`);
+        const sq = m.sq?.value ?? 1;
+        const full = (m.ready ?? 0) >= 1;
+        // a full pen bobs; a growing one sits still, so the floor reads at a glance
+        const bob = full ? Math.sin(t * 4 + m.c) * 3 : 0;
+        list.push({
+          d: depthOf(m.c, m.r),
+          fn: () => {
+            const { sx, sy } = squash(sq);
+            drawSprite(ctx, sprite, 0, s.x, s.y + HALF_H * 0.5 + bob, {
+              scale: PEN_SCALE, scaleX: sx, scaleY: sy,
+              glow: isSel ? '#f8d167' : (full ? '#f8d167' : null), glowWidth: 3,
+            });
+          },
+        });
+        continue;
+      }
       if (m.kind === 'silo') {
         const sprite = this.assets.get(SILO.group, SILO.sprite);
         const sq = m.sq?.value ?? 1;
@@ -624,6 +703,20 @@ export class Factory {
       }
       const s = toScreen(m.c, m.r);
 
+      if (m.kind === 'pen') {
+        const grown = m.grown ?? 0;
+        if (grown < 1) {
+          ring(ctx, s.x, s.y - 96, 17, grown, { lw: 4, fill: '#8bbb6a' });
+        } else if ((m.ready ?? 0) >= 1) {
+          const bob = Math.sin(t * 6) * 2;
+          const icon = this.assets.get('ingredients', m.def.out);
+          sticker(ctx, s.x - 20, s.y - 124 + bob, 40, 34, { r: 11, fill: '#f8d167', lift: 3 });
+          if (icon) drawIcon(ctx, icon, s.x, s.y - 107 + bob, 26);
+        } else {
+          ring(ctx, s.x, s.y - 96, 17, m.ready ?? 0, { lw: 4, fill: '#6fb4d8' });
+        }
+        continue;
+      }
       if (m.kind === 'silo') {
         // compact running total; the full word only when you tap it, so a row of
         // intakes doesn't turn into a wall of labels
@@ -688,7 +781,9 @@ export class Factory {
     }
     const sprite = g.kind === 'silo'
       ? this.assets.get(SILO.group, SILO.sprite)
-      : this.assets.get('machines', MACHINE_BY_ID[g.id]?.sprite);
+      : g.kind === 'pen'
+        ? this.assets.get('livestock', `${PEN_BY_ID[g.id]?.animal}_${PEN_STAGES}`)
+        : this.assets.get('machines', MACHINE_BY_ID[g.id]?.sprite);
     if (!sprite) return;
     ctx.save();
     ctx.globalAlpha = 0.72;

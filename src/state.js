@@ -126,8 +126,8 @@ export class GameState {
       researched: this.researched, bought: this.bought,
       pottery: this.pottery, clay: this.clay, dishes: this.dishes,
       furniture: this.furniture.map(({ c, r, id, style, rot }) => ({ c, r, id, style, rot })),
-      machines: this.machines.map(({ c, r, kind, id, dir, level, buf }) =>
-        ({ c, r, kind, id, dir, level, buf })),
+      machines: this.machines.map(({ c, r, kind, id, dir, level, buf, grown, ready, took }) =>
+        ({ c, r, kind, id, dir, level, buf, grown, ready, took })),
     };
     try { localStorage.setItem(KEY, JSON.stringify(data)); } catch { /* storage full or blocked */ }
   }

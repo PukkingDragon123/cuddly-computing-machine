@@ -112,6 +112,15 @@ export class Fx {
     });
   }
 
+  /** One item tossed up and held a beat — a harvest you can see leaving the pen. */
+  fly(sprite, x, y) {
+    this.#add({
+      kind: 'sprite', x, y, sprite,
+      vx: range(-24, 24), vy: range(-320, -260), g: GRAV * 0.55,
+      life: 0, max: 0.85, size: range(30, 36), rot: 0, spin: range(-3, 3),
+    });
+  }
+
   /* --------------------------------------------------------------- update */
 
   update(dt) {

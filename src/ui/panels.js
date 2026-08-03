@@ -18,6 +18,7 @@ import {
   FORGE_LEVEL, MAX_DISH, RESEARCH, RESEARCH_BY_ID, RESEARCH_GROUPS, SHOP,
   SHOP_BY_ID, SHOP_GROUPS, forgeCost, potteryLevel, potteryNext,
 } from '../data/progress.js';
+import { PENS, PEN_STAGES } from '../data/livestock.js';
 import { DIR_NAMES } from '../world/factory.js';
 
 /** The wood each finish is painted in, for the swatch picker. */
@@ -143,6 +144,7 @@ export class Panels {
       { id: 'processor', label: 'Refiners' },
       { id: 'store', label: 'Storage' },
       { id: 'workshop', label: 'Workshop' },
+      { id: 'pens', label: 'Pens' },
     ];
     let body = [];
 
@@ -163,6 +165,18 @@ export class Panels {
           tags: [tag('50% back', 'tag-ok')],
           onclick: () => this.game.startFactoryErase(),
         }),
+      ];
+    } else if (this.factoryTab === 'pens') {
+      body = [
+        h('div.note', null, 'A pen raises one animal through six stages, then keeps giving. No belt, no line — just ',
+          h('b', null, 'tap it when the basket is full'), '.'),
+        ...PENS.map((pen) => this.#card({
+          src: this.assets.url('livestock', `${pen.animal}_${PEN_STAGES}`),
+          title: pen.label,
+          sub: pen.blurb,
+          tags: [this.#cost(pen.cost), tag(`1 ${ingName(pen.out)} / ${pen.yield}s`, 'tag-mint')],
+          onclick: () => this.game.startFactoryPlacing('pen', pen.id),
+        })),
       ];
     } else if (this.factoryTab === 'workshop') {
       body = [

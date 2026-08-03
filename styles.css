@@ -61,6 +61,8 @@
      flat fill — a thin light band along the top inside edge */
   --face: inset 0 0.15rem 0 rgba(255, 255, 255, 0.6);
 
+  --dock-h: 3.6rem;      /* the floating nav rail, which sheets sit clear of */
+
   --safe-t: env(safe-area-inset-top, 0px);
   --safe-b: env(safe-area-inset-bottom, 0px);
 
@@ -120,8 +122,76 @@ html, body {
 .corner { display: flex; gap: 0.4rem; align-items: flex-start; }
 .top-left     { grid-area: 1 / 1; flex-direction: column; }
 .top-right    { grid-area: 1 / 3; flex-direction: column; align-items: flex-end; }
-.bottom-left  { grid-area: 3 / 1; align-items: flex-end; }
-.bottom-right { grid-area: 3 / 3; align-items: flex-end; gap: 0.45rem; }
+
+/* the bottom bar ------------------------------------------------------- */
+
+/* Above the scrim and above the sheet, on purpose: with the dock buried the
+   only way from one panel to another was close-then-open, which is the two-tap
+   problem all over again. Floating it means tapping Shop while the Diary is up
+   simply switches. The sheet reserves room for it below its own footer. */
+#bottombar {
+  grid-area: 3 / 1 / 4 / 4;
+  display: flex; flex-direction: column; gap: 0.4rem;
+  min-width: 0;
+  z-index: 7;
+}
+/* with a panel up, the dock is the only thing that needs to stay reachable */
+#hud.sheeting .barrow { display: none }
+#hud.sheeting .zoneswitch,
+#hud.sheeting .servicebar { opacity: 0; pointer-events: none }
+.barrow { display: flex; align-items: flex-end; gap: 0.5rem; }
+.barspace { flex: 1 }
+
+/* A single rail of destinations. Eight of them will not fit a narrow phone
+   side by side, so the rail scrolls — but it never wraps, because a dock that
+   changes height as the game grows is a dock you stop trusting. */
+.dock {
+  display: flex; gap: 0.3rem;
+  padding: 0.3rem;
+  border: var(--bw) solid var(--ink);
+  border-radius: var(--r-md);
+  background: var(--panel-2);
+  box-shadow: 0 var(--lift) 0 var(--tan-shadow), inset 0 0.16rem 0.22rem rgba(95, 61, 38, .22);
+  overflow-x: auto;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+  scroll-snap-type: x proximity;
+}
+.dock::-webkit-scrollbar { display: none }
+
+.dock-btn {
+  position: relative;
+  flex: 1 0 auto;
+  min-width: 3.3rem;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 0.1rem;
+  padding: 0.34rem 0.2rem 0.28rem;
+  border: 0;
+  border-radius: var(--r-sm);
+  background: var(--paper);
+  box-shadow: 0 0.15rem 0 var(--tan-shadow), var(--face);
+  font: inherit;
+  color: var(--ink-deep);
+  cursor: pointer;
+  scroll-snap-align: center;
+  transition: transform .07s ease, box-shadow .07s ease, background .12s ease;
+}
+.dock-btn .ico { width: 1.3rem; height: 1.3rem }
+.dock-btn .cap {
+  font-size: 0.55rem; font-weight: 900; letter-spacing: .03em;
+  text-transform: uppercase; line-height: 1;
+  color: var(--ink-soft);
+}
+.dock-btn:active { transform: translateY(0.15rem); box-shadow: 0 0 0 var(--tan-shadow), var(--face) }
+.dock-btn.on { background: var(--sun); box-shadow: 0 0.15rem 0 var(--sun-deep), var(--face) }
+.dock-btn.on .cap { color: var(--ink-deep) }
+
+/* the tap that lands: a short squash, so every dock press feels answered */
+@keyframes dockPop {
+  0%   { transform: translateY(0.15rem) scaleX(1.06) scaleY(.9) }
+  100% { transform: none }
+}
+.dock-btn.pressed { animation: dockPop .26s cubic-bezier(.2,1.7,.4,1) }
 
 /* ------------------------------------------------------------- surfaces  */
 
@@ -463,6 +533,7 @@ html, body {
 
 #scrim {
   position: absolute; inset: 0;
+  z-index: 5;
   background: rgba(58, 36, 20, .34);
   backdrop-filter: blur(1.5px);
   animation: fade .2s ease both;
@@ -480,7 +551,9 @@ html, body {
   border-radius: var(--r-lg) var(--r-lg) 0 0;
   border-bottom: 0;
   box-shadow: 0 -0.5rem 1.4rem rgba(58, 36, 20, .22);
-  padding-bottom: var(--safe-b);
+  /* leave the floating dock its own room */
+  padding-bottom: calc(var(--dock-h) + var(--safe-b));
+  z-index: 6;
   animation: sheetIn .34s cubic-bezier(.16,1.3,.4,1) both;
   overflow: hidden;
 }

@@ -52,6 +52,7 @@ Mechanic speeds up the works.
 | **Research** | A Harbour Computer on the factory floor banks points while you work. Spend them on flyers, machine speed and trade. |
 | **Pottery** | Serving levels the class. At level five the kiln opens: spend clay and money, stop the needle in the band, and one recipe gains a star and a permanent price rise. |
 | **Shop** | Knocking through to the wharf and then the terrace grows the dining room from 9×9 to 13×13 — the only way to fit more tables. |
+| **Pens** | A pen raises one animal through six drawn stages, then keeps giving. Tap it when the basket is full. Ham and roe come from nowhere else, and neither pen needs a belt. |
 
 The ladder is deliberate: the flyer starts as ten taps a morning, and almost
 everything you buy exists to take that job — and the seating, the serving and
@@ -81,6 +82,11 @@ src/
 The world is a single `<canvas>`; the HUD and panels are real DOM so CSS can do
 the rounded-sticker styling and native scrolling.
 
+The dock along the bottom floats above the scrim and the sheet on purpose. With
+it buried, moving between panels meant close-then-open — so tapping Shop while
+the Diary is up now simply switches, and tapping the panel already showing
+closes it.
+
 ### Notes on the art
 
 Two source packs, both sliced into `assets/` with `assets/atlas.json` as the
@@ -89,6 +95,11 @@ index:
 - `Bubbleworks_Harbor_Character_Pack_01/` — guests, staff, ingredients, food and
   factory machines. Flat JPEG contact sheets on a magenta key or the cream paper
   backdrop, plus 3-frame character strips (idle / walk / eat).
+- `art_pack_02/livestock_pixel_sheet.png` — three animals across six growth
+  stages each, plus the ham, milk and roe they give. Pixel art rather than
+  vector, so it slices nearest-neighbour and keeps its own scale; the produce
+  cells are aliased into the ingredient and food groups so one drawing serves as
+  the pantry icon and the plated dish.
 - `art_pack_02/` — the dining room: furniture in three finishes, wall joinery
   (doors, windows, counters) in two woods, and three more guests. Every piece of
   furniture ships two drawings: `_f` faces screen down-left, `_b` is the same
@@ -96,6 +107,12 @@ index:
   becomes down-right, up-right becomes up-left — so those two plus a flip give
   all four isometric turns, every one a real drawing. Rotate cycles them, and a
   chair picks the one that faces its table.
+- `…/additional_assets/07_dolphin_whale_manatee_walrus_character_sheet.jpeg` —
+  four grandees on a 3×4 magenta grid. These are the VIP and mythical cast, so a
+  rare guest is a different animal rather than a recoloured regular.
+
+Every sheet in both packs is sliced except the three superseded furniture sheets
+and the two painted room plates, which the generated rooms replace.
 
 ```sh
 pip install pillow numpy scipy

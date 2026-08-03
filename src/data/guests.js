@@ -13,11 +13,13 @@ import { RECIPE_BY_ID } from './recipes.js';
  */
 export const RARITIES = [
   { id: 'common', label: 'Regular', weight: 100, pay: 1, patience: 1, hearts: 1, gift: 0.04,
-    aura: null, mark: null },
+    aura: null, mark: null, cast: null },
+  // the grandees each tier draws from — a rare guest is a different animal, not
+  // a recoloured one, so the crown is confirming what you can already see
   { id: 'vip', label: 'VIP', weight: 13, pay: 2.1, patience: 0.85, hearts: 2, gift: 0.3,
-    aura: '#f8d167', mark: 'crown' },
+    aura: '#f8d167', mark: 'crown', cast: ['19_dolphin', '21_manatee'] },
   { id: 'mythical', label: 'Mythical', weight: 2.5, pay: 4.2, patience: 0.7, hearts: 4, gift: 0.75,
-    aura: '#c9a2f5', mark: 'star' },
+    aura: '#c9a2f5', mark: 'star', cast: ['20_whale', '22_walrus'] },
 ];
 
 export const RARITY_BY_ID = Object.fromEntries(RARITIES.map((r) => [r.id, r]));
@@ -108,7 +110,20 @@ export const GUESTS = [
   { id: '16_tuna', name: 'Tuna', loves: 'savoury', loathes: 'rich' },
   { id: '17_clownfish', name: 'Clownfish', loves: 'sweet', loathes: 'savoury' },
   { id: '18_angelfish', name: 'Angelfish', loves: 'rich', loathes: 'savoury' },
+
+  // the grandees. They only turn up as VIPs and mythicals, and they are fussy:
+  // each hates something you have plenty of, so pleasing one takes planning
+  { id: '19_dolphin', name: 'Harbour Dolphin', loves: 'fresh', loathes: 'rich', tier: 'vip' },
+  { id: '21_manatee', name: 'Manatee Elder', loves: 'savoury', loathes: 'sweet', tier: 'vip' },
+  { id: '20_whale', name: 'Great Whale', loves: 'rich', loathes: 'fresh', tier: 'mythical' },
+  { id: '22_walrus', name: 'Walrus Captain', loves: 'sweet', loathes: 'savoury', tier: 'mythical' },
 ];
+
+/** Species that only ever appear at their own tier. */
+export const GRANDEES = new Set(GUESTS.filter((g) => g.tier).map((g) => g.id));
+
+/** The everyday cast — anyone without a tier of their own. */
+export const COMMON_CAST = GUESTS.filter((g) => !g.tier).map((g) => g.id);
 
 export const GUEST_BY_ID = Object.fromEntries(GUESTS.map((g) => [g.id, g]));
 

@@ -68,9 +68,26 @@ FIXTURE_SHEETS = [
     ('fixtures_walnut_sheet.png', 'fixt_walnut'),
 ]
 
-# Three more guests, same idle / walk / eat order as the character pack.
-GUEST_SHEET = ('customers_02_sheet.jpeg', 3, 3,
-               ['16_tuna', '17_clownfish', '18_angelfish'])
+# More guests, same idle / walk / eat order as the character pack. One row per
+# character, one column per frame. The four grandees on the pack-01 sheet are
+# the VIP and mythical cast — a rare guest is a different animal, not a recolour.
+GUEST_SHEETS = [
+    ('art_pack_02/customers_02_sheet.jpeg', 3,
+     ['16_tuna', '17_clownfish', '18_angelfish']),
+    ('Bubbleworks_Harbor_Character_Pack_01/additional_assets/'
+     '07_dolphin_whale_manatee_walrus_character_sheet.jpeg', 3,
+     ['19_dolphin', '20_whale', '21_manatee', '22_walrus']),
+]
+
+# Livestock. Each row is one animal across six growth stages, then the thing it
+# gives you at the end. Pens raise them; the last cell is the harvest.
+LIVESTOCK_SHEET = 'art_pack_02/livestock_pixel_sheet.png'
+LIVESTOCK = [
+    ('hogfish', 'ham'),
+    ('cowwhale', 'milk_jug'),
+    ('roefish', 'roe'),
+]
+LIVESTOCK_STAGES = 6
 
 MAX_H = {'furniture': 210, 'fixture': 300, 'wall': 300}
 
@@ -247,11 +264,18 @@ def slice_fixtures(manifest):
 
 
 def slice_guests(manifest):
-    fname, cols, rows, names = GUEST_SHEET
-    img = lift_magenta(Image.open(os.path.join(PACK, fname)), feather=0.9)
-    cw, ch = img.width / cols, img.height / rows
     os.makedirs(os.path.join(OUT, 'customers'), exist_ok=True)
     entries = list(manifest.get('customers', []))
+    for rel_src, cols, names in GUEST_SHEETS:
+        entries = _guest_sheet(entries, rel_src, cols, names)
+    manifest['customers'] = entries
+    print(f"  customers: {len(entries)} total")
+
+
+def _guest_sheet(entries, rel_src, cols, names):
+    rows = len(names)
+    img = lift_magenta(Image.open(os.path.join(ROOT, rel_src)), feather=0.9)
+    cw, ch = img.width / cols, img.height / rows
     for row, slug in enumerate(names):
         frames = []
         for col in range(cols):
@@ -281,8 +305,75 @@ def slice_guests(manifest):
         entries = [e for e in entries if e['id'] != slug]
         entries.append({'id': slug, 'name': slug.split('_', 1)[1].title(), 'src': rel,
                         'fw': fw, 'fh': fh, 'frames': ['idle', 'walk', 'eat']})
-    manifest['customers'] = entries
-    print(f"  customers: {len(entries)} total")
+    return entries
+
+
+def slice_livestock(manifest):
+    """Six growth stages per animal, plus the produce cell at the end of the row.
+
+    This sheet is pixel art on a flat slate background rather than a chroma key,
+    so the backdrop comes out by matching that colour instead of the magenta
+    test the vector sheets use.
+    """
+    img = Image.open(os.path.join(ROOT, LIVESTOCK_SHEET)).convert('RGB')
+    rgb = np.asarray(img).astype(np.int16)
+    # the backdrop is the single commonest colour, sampled from a corner
+    back = rgb[4, 4]
+    dist = np.abs(rgb - back).sum(axis=-1)
+    alpha = np.where(dist < 40, 0, 255).astype(np.uint8)
+    out = img.convert('RGBA')
+    out.putalpha(Image.fromarray(alpha, mode='L'))
+
+    cols = LIVESTOCK_STAGES + 1
+    rows = len(LIVESTOCK)
+    cw, ch = out.width / cols, out.height / rows
+    os.makedirs(os.path.join(OUT, 'livestock'), exist_ok=True)
+    entries = []
+    for row, (animal, produce) in enumerate(LIVESTOCK):
+        for col in range(cols):
+            cell = out.crop((round(col * cw), round(row * ch),
+                             round((col + 1) * cw), round((row + 1) * ch)))
+            # keep only the biggest blob: the art is not perfectly gridded, so a
+            # cell can catch a sliver of its neighbour and widen the crop
+            a = np.asarray(cell.getchannel('A')) > 24
+            lbl, n = ndimage.label(a)
+            if n == 0:
+                continue
+            areas = ndimage.sum(a, lbl, range(1, n + 1))
+            keep = int(np.argmax(areas)) + 1
+            mask = lbl == keep
+            cell.putalpha(Image.fromarray(
+                np.where(mask, np.asarray(cell.getchannel('A')), 0).astype(np.uint8), mode='L'))
+            ys, xs = np.nonzero(mask)
+            cell = cell.crop((int(xs.min()), int(ys.min()), int(xs.max()) + 1, int(ys.max()) + 1))
+            name = produce if col == cols - 1 else f'{animal}_{col + 1}'
+            rel = f'livestock/{name}.png'
+            # nearest-neighbour: this is pixel art and should stay crisp
+            if cell.height > 150:
+                k = 150 / cell.height
+                cell = cell.resize((max(1, round(cell.width * k)), 150), Image.NEAREST)
+            cell.save(os.path.join(OUT, rel))
+            entries.append({'id': name, 'src': rel, 'w': cell.width, 'h': cell.height})
+    manifest['livestock'] = entries
+    # The produce cells earn their keep twice: as the pantry icon for the raw
+    # ingredient, and as the plated dish for the recipe built on it. Registering
+    # the same file under both ids beats copying it.
+    by_id = {e['id']: e for e in entries}
+    aliases = [
+        ('ingredients', 'ham', 'ham'),
+        ('ingredients', 'roe', 'roe'),
+        ('food', 'ham_steamer', 'ham'),
+        ('food', 'roe_nigiri', 'roe'),
+    ]
+    for group, want, from_cell in aliases:
+        src = by_id.get(from_cell)
+        if not src:
+            print(f'  ! {group}/{want}: no {from_cell} cell')
+            continue
+        rows = [e for e in manifest.get(group, []) if e['id'] != want]
+        rows.append({**src, 'id': want})
+        manifest[group] = rows
+    print(f'  livestock: {len(entries)} sprites, 4 aliased into ingredients and food')
 
 
 def main():
@@ -294,6 +385,8 @@ def main():
     slice_fixtures(manifest)
     print('slicing guests…')
     slice_guests(manifest)
+    print('slicing livestock…')
+    slice_livestock(manifest)
 
     # the old furniture finishes and painted wall decals are gone
     for dead in ('furniture', 'furniture_coral', 'furniture_whale', 'decals', 'rooms'):
