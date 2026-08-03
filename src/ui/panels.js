@@ -16,7 +16,7 @@ import {
 } from '../data/guests.js';
 import {
   FORGE_LEVEL, MAX_DISH, RESEARCH, RESEARCH_BY_ID, RESEARCH_GROUPS, SHOP,
-  SHOP_BY_ID, SHOP_GROUPS, forgeCost, potteryLevel, potteryNext,
+  SHOP_BY_ID, SHOP_GROUPS, forgeCost, plateFor, potteryLevel, potteryNext,
 } from '../data/progress.js';
 import { PENS, PEN_STAGES } from '../data/livestock.js';
 import { DIR_NAMES } from '../world/factory.js';
@@ -863,8 +863,9 @@ export class Panels {
         const maxed = tier >= MAX_DISH;
         const cost = forgeCost(tier);
         const canPay = s.coins >= cost.coins && s.clay >= cost.clay;
+        const plate = plateFor(r.id, Math.min(MAX_DISH, tier + 1));
         body.push(this.#card({
-          src: this.assets.url('food', r.id),
+          src: this.assets.url('plates', plate) || this.assets.url('food', r.id),
           title: `${r.name}${tier ? `  ${'✦'.repeat(tier)}` : ''}`,
           sub: maxed
             ? 'The finest plate in the harbour.'

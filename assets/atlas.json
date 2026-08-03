@@ -59,6 +59,186 @@
    "src": "machines/cheese_press.png",
    "w": 189,
    "h": 214
+  },
+  {
+   "id": "roaster",
+   "src": "machines/roaster.png",
+   "w": 224,
+   "h": 214
+  },
+  {
+   "id": "grill",
+   "src": "machines/grill.png",
+   "w": 239,
+   "h": 214
+  },
+  {
+   "id": "smoker",
+   "src": "machines/smoker.png",
+   "w": 289,
+   "h": 214
+  },
+  {
+   "id": "steamer",
+   "src": "machines/steamer.png",
+   "w": 230,
+   "h": 214
+  },
+  {
+   "id": "press_ring",
+   "src": "machines/press_ring.png",
+   "w": 232,
+   "h": 214
+  },
+  {
+   "id": "mincer",
+   "src": "machines/mincer.png",
+   "w": 231,
+   "h": 214
+  },
+  {
+   "id": "crate_filler",
+   "src": "machines/crate_filler.png",
+   "w": 234,
+   "h": 214
+  },
+  {
+   "id": "sorter",
+   "src": "machines/sorter.png",
+   "w": 211,
+   "h": 214
+  },
+  {
+   "id": "extruder",
+   "src": "machines/extruder.png",
+   "w": 207,
+   "h": 214
+  },
+  {
+   "id": "tumbler_wide",
+   "src": "machines/tumbler_wide.png",
+   "w": 225,
+   "h": 214
+  },
+  {
+   "id": "wok",
+   "src": "machines/wok.png",
+   "w": 226,
+   "h": 214
+  },
+  {
+   "id": "baker",
+   "src": "machines/baker.png",
+   "w": 218,
+   "h": 214
+  },
+  {
+   "id": "keg_small",
+   "src": "machines/keg_small.png",
+   "w": 165,
+   "h": 202
+  },
+  {
+   "id": "kettle",
+   "src": "machines/kettle.png",
+   "w": 155,
+   "h": 214
+  },
+  {
+   "id": "locker",
+   "src": "machines/locker.png",
+   "w": 152,
+   "h": 214
+  },
+  {
+   "id": "drum",
+   "src": "machines/drum.png",
+   "w": 205,
+   "h": 214
+  },
+  {
+   "id": "boiler_tall",
+   "src": "machines/boiler_tall.png",
+   "w": 118,
+   "h": 214
+  },
+  {
+   "id": "twin_still",
+   "src": "machines/twin_still.png",
+   "w": 177,
+   "h": 214
+  },
+  {
+   "id": "vault",
+   "src": "machines/vault.png",
+   "w": 147,
+   "h": 214
+  },
+  {
+   "id": "refinery",
+   "src": "machines/refinery.png",
+   "w": 169,
+   "h": 214
+  },
+  {
+   "id": "computer_desk",
+   "src": "machines/computer_desk.png",
+   "w": 232,
+   "h": 214
+  },
+  {
+   "id": "radio_set",
+   "src": "machines/radio_set.png",
+   "w": 188,
+   "h": 214
+  },
+  {
+   "id": "plotter",
+   "src": "machines/plotter.png",
+   "w": 222,
+   "h": 214
+  },
+  {
+   "id": "computer_tall",
+   "src": "machines/computer_tall.png",
+   "w": 216,
+   "h": 214
+  },
+  {
+   "id": "beacon",
+   "src": "machines/beacon.png",
+   "w": 175,
+   "h": 214
+  },
+  {
+   "id": "ledger_press",
+   "src": "machines/ledger_press.png",
+   "w": 223,
+   "h": 214
+  },
+  {
+   "id": "gauge_stack",
+   "src": "machines/gauge_stack.png",
+   "w": 154,
+   "h": 214
+  },
+  {
+   "id": "spin_drum",
+   "src": "machines/spin_drum.png",
+   "w": 198,
+   "h": 214
+  },
+  {
+   "id": "stamp_press",
+   "src": "machines/stamp_press.png",
+   "w": 157,
+   "h": 214
+  },
+  {
+   "id": "gas_works",
+   "src": "machines/gas_works.png",
+   "w": 216,
+   "h": 214
   }
  ],
  "ingredients": [
@@ -671,6 +851,116 @@
    "name": "Walrus",
    "src": "customers/22_walrus.png",
    "fw": 143,
+   "fh": 176,
+   "frames": [
+    "idle",
+    "walk",
+    "eat"
+   ]
+  },
+  {
+   "id": "23_royal_whale_shark",
+   "src": "customers/23_royal_whale_shark.png",
+   "fw": 171,
+   "fh": 176,
+   "frames": [
+    "idle",
+    "walk",
+    "eat"
+   ]
+  },
+  {
+   "id": "24_pearl_manta_ray",
+   "src": "customers/24_pearl_manta_ray.png",
+   "fw": 223,
+   "fh": 176,
+   "frames": [
+    "idle",
+    "walk",
+    "eat"
+   ]
+  },
+  {
+   "id": "25_golden_seahorse",
+   "src": "customers/25_golden_seahorse.png",
+   "fw": 133,
+   "fh": 176,
+   "frames": [
+    "idle",
+    "walk",
+    "eat"
+   ]
+  },
+  {
+   "id": "26_giant_clam",
+   "src": "customers/26_giant_clam.png",
+   "fw": 164,
+   "fh": 176,
+   "frames": [
+    "idle",
+    "walk",
+    "eat"
+   ]
+  },
+  {
+   "id": "27_celebrity_narwhal",
+   "src": "customers/27_celebrity_narwhal.png",
+   "fw": 173,
+   "fh": 176,
+   "frames": [
+    "idle",
+    "walk",
+    "eat"
+   ]
+  },
+  {
+   "id": "28_aristocratic_octopus",
+   "src": "customers/28_aristocratic_octopus.png",
+   "fw": 152,
+   "fh": 176,
+   "frames": [
+    "idle",
+    "walk",
+    "eat"
+   ]
+  },
+  {
+   "id": "29_dunkleosteus",
+   "src": "customers/29_dunkleosteus.png",
+   "fw": 157,
+   "fh": 176,
+   "frames": [
+    "idle",
+    "walk",
+    "eat"
+   ]
+  },
+  {
+   "id": "30_coelacanth",
+   "src": "customers/30_coelacanth.png",
+   "fw": 199,
+   "fh": 176,
+   "frames": [
+    "idle",
+    "walk",
+    "eat"
+   ]
+  },
+  {
+   "id": "31_helicoprion",
+   "src": "customers/31_helicoprion.png",
+   "fw": 166,
+   "fh": 176,
+   "frames": [
+    "idle",
+    "walk",
+    "eat"
+   ]
+  },
+  {
+   "id": "32_xiphactinus",
+   "src": "customers/32_xiphactinus.png",
+   "fw": 146,
    "fh": 176,
    "frames": [
     "idle",
@@ -1523,6 +1813,304 @@
    "src": "livestock/roe.png",
    "w": 130,
    "h": 106
+  }
+ ],
+ "plates": [
+  {
+   "id": "plate_a01",
+   "src": "plates/plate_a01.png",
+   "w": 182,
+   "h": 154
+  },
+  {
+   "id": "plate_a02",
+   "src": "plates/plate_a02.png",
+   "w": 183,
+   "h": 154
+  },
+  {
+   "id": "plate_a03",
+   "src": "plates/plate_a03.png",
+   "w": 187,
+   "h": 154
+  },
+  {
+   "id": "plate_a04",
+   "src": "plates/plate_a04.png",
+   "w": 228,
+   "h": 154
+  },
+  {
+   "id": "plate_a05",
+   "src": "plates/plate_a05.png",
+   "w": 194,
+   "h": 154
+  },
+  {
+   "id": "plate_a06",
+   "src": "plates/plate_a06.png",
+   "w": 196,
+   "h": 154
+  },
+  {
+   "id": "plate_a07",
+   "src": "plates/plate_a07.png",
+   "w": 195,
+   "h": 154
+  },
+  {
+   "id": "plate_a08",
+   "src": "plates/plate_a08.png",
+   "w": 203,
+   "h": 154
+  },
+  {
+   "id": "plate_a09",
+   "src": "plates/plate_a09.png",
+   "w": 194,
+   "h": 154
+  },
+  {
+   "id": "plate_a10",
+   "src": "plates/plate_a10.png",
+   "w": 201,
+   "h": 154
+  },
+  {
+   "id": "plate_a11",
+   "src": "plates/plate_a11.png",
+   "w": 204,
+   "h": 154
+  },
+  {
+   "id": "plate_a12",
+   "src": "plates/plate_a12.png",
+   "w": 208,
+   "h": 154
+  },
+  {
+   "id": "plate_a13",
+   "src": "plates/plate_a13.png",
+   "w": 210,
+   "h": 154
+  },
+  {
+   "id": "plate_a14",
+   "src": "plates/plate_a14.png",
+   "w": 205,
+   "h": 154
+  },
+  {
+   "id": "plate_a15",
+   "src": "plates/plate_a15.png",
+   "w": 208,
+   "h": 154
+  },
+  {
+   "id": "plate_a16",
+   "src": "plates/plate_a16.png",
+   "w": 212,
+   "h": 154
+  },
+  {
+   "id": "plate_a17",
+   "src": "plates/plate_a17.png",
+   "w": 214,
+   "h": 154
+  },
+  {
+   "id": "plate_a18",
+   "src": "plates/plate_a18.png",
+   "w": 212,
+   "h": 154
+  },
+  {
+   "id": "plate_a19",
+   "src": "plates/plate_a19.png",
+   "w": 209,
+   "h": 154
+  },
+  {
+   "id": "plate_a20",
+   "src": "plates/plate_a20.png",
+   "w": 200,
+   "h": 154
+  },
+  {
+   "id": "plate_b01",
+   "src": "plates/plate_b01.png",
+   "w": 197,
+   "h": 154
+  },
+  {
+   "id": "plate_b02",
+   "src": "plates/plate_b02.png",
+   "w": 205,
+   "h": 154
+  },
+  {
+   "id": "plate_b03",
+   "src": "plates/plate_b03.png",
+   "w": 208,
+   "h": 154
+  },
+  {
+   "id": "plate_b04",
+   "src": "plates/plate_b04.png",
+   "w": 207,
+   "h": 154
+  },
+  {
+   "id": "plate_b05",
+   "src": "plates/plate_b05.png",
+   "w": 205,
+   "h": 154
+  },
+  {
+   "id": "plate_b06",
+   "src": "plates/plate_b06.png",
+   "w": 232,
+   "h": 154
+  },
+  {
+   "id": "plate_b07",
+   "src": "plates/plate_b07.png",
+   "w": 195,
+   "h": 154
+  },
+  {
+   "id": "plate_b08",
+   "src": "plates/plate_b08.png",
+   "w": 239,
+   "h": 154
+  },
+  {
+   "id": "plate_b09",
+   "src": "plates/plate_b09.png",
+   "w": 191,
+   "h": 154
+  },
+  {
+   "id": "plate_b10",
+   "src": "plates/plate_b10.png",
+   "w": 224,
+   "h": 154
+  },
+  {
+   "id": "plate_b11",
+   "src": "plates/plate_b11.png",
+   "w": 223,
+   "h": 154
+  },
+  {
+   "id": "plate_b12",
+   "src": "plates/plate_b12.png",
+   "w": 220,
+   "h": 154
+  },
+  {
+   "id": "plate_b13",
+   "src": "plates/plate_b13.png",
+   "w": 229,
+   "h": 154
+  },
+  {
+   "id": "plate_b14",
+   "src": "plates/plate_b14.png",
+   "w": 230,
+   "h": 154
+  },
+  {
+   "id": "plate_b15",
+   "src": "plates/plate_b15.png",
+   "w": 214,
+   "h": 154
+  },
+  {
+   "id": "plate_b16",
+   "src": "plates/plate_b16.png",
+   "w": 218,
+   "h": 154
+  },
+  {
+   "id": "plate_b17",
+   "src": "plates/plate_b17.png",
+   "w": 225,
+   "h": 154
+  },
+  {
+   "id": "plate_b18",
+   "src": "plates/plate_b18.png",
+   "w": 231,
+   "h": 154
+  },
+  {
+   "id": "plate_b19",
+   "src": "plates/plate_b19.png",
+   "w": 217,
+   "h": 154
+  },
+  {
+   "id": "plate_b20",
+   "src": "plates/plate_b20.png",
+   "w": 201,
+   "h": 154
+  }
+ ],
+ "ui": [
+  {
+   "id": "diary",
+   "src": "ui/diary.png",
+   "w": 95,
+   "h": 100
+  },
+  {
+   "id": "book",
+   "src": "ui/book.png",
+   "w": 114,
+   "h": 100
+  },
+  {
+   "id": "market",
+   "src": "ui/market.png",
+   "w": 85,
+   "h": 100
+  },
+  {
+   "id": "crew",
+   "src": "ui/crew.png",
+   "w": 98,
+   "h": 100
+  },
+  {
+   "id": "tools",
+   "src": "ui/tools.png",
+   "w": 104,
+   "h": 100
+  },
+  {
+   "id": "help",
+   "src": "ui/help.png",
+   "w": 94,
+   "h": 100
+  },
+  {
+   "id": "refresh",
+   "src": "ui/refresh.png",
+   "w": 97,
+   "h": 100
+  },
+  {
+   "id": "list",
+   "src": "ui/list.png",
+   "w": 98,
+   "h": 100
+  },
+  {
+   "id": "recipes",
+   "src": "ui/recipes.png",
+   "w": 119,
+   "h": 100
   }
  ]
 }

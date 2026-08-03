@@ -113,3 +113,27 @@ export const forgeCost = (tier) => ({
 /** A forged dish raises the recipe's stars and what guests will pay for it. */
 export const dishStars = (tier) => tier;
 export const dishPrice = (tier) => 1 + tier * 0.14;
+
+/**
+ * Which plate a forged dish is served on. Forty designs came with the pack,
+ * ordered roughly plain earthenware to gilded china, so a tier maps onto a
+ * band of them and the recipe id picks one inside that band — every dish on the
+ * menu gets its own plate, and a better tier is visibly better crockery.
+ */
+const PLATE_BANDS = [
+  null,
+  ['plate_a01', 'plate_a02', 'plate_a03', 'plate_a04', 'plate_a05',
+    'plate_a06', 'plate_a07', 'plate_a08', 'plate_a09', 'plate_a10'],
+  ['plate_b01', 'plate_b02', 'plate_b03', 'plate_b04', 'plate_b05',
+    'plate_a11', 'plate_a12', 'plate_a13', 'plate_a14', 'plate_a15'],
+  ['plate_b16', 'plate_b17', 'plate_b18', 'plate_b19', 'plate_b20',
+    'plate_a16', 'plate_a17', 'plate_a18', 'plate_a19', 'plate_a20'],
+];
+
+export function plateFor(recipeId, tier) {
+  const band = PLATE_BANDS[Math.max(0, Math.min(MAX_DISH, tier))];
+  if (!band) return null;
+  let hash = 0;
+  for (let i = 0; i < recipeId.length; i++) hash = (hash * 31 + recipeId.charCodeAt(i)) | 0;
+  return band[Math.abs(hash) % band.length];
+}

@@ -126,11 +126,17 @@ export const MACHINES = [
  * they sit wherever there is floor and quietly convert time into progress.
  */
 export const WORKSHOP = [
-  { id: 'promo_stand', kind: 'promo', label: 'Promo Stand', sprite: 'pineapple_slicer',
+  { id: 'promo_stand', kind: 'promo', label: 'Promo Stand', sprite: 'plotter',
     cost: 800, interval: 22, blurb: 'Pastes a poster up by itself every so often, and makes room for one more.' },
-  { id: 'harbour_computer', kind: 'lab', label: 'Harbour Computer', sprite: 'cheese_press',
+  { id: 'harbour_computer', kind: 'lab', label: 'Harbour Computer', sprite: 'computer_desk',
     cost: 1200, interval: 14, out: 1,
     blurb: 'Turns quiet hours into research points to spend on the board.' },
+  { id: 'mainframe', kind: 'lab', label: 'Harbour Mainframe', sprite: 'computer_tall',
+    cost: 4200, interval: 6, out: 3,
+    blurb: 'The big one. Three points at a time, and far faster about it.' },
+  { id: 'broadcast', kind: 'promo', label: 'Broadcast Set', sprite: 'radio_set',
+    cost: 2600, interval: 9,
+    blurb: 'Puts the word out over the air — posters go up three times as often.' },
 ];
 
 export const ALL_MACHINES = [...MACHINES, ...WORKSHOP];

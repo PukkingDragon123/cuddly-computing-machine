@@ -48,9 +48,9 @@ Mechanic speeds up the works.
 | | |
 |---|---|
 | **Guest Diary** | Every species has a flavour they love and one they cannot stand. Serving the right one is triple hearts and a better tip, and it is the only way to learn what that flavour was. Fill the hearts and they start bringing presents. |
-| **Rarity** | A gold crown is a **VIP** — double pay, less patience. A violet star is **Mythical**, at four times over. A busy, well-reviewed harbour draws more of both. |
+| **Rarity** | Six **VIPs** — a crowned whale shark, a top-hatted seahorse, a pearl manta — pay double. Four **Mythicals** out of deep time pay four times over. Each has its own animation, so a rare guest is a different animal and not a recoloured regular. |
 | **Research** | A Harbour Computer on the factory floor banks points while you work. Spend them on flyers, machine speed and trade. |
-| **Pottery** | Serving levels the class. At level five the kiln opens: spend clay and money, stop the needle in the band, and one recipe gains a star and a permanent price rise. |
+| **Pottery** | Serving levels the class. At level five the kiln opens: spend clay and money, stop the needle in the band, and one recipe gains a star and a permanent price rise — served from then on on real crockery, plainer or finer with the tier. |
 | **Shop** | Knocking through to the wharf and then the terrace grows the dining room from 9×9 to 13×13 — the only way to fit more tables. |
 | **Pens** | A pen raises one animal through six drawn stages, then keeps giving. Tap it when the basket is full. Ham and roe come from nowhere else, and neither pen needs a belt. |
 
@@ -89,8 +89,8 @@ closes it.
 
 ### Notes on the art
 
-Two source packs, both sliced into `assets/` with `assets/atlas.json` as the
-index:
+Three source packs, all sliced into `assets/` with `assets/atlas.json` as the
+index. `art_pack_03` came from the companion **reimagined-sniffle** repo:
 
 - `Bubbleworks_Harbor_Character_Pack_01/` — guests, staff, ingredients, food and
   factory machines. Flat JPEG contact sheets on a magenta key or the cream paper
@@ -108,16 +108,29 @@ index:
   all four isometric turns, every one a real drawing. Rotate cycles them, and a
   chair picks the one that faces its table.
 - `…/additional_assets/07_dolphin_whale_manatee_walrus_character_sheet.jpeg` —
-  four grandees on a 3×4 magenta grid. These are the VIP and mythical cast, so a
-  rare guest is a different animal rather than a recoloured regular.
+  four more regulars on a 3×4 magenta grid.
+- `art_pack_03/vip/` — six VIP and four mythical guests, each a 1152×384 strip
+  of idle / walk / eat already on transparency, so this stage only trims and
+  rescales to the game's character height.
+- `art_pack_03/plates_*_sheet.png` — forty serving dishes, roughly plain
+  earthenware through to gilded china. A forged dish draws its plate from the
+  band its tier earns, picked by a hash of the recipe id so every dish keeps its
+  own crockery.
+- `art_pack_03/machines_*_sheet` — thirty machines, including the computers the
+  research and promotion buildings now use.
+- `art_pack_03/ui_icons_sheet.png` — the interface icons. `skinIcons` swaps them
+  over the built-in SVGs at boot, so the markup keeps its `.ico-*` classes as
+  the fallback for anything the pack doesn't cover.
 
-Every sheet in both packs is sliced except the three superseded furniture sheets
-and the two painted room plates, which the generated rooms replace.
+Every sheet across the three packs is sliced except the three superseded
+furniture sheets and the two painted room plates, which the generated rooms
+replace.
 
 ```sh
 pip install pillow numpy scipy
 python3 tools/slice_assets.py    # character pack
-python3 tools/slice_pack02.py    # furniture, joinery, extra guests
+python3 tools/slice_pack02.py    # furniture, joinery, extra guests, livestock
+python3 tools/slice_pack03.py    # the rare cast, plates, machines, UI icons
 ```
 
 Both lift the backdrop, group ink blobs so hand-laid items never clip their

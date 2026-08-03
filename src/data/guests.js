@@ -17,9 +17,12 @@ export const RARITIES = [
   // the grandees each tier draws from — a rare guest is a different animal, not
   // a recoloured one, so the crown is confirming what you can already see
   { id: 'vip', label: 'VIP', weight: 13, pay: 2.1, patience: 0.85, hearts: 2, gift: 0.3,
-    aura: '#f8d167', mark: 'crown', cast: ['19_dolphin', '21_manatee'] },
+    aura: '#f8d167', mark: 'crown',
+    cast: ['23_royal_whale_shark', '24_pearl_manta_ray', '25_golden_seahorse',
+      '26_giant_clam', '27_celebrity_narwhal', '28_aristocratic_octopus'] },
   { id: 'mythical', label: 'Mythical', weight: 2.5, pay: 4.2, patience: 0.7, hearts: 4, gift: 0.75,
-    aura: '#c9a2f5', mark: 'star', cast: ['20_whale', '22_walrus'] },
+    aura: '#c9a2f5', mark: 'star',
+    cast: ['29_dunkleosteus', '30_coelacanth', '31_helicoprion', '32_xiphactinus'] },
 ];
 
 export const RARITY_BY_ID = Object.fromEntries(RARITIES.map((r) => [r.id, r]));
@@ -111,12 +114,26 @@ export const GUESTS = [
   { id: '17_clownfish', name: 'Clownfish', loves: 'sweet', loathes: 'savoury' },
   { id: '18_angelfish', name: 'Angelfish', loves: 'rich', loathes: 'savoury' },
 
-  // the grandees. They only turn up as VIPs and mythicals, and they are fussy:
-  // each hates something you have plenty of, so pleasing one takes planning
-  { id: '19_dolphin', name: 'Harbour Dolphin', loves: 'fresh', loathes: 'rich', tier: 'vip' },
-  { id: '21_manatee', name: 'Manatee Elder', loves: 'savoury', loathes: 'sweet', tier: 'vip' },
-  { id: '20_whale', name: 'Great Whale', loves: 'rich', loathes: 'fresh', tier: 'mythical' },
-  { id: '22_walrus', name: 'Walrus Captain', loves: 'sweet', loathes: 'savoury', tier: 'mythical' },
+  // four more regulars off the pack-01 grid
+  { id: '19_dolphin', name: 'Harbour Dolphin', loves: 'fresh', loathes: 'rich' },
+  { id: '20_whale', name: 'Great Whale', loves: 'rich', loathes: 'fresh' },
+  { id: '21_manatee', name: 'Manatee Elder', loves: 'savoury', loathes: 'sweet' },
+  { id: '22_walrus', name: 'Walrus Captain', loves: 'sweet', loathes: 'savoury' },
+
+  // The VIPs. Six of them, each with their own animation, and each fussy: a
+  // guest who pays double is worth planning a menu around.
+  { id: '23_royal_whale_shark', name: 'Royal Whale Shark', loves: 'savoury', loathes: 'sweet', tier: 'vip' },
+  { id: '24_pearl_manta_ray', name: 'Pearl Manta Ray', loves: 'fresh', loathes: 'rich', tier: 'vip' },
+  { id: '25_golden_seahorse', name: 'Golden Seahorse', loves: 'sweet', loathes: 'savoury', tier: 'vip' },
+  { id: '26_giant_clam', name: 'Giant Clam', loves: 'rich', loathes: 'fresh', tier: 'vip' },
+  { id: '27_celebrity_narwhal', name: 'Celebrity Narwhal', loves: 'sweet', loathes: 'fresh', tier: 'vip' },
+  { id: '28_aristocratic_octopus', name: 'Aristocratic Octopus', loves: 'rich', loathes: 'savoury', tier: 'vip' },
+
+  // The mythicals: fish out of deep time, and the best customers in the harbour.
+  { id: '29_dunkleosteus', name: 'Dunkleosteus', loves: 'savoury', loathes: 'sweet', tier: 'mythical' },
+  { id: '30_coelacanth', name: 'Coelacanth', loves: 'fresh', loathes: 'sweet', tier: 'mythical' },
+  { id: '31_helicoprion', name: 'Helicoprion', loves: 'savoury', loathes: 'rich', tier: 'mythical' },
+  { id: '32_xiphactinus', name: 'Xiphactinus', loves: 'rich', loathes: 'fresh', tier: 'mythical' },
 ];
 
 /** Species that only ever appear at their own tier. */

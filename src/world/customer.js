@@ -5,6 +5,7 @@ import { HALF_H, toScreen } from './iso.js';
 import { TAU, clamp, findPath, range, rnd } from '../core/util.js';
 import { Ease, makeSpring, spring } from '../core/tween.js';
 import { COMMON_CAST, RARITY_BY_ID, rollRarity } from '../data/guests.js';
+import { plateFor } from '../data/progress.js';
 import { bubble, contactShadow, drawIcon, drawSprite, meter, ring, squash, text } from '../gfx/paint.js';
 
 export const CHAR_SCALE = 0.72;
@@ -325,6 +326,12 @@ export class Customer {
       const left = 1 - this.bites / BITES;
       if (s && left > 0.02) {
         const bob = Math.sin(this.bobT * 6) * 2;
+        const dish = plateFor(this.plate, this.zone.state.dishTier(this.plate));
+        const under = dish && this.zone.assets.get('plates', dish);
+        if (under) {
+          drawIcon(ctx, under, this.pos.x + this.face * 24, this.headY + 52 + bob, 60,
+            { alpha: this.alpha });
+        }
         drawIcon(ctx, s, this.pos.x + this.face * 24, this.headY + 46 + bob, 52 * (0.55 + left * 0.45), { alpha: this.alpha });
       }
     }

@@ -6,6 +6,7 @@ import { rnd, uid } from '../core/util.js';
 import { makeSpring, spring } from '../core/tween.js';
 import { contactShadow, drawIcon, drawSprite, ring, squash, sticker, text } from '../gfx/paint.js';
 import { CHEF_SPRITE } from '../data/catalog.js';
+import { plateFor } from '../data/progress.js';
 
 const PLATE_SIZE = 58;
 const PLATES_PER_PASS = 3;
@@ -214,6 +215,14 @@ export class Kitchen {
       const float = p.held ? 0 : Math.sin(t * 3 + p.bob) * 2.5;
       const lift = p.held ? 16 : 0;
       const { sx, sy } = squash(p.sq.value);
+      // a forged dish rides on real crockery, and finer crockery each tier
+      const dish = plateFor(p.recipeId, this.zone.state.dishTier(p.recipeId));
+      const under = dish && this.zone.assets.get('plates', dish);
+      if (under) {
+        drawIcon(ctx, under, p.x, p.y + float - lift + 8, PLATE_SIZE * 1.35, {
+          scaleX: sx, scaleY: sy,
+        });
+      }
       drawIcon(ctx, s, p.x, p.y + float - lift, PLATE_SIZE * (p.held ? 1.1 : 1), {
         scaleX: sx, scaleY: sy,
         glow: p.selected || p.held ? '#f8d167' : (p.age < 1.2 ? '#fff3c8' : null),

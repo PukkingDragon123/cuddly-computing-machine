@@ -37,6 +37,26 @@ function add(el, kids) {
   return el;
 }
 
+/**
+ * Swap the hand-drawn SVG icons for the pack's own artwork wherever the pack
+ * has a match. Called once at boot: the markup keeps its `.ico-*` classes as
+ * the fallback, so anything the pack does not cover still draws.
+ */
+export function skinIcons(assets) {
+  const swap = {
+    'ico-diary': 'diary', 'ico-book': 'recipes', 'ico-crate': 'market',
+    'ico-help': 'help', 'ico-hammer': 'tools', 'ico-shop': 'market',
+    'ico-star': 'list', 'ico-lab': 'book', 'ico-kiln': 'refresh',
+  };
+  for (const [cls, id] of Object.entries(swap)) {
+    const url = assets.url('ui', id);
+    if (!url) continue;
+    for (const el of document.querySelectorAll(`.${cls}`)) {
+      el.style.backgroundImage = `url("${url}")`;
+    }
+  }
+}
+
 export const $ = (sel, root = document) => root.querySelector(sel);
 export const $$ = (sel, root = document) => [...root.querySelectorAll(sel)];
 

@@ -3,6 +3,7 @@
 import { loadAssets } from './core/loader.js';
 import { sfx } from './core/audio.js';
 import { Game } from './game.js';
+import { skinIcons } from './ui/dom.js';
 
 const STEP = 1 / 60;
 const MAX_CATCHUP = 0.25;   // never simulate more than a quarter second per frame
@@ -26,6 +27,9 @@ async function main() {
     const want = Math.min(LINES.length - 1, Math.floor(pct * LINES.length));
     if (want !== line) { line = want; msg.textContent = LINES[line]; }
   });
+
+  // the pack's own interface art, over the built-in SVG fallbacks
+  skinIcons(assets);
 
   const canvas = document.getElementById('stage');
   const game = new Game(canvas, assets);
