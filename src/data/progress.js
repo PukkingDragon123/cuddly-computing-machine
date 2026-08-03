@@ -3,17 +3,17 @@
 /* ---------------------------------------------------------------- flyers  */
 
 /**
- * Nobody walks into a restaurant nobody has heard of. Before opening you post
- * flyers by hand — ten taps a poster to begin with — and each poster up on the
- * harbour wall brings a share of the day's trade. Research, crew and a promotion
- * machine all chip away at the ten, which is the point: the tapping is the
- * starting state of a job you are meant to automate out of existence.
+ * Flyers are made in the morning and handed out during service. Ten taps prints
+ * one; during a shift, handing one out brings a guest through the door there and
+ * then — one flyer, one customer, no waiting on the arrival clock. That makes the
+ * stack you printed before opening the thing that paces your day, and it is why
+ * every automation in the game eventually points back at the printing.
  */
 export const FLYER_TAPS = 10;
-export const FLYER_BASE_MAX = 3;
+export const FLYER_BASE_MAX = 8;
 
-/** Guests per minute a given number of posters is worth. */
-export const flyerDraw = (posters) => posters * 0.55;
+/** Passive draw from the flyers still in hand — word gets round on its own. */
+export const flyerDraw = (posters) => posters * 0.22;
 
 /* -------------------------------------------------------------- research  */
 
@@ -43,6 +43,15 @@ export const RESEARCH = [
     blurb: 'Another 25%, and rare guests turn up more often.' },
   { id: 'kiln_1', label: 'Hotter Kiln', cost: 22, group: 'trade',
     blurb: 'Pottery earns experience twice as fast.' },
+  { id: 'wheel', label: "Potter's Wheel", cost: 34, group: 'trade', needs: 'kiln_1',
+    blurb: 'A proper wheel: forging a dish takes one less round.' },
+
+  { id: 'flyer_board', label: 'Harbour Notice Board', cost: 12, group: 'flyer',
+    blurb: 'Room for four more flyers in the satchel.' },
+  { id: 'lantern_string', label: 'String of Lanterns', cost: 20, group: 'flyer',
+    blurb: 'Guests drift in 20% quicker on their own.' },
+  { id: 'quick_wash', label: 'Deep Sink', cost: 16, group: 'works',
+    blurb: 'Tables are cleared in half the time.' },
 ];
 
 export const RESEARCH_BY_ID = Object.fromEntries(RESEARCH.map((r) => [r.id, r]));
@@ -56,34 +65,23 @@ export const RESEARCH_GROUPS = [
 /* ------------------------------------------------------------------ shop  */
 
 /**
- * One-off purchases. The area unlocks are the expensive backbone — each one
- * widens the dining room by two tiles each way, which is the only way to fit
- * more tables, so everything else in the game feeds into affording them.
+ * Room only, and the expensive backbone of the game: each extension widens the
+ * dining room by two tiles each way, which is the only way to fit more tables,
+ * so everything else eventually feeds into affording one.
+ *
+ * This used to be a general shop, but a shop that sells one kind of thing
+ * belongs beside the other things you place — so it is a tab in the build menu
+ * now, and everything that was not an extension moved to the research board,
+ * where it reads as an upgrade rather than a purchase.
  */
 export const SHOP = [
-  { id: 'area_wharf', label: 'The Wharf Extension', cost: 1400, group: 'area',
+  { id: 'area_wharf', label: 'The Wharf Extension', cost: 1400,
     size: 11, blurb: 'Knock through to the wharf: the dining room grows to 11×11.' },
-  { id: 'area_lantern', label: 'Lantern Terrace', cost: 6500, group: 'area',
+  { id: 'area_lantern', label: 'Lantern Terrace', cost: 6500,
     size: 13, needs: 'area_wharf', blurb: 'Take the terrace too, for a 13×13 room.' },
-
-  { id: 'flyer_board', label: 'Harbour Notice Board', cost: 700, group: 'draw',
-    blurb: 'Room for one more poster than you had.' },
-  { id: 'lantern_string', label: 'String of Lanterns', cost: 1100, group: 'draw',
-    blurb: 'Guests arrive 20% quicker after dark.' },
-
-  { id: 'second_pass', label: 'Second Kitchen Pass', cost: 1800, group: 'kitchen',
-    blurb: 'Three more plates can wait on the pass at once.' },
-  { id: 'wheel', label: "Potter's Wheel", cost: 900, group: 'kitchen',
-    blurb: 'A proper wheel: forging a dish needs one less round at the kiln.' },
 ];
 
 export const SHOP_BY_ID = Object.fromEntries(SHOP.map((s) => [s.id, s]));
-
-export const SHOP_GROUPS = [
-  { id: 'area', label: 'Room' },
-  { id: 'draw', label: 'Custom' },
-  { id: 'kitchen', label: 'Kitchen' },
-];
 
 /* --------------------------------------------------------------- pottery  */
 

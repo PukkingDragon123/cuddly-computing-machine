@@ -305,19 +305,51 @@ export class Game {
   openResearch() { this.panels.openResearch(); }
   openPottery() { this.panels.openPottery(); }
 
-  /** One tap on the flyer. Fills a poster, and says so when it does. */
+  /**
+   * The flyer button does two different jobs, one per phase. In the morning each
+   * tap prints part of a flyer and a finished one goes in the satchel. During
+   * service a tap hands one out, and that brings a guest through the door there
+   * and then — one flyer, one customer. Printing a stack before opening is
+   * therefore how you decide how busy the day gets.
+   */
   tapFlyer() {
-    if (this.state.phase !== 'prep') { this.hud.toast('The flyers are up for today', ''); return; }
-    if (this.state.posters >= this.state.flyerMax) {
-      this.hud.toast('Every board in the harbour is covered', '');
+    const s = this.state;
+    if (s.phase === 'open') { this.#handOutFlyer(); return; }
+    if (s.phase !== 'prep') return;
+    if (s.posters >= s.flyerMax) {
+      this.hud.toast('The satchel is full', '');
       return;
     }
-    const done = this.state.tapFlyer();
+    const done = s.tapFlyer();
     this.sfx.play(done ? 'star' : 'tap');
     if (done) {
-      this.hud.toast(`Poster up — ${this.state.posters}/${this.state.flyerMax}`, 'good');
-      this.restaurant.fx.stars(0, 0, 6);
+      this.hud.toast(`Flyer printed — ${s.posters}/${s.flyerMax}`, 'good');
+      this.hud.bumpFlyer();
     }
+    this.hud.sync();
+  }
+
+  #handOutFlyer() {
+    const r = this.restaurant;
+    if (this.state.posters <= 0) {
+      this.hud.toast('Out of flyers — print more in the morning', 'bad');
+      this.sfx.play('no');
+      return;
+    }
+    if (this.state.stockCount <= 0) {
+      this.hud.toast('Nothing left to serve them', 'bad');
+      this.sfx.play('no');
+      return;
+    }
+    if (!r.summonGuest()) {
+      this.hud.toast('The room is packed — seat someone first', '');
+      this.sfx.play('no');
+      return;
+    }
+    this.state.flyer.posters -= 1;
+    this.state.bus.emit('change');
+    this.sfx.play('pop');
+    this.hud.bumpFlyer();
     this.hud.sync();
   }
 

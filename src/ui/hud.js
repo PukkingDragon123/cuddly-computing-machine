@@ -2,7 +2,7 @@
 // sheet shell that every panel renders into.
 
 import { $, $$, clear, h, show } from './dom.js';
-import { money } from '../core/util.js';
+import { clamp, money } from '../core/util.js';
 import { RESEARCH } from '../data/progress.js';
 
 export class Hud {
@@ -47,14 +47,15 @@ export class Hud {
 
   #wire() {
     const g = this.game;
-    // one place to open everything, and one place that knows what is open
+    // One place to open everything, and one place that knows what is open.
+    // Six destinations, because six fit a phone side by side without the rail
+    // having to scroll — expanding the room moved in under Build, and the
+    // research board lives in More with the rest of the long game.
     this.docked = [
       ['btn-build', 'build', () => g.openBuild()],
       ['btn-recipes', 'recipes', () => g.openRecipes()],
       ['btn-diary', 'diary', () => g.openDiary()],
       ['btn-pantry', 'pantry', () => g.openPantry()],
-      ['btn-shop', 'shop', () => g.openShop()],
-      ['btn-research', 'research', () => g.openResearch()],
       ['btn-pottery', 'pottery', () => g.openPottery()],
       ['btn-menu', 'hub', () => g.openHub()],
     ];
@@ -126,16 +127,21 @@ export class Hud {
     const canOpen = planned > 0 && r.seatCount > 0 && r.hasPass;
     this.el.service.disabled = s.phase === 'report' || (!open && !canOpen);
 
-    // flyers: only a job during prep, so the button steps aside once open
+    // Flyers are a job in both halves of the day: printed of a morning, handed
+    // out at the door once the doors are open — one flyer, one guest. So the
+    // button stays put and only changes what it is counting.
     const max = s.flyerMax;
-    show(this.el.flyer, !open);
-    if (!open) {
-      this.#text('flyerCount', `${s.posters}/${max}`);
-      const pct = s.posters >= max ? 1 : (s.flyer?.taps ?? 0) / s.flyerTaps;
-      const w = `${Math.round(pct * 100)}%`;
-      if (this.el.flyerFill.style.width !== w) this.el.flyerFill.style.width = w;
-      this.el.flyer.classList.toggle('full', s.posters >= max);
-    }
+    this.el.flyer.classList.toggle('handout', open);
+    this.#text('flyerCount', open ? `${s.posters} left` : `${s.posters}/${max}`);
+    const pct = open
+      ? (max > 0 ? s.posters / max : 0)
+      : (s.posters >= max ? 1 : (s.flyer?.taps ?? 0) / s.flyerTaps);
+    const w = `${Math.round(clamp(pct, 0, 1) * 100)}%`;
+    if (this.el.flyerFill.style.width !== w) this.el.flyerFill.style.width = w;
+    this.el.flyer.classList.toggle('full', !open && s.posters >= max);
+    this.el.flyer.classList.toggle('spent', open && s.posters <= 0);
+    const wants = open ? 'Hand out a flyer' : 'Print a flyer';
+    if (this.el.flyer.title !== wants) this.el.flyer.title = wants;
 
     const icon = `ico ico-${this.game.sfx.enabled ? 'sound' : 'mute'}`;
     if (this.el.sound.firstElementChild.className !== icon) {
@@ -194,6 +200,21 @@ export class Hud {
     el.animate(
       [{ transform: 'scale(1)' }, { transform: 'scale(1.14)' }, { transform: 'scale(1)' }],
       { duration: 260, easing: 'cubic-bezier(.2,1.6,.4,1)' },
+    );
+  }
+
+  /**
+   * A flyer went out — or came off the press. Kick the satchel so a tap that
+   * costs a poster is felt in the HUD and not only in the room.
+   */
+  bumpFlyer() {
+    this.el.flyer.animate(
+      [
+        { transform: 'scale(1) rotate(0deg)' },
+        { transform: 'scale(1.1) rotate(-4deg)' },
+        { transform: 'scale(1)' },
+      ],
+      { duration: 300, easing: 'cubic-bezier(.2,1.7,.4,1)' },
     );
   }
 

@@ -271,7 +271,7 @@ export class GameState {
   get arrivalGap() {
     let draw = flyerDraw(this.posters);
     for (const f of this.furniture) draw += FURNITURE_BY_ID[f.id]?.draw ?? 0;
-    if (this.hasBought('lantern_string')) draw += 0.2;
+    if (this.hasResearch('lantern_string')) draw += 0.2;
     const base = 6.2 / (1 + this.ambience * 0.02 + draw + Math.min(1.2, this.stars * 0.0025));
     return clamp(base, 1.2, 7);
   }
@@ -304,7 +304,18 @@ export class GameState {
   get bonusStar() { return this.#staffSum('bonusStar'); }
   get autoSeat() { return this.hasStaff('oyster_host'); }
   get autoServe() { return this.hasStaff('cuttlefish_server'); }
-  get cleanTime() { return this.hasStaff('sea_lion_dish') ? 0.5 : 2.4; }
+  /**
+   * How long a table sits dirty after a guest leaves. Five seconds by default —
+   * long enough that clearing tables is visibly part of the job, short enough
+   * that it never becomes the bottleneck. The dishwasher and the deep sink both
+   * cut into it.
+   */
+  get cleanTime() {
+    let t = 5;
+    if (this.hasResearch('quick_wash')) t *= 0.5;
+    if (this.hasStaff('sea_lion_dish')) t *= 0.2;
+    return t;
+  }
 
   /* --------------------------------------------------------------- diary  */
 
@@ -379,9 +390,9 @@ export class GameState {
 
   get flyerMax() {
     let n = FLYER_BASE_MAX;
-    if (this.hasResearch('flyer_2')) n += 1;
-    if (this.bought.includes('flyer_board')) n += 1;
-    n += this.machines.filter((m) => m.id === 'promo_stand').length;
+    if (this.hasResearch('flyer_2')) n += 2;
+    if (this.hasResearch('flyer_board')) n += 4;
+    n += this.machines.filter((m) => m.id === 'promo_stand' || m.id === 'broadcast').length * 2;
     return n;
   }
 

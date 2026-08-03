@@ -8,10 +8,13 @@ import { Fx } from '../gfx/fx.js';
 import { Kitchen } from './kitchen.js';
 import { spring } from '../core/tween.js';
 import { CS, Customer, rollGuest } from './customer.js';
-import { clamp, money, neighbours, range, rnd, tileDist, uid } from '../core/util.js';
+import { TAU, clamp, money, neighbours, range, rnd, tileDist, uid } from '../core/util.js';
 import { FURNITURE_BY_ID, STYLE_BY_ID, groupFor } from '../data/catalog.js';
 import { GUEST_BY_ID, RARITY_BY_ID } from '../data/guests.js';
-import { drawIcon, drawSprite, squash, sticker, text } from '../gfx/paint.js';
+import { plateFor } from '../data/progress.js';
+import {
+  drawIcon, drawSprite, ellipse, ring, squash, sticker, text,
+} from '../gfx/paint.js';
 
 export { FURN_SCALE };
 
@@ -93,7 +96,9 @@ export class Restaurant {
       const old = prevSeats.get(this.key(f.c, f.r));
       const seat = {
         c: f.c, r: f.r, f, table: table ?? null,
-        taken: old?.taken ?? null, dirty: old?.dirty ?? 0,
+        taken: old?.taken ?? null,
+        dirty: old?.dirty ?? 0, dirtyMax: old?.dirtyMax ?? 0,
+        soil: old?.soil ?? null, washT: old?.washT ?? 0,
       };
       this.seats.push(seat);
       table?.seats.push(seat);
@@ -235,7 +240,7 @@ export class Restaurant {
   startService() {
     this.kitchen.reset();
     this.guests.length = 0;
-    for (const s of this.seats) { s.taken = null; s.dirty = 0; }
+    for (const s of this.seats) { s.taken = null; this.#wipe(s); }
     this.served = 0; this.earned = 0; this.walkouts = 0; this.starsToday = 0;
     this.spawnT = 1.2;
   }
@@ -244,7 +249,15 @@ export class Restaurant {
     for (const g of this.guests) g.dead = true;
     this.guests.length = 0;
     this.kitchen.reset();
-    for (const s of this.seats) { s.taken = null; s.dirty = 0; }
+    for (const s of this.seats) { s.taken = null; this.#wipe(s); }
+  }
+
+  /** Clear a place setting — nothing left to wash. */
+  #wipe(seat) {
+    seat.dirty = 0;
+    seat.dirtyMax = 0;
+    seat.soil = null;
+    seat.washT = 0;
   }
 
   get open() { return this.state.phase === 'open'; }
@@ -278,6 +291,25 @@ export class Restaurant {
     c.setState(CS.ENTER);
     if (!c.walkTo(spot, this.walkable)) { c.tile = { ...spot }; c.setState(CS.QUEUE); }
     this.sfx.play('pop');
+  }
+
+  /**
+   * Bring one guest in now, in exchange for a flyer. Returns false when there is
+   * genuinely no room, so the flyer is not spent for nothing.
+   */
+  summonGuest() {
+    const pending = this.guests.filter((g) => g.state !== CS.LEAVE && g.state !== CS.DONE).length;
+    if (pending >= this.#maxGuests()) return false;
+    if (this.seatCount === 0 || !this.hasPass) return false;
+    this.#spawn();
+    const g = this.guests[this.guests.length - 1];
+    if (g) {
+      this.fx.pop(g.pos.x, g.headY - 30, 'A flyer worked!', {
+        color: '#e4652f', size: 15, rise: 38, max: 0.9,
+      });
+      this.fx.sparkles(g.pos.x, g.pos.y - 20, 8, 22);
+    }
+    return true;
   }
 
   #queueSpot() {
@@ -497,8 +529,15 @@ export class Restaurant {
     guest.mood = why === 'cross' ? 'cross' : 'ok';
     guest.patience = Math.max(guest.patience, 0.001);
     if (guest.seat) {
-      guest.seat.taken = null;
-      guest.seat.dirty = why === 'cross' ? 0.2 : this.state.cleanTime;
+      const seat = guest.seat;
+      seat.taken = null;
+      // an empty plate has to be washed before the next guest can sit down; a
+      // guest who stormed out never got one, so that seat is free straight away
+      const ate = why !== 'cross' && !!guest.plate;
+      seat.dirty = ate ? this.state.cleanTime : 0.2;
+      seat.dirtyMax = seat.dirty;
+      seat.soil = ate ? guest.plate : null;
+      seat.washT = 0;
       guest.seat = null;
     }
     guest.seated = false;
@@ -524,7 +563,7 @@ export class Restaurant {
     if (this.ghost) this.ghost.t += dt;
 
     for (const f of this.grid.values()) if (f.sq) spring(f.sq, 1, dt, 170, 16);
-    for (const s of this.seats) if (s.dirty > 0) s.dirty = Math.max(0, s.dirty - dt);
+    this.#washUp(dt);
 
     this.kitchen.update(dt);
 
@@ -576,6 +615,87 @@ export class Restaurant {
     if (stock === 0 && this.guests.length === 0 && this.kitchen.queued === 0 && this.kitchen.plates.length === 0) {
       this.game.closeService('soldout');
     }
+  }
+
+  /**
+   * The washing-up. A guest who has eaten leaves a plate behind, and the seat is
+   * out of service until it is done — five seconds by default, halved by the
+   * Deep Sink and all but gone once a dishwasher is on the crew. It runs on its
+   * own; the point of showing it is that a busy room now has visible turnaround,
+   * so a fifth table earns its money instead of sitting spare.
+   */
+  #washUp(dt) {
+    for (const s of this.seats) {
+      if (s.dirty <= 0) continue;
+      s.dirty = Math.max(0, s.dirty - dt);
+      if (!s.soil) continue;
+      s.washT += dt;
+      const p = this.#soilPos(s);
+      // suds, roughly three a second, offset per seat so they don't march in step
+      if (Math.floor(s.washT * 3) !== Math.floor((s.washT - dt) * 3)) {
+        this.fx.bubbles(p.x, p.y - 6, 2, 13);
+      }
+      if (s.dirty <= 0) {
+        this.fx.sparkles(p.x, p.y - 4, 7, 18);
+        this.fx.ripple(p.x, p.y + 8, 'rgba(255,255,255,0.9)', 0.4, 56);
+        this.fx.pop(p.x, p.y - 14, 'Clean!', {
+          color: '#5f8c40', size: 14, rise: 34, max: 0.8,
+        });
+        this.sfx.play('pop');
+        this.#wipe(s);
+      }
+    }
+  }
+
+  /**
+   * Where the washing-up shows. Over the chair rather than on the tabletop: a
+   * plate laid on the table is behind whoever is sitting at the next seat half
+   * the time, and the one thing this has to tell you is which chair is out of
+   * service — so it rides up with the other tile badges where nothing can hide
+   * it.
+   */
+  #soilPos(seat) {
+    const s = toScreen(seat.c, seat.r);
+    return { x: s.x, y: s.y - 132 };
+  }
+
+  /** The dirty plate, a sponge working over it, and how long is left. */
+  #drawWash(ctx, seat, t) {
+    const p = this.#soilPos(seat);
+    const bob = Math.sin(t * 4 + seat.c) * 2.5;
+    const y = p.y + bob;
+    const done = 1 - seat.dirty / Math.max(0.001, seat.dirtyMax);
+    const dish = this.assets.get('plates', plateFor(seat.soil, 0));
+    const wob = Math.sin(t * 11) * 0.08;
+
+    // a cream badge behind it, so the crockery reads against floor or plaster
+    ctx.save();
+    ellipse(ctx, p.x, y + 3, 20, 20, '#b79a69');
+    ellipse(ctx, p.x, y, 20, 20, '#fdf7e8');
+    ctx.strokeStyle = '#5f3d26'; ctx.lineWidth = 3;
+    ctx.beginPath(); ctx.ellipse(p.x, y, 20, 20, 0, 0, TAU); ctx.stroke();
+    ctx.restore();
+
+    if (dish) {
+      drawIcon(ctx, dish, p.x, y + 3, 25, { rot: wob * 0.5 });
+    } else {
+      // no crockery in the pack for this dish — a saucer stands in
+      ctx.save();
+      ellipse(ctx, p.x, y + 4, 13, 6.5, '#f4ecd8');
+      ctx.strokeStyle = '#5f3d26'; ctx.lineWidth = 2.2;
+      ctx.beginPath(); ctx.ellipse(p.x, y + 4, 13, 6.5, 0, 0, TAU); ctx.stroke();
+      ctx.restore();
+    }
+
+    // the sponge, scrubbing side to side across the rim
+    const sweep = Math.sin(t * 7 + seat.c) * 9;
+    ctx.save();
+    ctx.translate(p.x + sweep, y - 5 + Math.abs(Math.cos(t * 7)) * 3);
+    ctx.rotate(wob);
+    sticker(ctx, -8, -5, 16, 10, { r: 4.5, fill: '#f2c26b', lw: 2.2, lift: 2 });
+    ctx.restore();
+
+    ring(ctx, p.x, y, 25, done, { lw: 4, fill: '#8ecae6', track: 'rgba(95,61,38,0.2)' });
   }
 
   /* ------------------------------------------------------------------ taps */
@@ -819,14 +939,9 @@ export class Restaurant {
         sticker(ctx, p.x - 15, p.y - 154 + bob, 30, 26, { r: 9, fill: '#fbe0d6', lift: 3 });
         text(ctx, '?', p.x, p.y - 140 + bob, { size: 17, fill: '#b8481c' });
       }
-      return;
     }
     for (const s of this.seats) {
-      if (!s.table || s.dirty <= 0) continue;
-      const p = toScreen(s.c, s.r);
-      const bob = Math.sin(t * 6) * 2;
-      sticker(ctx, p.x - 17, p.y - 150 + bob, 34, 26, { r: 9, fill: '#efe0c4', lift: 3 });
-      text(ctx, '✦', p.x, p.y - 136 + bob, { size: 15, fill: '#8a6647' });
+      if (s.dirty > 0 && s.soil) this.#drawWash(ctx, s, t);
     }
   }
 

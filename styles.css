@@ -61,7 +61,16 @@
      flat fill — a thin light band along the top inside edge */
   --face: inset 0 0.15rem 0 rgba(255, 255, 255, 0.6);
 
-  --dock-h: 3.6rem;      /* the floating nav rail, which sheets sit clear of */
+  /* and the sheen over it: painted wood catches the light across its whole top
+     half, not only at the very edge. Applied as background-image on every
+     raised face, which is why the coloured variants set background-COLOR — a
+     `background:` shorthand there would wipe this out. */
+  --sheen: linear-gradient(rgba(255, 255, 255, 0.34), rgba(255, 255, 255, 0) 62%);
+
+  /* one easing for every press and pop, so the whole UI answers the same way */
+  --spring: cubic-bezier(.2, 1.7, .4, 1);
+
+  --dock-h: 4.15rem;     /* the floating nav rail, which sheets sit clear of */
 
   --safe-t: env(safe-area-inset-top, 0px);
   --safe-b: env(safe-area-inset-bottom, 0px);
@@ -142,14 +151,14 @@ html, body {
 .barrow { display: flex; align-items: flex-end; gap: 0.5rem; }
 .barspace { flex: 1 }
 
-/* A single rail of destinations. Eight of them will not fit a narrow phone
-   side by side, so the rail scrolls — but it never wraps, because a dock that
+/* A single rail of destinations, sized like a phone game's tab bar: six keys
+   across, each one a thumb wide, captioned, and never wrapping — a dock that
    changes height as the game grows is a dock you stop trusting. */
 .dock {
-  display: flex; gap: 0.3rem;
-  padding: 0.3rem;
+  display: flex; gap: 0.34rem;
+  padding: 0.34rem;
   border: var(--bw) solid var(--ink);
-  border-radius: var(--r-md);
+  border-radius: var(--r-lg);
   background: var(--panel-2);
   box-shadow: 0 var(--lift) 0 var(--tan-shadow), inset 0 0.16rem 0.22rem rgba(95, 61, 38, .22);
   overflow-x: auto;
@@ -161,46 +170,68 @@ html, body {
 
 .dock-btn {
   position: relative;
-  flex: 1 0 auto;
-  min-width: 3.3rem;
+  flex: 1 1 0;
+  min-width: 3.1rem;
+  min-height: 3.1rem;
   display: flex; flex-direction: column; align-items: center; justify-content: center;
-  gap: 0.1rem;
-  padding: 0.34rem 0.2rem 0.28rem;
+  gap: 0.16rem;
+  padding: 0.42rem 0.2rem 0.34rem;
   border: 0;
-  border-radius: var(--r-sm);
-  background: var(--paper);
-  box-shadow: 0 0.15rem 0 var(--tan-shadow), var(--face);
+  border-radius: var(--r-md);
+  background-color: var(--paper);
+  box-shadow: 0 0.18rem 0 var(--tan-shadow), var(--face);
   font: inherit;
   color: var(--ink-deep);
   cursor: pointer;
   scroll-snap-align: center;
-  transition: transform .07s ease, box-shadow .07s ease, background .12s ease;
+  transition: transform .1s var(--spring), box-shadow .1s ease, background-color .14s ease;
 }
-.dock-btn .ico { width: 1.3rem; height: 1.3rem }
+.dock-btn .ico { width: 1.6rem; height: 1.6rem; transition: transform .16s var(--spring) }
 .dock-btn .cap {
-  font-size: 0.55rem; font-weight: 900; letter-spacing: .03em;
+  font-size: 0.6rem; font-weight: 900; letter-spacing: .03em;
   text-transform: uppercase; line-height: 1;
   color: var(--ink-soft);
 }
-.dock-btn:active { transform: translateY(0.15rem); box-shadow: 0 0 0 var(--tan-shadow), var(--face) }
-.dock-btn.on { background: var(--sun); box-shadow: 0 0.15rem 0 var(--sun-deep), var(--face) }
+.dock-btn:active { transform: translateY(0.18rem); box-shadow: 0 0 0 var(--tan-shadow), var(--face) }
+
+/* the live one sits proud of the rail, wears the money colour, and grows its
+   glyph — three signals, because on a phone one of them is always half-lost */
+.dock-btn.on {
+  background-color: var(--sun);
+  box-shadow: 0 0.18rem 0 var(--sun-deep), var(--face);
+  transform: translateY(-0.16rem);
+}
 .dock-btn.on .cap { color: var(--ink-deep) }
+.dock-btn.on .ico { transform: scale(1.12) }
+.dock-btn.on:active { transform: translateY(0.05rem) }
 
 /* the tap that lands: a short squash, so every dock press feels answered */
 @keyframes dockPop {
-  0%   { transform: translateY(0.15rem) scaleX(1.06) scaleY(.9) }
+  0%   { transform: translateY(0.18rem) scaleX(1.07) scaleY(.88) }
+  60%  { transform: translateY(-0.2rem) scaleX(.97) scaleY(1.05) }
   100% { transform: none }
 }
-.dock-btn.pressed { animation: dockPop .26s cubic-bezier(.2,1.7,.4,1) }
+.dock-btn.pressed { animation: dockPop .3s var(--spring) }
+.dock-btn.on.pressed { animation: none }
 
 /* ------------------------------------------------------------- surfaces  */
 
 .chip, .pill, .round, .tile, .sheet, .card, .tag, .wallet {
   border: var(--bw) solid var(--ink);
-  background: var(--panel);
+  background-color: var(--panel);
+  background-image: var(--sheen);
+  background-repeat: no-repeat;
   color: var(--ink-deep);
   font-family: inherit;
   font-weight: 800;
+}
+/* Everything else that reads as a raised face takes the same sheen. The sheet
+   itself does not: it is a sheet of paper, and paper does not catch light. */
+.flyer, .dock-btn, .toast, .hint, .titlecard, .placebar, .sb-row, .daytag,
+.ing, .ing-cell, .swatch, .sheet-foot, .stepper button, .zoneswitch button.on,
+.tab.on, .boot-card .pill {
+  background-image: var(--sheen);
+  background-repeat: no-repeat;
 }
 
 /* wallet ---------------------------------------------------------------- */
@@ -215,24 +246,25 @@ html, body {
   font-variant-numeric: tabular-nums;
 }
 .wallet .seg {
-  display: flex; align-items: center; gap: 0.3rem;
-  padding: 0.28rem 0.7rem 0.28rem 0.45rem;
-  font-size: 0.95rem; font-weight: 900;
+  display: flex; align-items: center; gap: 0.34rem;
+  padding: 0.34rem 0.8rem 0.34rem 0.5rem;
+  font-size: 1.02rem; font-weight: 900;
   white-space: nowrap;
-  min-height: 2rem;
+  min-height: 2.25rem;
 }
+.wallet .seg .ico { width: 1.25rem; height: 1.25rem }
 .wallet .seg + .seg {
   border-left: var(--bw) solid var(--ink);
-  background: var(--sun-pale);
-  padding-left: 0.5rem;
-  min-width: 3.4rem;
+  background-color: var(--sun-pale);
+  padding-left: 0.55rem;
+  min-width: 3.6rem;
 }
 
 .daytag {
   align-self: flex-start;
   border-radius: 999px;
   padding: 0.16rem 0.62rem;
-  background: var(--wood);
+  background-color: var(--wood);
   color: #fff;
   border: var(--bw) solid var(--ink);
   box-shadow: 0 0.16rem 0 var(--wood-dark);
@@ -250,7 +282,7 @@ html, body {
   display: flex; align-items: center; gap: 0.45rem;
   border: var(--bw) solid var(--ink);
   border-radius: var(--r-md);
-  background: var(--paper);
+  background-color: var(--paper);
   box-shadow: 0 var(--lift) 0 var(--tan-shadow), var(--face);
   padding: 0.32rem 0.6rem 0.32rem 0.42rem;
   font: inherit;
@@ -258,22 +290,33 @@ html, body {
   transition: transform .06s ease, box-shadow .06s ease;
 }
 .flyer:active { transform: translateY(var(--lift)); box-shadow: 0 0 0 var(--tan-shadow), var(--face); }
-.flyer .ico { width: 1.35rem; height: 1.35rem; }
-.flyer-body { display: flex; flex-direction: column; gap: 0.16rem; align-items: stretch; }
+.flyer .ico { width: 1.55rem; height: 1.55rem; }
+.flyer-body { display: flex; flex-direction: column; gap: 0.2rem; align-items: stretch; }
 .flyer-body b {
-  font-size: 0.78rem; font-weight: 900; line-height: 1;
+  font-size: 0.84rem; font-weight: 900; line-height: 1;
   font-variant-numeric: tabular-nums; color: var(--ink-deep);
 }
 .flyer-bar {
-  display: block; width: 3.1rem; height: 0.38rem;
+  display: block; width: 3.4rem; height: 0.42rem;
   border-radius: 999px;
   background: var(--panel-2);
   box-shadow: inset 0 0.1rem 0.14rem rgba(95, 61, 38, .3);
   overflow: hidden;
 }
-.flyer-bar i { display: block; height: 100%; width: 0; background: var(--tangerine); border-radius: 999px; }
-.flyer.full { background: var(--leaf-pale); }
+.flyer-bar i {
+  display: block; height: 100%; width: 0;
+  background: var(--tangerine); border-radius: 999px;
+  transition: width .12s ease;
+}
+.flyer.full { background-color: var(--leaf-pale); }
 .flyer.full .flyer-bar i { background: var(--leaf); }
+
+/* Once the doors are open the satchel is what it hands out rather than what it
+   fills, so the gauge counts down instead of up — and an empty one says so
+   plainly, because tapping it then is the one thing that does nothing. */
+.flyer.handout { background-color: var(--sun-pale); }
+.flyer.handout .flyer-bar i { background: var(--sun-deep); }
+.flyer.spent { filter: grayscale(.55) opacity(.62); }
 
 /* the potter's wheel ---------------------------------------------------- */
 
@@ -315,36 +358,58 @@ html, body {
 
 .pill {
   border-radius: 999px;
-  padding: 0.5rem 1.1rem;
-  font-size: 0.92rem;
+  padding: 0.54rem 1.15rem;
+  font-size: 0.95rem;
   font-weight: 900;
   letter-spacing: 0.02em;
   box-shadow: 0 var(--lift) 0 var(--tan-shadow), var(--face);
   cursor: pointer;
-  transition: transform .08s ease, box-shadow .08s ease, filter .12s ease;
+  min-height: 2.3rem;
+  transition: transform .1s var(--spring), box-shadow .1s ease, filter .12s ease;
 }
 .pill-lg { padding: 0.62rem 1.4rem; font-size: 1.02rem; }
 .pill-sm { padding: 0.32rem 0.75rem; font-size: 0.78rem; box-shadow: 0 0.16rem 0 var(--tan-shadow), var(--face); }
-.pill-go   { background: var(--leaf); color: #fff; box-shadow: 0 var(--lift) 0 var(--leaf-deep), var(--face); text-shadow: 0 1px 0 rgba(0,0,0,.28); }
-.pill-stop { background: var(--tangerine); color: #fff; box-shadow: 0 var(--lift) 0 var(--tangerine-deep), var(--face); text-shadow: 0 1px 0 rgba(0,0,0,.28); }
-.pill-sun  { background: var(--sun); box-shadow: 0 var(--lift) 0 var(--sun-deep), var(--face); }
+.pill-go   { background-color: var(--leaf); color: #fff; box-shadow: 0 var(--lift) 0 var(--leaf-deep), var(--face); text-shadow: 0 1px 0 rgba(0,0,0,.28); }
+.pill-stop { background-color: var(--tangerine); color: #fff; box-shadow: 0 var(--lift) 0 var(--tangerine-deep), var(--face); text-shadow: 0 1px 0 rgba(0,0,0,.28); }
+.pill-sun  { background-color: var(--sun); box-shadow: 0 var(--lift) 0 var(--sun-deep), var(--face); }
 .pill-sun.pill-sm  { box-shadow: 0 0.16rem 0 var(--sun-deep), var(--face); }
-.pill-quiet { background: var(--tan); box-shadow: 0 var(--lift) 0 var(--tan-shadow), var(--face); }
+.pill-quiet { background-color: var(--tan); box-shadow: 0 var(--lift) 0 var(--tan-shadow), var(--face); }
 .pill-quiet.pill-sm { box-shadow: 0 0.16rem 0 var(--tan-shadow), var(--face); }
 
-/* the main call to action gets its own weight — everything else steps back */
-#btn-service { padding: 0.66rem 1.5rem; font-size: 1.08rem; letter-spacing: .03em; }
+/* The main call to action gets its own weight — everything else steps back. It
+   also breathes while it is waiting to be pressed: opening up is the one thing
+   a new player has to find, and a still button on a busy screen is furniture. */
+#btn-service {
+  position: relative;
+  padding: 0.72rem 1.6rem; font-size: 1.12rem; letter-spacing: .03em;
+}
+#btn-service.pill-go:not([disabled])::after {
+  content: "";
+  position: absolute; inset: -0.18rem;
+  border-radius: 999px;
+  border: 0.18rem solid var(--leaf);
+  pointer-events: none;
+  animation: breathe 2.1s ease-in-out infinite;
+}
+@keyframes breathe {
+  0%, 100% { transform: scale(1); opacity: .55 }
+  50%      { transform: scale(1.13); opacity: 0 }
+}
+@media (prefers-reduced-motion: reduce) {
+  #btn-service.pill-go:not([disabled])::after { animation: none; opacity: 0 }
+}
 
 .round {
   position: relative;
-  width: 2.35rem; height: 2.35rem;
+  width: 2.55rem; height: 2.55rem;
   border-radius: 999px;
   display: grid; place-items: center;
   box-shadow: 0 var(--lift) 0 var(--tan-shadow), var(--face);
   cursor: pointer;
-  transition: transform .08s ease, box-shadow .08s ease;
+  transition: transform .1s var(--spring), box-shadow .1s ease;
 }
-.round-sm { width: 2rem; height: 2rem; }
+.round .ico { width: 1.25rem; height: 1.25rem }
+.round-sm { width: 2.2rem; height: 2.2rem; }
 
 /* Labelled action buttons. These were circles with the caption typeset across
    them, so "RECIPES" simply ran off the edge — a rounded square gives the word
@@ -353,7 +418,7 @@ html, body {
   position: relative;
   width: 3.6rem; height: 3.4rem;
   border-radius: var(--r-md);
-  background: var(--sun);
+  background-color: var(--sun);
   box-shadow: 0 var(--lift) 0 var(--sun-deep), var(--face);
   display: flex; flex-direction: column; align-items: center; justify-content: center;
   gap: 0.1rem;
@@ -401,21 +466,21 @@ html, body {
   border-radius: 999px;
   background: var(--panel-2);
   box-shadow: 0 var(--lift) 0 var(--tan-shadow), inset 0 0.16rem 0.2rem rgba(95, 61, 38, .22);
-  padding: 0.16rem;
-  height: 2.15rem;
+  padding: 0.18rem;
+  height: 2.5rem;
 }
 .zoneswitch button {
   border: 0; background: transparent;
-  font: inherit; font-weight: 900; font-size: 0.8rem;
+  font: inherit; font-weight: 900; font-size: 0.85rem;
   color: var(--ink-soft);
-  padding: 0 0.9rem;
+  padding: 0 1rem;
   border-radius: 999px;
   cursor: pointer;
   letter-spacing: .02em;
-  transition: background .12s ease, color .12s ease;
+  transition: background-color .12s ease, color .12s ease;
 }
 .zoneswitch button.on {
-  background: var(--paper);
+  background-color: var(--paper);
   color: var(--ink-deep);
   box-shadow: 0 0.13rem 0 var(--tan-shadow), var(--face);
 }
@@ -429,13 +494,13 @@ html, body {
   margin-top: 0.25rem;
 }
 .sb-row {
-  display: flex; align-items: center; gap: 0.4rem;
+  display: flex; align-items: center; gap: 0.45rem;
   border: var(--bw) solid var(--ink);
   border-radius: 999px;
-  background: var(--panel);
+  background-color: var(--panel);
   box-shadow: 0 var(--lift) 0 var(--tan-shadow), var(--face);
-  padding: 0.28rem 0.85rem;
-  font-size: 0.8rem; font-weight: 800;
+  padding: 0.32rem 0.95rem;
+  font-size: 0.86rem; font-weight: 800;
   font-variant-numeric: tabular-nums;
 }
 .sb-label { color: var(--ink-faint); font-weight: 800; }
@@ -453,7 +518,7 @@ html, body {
   display: flex; align-items: center; gap: 0.45rem;
   border: var(--bw) solid var(--ink);
   border-radius: 999px;
-  background: var(--panel);
+  background-color: var(--panel);
   box-shadow: 0 var(--lift) 0 var(--tan-shadow), var(--face);
   padding: 0.32rem 0.35rem 0.32rem 0.95rem;
   font-size: 0.83rem; font-weight: 800;
@@ -468,7 +533,7 @@ html, body {
   max-width: 22rem; text-align: center;
   border: var(--bw) solid var(--ink);
   border-radius: var(--r-md);
-  background: var(--panel);
+  background-color: var(--panel);
   box-shadow: 0 var(--lift) 0 var(--tan-shadow), var(--face);
   padding: 0.55rem 0.95rem;
   font-size: 0.86rem; font-weight: 800;
@@ -486,7 +551,7 @@ html, body {
   padding: 0.7rem 2.2rem;
   border: var(--bw) solid var(--ink);
   border-radius: var(--r-lg);
-  background: var(--panel);
+  background-color: var(--panel);
   box-shadow: 0 var(--lift) 0 var(--tan-shadow), var(--face);
   pointer-events: none;
   animation: cardSweep 1.9s cubic-bezier(.18,1.3,.4,1) both;
@@ -514,15 +579,17 @@ html, body {
 .toast {
   border: var(--bw) solid var(--ink);
   border-radius: 999px;
-  background: var(--panel);
+  background-color: var(--panel);
   box-shadow: 0 var(--lift) 0 var(--tan-shadow), var(--face);
-  padding: 0.32rem 0.9rem;
-  font-size: 0.83rem; font-weight: 900;
-  animation: toastIn .3s cubic-bezier(.2,1.6,.5,1) both;
+  padding: 0.38rem 1rem;
+  font-size: 0.88rem; font-weight: 900;
+  animation: toastIn .3s var(--spring) both;
   white-space: nowrap;
+  max-width: min(22rem, calc(100vw - 2rem));
+  overflow: hidden; text-overflow: ellipsis;
 }
-.toast.bad  { background: var(--coral-pale); box-shadow: 0 var(--lift) 0 var(--coral-deep), var(--face); }
-.toast.good { background: var(--leaf-pale); box-shadow: 0 var(--lift) 0 var(--leaf-deep), var(--face); }
+.toast.bad  { background-color: var(--coral-pale); box-shadow: 0 var(--lift) 0 var(--coral-deep), var(--face); }
+.toast.good { background-color: var(--leaf-pale); box-shadow: 0 var(--lift) 0 var(--leaf-deep), var(--face); }
 .toast.out  { animation: toastOut .25s ease both; }
 
 @keyframes toastIn  { from { transform: translateY(-.6rem) scale(.86); opacity: 0 } }
@@ -545,16 +612,16 @@ html, body {
   left: 50%; bottom: 0;
   transform: translateX(-50%);
   width: min(33rem, 100%);
-  max-height: min(80%, 46rem);
+  max-height: min(84%, 50rem);
   display: flex; flex-direction: column;
   background: var(--paper);
-  border-radius: var(--r-lg) var(--r-lg) 0 0;
+  border-radius: 1.7rem 1.7rem 0 0;
   border-bottom: 0;
   box-shadow: 0 -0.5rem 1.4rem rgba(58, 36, 20, .22);
-  /* leave the floating dock its own room */
-  padding-bottom: calc(var(--dock-h) + var(--safe-b));
+  /* leave the floating dock its own room, plus the gap the HUD keeps under it */
+  padding-bottom: calc(var(--dock-h) + var(--safe-b) + 0.75rem);
   z-index: 6;
-  animation: sheetIn .34s cubic-bezier(.16,1.3,.4,1) both;
+  animation: sheetIn .38s cubic-bezier(.13,1.14,.32,1) both;
   overflow: hidden;
 }
 .sheet.out { animation: sheetOut .2s ease both; }
@@ -562,10 +629,10 @@ html, body {
 @keyframes sheetOut { to   { transform: translate(-50%, 100%) } }
 
 .sheet-grip {
-  position: absolute; top: 0.45rem; left: 50%;
+  position: absolute; top: 0.42rem; left: 50%;
   transform: translateX(-50%);
-  width: 2.6rem; height: 0.28rem; border-radius: 999px;
-  background: rgba(255, 255, 255, .5);
+  width: 3.2rem; height: 0.32rem; border-radius: 999px;
+  background: rgba(255, 255, 255, .62);
   z-index: 2;
 }
 
@@ -587,7 +654,7 @@ html, body {
   text-shadow: 0 0.1rem 0 rgba(89, 55, 28, .55);
   overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
 }
-.sheet-head .round { background: var(--paper) }
+.sheet-head .round { background-color: var(--paper) }
 
 /* tab track — sunken, so the live tab reads as sitting proud of it */
 .sheet-tabs {
@@ -608,15 +675,17 @@ html, body {
   background: transparent;
   color: var(--ink-soft);
   border-radius: 999px;
-  padding: 0.32rem 0.8rem;
-  font: inherit; font-weight: 900; font-size: 0.8rem;
+  padding: 0.42rem 0.85rem;
+  font: inherit; font-weight: 900; font-size: 0.83rem;
   cursor: pointer;
   white-space: nowrap;
   flex: 1 1 auto;
-  transition: background .12s ease, color .12s ease;
+  min-height: 2rem;
+  transition: background-color .12s ease, color .12s ease, transform .1s var(--spring);
 }
+.tab:active { transform: scale(.94) }
 .tab.on {
-  background: var(--paper);
+  background-color: var(--paper);
   color: var(--ink-deep);
   box-shadow: 0 0.13rem 0 var(--tan-shadow), var(--face);
 }
@@ -632,7 +701,7 @@ html, body {
 .sheet-foot {
   flex: none;
   border-top: var(--bw) solid var(--tan-deep);
-  background: var(--panel);
+  background-color: var(--panel);
   padding: 0.55rem 0.75rem;
   display: flex; gap: var(--gap); align-items: center;
 }
@@ -643,16 +712,29 @@ html, body {
 .card {
   position: relative;
   border-radius: var(--r-md);
-  background: var(--panel);
+  background-color: var(--panel);
   box-shadow: 0 var(--lift) 0 var(--tan-shadow), var(--face);
-  padding: 0.5rem 0.6rem;
-  display: flex; gap: 0.6rem; align-items: center;
+  padding: 0.55rem 0.65rem;
+  display: flex; gap: 0.65rem; align-items: center;
+  min-height: 3.4rem;
 }
-.card.tap { cursor: pointer; transition: transform .08s ease, box-shadow .08s ease }
-.card.tap:active { transform: translateY(var(--lift)); box-shadow: 0 0 0 var(--tan-shadow), var(--face) }
+.card.tap { cursor: pointer; padding-right: 1.5rem; transition: transform .1s var(--spring), box-shadow .1s ease }
+.card.tap:active { transform: translateY(var(--lift)) scale(.985); box-shadow: 0 0 0 var(--tan-shadow), var(--face) }
+/* a row you can buy says so before you read it: the price side sits proud */
+.card.tap::after {
+  content: "";
+  position: absolute; right: 0.5rem; top: 50%;
+  width: 0.5rem; height: 0.5rem;
+  margin-top: -0.25rem;
+  border-right: 0.16rem solid var(--tan-deep);
+  border-top: 0.16rem solid var(--tan-deep);
+  transform: rotate(45deg);
+  opacity: .7;
+}
+.card.tap:has(.card-side)::after { display: none }
 .card.locked { filter: grayscale(.45) opacity(.66) }
 .card.sel {
-  background: var(--sun-pale);
+  background-color: var(--sun-pale);
   box-shadow: 0 var(--lift) 0 var(--sun-deep), var(--face), inset 0 0 0 0.14rem var(--sun);
 }
 
@@ -680,22 +762,22 @@ html, body {
 }
 /* an icon rather than sprite art — sized to sit in the same well */
 .thumb.icon .ico { width: 1.9rem; height: 1.9rem; }
-.thumb.icon { background: var(--panel-2); }
+.thumb.icon { background-image: none; background-color: var(--panel-2); }
 .thumb.wide { width: 4.6rem }
 .thumb img { width: 100%; height: 100%; object-fit: contain; }
 
-.card-main { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 0.16rem; }
-.card-title { font-size: 0.98rem; font-weight: 900; line-height: 1.15; }
-.card-sub { font-size: 0.78rem; font-weight: 700; color: var(--ink-soft); line-height: 1.32; }
+.card-main { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 0.18rem; }
+.card-title { font-size: 1.02rem; font-weight: 900; line-height: 1.15; }
+.card-sub { font-size: 0.81rem; font-weight: 700; color: var(--ink-soft); line-height: 1.34; }
 .card-side { flex: none; display: flex; flex-direction: column; gap: 0.3rem; align-items: flex-end; }
 
 .tag {
   display: inline-flex; align-items: center; gap: 0.2rem;
   border-width: 0.13rem;
   border-radius: 999px;
-  padding: 0.1rem 0.45rem;
-  font-size: 0.72rem; font-weight: 900;
-  background: var(--tan);
+  padding: 0.14rem 0.5rem;
+  font-size: 0.76rem; font-weight: 900;
+  background-color: var(--tan);
   font-variant-numeric: tabular-nums;
   box-shadow: 0 0.1rem 0 rgba(95, 61, 38, .2);
 }
@@ -705,18 +787,18 @@ html, body {
   background-size: contain;
   margin-left: -0.08rem;
 }
-.tag-cost { background: var(--sun) }
-.tag-star { background: var(--sun-pale) }
-.tag-need { background: var(--coral-pale); color: var(--tangerine-deep) }
-.tag-ok   { background: var(--leaf-pale) }
-.tag-mint { background: var(--mint) }
+.tag-cost { background-color: var(--sun) }
+.tag-star { background-color: var(--sun-pale) }
+.tag-need { background-color: var(--coral-pale); color: var(--tangerine-deep) }
+.tag-ok   { background-color: var(--leaf-pale) }
+.tag-mint { background-color: var(--mint) }
 
 .rowline { display: flex; flex-wrap: wrap; gap: 0.25rem; align-items: center; }
 
 .ing {
   display: inline-flex; align-items: center; gap: 0.12rem;
   font-size: 0.72rem; font-weight: 900;
-  background: var(--paper);
+  background-color: var(--paper);
   border: 0.12rem solid var(--tan-deep);
   border-radius: 999px;
   padding: 0.06rem 0.4rem 0.06rem 0.08rem;
@@ -732,7 +814,7 @@ html, body {
 }
 .stepper button {
   width: 1.8rem; height: 1.8rem; border-radius: 999px;
-  border: 0.15rem solid var(--ink); background: var(--sun);
+  border: 0.15rem solid var(--ink); background-color: var(--sun);
   font: inherit; font-weight: 900; font-size: 1.05rem; line-height: 1;
   cursor: pointer; box-shadow: 0 0.14rem 0 var(--sun-deep), var(--face);
   display: grid; place-items: center; color: var(--ink-deep);
@@ -788,7 +870,7 @@ html, body {
 .ing-cell {
   border: 0.15rem solid var(--ink);
   border-radius: var(--r-sm);
-  background: var(--panel);
+  background-color: var(--panel);
   box-shadow: 0 0.18rem 0 var(--tan-shadow), var(--face);
   padding: 0.3rem 0.2rem 0.25rem;
   text-align: center;
@@ -816,7 +898,7 @@ html, body {
   display: flex; align-items: center; gap: 0.35rem;
   border: var(--bw) solid var(--ink);
   border-radius: 999px;
-  background: var(--panel);
+  background-color: var(--panel);
   box-shadow: 0 0.18rem 0 var(--tan-shadow), var(--face);
   padding: 0.22rem 0.5rem 0.22rem 0.24rem;
   font: inherit; font-weight: 900; font-size: 0.74rem;
@@ -834,7 +916,7 @@ html, body {
 .swatch .lbl { overflow: hidden; text-overflow: ellipsis; white-space: nowrap }
 .swatch .bonus { flex: none; color: var(--ink-faint); font-size: 0.7rem }
 .swatch.on .bonus { color: var(--ink-deep) }
-.swatch.on { background: var(--sun); color: var(--ink-deep); box-shadow: 0 0.18rem 0 var(--sun-deep), var(--face) }
+.swatch.on { background-color: var(--sun); color: var(--ink-deep); box-shadow: 0 0.18rem 0 var(--sun-deep), var(--face) }
 .swatch:active { transform: translateY(.16rem); box-shadow: none }
 
 /* --------------------------------------------------------------- icons  */
@@ -882,14 +964,23 @@ html, body {
 
 .hidden { display: none !important }
 
+/* On a narrow phone the chrome gives ground before the dock does: the rail is
+   the one thing that has to stay six thumbs wide and captioned. */
 @media (max-width: 26rem) {
   .tile { width: 3.1rem; height: 3rem }
   .tile .ico { width: 1.25rem; height: 1.25rem }
   .pill-lg { padding: .55rem 1.05rem; font-size: .95rem }
-  #btn-service { padding: .58rem 1.1rem; font-size: 1rem }
-  .zoneswitch button { padding: 0 .68rem; font-size: .76rem }
-  .sb-row { padding: .26rem .58rem; font-size: .74rem; gap: .3rem }
+  #btn-service { padding: .62rem 1.15rem; font-size: 1.02rem }
+  .zoneswitch { height: 2.3rem }
+  .zoneswitch button { padding: 0 .72rem; font-size: .78rem }
+  .sb-row { padding: .28rem .62rem; font-size: .76rem; gap: .32rem }
   .servicebar { margin-top: .15rem }
-  .wallet .seg { font-size: .86rem; padding: .24rem .55rem .24rem .35rem; min-height: 1.8rem }
-  .thumb { width: 3.4rem; height: 3.4rem }
+  .wallet .seg { font-size: .92rem; padding: .28rem .6rem .28rem .4rem; min-height: 2rem }
+  .thumb { width: 3.5rem; height: 3.5rem }
+  .dock { gap: .22rem; padding: .28rem; border-radius: var(--r-md) }
+  .dock-btn { min-width: 0; padding: .36rem .1rem .3rem }
+  .dock-btn .ico { width: 1.45rem; height: 1.45rem }
+  .dock-btn .cap { font-size: .53rem; letter-spacing: 0 }
+  .flyer { padding: .3rem .5rem .3rem .36rem }
+  .flyer-bar { width: 2.8rem }
 }

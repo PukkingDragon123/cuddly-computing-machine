@@ -94,6 +94,18 @@ export class Fx {
     });
   }
 
+  /** Soap suds off a plate being washed: light, wobbly, and they pop. */
+  bubbles(x, y, count = 3, spread = 14) {
+    for (let i = 0; i < count; i++) {
+      this.#add({
+        kind: 'bubble', x: x + range(-spread, spread), y: y + range(-4, 4),
+        vx: range(-16, 16), vy: range(-46, -22), g: -18,
+        life: 0, max: range(0.6, 1.15), size: range(3.5, 8),
+        wob: range(0, TAU),
+      });
+    }
+  }
+
   ripple(x, y, color = 'rgba(255,255,255,0.85)', max = 0.45, size = 60) {
     this.#add({ kind: 'ripple', x, y, life: 0, max, size, color, vx: 0, vy: 0, g: 0 });
   }
@@ -204,6 +216,23 @@ export class Fx {
           const s = o.size * (0.6 + t * 0.9);
           ctx.globalAlpha *= 0.85;
           ellipse(ctx, o.x, o.y, s, s * 0.82, o.color);
+          break;
+        }
+        case 'bubble': {
+          // grows as it rises, then snaps at the end of its life
+          const pop = t > 0.86;
+          const s = o.size * (pop ? 1.35 - (t - 0.86) * 4 : 0.7 + t * 0.5);
+          if (s <= 0.4) break;
+          const bx = o.x + Math.sin(o.wob + o.life * 6) * 5;
+          ctx.globalAlpha *= 0.85;
+          ctx.beginPath();
+          ctx.ellipse(bx, o.y, s, s, 0, 0, TAU);
+          ctx.fillStyle = 'rgba(238,250,255,0.62)';
+          ctx.fill();
+          ctx.strokeStyle = 'rgba(255,255,255,0.95)';
+          ctx.lineWidth = 1.4;
+          ctx.stroke();
+          ellipse(ctx, bx - s * 0.3, o.y - s * 0.34, s * 0.28, s * 0.22, 'rgba(255,255,255,0.95)');
           break;
         }
         case 'ripple': {

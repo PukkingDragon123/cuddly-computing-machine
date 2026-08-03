@@ -16,7 +16,7 @@ import {
 } from '../data/guests.js';
 import {
   FORGE_LEVEL, MAX_DISH, RESEARCH, RESEARCH_BY_ID, RESEARCH_GROUPS, SHOP,
-  SHOP_BY_ID, SHOP_GROUPS, forgeCost, plateFor, potteryLevel, potteryNext,
+  SHOP_BY_ID, forgeCost, plateFor, potteryLevel, potteryNext,
 } from '../data/progress.js';
 import { PENS, PEN_STAGES } from '../data/livestock.js';
 import { DIR_NAMES } from '../world/factory.js';
@@ -101,7 +101,7 @@ export class Panels {
     const kinds = groups[this.buildTab] ?? groups.seating;
     const items = FURNITURE.filter((f) => kinds.includes(f.kind));
 
-    const body = [
+    const body = this.buildTab === 'expand' ? this.#expandTab() : [
       h('div.note', null,
         'Pick a finish, then tap a piece and tap the floor. ', h('b', null, 'Rotate'),
         ' turns it to any of four sides; chairs turn to face their table on their own.'),
@@ -126,6 +126,7 @@ export class Panels {
         { id: 'seating', label: 'Seating' },
         { id: 'kitchen', label: 'Kitchen' },
         { id: 'decor', label: 'Decor' },
+        { id: 'expand', label: 'Expand' },
       ],
       tab: this.buildTab,
       onTab: (id) => { this.buildTab = id; this.openBuild(true); },
@@ -135,6 +136,43 @@ export class Panels {
         tag(`${this.game.restaurant.seatCount} seats`, 'tag-mint')),
     };
     keep ? this.hud.refreshSheet(spec) : this.hud.openSheet(spec);
+  }
+
+  /**
+   * Knocking through a wall. This used to be its own Harbour Shop panel with
+   * three sections in it, which made it a shop that sold one kind of thing and
+   * a dock button that mostly went unpressed. It belongs with the rest of the
+   * building work, so it is a tab here and it sells nothing but floor.
+   */
+  #expandTab() {
+    const s = this.state;
+    const body = [
+      h('div.note', null, 'The dining room is ', h('b', null, `${s.roomSize}×${s.roomSize}`),
+        '. Knock through and every wall moves out — the only way to fit more tables.'),
+    ];
+    for (const item of SHOP) {
+      const owned = s.hasBought(item.id);
+      const locked = item.needs && !s.hasBought(item.needs);
+      body.push(this.#card({
+        icon: 'shop',
+        title: item.label,
+        sub: locked ? `Needs ${SHOP_BY_ID[item.needs].label} first.` : item.blurb,
+        tags: [
+          owned ? tag('Bought', 'tag-ok') : this.#cost(item.cost),
+          tag(`${item.size}×${item.size}`, owned ? 'tag-mint' : 'tag-star'),
+        ],
+        locked: locked || owned,
+        onclick: owned || locked ? null : () => {
+          if (!s.buyShop(item.id)) { this.game.toast('Not enough sand dollars', 'bad'); return; }
+          this.game.celebrate(`${item.label} — the room grew to ${s.roomSize}×${s.roomSize}`);
+          this.openBuild(true);
+        },
+      }));
+    }
+    if (SHOP.every((i) => s.hasBought(i.id))) {
+      body.push(h('div.empty', null, 'The harbour has no more wall to give.'));
+    }
+    return body;
   }
 
   #openFactoryBuild(keep) {
@@ -672,7 +710,7 @@ export class Panels {
         h('div.section', null, 'The long game'),
         row('Guest Diary', `${s.diaryFound}/${GUESTS.length} met · ${s.diaryHearts} hearts collected`,
           () => this.openDiary(), 'diary'),
-        row('Harbour Shop', 'Extensions, notice boards, a potter\'s wheel',
+        row('Expand the Room', `Now ${s.roomSize}×${s.roomSize} — knock through for more floor`,
           () => this.openShop(), 'shop'),
         row('Research Board', `${s.research} points to spend`, () => this.openResearch(), 'lab'),
         row('Pottery Class', s.potteryLv >= FORGE_LEVEL
@@ -754,33 +792,11 @@ export class Panels {
 
   /* ----------------------------------------------------------------- shop  */
 
+  /** Kept as a way in from the More menu — it lands on Build's Expand tab. */
   openShop() {
-    this.reopen = () => this.openShop();
-    const s = this.state;
-    const body = [];
-    const shopIcon = { area: 'shop', draw: 'flyer', kitchen: 'kiln' };
-    for (const grp of SHOP_GROUPS) {
-      const items = SHOP.filter((i) => i.group === grp.id);
-      if (!items.length) continue;
-      body.push(h('div.section', null, grp.label));
-      for (const item of items) {
-        const owned = s.hasBought(item.id);
-        const locked = item.needs && !s.hasBought(item.needs);
-        body.push(this.#card({
-          icon: shopIcon[grp.id] ?? 'shop',
-          title: item.label,
-          sub: locked ? `Needs ${SHOP_BY_ID[item.needs].label} first.` : item.blurb,
-          tags: [owned ? tag('Bought', 'tag-ok') : this.#cost(item.cost)],
-          locked: locked || owned,
-          onclick: owned || locked ? null : () => {
-            if (!s.buyShop(item.id)) { this.game.toast('Not enough sand dollars', 'bad'); return; }
-            this.game.toast(`Bought ${item.label}`, 'good');
-            this.openShop();
-          },
-        }));
-      }
-    }
-    this.hud.openSheet({ key: 'shop', title: 'Harbour Shop', body });
+    this.buildTab = 'expand';
+    if (this.game.zone !== this.game.restaurant) this.game.setZone('restaurant');
+    this.openBuild();
   }
 
   /* ------------------------------------------------------------- research  */
@@ -894,7 +910,7 @@ export class Panels {
    */
   #forge(recipe, tier, cost) {
     const s = this.state;
-    const rounds = s.hasBought('wheel') ? 2 : 3;
+    const rounds = s.hasResearch('wheel') ? 2 : 3;
     let round = 0;
     let hits = 0;
     let raf = 0;
