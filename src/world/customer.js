@@ -96,7 +96,7 @@ export class Customer {
   }
 
   #bubbleBox() {
-    const w = 58, h = 52;
+    const w = 76, h = 70;
     return { x: this.pos.x - w / 2, y: this.headY - 26 - h, w, h };
   }
 
@@ -288,6 +288,31 @@ export class Customer {
     ctx.restore();
   }
 
+  /**
+   * "This one is waiting for you." A pointer over the head, not a light around
+   * the silhouette: a coloured halo on hand-drawn art reads as a rendering
+   * mistake, and it fought the rarity aura for the same edge.
+   */
+  #tapMark(ctx, topY) {
+    if (this.alpha < 0.05) return;
+    const y = topY - 10 + Math.sin(this.bobT * 5) * 3;
+    const x = this.pos.x;
+    ctx.save();
+    ctx.globalAlpha = this.alpha;
+    ctx.lineJoin = 'round';
+    ctx.beginPath();
+    ctx.moveTo(x - 8, y - 6);
+    ctx.lineTo(x + 8, y - 6);
+    ctx.lineTo(x, y + 6);
+    ctx.closePath();
+    ctx.fillStyle = '#f8d167';
+    ctx.fill();
+    ctx.strokeStyle = '#5f3d26';
+    ctx.lineWidth = 2.4;
+    ctx.stroke();
+    ctx.restore();
+  }
+
   #frame() {
     if (this.state === CS.EAT) return 'eat';
     if (this.state === CS.ENTER || this.state === CS.WALK || this.state === CS.LEAVE) return 'walk';
@@ -315,9 +340,9 @@ export class Customer {
       rot: this.tilt,
       alpha: this.alpha,
       flipX: this.face < 0,
-      glow: highlight ? '#f8d167' : (this.rarity?.aura ?? null),
-      glowWidth: highlight ? 3.5 : 2.6,
     });
+    // the overlay pass draws the pointer, so a bubble never covers it
+    this.hi = highlight;
     this.#rarityMark(ctx);
 
     // held dish, shrinking bite by bite
@@ -337,6 +362,18 @@ export class Customer {
     }
   }
 
+  /** A round sticker on the bubble's corner, carrying one big glyph. */
+  #badge(ctx, x, y, glyph) {
+    ctx.save();
+    ctx.beginPath(); ctx.ellipse(x, y + 2.5, 13, 13, 0, 0, TAU);
+    ctx.fillStyle = '#b79a69'; ctx.fill();
+    ctx.beginPath(); ctx.ellipse(x, y, 13, 13, 0, 0, TAU);
+    ctx.fillStyle = '#f8d167'; ctx.fill();
+    ctx.strokeStyle = '#5f3d26'; ctx.lineWidth = 3; ctx.stroke();
+    text(ctx, glyph, x, y + 0.5, { size: 20, fill: '#b8481c' });
+    ctx.restore();
+  }
+
   /** Bubbles and meters, drawn after every sprite so nothing occludes them. */
   drawOverlay(ctx, t) {
     if (this.state === CS.EAT || this.state === CS.DONE) {
@@ -354,27 +391,36 @@ export class Customer {
 
     ctx.save();
     ctx.translate(0, wobble);
-    bubble(ctx, cx, bottom, box.w, box.h, { fill: this.mood === 'cross' ? '#fbe0d6' : '#fdf6e6' });
+    bubble(ctx, cx, bottom, box.w, box.h, {
+      r: 16, lw: 3.4,
+      fill: this.mood === 'cross' ? '#fbe0d6' : '#fdf6e6',
+    });
 
-    const icx = cx, icy = box.y + box.h / 2;
+    // dead centre of the bubble, always. The art used to sit left of middle with
+    // a "!" hung off its shoulder, which clipped the border and read as a bug.
+    const icx = cx;
+    const icy = box.y + box.h / 2;
     if (this.state === CS.QUEUE) {
-      const chair = this.zone.assets.get('furn_plain', 'chair_r');
-      if (chair) drawIcon(ctx, chair, icx, icy + 2, 36);
-      text(ctx, '?', icx + 19, icy - 13, { size: 17, fill: '#e4652f', stroke: '#fff8e6', lw: 4 });
+      const chair = this.zone.assets.get('furn_plain', 'chair_f');
+      if (chair) drawIcon(ctx, chair, icx, icy, 46);
+      else text(ctx, '?', icx, icy, { size: 30, fill: '#e4652f', stroke: '#fff8e6', lw: 5 });
     } else {
       const s = this.dish ? this.zone.assets.get('food', this.dish) : null;
-      if (s) drawIcon(ctx, s, icx, icy + 1, 38, { alpha: this.state === CS.WAIT ? 0.55 : 1 });
-      if (this.state === CS.ORDER) {
-        text(ctx, '!', icx + 20, icy - 14, { size: 20, fill: '#e4652f', stroke: '#fff8e6', lw: 4.5 });
-      } else {
-        const cook = this.zone.cookProgress(this);
-        ring(ctx, icx, icy, 23, cook, { lw: 4, fill: '#8bbb6a' });
+      if (s) drawIcon(ctx, s, icx, icy, 46, { alpha: this.state === CS.WAIT ? 0.6 : 1 });
+      if (this.state === CS.WAIT) {
+        ring(ctx, icx, icy, 29, this.zone.cookProgress(this), { lw: 4.5, fill: '#8bbb6a' });
       }
     }
+
+    // and the badge is a sticker on the corner rather than loose type over the
+    // edge, so it can be as big as it likes
+    const mark = this.state === CS.ORDER ? '!' : this.state === CS.QUEUE ? '?' : null;
+    if (mark) this.#badge(ctx, box.x + box.w - 3, box.y + 3, mark);
     ctx.restore();
 
     const pcol = this.patience > 0.6 ? '#8bbb6a' : this.patience > 0.3 ? '#f8d167' : '#e4652f';
-    meter(ctx, cx, box.y + box.h + 14 + wobble, 46, 9, this.patience, pcol);
+    meter(ctx, cx, box.y + box.h + 16 + wobble, 52, 10, this.patience, pcol);
+    if (this.hi) this.#tapMark(ctx, box.y + wobble);
   }
 }
 

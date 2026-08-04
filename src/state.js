@@ -1,10 +1,11 @@
 // Save state plus the derived numbers the whole game reads off it.
 
 import { Bus, clamp } from './core/util.js';
-import { INGREDIENTS, DAILY_DELIVERY } from './data/ingredients.js';
+import { INGREDIENTS, DAILY_DELIVERY, MARKET_ORDER } from './data/ingredients.js';
 import { RECIPE_BY_ID, priceAt, prepAt, starsAt } from './data/recipes.js';
 import {
-  FURNITURE_BY_ID, STYLE_BY_ID, STAFF_BY_ID, LEGACY_FURNITURE, LEGACY_STYLES,
+  FURNITURE_BY_ID, MACHINE_BY_ID, STYLE_BY_ID, STAFF_BY_ID,
+  LEGACY_FURNITURE, LEGACY_STYLES,
 } from './data/catalog.js';
 import { rotOf } from './world/orient.js';
 import {
@@ -16,7 +17,7 @@ import {
 } from './data/progress.js';
 
 const KEY = 'bubbleworks.harbor.save.v1';
-const VERSION = 5;
+const VERSION = 6;
 export const SAVE_KEY = KEY;
 
 function fresh() {
@@ -49,6 +50,7 @@ function fresh() {
     pottery: 0,                      // experience in the pottery class
     clay: 0,
     dishes: {},                      // recipe id -> forged serving-dish tier
+    catch: null,                     // the day's catch — see rollCatch()
     seenHelp: false,
     lastSeen: Date.now(),
     stats: { served: 0, walkouts: 0, earned: 0, best: 0 },
@@ -87,6 +89,19 @@ function migrate(data) {
   data.pottery ??= 0;
   data.clay ??= 0;
   data.dishes ??= {};
+  data.catch ??= null;
+  // the pens are gone, so their machines and the two recipes that needed them
+  // would otherwise sit in the save as unbuildable tiles and unmakeable dishes
+  data.machines = (data.machines ?? []).filter((m) => m.kind !== 'pen');
+  data.unlocked = (data.unlocked ?? []).filter((id) => RECIPE_BY_ID[id]);
+  delete data.pantry?.ham;
+  delete data.pantry?.roe;
+  for (const id of ['ham_steamer', 'roe_nigiri']) {
+    delete data.menu?.[id]; delete data.stock?.[id];
+    delete data.levels?.[id]; delete data.dishes?.[id];
+  }
+  // the potter's wheel is a building you place now, not a node you buy
+  data.researched = (data.researched ?? []).filter((id) => id !== 'wheel');
   data.v = VERSION;
 }
 
@@ -125,9 +140,10 @@ export class GameState {
       diary: this.diary, flyer: this.flyer, research: this.research,
       researched: this.researched, bought: this.bought,
       pottery: this.pottery, clay: this.clay, dishes: this.dishes,
+      catch: this.catch,
       furniture: this.furniture.map(({ c, r, id, style, rot }) => ({ c, r, id, style, rot })),
-      machines: this.machines.map(({ c, r, kind, id, dir, level, buf, grown, ready, took }) =>
-        ({ c, r, kind, id, dir, level, buf, grown, ready, took })),
+      machines: this.machines.map(({ c, r, kind, id, dir, level, buf }) =>
+        ({ c, r, kind, id, dir, level, buf })),
     };
     try { localStorage.setItem(KEY, JSON.stringify(data)); } catch { /* storage full or blocked */ }
   }
@@ -202,7 +218,10 @@ export class GameState {
   priceOf(id) {
     const r = RECIPE_BY_ID[id];
     if (!r) return 0;
-    return Math.round(priceAt(r, this.levelOf(id)) * dishPrice(this.dishTier(id)));
+    const tier = this.dishTier(id);
+    // a glaze kiln on the floor is worth 15% on anything already forged
+    const glaze = tier > 0 && this.hasGlaze ? 1.15 : 1;
+    return Math.round(priceAt(r, this.levelOf(id)) * dishPrice(tier) * glaze);
   }
   prepOf(id) { const r = RECIPE_BY_ID[id]; return r ? prepAt(r, this.levelOf(id)) : 3; }
   starsOf(id) {
@@ -481,12 +500,61 @@ export class GameState {
     this.bus.emit('change');
   }
 
+  addClay(n) {
+    this.clay += n;
+    this.bus.emit('change');
+  }
+
+  /** Is a given kind of pottery machine standing on the factory floor? */
+  hasWorks(kind) {
+    return this.machines.some((m) => MACHINE_BY_ID[m.id]?.kind === kind);
+  }
+
+  /**
+   * The kiln, the wheel and the glaze kiln are buildings now. That is the point:
+   * the pottery class used to be a panel that appeared out of nowhere, and a
+   * trade you can see on the floor is a trade you remember you have.
+   */
+  get hasKiln() { return this.hasWorks('kiln'); }
+  get hasWheel() { return this.hasWorks('wheel'); }
+  get hasGlaze() { return this.hasWorks('glaze'); }
+
   dishTier(recipeId) { return this.dishes[recipeId] ?? 0; }
   setDishTier(recipeId, tier) {
     this.dishes[recipeId] = tier;
     this.bus.emit('change');
     this.save();
   }
+
+  /* --------------------------------------------------------- the day's catch */
+
+  /**
+   * What came off the boats this morning. Three things cheap and one dish the
+   * harbour has a taste for today, rolled once per day and shown when the day
+   * starts — so opening up begins with reading the market rather than tapping
+   * the same button you tapped yesterday.
+   */
+  rollCatch(rand = Math.random) {
+    const pool = MARKET_ORDER.slice();
+    const cheap = [];
+    for (let i = 0; i < 3 && pool.length; i++) {
+      cheap.push(...pool.splice((rand() * pool.length) | 0, 1));
+    }
+    const dishes = this.unlocked.filter((id) => RECIPE_BY_ID[id]);
+    const star = dishes.length ? dishes[(rand() * dishes.length) | 0] : null;
+    this.catch = { day: this.day, cheap, star, seen: false };
+    return this.catch;
+  }
+
+  /** Today's market discount on an ingredient, as a multiplier. */
+  catchPrice(id) {
+    const base = INGREDIENTS[id]?.price ?? 0;
+    return this.catch?.cheap?.includes(id) ? Math.max(1, Math.round(base * 0.6)) : base;
+  }
+
+  /** The dish the harbour is asking for today pays over the odds. */
+  get catchDish() { return this.catch?.star ?? null; }
+  catchBonus(recipeId) { return this.catchDish === recipeId ? 1.3 : 1; }
 
   /* ----------------------------------------------------------- day cycle  */
 
@@ -528,6 +596,7 @@ export class GameState {
     this.menu = {};
     this.stock = {};
     this.flyer = { taps: 0, posters: 0 };
+    this.rollCatch();
     for (const [id, qty] of Object.entries(DAILY_DELIVERY)) this.addIng(id, qty);
     this.bus.emit('phase', 'prep');
     this.bus.emit('change');

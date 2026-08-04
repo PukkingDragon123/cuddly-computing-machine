@@ -223,10 +223,20 @@ export class Kitchen {
           scaleX: sx, scaleY: sy,
         });
       }
-      drawIcon(ctx, s, p.x, p.y + float - lift, PLATE_SIZE * (p.held ? 1.1 : 1), {
+      // picked up or picked out, a plate says so by riding higher on a ring of
+      // its own rather than by glowing — the halo read as a rendering fault
+      if (p.selected || p.held) {
+        ctx.save();
+        ctx.strokeStyle = '#f8d167'; ctx.lineWidth = 3.5;
+        ctx.setLineDash([7, 5]);
+        ctx.lineDashOffset = -t * 22;
+        ctx.beginPath();
+        ctx.ellipse(p.x, p.y + float - lift + 14, 32, 15, 0, 0, Math.PI * 2);
+        ctx.stroke();
+        ctx.restore();
+      }
+      drawIcon(ctx, s, p.x, p.y + float - lift, PLATE_SIZE * (p.held ? 1.12 : 1), {
         scaleX: sx, scaleY: sy,
-        glow: p.selected || p.held ? '#f8d167' : (p.age < 1.2 ? '#fff3c8' : null),
-        glowWidth: p.selected || p.held ? 4 : 2.5,
       });
     }
   }

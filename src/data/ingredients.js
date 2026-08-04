@@ -18,9 +18,6 @@ export const INGREDIENTS = {
   butter:     { name: 'Butter',      source: 'refine',  value: 13 },
   cheese:     { name: 'Cheese',      source: 'refine',  value: 15 },
 
-  // raised in a pen rather than grown or bought — see data/livestock.js
-  ham:        { name: 'Ham',         source: 'pen',     value: 26 },
-  roe:        { name: 'Roe',         source: 'pen',     value: 30 },
   // ---- harbour market ---------------------------------------------------
   kelp:         { name: 'Kelp',         source: 'market', value: 4,  price: 5 },
   nori:         { name: 'Nori',         source: 'market', value: 6,  price: 8 },

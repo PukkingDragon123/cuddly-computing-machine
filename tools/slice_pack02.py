@@ -79,16 +79,6 @@ GUEST_SHEETS = [
      ['19_dolphin', '20_whale', '21_manatee', '22_walrus']),
 ]
 
-# Livestock. Each row is one animal across six growth stages, then the thing it
-# gives you at the end. Pens raise them; the last cell is the harvest.
-LIVESTOCK_SHEET = 'art_pack_02/livestock_pixel_sheet.png'
-LIVESTOCK = [
-    ('hogfish', 'ham'),
-    ('cowwhale', 'milk_jug'),
-    ('roefish', 'roe'),
-]
-LIVESTOCK_STAGES = 6
-
 MAX_H = {'furniture': 210, 'fixture': 300, 'wall': 300}
 
 
@@ -308,74 +298,6 @@ def _guest_sheet(entries, rel_src, cols, names):
     return entries
 
 
-def slice_livestock(manifest):
-    """Six growth stages per animal, plus the produce cell at the end of the row.
-
-    This sheet is pixel art on a flat slate background rather than a chroma key,
-    so the backdrop comes out by matching that colour instead of the magenta
-    test the vector sheets use.
-    """
-    img = Image.open(os.path.join(ROOT, LIVESTOCK_SHEET)).convert('RGB')
-    rgb = np.asarray(img).astype(np.int16)
-    # the backdrop is the single commonest colour, sampled from a corner
-    back = rgb[4, 4]
-    dist = np.abs(rgb - back).sum(axis=-1)
-    alpha = np.where(dist < 40, 0, 255).astype(np.uint8)
-    out = img.convert('RGBA')
-    out.putalpha(Image.fromarray(alpha, mode='L'))
-
-    cols = LIVESTOCK_STAGES + 1
-    rows = len(LIVESTOCK)
-    cw, ch = out.width / cols, out.height / rows
-    os.makedirs(os.path.join(OUT, 'livestock'), exist_ok=True)
-    entries = []
-    for row, (animal, produce) in enumerate(LIVESTOCK):
-        for col in range(cols):
-            cell = out.crop((round(col * cw), round(row * ch),
-                             round((col + 1) * cw), round((row + 1) * ch)))
-            # keep only the biggest blob: the art is not perfectly gridded, so a
-            # cell can catch a sliver of its neighbour and widen the crop
-            a = np.asarray(cell.getchannel('A')) > 24
-            lbl, n = ndimage.label(a)
-            if n == 0:
-                continue
-            areas = ndimage.sum(a, lbl, range(1, n + 1))
-            keep = int(np.argmax(areas)) + 1
-            mask = lbl == keep
-            cell.putalpha(Image.fromarray(
-                np.where(mask, np.asarray(cell.getchannel('A')), 0).astype(np.uint8), mode='L'))
-            ys, xs = np.nonzero(mask)
-            cell = cell.crop((int(xs.min()), int(ys.min()), int(xs.max()) + 1, int(ys.max()) + 1))
-            name = produce if col == cols - 1 else f'{animal}_{col + 1}'
-            rel = f'livestock/{name}.png'
-            # nearest-neighbour: this is pixel art and should stay crisp
-            if cell.height > 150:
-                k = 150 / cell.height
-                cell = cell.resize((max(1, round(cell.width * k)), 150), Image.NEAREST)
-            cell.save(os.path.join(OUT, rel))
-            entries.append({'id': name, 'src': rel, 'w': cell.width, 'h': cell.height})
-    manifest['livestock'] = entries
-    # The produce cells earn their keep twice: as the pantry icon for the raw
-    # ingredient, and as the plated dish for the recipe built on it. Registering
-    # the same file under both ids beats copying it.
-    by_id = {e['id']: e for e in entries}
-    aliases = [
-        ('ingredients', 'ham', 'ham'),
-        ('ingredients', 'roe', 'roe'),
-        ('food', 'ham_steamer', 'ham'),
-        ('food', 'roe_nigiri', 'roe'),
-    ]
-    for group, want, from_cell in aliases:
-        src = by_id.get(from_cell)
-        if not src:
-            print(f'  ! {group}/{want}: no {from_cell} cell')
-            continue
-        rows = [e for e in manifest.get(group, []) if e['id'] != want]
-        rows.append({**src, 'id': want})
-        manifest[group] = rows
-    print(f'  livestock: {len(entries)} sprites, 4 aliased into ingredients and food')
-
-
 def main():
     path = os.path.join(OUT, 'atlas.json')
     manifest = json.load(open(path)) if os.path.exists(path) else {}
@@ -385,12 +307,15 @@ def main():
     slice_fixtures(manifest)
     print('slicing guests…')
     slice_guests(manifest)
-    print('slicing livestock…')
-    slice_livestock(manifest)
 
-    # the old furniture finishes and painted wall decals are gone
-    for dead in ('furniture', 'furniture_coral', 'furniture_whale', 'decals', 'rooms'):
+    # the old furniture finishes, the painted wall decals and the livestock are
+    # all gone — the pens they belonged to left the game with them
+    for dead in ('furniture', 'furniture_coral', 'furniture_whale', 'decals',
+                 'rooms', 'livestock'):
         manifest.pop(dead, None)
+    for group in ('ingredients', 'food'):
+        manifest[group] = [e for e in manifest.get(group, [])
+                           if 'livestock' not in e['src']]
 
     with open(path, 'w') as fh:
         json.dump(manifest, fh, indent=1)

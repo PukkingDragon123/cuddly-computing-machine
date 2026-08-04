@@ -30,14 +30,16 @@ up to four hours of catch-up.
 | | |
 |---|---|
 | **Factory** | Place a machine, drag a conveyor away from it, and end the line at a Pantry Intake. Refiners sit mid-line and turn cheap goods into valuable ones. |
-| **Menu Book** | Set how many of each dish to plate up. Ingredients leave the pantry immediately, so only plate what you can sell. Dishes level up with sand dollars plus more of their signature ingredient. |
+| **The morning** | Every day opens with the catch: three things cheap on the quay, and one dish the harbour has a taste for that pays a third over the odds. |
+| **The Kitchen** | One book for everything about food — today's menu, what you can learn, what you can improve, and the larder. Set how many of each dish to plate up; ingredients leave the larder immediately, so only plate what you can sell. |
 | **Flyers** | Nobody comes to a place they have not heard of. Of a morning, tap the flyer to print one — ten taps to begin with, fewer as you research it, none once a Promo Stand does it for you. Print as many as the satchel holds; they come down overnight. |
 | **Open up** | Guests wander in and wait by the door. Tap one to seat them at a free chair, or tap an empty seat to pull in whoever has been waiting longest. |
 | **Handing them out** | Once you are open the flyer button changes job: one tap spends one flyer and brings one guest through the door there and then, instead of waiting on the arrival clock. |
-| **Orders** | Tap the `!` bubble over a seated guest to send the ticket to the chef. |
+| **Orders** | Tap the bubble over a seated guest — the one with the `!` sticker — to send the ticket to the chef. |
 | **Service** | Drag the finished dish off the kitchen pass onto the guest who ordered it. Tap-then-tap works too. |
 | **Payment** | Guests pay on how briskly they were served. Let a patience meter empty and they walk out, costing reputation. |
 | **Washing up** | A guest who has eaten leaves a plate behind, and that chair is out of service for five seconds while it is scrubbed. The Deep Sink halves it and a Dishwasher all but removes it. |
+| **Inventory** | Everything you own in one place: the larder, what is plated, your flyers, clay, research and forged crockery. The market is a tab of it. |
 
 Fancier furniture finishes (Seaside Pine → Cosy Cottage → Antique) and decor raise the
 room's **ambience**, which pulls guests in faster, stretches their patience and
@@ -52,9 +54,8 @@ Mechanic speeds up the works.
 | **Guest Diary** | Every species has a flavour they love and one they cannot stand. Serving the right one is triple hearts and a better tip, and it is the only way to learn what that flavour was. Fill the hearts and they start bringing presents. |
 | **Rarity** | Six **VIPs** — a crowned whale shark, a top-hatted seahorse, a pearl manta — pay double. Four **Mythicals** out of deep time pay four times over. Each has its own animation, so a rare guest is a different animal and not a recoloured regular. |
 | **Research** | A Harbour Computer on the factory floor banks points while you work. Spend them on flyers, machine speed, the washing-up and trade, from the Research Board under More. |
-| **Pottery** | Serving levels the class. At level five the kiln opens: spend clay and money, stop the needle in the band, and one recipe gains a star and a permanent price rise — served from then on on real crockery, plainer or finer with the tier. |
+| **Pottery** | Build a **Harbour Kiln** in the works and tap it to take a turn at the class. Serving levels it; from level five you can forge: spend clay and money, stop the needle in the band, and one recipe gains a star and a permanent price rise — served from then on on real crockery, plainer or finer with the tier. A Clay Press digs the clay, a Potter's Wheel takes a round off the forge, a Glaze Kiln adds 15% to anything forged. |
 | **Expanding** | Knocking through to the wharf and then the terrace grows the dining room from 9×9 to 13×13 — the only way to fit more tables. It is the Expand tab in the build menu, beside the furniture it makes room for. |
-| **Pens** | A pen raises one animal through six drawn stages, then keeps giving. Tap it when the basket is full. Ham and roe come from nowhere else, and neither pen needs a belt. |
 
 The ladder is deliberate: the flyer starts as ten taps a morning, and almost
 everything you buy exists to take that job — and the seating, the serving and
@@ -84,32 +85,44 @@ src/
 The world is a single `<canvas>`; the HUD and panels are real DOM so CSS can do
 the rounded-sticker styling and native scrolling.
 
-The dock along the bottom floats above the scrim and the sheet on purpose. With
-it buried, moving between panels meant close-then-open — so tapping Pantry while
-the Diary is up now simply switches, and tapping the panel already showing
-closes it.
+The navigation is five round icons down the right-hand edge, above the scrim and
+the sheet on purpose: with them buried, moving between panels meant
+close-then-open, so tapping Diary while the Kitchen is up simply switches, and
+tapping the panel already showing closes it. No captions — a picture in a circle
+needs none once you have pressed it twice — and nothing but the flyer and the
+Open! button in the thumb row along the bottom.
 
-It carries six keys, not eight, because six is what fits across a phone with a
-caption under each glyph and no scrolling. Expanding the room went to a tab in
-the build menu — it is a thing you place, and it was a shop that sold one kind
-of thing — and the research board went to More with the rest of the long game.
-Everything else there is a spring: presses squash, the live key rides up out of
-the rail, the coin counter rolls rather than snaps, and Open! breathes until you
-press it.
+The Kitchen and the Diary are not lists but **books**: the panel is a drawn
+spread from the art pack, the covers swing open when it appears, and the diary's
+arrows turn the page rather than swapping the contents. The day's catch arrives
+on one of the pack's twenty illustrated menu cards.
+
+Two things a placement preview must say — what am I holding, and which way is it
+facing — so the ghost is a **blueprint** (drafting blue, hard white cut line, the
+drawing faint underneath) and the strip along the bottom names the piece and
+shows its facing as four dots. Nothing in the game glows any more: a coloured
+bloom around hand-drawn art only ever read as a rendering fault, so a selected
+piece is marked on its tile, a guest waiting on you gets a pointer over their
+bubble, and a plate you have picked up rides a dashed ring.
+
+Readouts do not take pointer events. The service tally floats over the middle of
+the room, which is exactly where the kitchen pass sits, and a `<b>` inside it was
+quietly eating taps meant for a finished plate.
+
+Panels earn their place on the rail by being opened often. Expanding the room is
+a tab in the build menu, because it is a thing you place. The kiln is not on the
+rail at all: you build it in the works and tap it, since throwing a pot is a job
+that happens somewhere.
 
 ### Notes on the art
 
-Three source packs, all sliced into `assets/` with `assets/atlas.json` as the
-index. `art_pack_03` came from the companion **reimagined-sniffle** repo:
+Four source packs, all sliced into `assets/` with `assets/atlas.json` as the
+index. `art_pack_03` came from the companion **reimagined-sniffle** repo, and
+`art_pack_04` was uploaded alongside this one:
 
 - `Bubbleworks_Harbor_Character_Pack_01/` — guests, staff, ingredients, food and
   factory machines. Flat JPEG contact sheets on a magenta key or the cream paper
   backdrop, plus 3-frame character strips (idle / walk / eat).
-- `art_pack_02/livestock_pixel_sheet.png` — three animals across six growth
-  stages each, plus the ham, milk and roe they give. Pixel art rather than
-  vector, so it slices nearest-neighbour and keeps its own scale; the produce
-  cells are aliased into the ingredient and food groups so one drawing serves as
-  the pantry icon and the plated dish.
 - `art_pack_02/` — the dining room: furniture in three finishes, wall joinery
   (doors, windows, counters) in two woods, and three more guests. Every piece of
   furniture ships two drawings: `_f` faces screen down-left, `_b` is the same
@@ -131,19 +144,30 @@ index. `art_pack_03` came from the companion **reimagined-sniffle** repo:
 - `art_pack_03/ui_icons_sheet.png` — the interface icons. `skinIcons` swaps them
   over the built-in SVGs at boot, so the markup keeps its `.ico-*` classes as
   the fallback for anything the pack doesn't cover.
+- `art_pack_04/pottery_works_sheet.png` — eight verdigris-and-brass machines, the
+  kiln and the throwing wheel among them. Pottery is a trade with a floor now,
+  so it needed buildings.
+- `art_pack_04/menu_cards_sheet.png` — twenty illustrated cards. Hand-laid at
+  differing sizes rather than gridded, so they are found by colour: the backdrop
+  measures (247,242,236) against the cards' warmer (248,226,190), which is a
+  clean 40 levels apart on the blue channel.
+- `art_pack_04/book_menu.png`, `book_diary.png` — two open spreads. These back a
+  DOM panel rather than a canvas sprite, so they are trimmed, scaled and written
+  as JPEG for CSS to pick up.
 
-Every sheet across the three packs is sliced except the three superseded
-furniture sheets and the two painted room plates, which the generated rooms
-replace.
+Every sheet across the four packs is sliced except the three superseded
+furniture sheets, the two painted room plates that the generated rooms replace,
+and `art_pack_02/livestock_pixel_sheet.png` — the pens it drew are gone.
 
 ```sh
 pip install pillow numpy scipy
 python3 tools/slice_assets.py    # character pack
-python3 tools/slice_pack02.py    # furniture, joinery, extra guests, livestock
+python3 tools/slice_pack02.py    # furniture, joinery, extra guests
 python3 tools/slice_pack03.py    # the rare cast, plates, machines, UI icons
+python3 tools/slice_pack04.py    # the pottery works, menu cards, the two books
 ```
 
-Both lift the backdrop, group ink blobs so hand-laid items never clip their
+They lift the backdrop, group ink blobs so hand-laid items never clip their
 neighbours, trim every sprite, and merge into the atlas. The second also
 despills: a lamp's clear glass shows the magenta backdrop straight through, so
 those pixels are turned back into translucent glass rather than left as a pink

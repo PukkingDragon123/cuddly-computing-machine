@@ -52,6 +52,9 @@ async function main() {
     game.state.seenHelp = true;
     game.state.save();
     setTimeout(() => game.openHelp(), 550);
+  } else if (game.state.phase === 'prep' && !game.state.catch?.seen) {
+    // a day that was never opened still owes you its catch card
+    setTimeout(() => game.openCatch(), 500);
   }
 
   let last = performance.now();

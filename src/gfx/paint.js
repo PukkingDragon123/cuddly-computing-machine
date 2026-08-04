@@ -125,6 +125,41 @@ export function tinted(sprite, frame, color) {
 }
 
 /**
+ * A piece drawn as a blueprint rather than as itself: flat harbour blue, a
+ * white edge, and the drawing showing faintly through. This is what a placement
+ * ghost should look like — a half-transparent copy of the finished thing reads
+ * as a rendering fault, and the old glowing version was worse.
+ */
+export function blueprint(ctx, sprite, frame, x, y, {
+  scale = 1, scaleX = 1, scaleY = 1, flipX = false, ok = true,
+  anchorX = 0.5, anchorY = 1,
+} = {}) {
+  if (!sprite) return;
+  const { sx, sy, sw, sh } = sprite.rect(frame);
+  const w = sw * scale, h = sh * scale;
+  const ink = ok ? '#3f6f8f' : '#a83f1c';
+  const line = ok ? '#eaf6ff' : '#ffe6dc';
+
+  ctx.save();
+  ctx.translate(x, y);
+  ctx.scale((flipX ? -1 : 1) * scaleX, scaleY);
+  const dx = -w * anchorX, dy = -h * anchorY;
+
+  // the white edge first, as four hard offsets — a cut line, not a bloom
+  const edge = tinted(sprite, frame, line);
+  ctx.globalAlpha = 0.9;
+  for (const [ox, oy] of [[-2, 0], [2, 0], [0, -2], [0, 2]]) {
+    ctx.drawImage(edge, dx + ox, dy + oy, w, h);
+  }
+  // then the flat blue body, then the real drawing faintly over it
+  ctx.globalAlpha = 0.82;
+  ctx.drawImage(tinted(sprite, frame, ink), dx, dy, w, h);
+  ctx.globalAlpha = 0.32;
+  ctx.drawImage(sprite.img, sx, sy, sw, sh, dx, dy, w, h);
+  ctx.restore();
+}
+
+/**
  * Draw a sprite standing on (x, y).
  *
  * The anchor is bottom-centre by default so characters and furniture plant on

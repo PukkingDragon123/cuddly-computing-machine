@@ -239,6 +239,54 @@
    "src": "machines/gas_works.png",
    "w": 216,
    "h": 214
+  },
+  {
+   "id": "pot_wheel",
+   "src": "machines/pot_wheel.png",
+   "w": 165,
+   "h": 214
+  },
+  {
+   "id": "glaze_mill",
+   "src": "machines/glaze_mill.png",
+   "w": 236,
+   "h": 214
+  },
+  {
+   "id": "clay_press",
+   "src": "machines/clay_press.png",
+   "w": 153,
+   "h": 214
+  },
+  {
+   "id": "round_kiln",
+   "src": "machines/round_kiln.png",
+   "w": 173,
+   "h": 214
+  },
+  {
+   "id": "drying_rack",
+   "src": "machines/drying_rack.png",
+   "w": 194,
+   "h": 214
+  },
+  {
+   "id": "bisque_kiln",
+   "src": "machines/bisque_kiln.png",
+   "w": 175,
+   "h": 214
+  },
+  {
+   "id": "glaze_kiln",
+   "src": "machines/glaze_kiln.png",
+   "w": 161,
+   "h": 214
+  },
+  {
+   "id": "master_kiln",
+   "src": "machines/master_kiln.png",
+   "w": 174,
+   "h": 214
   }
  ],
  "ingredients": [
@@ -421,18 +469,6 @@
    "src": "ingredients/cheese.png",
    "w": 160,
    "h": 132
-  },
-  {
-   "id": "ham",
-   "src": "livestock/ham.png",
-   "w": 134,
-   "h": 108
-  },
-  {
-   "id": "roe",
-   "src": "livestock/roe.png",
-   "w": 130,
-   "h": 106
   }
  ],
  "food": [
@@ -579,18 +615,6 @@
    "src": "food/treasure_bento.png",
    "w": 128,
    "h": 136
-  },
-  {
-   "id": "ham_steamer",
-   "src": "livestock/ham.png",
-   "w": 134,
-   "h": 108
-  },
-  {
-   "id": "roe_nigiri",
-   "src": "livestock/roe.png",
-   "w": 130,
-   "h": 106
   }
  ],
  "customers": [
@@ -1687,134 +1711,6 @@
    "slope": -0.4
   }
  ],
- "livestock": [
-  {
-   "id": "hogfish_1",
-   "src": "livestock/hogfish_1.png",
-   "w": 111,
-   "h": 81
-  },
-  {
-   "id": "hogfish_2",
-   "src": "livestock/hogfish_2.png",
-   "w": 115,
-   "h": 84
-  },
-  {
-   "id": "hogfish_3",
-   "src": "livestock/hogfish_3.png",
-   "w": 129,
-   "h": 93
-  },
-  {
-   "id": "hogfish_4",
-   "src": "livestock/hogfish_4.png",
-   "w": 185,
-   "h": 125
-  },
-  {
-   "id": "hogfish_5",
-   "src": "livestock/hogfish_5.png",
-   "w": 184,
-   "h": 124
-  },
-  {
-   "id": "hogfish_6",
-   "src": "livestock/hogfish_6.png",
-   "w": 175,
-   "h": 130
-  },
-  {
-   "id": "ham",
-   "src": "livestock/ham.png",
-   "w": 134,
-   "h": 108
-  },
-  {
-   "id": "cowwhale_1",
-   "src": "livestock/cowwhale_1.png",
-   "w": 118,
-   "h": 98
-  },
-  {
-   "id": "cowwhale_2",
-   "src": "livestock/cowwhale_2.png",
-   "w": 121,
-   "h": 98
-  },
-  {
-   "id": "cowwhale_3",
-   "src": "livestock/cowwhale_3.png",
-   "w": 121,
-   "h": 98
-  },
-  {
-   "id": "cowwhale_4",
-   "src": "livestock/cowwhale_4.png",
-   "w": 191,
-   "h": 130
-  },
-  {
-   "id": "cowwhale_5",
-   "src": "livestock/cowwhale_5.png",
-   "w": 199,
-   "h": 130
-  },
-  {
-   "id": "cowwhale_6",
-   "src": "livestock/cowwhale_6.png",
-   "w": 224,
-   "h": 126
-  },
-  {
-   "id": "milk_jug",
-   "src": "livestock/milk_jug.png",
-   "w": 68,
-   "h": 122
-  },
-  {
-   "id": "roefish_1",
-   "src": "livestock/roefish_1.png",
-   "w": 104,
-   "h": 91
-  },
-  {
-   "id": "roefish_2",
-   "src": "livestock/roefish_2.png",
-   "w": 101,
-   "h": 91
-  },
-  {
-   "id": "roefish_3",
-   "src": "livestock/roefish_3.png",
-   "w": 102,
-   "h": 92
-  },
-  {
-   "id": "roefish_4",
-   "src": "livestock/roefish_4.png",
-   "w": 170,
-   "h": 139
-  },
-  {
-   "id": "roefish_5",
-   "src": "livestock/roefish_5.png",
-   "w": 171,
-   "h": 138
-  },
-  {
-   "id": "roefish_6",
-   "src": "livestock/roefish_6.png",
-   "w": 169,
-   "h": 140
-  },
-  {
-   "id": "roe",
-   "src": "livestock/roe.png",
-   "w": 130,
-   "h": 106
-  }
- ],
  "plates": [
   {
    "id": "plate_a01",
@@ -2111,6 +2007,140 @@
    "src": "ui/recipes.png",
    "w": 119,
    "h": 100
+  },
+  {
+   "id": "book_menu",
+   "src": "ui/book_menu.jpg",
+   "w": 1200,
+   "h": 800
+  },
+  {
+   "id": "book_diary",
+   "src": "ui/book_diary.jpg",
+   "w": 1200,
+   "h": 800
+  }
+ ],
+ "cards": [
+  {
+   "id": "card_shrimp",
+   "src": "cards/card_shrimp.png",
+   "w": 229,
+   "h": 245
+  },
+  {
+   "id": "card_crab",
+   "src": "cards/card_crab.png",
+   "w": 246,
+   "h": 250
+  },
+  {
+   "id": "card_grilled_fish",
+   "src": "cards/card_grilled_fish.png",
+   "w": 234,
+   "h": 260
+  },
+  {
+   "id": "card_sashimi",
+   "src": "cards/card_sashimi.png",
+   "w": 244,
+   "h": 244
+  },
+  {
+   "id": "card_ramen",
+   "src": "cards/card_ramen.png",
+   "w": 290,
+   "h": 237
+  },
+  {
+   "id": "card_oyster",
+   "src": "cards/card_oyster.png",
+   "w": 240,
+   "h": 240
+  },
+  {
+   "id": "card_feast",
+   "src": "cards/card_feast.png",
+   "w": 269,
+   "h": 234
+  },
+  {
+   "id": "card_stein",
+   "src": "cards/card_stein.png",
+   "w": 235,
+   "h": 237
+  },
+  {
+   "id": "card_hotpot",
+   "src": "cards/card_hotpot.png",
+   "w": 250,
+   "h": 244
+  },
+  {
+   "id": "card_cloche",
+   "src": "cards/card_cloche.png",
+   "w": 292,
+   "h": 243
+  },
+  {
+   "id": "card_stars",
+   "src": "cards/card_stars.png",
+   "w": 247,
+   "h": 201
+  },
+  {
+   "id": "card_stamps",
+   "src": "cards/card_stamps.png",
+   "w": 247,
+   "h": 200
+  },
+  {
+   "id": "card_discount",
+   "src": "cards/card_discount.png",
+   "w": 261,
+   "h": 187
+  },
+  {
+   "id": "card_cake",
+   "src": "cards/card_cake.png",
+   "w": 252,
+   "h": 203
+  },
+  {
+   "id": "card_dolphin",
+   "src": "cards/card_dolphin.png",
+   "w": 301,
+   "h": 204
+  },
+  {
+   "id": "card_royal",
+   "src": "cards/card_royal.png",
+   "w": 245,
+   "h": 232
+  },
+  {
+   "id": "card_reef",
+   "src": "cards/card_reef.png",
+   "w": 249,
+   "h": 227
+  },
+  {
+   "id": "card_squid",
+   "src": "cards/card_squid.png",
+   "w": 251,
+   "h": 232
+  },
+  {
+   "id": "card_whale",
+   "src": "cards/card_whale.png",
+   "w": 253,
+   "h": 229
+  },
+  {
+   "id": "card_platter",
+   "src": "cards/card_platter.png",
+   "w": 302,
+   "h": 233
   }
  ]
 }

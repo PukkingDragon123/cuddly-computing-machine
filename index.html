@@ -23,9 +23,32 @@
       <span class="daytag" data-bind="phase">Day 1 · Prep</span>
     </div>
 
+    <!--
+      The side rail. Icons only, stacked down the right edge where a thumb
+      already rests — a phone game's shortcut column. Every label lives in the
+      panel it opens, so the rail stays a column of pictures and the room keeps
+      the screen.
+    -->
     <div class="corner top-right">
-      <button class="round" id="btn-sound" title="Sound"><i class="ico ico-sound"></i></button>
-      <button class="round" id="btn-help" title="How to play"><i class="ico ico-help"></i></button>
+      <nav class="rail" id="rail">
+        <button class="railbtn" id="btn-build" aria-label="Build" title="Build">
+          <i class="ico ico-hammer"></i>
+        </button>
+        <button class="railbtn" id="btn-recipes" aria-label="Kitchen" title="Kitchen">
+          <i class="ico ico-book"></i>
+          <span class="badge hidden" data-bind="menu-badge">0</span>
+        </button>
+        <button class="railbtn" id="btn-pantry" aria-label="Inventory" title="Inventory">
+          <i class="ico ico-crate"></i>
+        </button>
+        <button class="railbtn" id="btn-diary" aria-label="Guest Diary" title="Guest Diary">
+          <i class="ico ico-diary"></i>
+        </button>
+        <button class="railbtn" id="btn-menu" aria-label="More" title="More">
+          <i class="ico ico-star"></i>
+          <span class="badge hidden" data-bind="research-badge">0</span>
+        </button>
+      </nav>
     </div>
 
     <div class="zoneswitch" id="zoneswitch">
@@ -49,31 +72,10 @@
           </span>
         </button>
         <span class="barspace"></span>
+        <button class="round" id="btn-sound" title="Sound"><i class="ico ico-sound"></i></button>
+        <button class="round" id="btn-help" title="How to play"><i class="ico ico-help"></i></button>
         <button class="pill pill-go" id="btn-service">Open!</button>
       </div>
-
-      <nav class="dock" id="dock">
-        <button class="dock-btn" id="btn-build">
-          <i class="ico ico-hammer"></i><span class="cap">Build</span>
-        </button>
-        <button class="dock-btn" id="btn-recipes">
-          <i class="ico ico-book"></i><span class="cap">Menu</span>
-          <span class="badge hidden" data-bind="menu-badge">0</span>
-        </button>
-        <button class="dock-btn" id="btn-diary">
-          <i class="ico ico-diary"></i><span class="cap">Diary</span>
-        </button>
-        <button class="dock-btn" id="btn-pantry">
-          <i class="ico ico-crate"></i><span class="cap">Pantry</span>
-        </button>
-        <button class="dock-btn" id="btn-pottery">
-          <i class="ico ico-kiln"></i><span class="cap">Kiln</span>
-        </button>
-        <button class="dock-btn" id="btn-menu">
-          <i class="ico ico-star"></i><span class="cap">More</span>
-          <span class="badge hidden" data-bind="research-badge">0</span>
-        </button>
-      </nav>
     </div>
 
     <div class="servicebar hidden" id="servicebar">
@@ -97,9 +99,21 @@
     <div id="toasts"></div>
     <div id="hint" class="hint hidden"></div>
 
+    <!--
+      The blueprint strip. While something is on the cursor this is the only
+      control that matters, so it says what is being set down, which way it
+      faces, and how to turn it.
+    -->
     <div id="placebar" class="placebar hidden">
-      <span id="placebar-label">Tap a tile to place</span>
-      <button class="pill pill-sm" id="placebar-rotate">Rotate</button>
+      <span class="plan-mark"></span>
+      <span class="plan-text">
+        <b id="placebar-title">Piece</b>
+        <span id="placebar-label">Tap a tile to place</span>
+      </span>
+      <span class="turns" id="placebar-turns" aria-hidden="true">
+        <i></i><i></i><i></i><i></i>
+      </span>
+      <button class="pill pill-sm pill-sun" id="placebar-rotate">Turn</button>
       <button class="pill pill-sm pill-quiet" id="placebar-done">Done</button>
     </div>
   </div>

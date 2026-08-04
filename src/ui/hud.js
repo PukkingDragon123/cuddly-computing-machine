@@ -24,6 +24,8 @@ export class Hud {
       hint: $('#hint'),
       placebar: $('#placebar'),
       placeLabel: $('#placebar-label'),
+      placeTitle: $('#placebar-title'),
+      placeTurns: $('#placebar-turns'),
       scrim: $('#scrim'),
       sheet: $('#sheet'),
       sheetTitle: $('#sheet-title'),
@@ -33,7 +35,7 @@ export class Hud {
       sound: $('#btn-sound'),
       card: $('#titlecard'),
       flyer: $('#btn-flyer'),
-      dock: $('#dock'),
+      rail: $('#rail'),
       researchBadge: $('[data-bind="research-badge"]'),
       flyerCount: $('#flyer-count'),
       flyerFill: $('#flyer-fill'),
@@ -48,15 +50,14 @@ export class Hud {
   #wire() {
     const g = this.game;
     // One place to open everything, and one place that knows what is open.
-    // Six destinations, because six fit a phone side by side without the rail
-    // having to scroll — expanding the room moved in under Build, and the
-    // research board lives in More with the rest of the long game.
+    // Five icons down the right edge: build, the kitchen, what you own, who
+    // comes in, and everything else. The kiln left the list entirely — it is a
+    // building on the factory floor now, so you open it by tapping it.
     this.docked = [
       ['btn-build', 'build', () => g.openBuild()],
       ['btn-recipes', 'recipes', () => g.openRecipes()],
-      ['btn-diary', 'diary', () => g.openDiary()],
       ['btn-pantry', 'pantry', () => g.openPantry()],
-      ['btn-pottery', 'pottery', () => g.openPottery()],
+      ['btn-diary', 'diary', () => g.openDiary()],
       ['btn-menu', 'hub', () => g.openHub()],
     ];
     for (const [id, key, open] of this.docked) {
@@ -156,7 +157,7 @@ export class Hud {
     el.classList.add('pressed');
   }
 
-  /** Light up whichever dock button matches the open panel. */
+  /** Light up whichever rail button matches the open panel. */
   syncDock() {
     for (const [id, key] of this.docked ?? []) {
       $(`#${id}`)?.classList.toggle('on', this.sheetOpen === key);
@@ -276,9 +277,13 @@ export class Hud {
 
   /* -------------------------------------------------------------- place bar */
 
-  showPlaceBar(label, { rotate = true } = {}) {
+  showPlaceBar(label, { rotate = true, title = 'Blueprint', turn = 0 } = {}) {
     this.el.placeLabel.textContent = label;
+    this.el.placeTitle.textContent = title;
     show($('#placebar-rotate'), rotate);
+    show(this.el.placeTurns, rotate);
+    const dots = this.el.placeTurns?.children ?? [];
+    for (let i = 0; i < dots.length; i++) dots[i].classList.toggle('on', i === (turn % 4));
     show(this.el.placebar, true);
   }
 
@@ -294,8 +299,17 @@ export class Hud {
    */
   openSheet(spec) {
     this.sheetGen = (this.sheetGen ?? 0) + 1;
+    const wasOpen = this.sheetOpen;
     this.sheetOpen = spec.key ?? spec.title;
     this.el.sheetTitle.textContent = spec.title;
+
+    // panels that are books get the drawn spread behind them and open like one
+    const book = spec.book ?? null;
+    const sheet = this.el.sheet;
+    sheet.classList.toggle('book', !!book);
+    sheet.classList.toggle('book-menu', book === 'menu');
+    sheet.classList.toggle('book-diary', book === 'diary');
+    if (book && wasOpen !== this.sheetOpen) this.openBook();
 
     clear(this.el.sheetTabs);
     if (spec.tabs?.length) {
@@ -323,6 +337,32 @@ export class Hud {
     show(this.el.scrim, true);
     this.el.sheet.classList.remove('out');
     if (!first) this.el.sheetBody.scrollTop = spec.keepScroll ? this.el.sheetBody.scrollTop : 0;
+  }
+
+  /**
+   * The covers coming open. A book panel is the one place in the game where the
+   * container itself is the art, so it earns an animation of its own rather than
+   * the same slide every other sheet uses.
+   */
+  openBook() {
+    const el = this.el.sheetBody;
+    if (!el) return;
+    el.classList.remove('opening');
+    void el.offsetWidth;
+    el.classList.add('opening');
+  }
+
+  /**
+   * A page turning. `dir` is which way you went, so the paper sweeps in from the
+   * side you came from — the diary's arrows would otherwise feel like tabs.
+   */
+  turnPage(dir = 1) {
+    const el = this.el.sheetBody;
+    if (!el) return;
+    const cls = dir < 0 ? 'turn-back' : 'turn-fwd';
+    el.classList.remove('turn-fwd', 'turn-back');
+    void el.offsetWidth;
+    el.classList.add(cls);
   }
 
   /** Re-render the open sheet without replaying the slide-in. */

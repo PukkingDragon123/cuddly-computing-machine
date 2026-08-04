@@ -121,9 +121,17 @@ export const MACHINES = [
 ];
 
 /**
- * Two machines that make something other than food. Neither takes a belt: a
- * promo stand pays for itself in guests and a computer in research points, so
- * they sit wherever there is floor and quietly convert time into progress.
+ * Machines that make something other than food. None of them takes a belt: they
+ * sit wherever there is floor and quietly convert time into progress.
+ *
+ *   promo — pastes posters
+ *   lab   — banks research points
+ *   clay  — digs clay for the kiln
+ *   kiln  — the pottery works. Tapping it opens the class, which is why the
+ *           kiln is a building and not a menu: throwing a pot is a job that
+ *           happens somewhere, and giving it a floor tile means the room grows
+ *           into what you have unlocked instead of the sidebar doing it.
+ *   wheel — a proper throwing wheel, which takes a round off the forge
  */
 export const WORKSHOP = [
   { id: 'promo_stand', kind: 'promo', label: 'Promo Stand', sprite: 'plotter',
@@ -139,7 +147,26 @@ export const WORKSHOP = [
     blurb: 'Puts the word out over the air — posters go up three times as often.' },
 ];
 
-export const ALL_MACHINES = [...MACHINES, ...WORKSHOP];
+/** The pottery works: its own tab, because it is a trade of its own. */
+export const POTTERY = [
+  { id: 'kiln', kind: 'kiln', label: 'Harbour Kiln', sprite: 'bisque_kiln',
+    cost: 900,
+    blurb: 'The pottery class works out of here. Tap the kiln to throw a dish.' },
+  { id: 'clay_press', kind: 'clay', label: 'Clay Press', sprite: 'clay_press',
+    cost: 700, interval: 20, out: 1,
+    blurb: 'Packs harbour silt into usable clay, one block at a time.' },
+  { id: 'clay_works', kind: 'clay', label: 'Silt Works', sprite: 'glaze_mill',
+    cost: 2400, interval: 8, out: 2,
+    blurb: 'Two blocks at a time, and far quicker about it.' },
+  { id: 'pot_wheel', kind: 'wheel', label: "Potter's Wheel", sprite: 'pot_wheel',
+    cost: 1600,
+    blurb: 'A properly balanced wheel: one round less at the kiln, every time.' },
+  { id: 'glaze_kiln', kind: 'glaze', label: 'Glaze Kiln', sprite: 'glaze_kiln',
+    cost: 3200,
+    blurb: 'Fires a glaze over a finished dish — forged plates pay 15% more.' },
+];
+
+export const ALL_MACHINES = [...MACHINES, ...WORKSHOP, ...POTTERY];
 export const MACHINE_BY_ID = Object.fromEntries(ALL_MACHINES.map((m) => [m.id, m]));
 
 export const BELT = { id: 'belt', kind: 'belt', label: 'Conveyor', cost: 16, blurb: 'Drag to draw a line of belts.' };

@@ -37,10 +37,6 @@ export const RECIPES = [
   R('sea_roll',       'Sunset Sea Roll', { salmon: 1, rice: 2, nori: 1, strawberry: 1 },  62, 5.2, 3, 800),
   R('lobster_roll',   'Lobster Roll',    { lobster_tail: 1, flour: 2, butter: 1, cabbage: 1 }, 74, 5.6, 3, 950),
   R('treasure_bento', 'Treasure Bento',  { salmon: 1, tuna: 1, rice: 2, nori: 1, shrimp: 1 }, 108, 7.0, 4, 1500),
-
-  // --- what the pens are for ---------------------------------------------
-  R('ham_steamer',    'Ham Steamer',     { ham: 1, cabbage: 1, onion: 1 },                 68, 4.6, 3, 700),
-  R('roe_nigiri',     'Roe Nigiri',      { roe: 1, rice: 2, nori: 1 },                     84, 4.8, 3, 1000),
 ];
 
 export const RECIPE_BY_ID = Object.fromEntries(RECIPES.map((r) => [r.id, r]));

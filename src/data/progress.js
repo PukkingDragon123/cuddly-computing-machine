@@ -43,8 +43,6 @@ export const RESEARCH = [
     blurb: 'Another 25%, and rare guests turn up more often.' },
   { id: 'kiln_1', label: 'Hotter Kiln', cost: 22, group: 'trade',
     blurb: 'Pottery earns experience twice as fast.' },
-  { id: 'wheel', label: "Potter's Wheel", cost: 34, group: 'trade', needs: 'kiln_1',
-    blurb: 'A proper wheel: forging a dish takes one less round.' },
 
   { id: 'flyer_board', label: 'Harbour Notice Board', cost: 12, group: 'flyer',
     blurb: 'Room for four more flyers in the satchel.' },

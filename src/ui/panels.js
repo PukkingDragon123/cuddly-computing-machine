@@ -5,11 +5,12 @@ import { bar, h, ingChip, stepper, swatch, tag, thumb } from './dom.js';
 import { money } from '../core/util.js';
 import { INGREDIENTS, MARKET_ORDER, ingName } from '../data/ingredients.js';
 import {
-  MAX_LEVEL, RECIPES, priceAt, prepAt, starsAt, upgradeCost,
+  MAX_LEVEL, RECIPES, RECIPE_BY_ID, priceAt, prepAt, starsAt, upgradeCost,
 } from '../data/recipes.js';
 import {
-  BELT, FURNITURE, MACHINES, MACHINE_MAX_LEVEL, SILO, STAFF, STYLES, STYLE_BY_ID,
-  WORKSHOP, costOf, groupFor, machineInterval, machineUpgradeCost, starsOf,
+  BELT, FURNITURE, MACHINES, MACHINE_MAX_LEVEL, POTTERY, SILO, STAFF, STYLES,
+  STYLE_BY_ID, WORKSHOP, costOf, groupFor, machineInterval, machineUpgradeCost,
+  starsOf,
 } from '../data/catalog.js';
 import {
   GUESTS, MAX_FRIEND, TASTES, heartsToNext,
@@ -18,7 +19,6 @@ import {
   FORGE_LEVEL, MAX_DISH, RESEARCH, RESEARCH_BY_ID, RESEARCH_GROUPS, SHOP,
   SHOP_BY_ID, forgeCost, plateFor, potteryLevel, potteryNext,
 } from '../data/progress.js';
-import { PENS, PEN_STAGES } from '../data/livestock.js';
 import { DIR_NAMES } from '../world/factory.js';
 
 /** The wood each finish is painted in, for the swatch picker. */
@@ -182,7 +182,7 @@ export class Panels {
       { id: 'processor', label: 'Refiners' },
       { id: 'store', label: 'Storage' },
       { id: 'workshop', label: 'Workshop' },
-      { id: 'pens', label: 'Pens' },
+      { id: 'pottery', label: 'Pottery' },
     ];
     let body = [];
 
@@ -204,17 +204,28 @@ export class Panels {
           onclick: () => this.game.startFactoryErase(),
         }),
       ];
-    } else if (this.factoryTab === 'pens') {
+    } else if (this.factoryTab === 'pottery') {
+      const s = this.state;
       body = [
-        h('div.note', null, 'A pen raises one animal through six stages, then keeps giving. No belt, no line — just ',
-          h('b', null, 'tap it when the basket is full'), '.'),
-        ...PENS.map((pen) => this.#card({
-          src: this.assets.url('livestock', `${pen.animal}_${PEN_STAGES}`),
-          title: pen.label,
-          sub: pen.blurb,
-          tags: [this.#cost(pen.cost), tag(`1 ${ingName(pen.out)} / ${pen.yield}s`, 'tag-mint')],
-          onclick: () => this.game.startFactoryPlacing('pen', pen.id),
-        })),
+        h('div.note', null, 'The pottery works. Build the ', h('b', null, 'kiln'),
+          ' and tap it to take a turn at the class — a forged dish is the only',
+          ' permanent rise a single recipe can get.'),
+        ...POTTERY.map((m) => {
+          const built = s.hasWorks(m.kind);
+          const oneOff = m.kind === 'kiln' || m.kind === 'wheel' || m.kind === 'glaze';
+          return this.#card({
+            src: this.assets.url('machines', m.sprite),
+            title: m.label,
+            sub: m.blurb,
+            tags: [
+              this.#cost(m.cost),
+              m.interval ? tag(`${m.out ?? 1} clay / ${m.interval}s`, 'tag-mint')
+                : built ? tag('Standing', 'tag-ok') : tag('One-off', 'tag-star'),
+            ],
+            locked: oneOff && built,
+            onclick: oneOff && built ? null : () => this.game.startFactoryPlacing('machine', m.id),
+          });
+        }),
       ];
     } else if (this.factoryTab === 'workshop') {
       body = [
@@ -276,16 +287,28 @@ export class Panels {
 
   /* --------------------------------------------------------------- recipes  */
 
+  /**
+   * The Kitchen — one book with everything about food in it. It used to be two
+   * panels called Menu Book and Pantry, which meant plating a dish and checking
+   * whether you had the ingredients for it were different places. They are the
+   * same job, so they are the same book: the menu, what you can learn, what you
+   * can improve, and what is in the larder.
+   *
+   * It is drawn on a real open spread from the art pack, which is why the pages
+   * turn instead of the list simply swapping.
+   */
   openRecipes(keep = false) {
     this.reopen = () => this.openRecipes(true);
     const tabs = [
       { id: 'menu', label: "Today's Menu" },
-      { id: 'upgrade', label: 'Upgrade' },
       { id: 'learn', label: 'Learn' },
+      { id: 'upgrade', label: 'Upgrade' },
+      { id: 'pantry', label: 'Larder' },
     ];
-    const body = this.recipeTab === 'menu' ? this.#menuTab()
-      : this.recipeTab === 'upgrade' ? this.#upgradeTab()
-        : this.#learnTab();
+    const body = this.recipeTab === 'upgrade' ? this.#upgradeTab()
+      : this.recipeTab === 'learn' ? this.#learnTab()
+        : this.recipeTab === 'pantry' ? this.#larderTab()
+          : this.#menuTab();
 
     this.menuTotalEl = h('span.card-sub.grow');
     this.menuOpenBtn = this.#goBtn('Open Up!', {
@@ -296,10 +319,11 @@ export class Panels {
 
     const spec = {
       key: 'recipes',
-      title: 'Menu Book',
+      title: 'The Kitchen',
+      book: 'menu',
       tabs,
       tab: this.recipeTab,
-      onTab: (id) => { this.recipeTab = id; this.openRecipes(true); },
+      onTab: (id) => { this.recipeTab = id; this.openRecipes(true); this.hud.turnPage(); },
       body,
       foot: h('div.rowline', null, this.menuTotalEl, this.menuOpenBtn),
     };
@@ -373,10 +397,11 @@ export class Panels {
 
     this.menuRows = rows;
     return [
+      this.#catchStrip(),
       h('div.note', null,
         open
           ? 'Service is on. Stock ticks down as guests order.'
-          : ['Set how many of each dish to plate up. Ingredients come out of your pantry now, so ', h('b', null, 'plate what you can sell'), '.'],
+          : ['Set how many of each dish to plate up. Ingredients come out of your larder now, so ', h('b', null, 'plate what you can sell'), '.'],
       ),
       ...cards,
       unlocked.length === 0 ? h('div.empty', null, 'No recipes yet.') : null,
@@ -466,13 +491,18 @@ export class Panels {
 
   /* ---------------------------------------------------------------- pantry  */
 
+  /**
+   * Everything you own, in one place. The larder used to be the only view of it,
+   * which left the plated dishes, the clay and the flyers with nowhere to be
+   * counted — so this is the inventory proper, and buying is a tab of it.
+   */
   openPantry(keep = false) {
     this.reopen = () => this.openPantry(true);
-    const body = this.pantryTab === 'pantry' ? this.#pantryTab() : this.#marketTab();
+    const body = this.pantryTab === 'market' ? this.#marketTab() : this.#inventoryTab();
     const spec = {
       key: 'pantry',
-      title: 'Pantry',
-      tabs: [{ id: 'pantry', label: 'In Store' }, { id: 'market', label: 'Harbor Market' }],
+      title: 'Inventory',
+      tabs: [{ id: 'pantry', label: 'What You Own' }, { id: 'market', label: 'Harbor Market' }],
       tab: this.pantryTab,
       onTab: (id) => { this.pantryTab = id; this.openPantry(true); },
       body,
@@ -480,23 +510,87 @@ export class Panels {
     keep ? this.hud.refreshSheet(spec) : this.hud.openSheet(spec);
   }
 
-  #pantryTab() {
+  /** A cell in one of the inventory grids. */
+  #cell(src, name, qty, { icon = null, zero = false } = {}) {
+    return h(`div.ing-cell${zero ? '.zero' : ''}`, null,
+      icon ? h(`i.ico.ico-${icon}`) : h('i', { style: { backgroundImage: `url("${src}")` } }),
+      h('div.n', null, name),
+      h('div.q', null, qty));
+  }
+
+  #inventoryTab() {
+    const s = this.state;
+    const out = [];
+
+    const plated = Object.entries(s.stock).filter(([, n]) => n > 0);
+    if (plated.length) {
+      out.push(h('div.section', null, 'Plated up'));
+      out.push(h('div.grid-ing', null, plated.map(([id, n]) => this.#cell(
+        this.assets.url('food', id), RECIPE_BY_ID[id]?.name ?? id, `×${n}`))));
+    }
+
+    const ids = Object.keys(INGREDIENTS).filter((id) => s.have(id) > 0);
+    out.push(h('div.section', null, 'The larder'));
+    out.push(ids.length
+      ? h('div.grid-ing', null, ids.map((id) => this.#cell(
+        this.assets.url('ingredients', id), ingName(id), `×${s.have(id)}`)))
+      : h('div.empty', null, 'Empty. Build a machine in the works, or buy from the market.'));
+
+    out.push(h('div.section', null, 'Odds and ends'));
+    out.push(h('div.grid-ing', null, [
+      this.#cell(null, 'Sand dollars', money(s.coins), { icon: 'sand' }),
+      this.#cell(null, 'Reputation', `${money(s.stars)}★`, { icon: 'star' }),
+      this.#cell(null, 'Flyers', `${s.posters}/${s.flyerMax}`, { icon: 'flyer', zero: s.posters === 0 }),
+      this.#cell(null, 'Clay', `×${s.clay}`, { icon: 'kiln', zero: s.clay === 0 }),
+      this.#cell(null, 'Research', `${s.research} rp`, { icon: 'lab', zero: s.research === 0 }),
+      this.#cell(null, 'Hearts', `${s.diaryHearts}`, { icon: 'heart', zero: s.diaryHearts === 0 }),
+    ]));
+
+    const forged = Object.entries(s.dishes).filter(([, t]) => t > 0);
+    if (forged.length) {
+      out.push(h('div.section', null, 'Forged crockery'));
+      out.push(h('div.grid-ing', null, forged.map(([id, t]) => this.#cell(
+        this.assets.url('plates', plateFor(id, t)) || this.assets.url('food', id),
+        RECIPE_BY_ID[id]?.name ?? id, '✦'.repeat(t)))));
+    }
+    return out;
+  }
+
+  /**
+   * The larder, as a page of the kitchen book. Same shelves the inventory shows,
+   * but here it is answering one question — can I cook what I just planned? — so
+   * it also says which recipe each thing is short for.
+   */
+  #larderTab() {
     const s = this.state;
     const ids = Object.keys(INGREDIENTS).filter((id) => s.have(id) > 0);
-    const grid = h('div.grid-ing', null, ids.map((id) => h('div.ing-cell', null,
-      h('i', { style: { backgroundImage: `url("${this.assets.url('ingredients', id)}")` } }),
-      h('div.n', null, ingName(id)),
-      h('div.q', null, `×${s.have(id)}`))));
+    const short = new Set();
+    for (const [id, qty] of Object.entries(s.menu)) {
+      const r = RECIPE_BY_ID[id];
+      if (!r || qty <= 0) continue;
+      for (const ing of Object.keys(r.ing)) if (s.have(ing) <= 0) short.add(ing);
+    }
     return [
-      h('div.note', null, 'Factory machines fill this up for free. The ', h('b', null, 'Harbor Market'), ' tab sells the pricey sea catch.'),
-      ids.length ? grid : h('div.empty', null, 'Empty. Build a machine in the works, or buy from the market.'),
-    ];
+      h('div.pagehead', null, 'The Larder'),
+      h('div.note', null, 'Machines in the works fill these shelves for nothing. ',
+        h('b', null, 'Harbor Market'), ' in the inventory sells the rest.'),
+      ids.length
+        ? h('div.grid-ing', null, ids.map((id) => this.#cell(
+          this.assets.url('ingredients', id), ingName(id), `×${s.have(id)}`)))
+        : h('div.empty', null, 'Bare shelves. Build a machine in the works, or buy from the market.'),
+      short.size
+        ? h('div.note', null, 'Out of ', h('b', null, [...short].map(ingName).join(', ')),
+          ' — the dishes that need it cannot be plated.')
+        : null,
+    ].filter(Boolean);
   }
 
   #marketTab() {
     const s = this.state;
     const rows = MARKET_ORDER.map((id) => {
-      const price = INGREDIENTS[id].price;
+      const price = s.catchPrice(id);
+      const full = INGREDIENTS[id].price;
+      const deal = price < full;
       const buy = (n) => {
         const total = price * n;
         if (!s.spend(total)) { this.game.toast('Not enough sand dollars', 'bad'); return; }
@@ -509,14 +603,102 @@ export class Panels {
       return this.#card({
         src: this.assets.url('ingredients', id),
         title: ingName(id),
-        sub: `You have ${s.have(id)}`,
-        tags: [this.#cost(price)],
+        sub: deal ? `In today's catch — normally ${money(full)}` : `You have ${s.have(id)}`,
+        tags: [this.#cost(price), deal ? tag('Catch of the day', 'tag-ok') : null].filter(Boolean),
         side: h('div.rowline', null,
           this.#goBtn('×1', { disabled: s.coins < price, onclick: () => buy(1) }),
           this.#goBtn('×10', { disabled: s.coins < price * 10, onclick: () => buy(10) })),
+        cls: deal ? 'sel' : '',
       });
     });
-    return [h('div.note', null, 'Fresh off the boats. Prices are fixed — the trick is turning them into dishes worth more.'), ...rows];
+    return [
+      this.#catchStrip(),
+      h('div.note', null, 'Fresh off the boats. Whatever came in heavy this morning goes cheap — the rest is the price it always is.'),
+      ...rows,
+    ];
+  }
+
+  /* ------------------------------------------------------- the day's catch  */
+
+  /**
+   * A card that maps a recipe or an ingredient onto one of the pack's twenty
+   * illustrated menu cards. Hand-drawn cards beat a photo of the dish for the
+   * same reason a real menu is set rather than photographed: it reads as the
+   * restaurant's own hand.
+   */
+  cardFor(key) {
+    const CARDS = {
+      kelp_ramen: 'card_ramen', kelp_latte: 'card_stein', scallop_tart: 'card_platter',
+      kelp_fries: 'card_stars', reef_soda: 'card_reef', starfish_cookie: 'card_stars',
+      taiyaki: 'card_cake', miso_chowder: 'card_hotpot', pearl_boba: 'card_stein',
+      anchor_pretzel: 'card_cake', shrimp_toast: 'card_shrimp', oyster_plate: 'card_oyster',
+      mermaid_pop: 'card_cake', octopus_skewer: 'card_squid', tide_sundae: 'card_cake',
+      clam_congee: 'card_hotpot', cinnamon_swirls: 'card_cake', coral_platter: 'card_reef',
+      crab_burger: 'card_crab', puffer_burger: 'card_grilled_fish',
+      scallop_bowl: 'card_platter', sea_roll: 'card_sashimi',
+      lobster_roll: 'card_royal', treasure_bento: 'card_feast',
+      shrimp: 'card_shrimp', crab: 'card_crab', squid: 'card_squid',
+      oyster: 'card_oyster', clam: 'card_oyster', scallop: 'card_platter',
+      octopus_leg: 'card_squid', tuna: 'card_sashimi', salmon: 'card_sashimi',
+      lobster_tail: 'card_royal', nori: 'card_reef', kelp: 'card_reef',
+      sea_grapes: 'card_reef',
+    };
+    return this.assets.url('cards', CARDS[key] ?? 'card_cloche');
+  }
+
+  /** One line about today's catch, for the top of the menu and the market. */
+  #catchStrip() {
+    const s = this.state;
+    const c = s.catch;
+    if (!c) return null;
+    const dish = c.star ? RECIPE_BY_ID[c.star] : null;
+    return h('div.card.catchcard', null,
+      h('div.thumb.wide', null, h('i', {
+        style: { backgroundImage: `url("${this.cardFor(c.star ?? 'kelp')}")` },
+      })),
+      h('div.card-main', null,
+        h('div.card-title', null, "Today's catch"),
+        h('div.card-sub', null, dish
+          ? [ 'The harbour is asking for ', h('b', null, dish.name), ' — it pays a third over the odds.' ]
+          : 'Cheap crates on the quay this morning.'),
+        h('div.rowline', null, (c.cheap ?? []).map((id) =>
+          ingChip(this.assets.url('ingredients', id), '40% off')))));
+  }
+
+  /**
+   * The morning card. Shown once a day when the doors have not opened yet, and
+   * it is the reason to look at the market before the menu: what is cheap and
+   * what sells high both change overnight.
+   */
+  openCatch() {
+    const s = this.state;
+    const c = s.catch ?? s.rollCatch();
+    c.seen = true;
+    const dish = c.star ? RECIPE_BY_ID[c.star] : null;
+    this.reopen = null;
+    this.hud.openSheet({
+      key: 'catch',
+      title: `Day ${s.day} — off the boats`,
+      book: 'menu',
+      body: [
+        h('div.pagehead', null, "Today's Catch"),
+        h('div.bigcard', null,
+          h('img', { src: this.cardFor(c.star ?? 'kelp'), alt: '' })),
+        dish ? h('div.note', null, 'The harbour has a taste for ', h('b', null, dish.name),
+          ' today. Every one you serve pays ', h('b', null, '30% more'), '.')
+          : h('div.note', null, 'Quiet morning on the quay.'),
+        h('div.section', null, 'Cheap on the quay'),
+        h('div.grid-ing', null, (c.cheap ?? []).map((id) => this.#cell(
+          this.assets.url('ingredients', id), ingName(id), money(s.catchPrice(id))))),
+      ],
+      foot: h('div.rowline', null,
+        h('span.card-sub.grow', null, 'Prices hold until closing.'),
+        this.#goBtn('To the kitchen', {
+          cls: 'pill-go',
+          onclick: () => { this.recipeTab = 'menu'; this.openRecipes(); },
+        })),
+    });
+    this.state.save();
   }
 
   /* ------------------------------------------------------------------ crew  */
@@ -703,8 +885,10 @@ export class Panels {
           h('div.card-main', null,
             h('div.card-title', null, `Day ${s.day} · ${'★'.repeat(s.rating)}`),
             h('div.card-sub', null, `${money(s.stars)} reputation · ${s.stats.served} guests served · ${money(s.stats.earned)} earned all told`))),
-        row('Menu Book', 'Plate up, upgrade dishes, learn new ones', () => this.openRecipes(), 'book'),
-        row('Pantry & Market', 'See your stock and buy the sea catch', () => this.openPantry(), 'crate'),
+        row('The Kitchen', 'Plate up, learn dishes, upgrade them, check the larder',
+          () => this.openRecipes(), 'book'),
+        row('Inventory', 'Everything you own, and the market', () => this.openPantry(), 'crate'),
+        row("Today's Catch", 'What is cheap and what sells high', () => this.openCatch(), 'sand'),
         row('Crew', 'Hire staff to run the place for you', () => this.openCrew(), 'star'),
         row('Build', 'Furniture and machines', () => this.game.openBuild(), 'hammer'),
         h('div.section', null, 'The long game'),
@@ -713,9 +897,11 @@ export class Panels {
         row('Expand the Room', `Now ${s.roomSize}×${s.roomSize} — knock through for more floor`,
           () => this.openShop(), 'shop'),
         row('Research Board', `${s.research} points to spend`, () => this.openResearch(), 'lab'),
-        row('Pottery Class', s.potteryLv >= FORGE_LEVEL
-          ? `Level ${s.potteryLv} · the kiln is open`
-          : `Level ${s.potteryLv} · the kiln opens at ${FORGE_LEVEL}`,
+        row('Pottery Class', s.hasKiln
+          ? (s.potteryLv >= FORGE_LEVEL
+            ? `Level ${s.potteryLv} · the kiln is lit`
+            : `Level ${s.potteryLv} · forging opens at ${FORGE_LEVEL}`)
+          : 'Build a Harbour Kiln in the works first',
         () => this.openPottery(), 'kiln'),
         h('div.section', null, 'Help'),
         row('How to Play', 'The short version', () => this.game.openHelp(), 'help'),
@@ -741,53 +927,73 @@ export class Panels {
   /* ---------------------------------------------------------------- diary  */
 
   /**
-   * One page per species. Everything on it is earned: the name and portrait
-   * appear once they have walked in, and each taste only resolves from "?" once
-   * you have actually served them something they loved or couldn't stand.
+   * The diary, as an actual diary: six guests to a spread, arrows to turn the
+   * page, and the page visibly turning when you do. Everything on it is still
+   * earned — the name and portrait appear once they have walked in, and each
+   * taste only resolves from "?" once you have served them something they loved
+   * or couldn't stand.
    */
-  openDiary() {
-    this.reopen = () => this.openDiary();
+  openDiary(keep = false) {
+    this.reopen = () => this.openDiary(true);
     const s = this.state;
-    const rows = GUESTS.map((g) => {
+    const per = 6;
+    const pages = Math.max(1, Math.ceil(GUESTS.length / per));
+    this.diaryPage = Math.max(0, Math.min(this.diaryPage ?? 0, pages - 1));
+    const from = this.diaryPage * per;
+    const shown = GUESTS.slice(from, from + per);
+
+    const entries = shown.map((g) => {
       const page = s.diary[g.id];
       if (!page) {
-        return this.#card({
-          src: null,
-          title: '???',
-          sub: 'Not seen in the harbour yet.',
-          cls: 'locked',
-        });
+        return h('div.dentry.locked', null,
+          h('div.dportrait', null, h('span.dq', null, '?')),
+          h('div.dname', null, '???'),
+          h('div.dnote', null, 'Not seen in the harbour yet.'));
       }
       const lv = page.level ?? 1;
       const toNext = heartsToNext(page.hearts);
       const taste = (known, id) => (known
         ? tag(TASTES[id].label, 'tag-ok')
         : tag('?', 'tag-need'));
-      return this.#card({
-        src: this.assets.url('customers', g.id),
-        frames: this.assets.frameCount('customers', g.id),
-        title: `${g.name}  ${'♥'.repeat(lv)}${'·'.repeat(MAX_FRIEND - lv)}`,
-        sub: `Served ${page.served} · ${page.hearts} hearts`
-          + (toNext === null ? ' · best friends' : ` · ${toNext} to level ${lv + 1}`),
-        tags: [
+      return h('div.dentry', null,
+        h('div.dportrait', null, h('i', {
+          style: { backgroundImage: `url("${this.assets.url('customers', g.id)}")` },
+          class: this.assets.frameCount('customers', g.id) > 1 ? 'strip' : '',
+        })),
+        h('div.dname', null, g.name, h('span.dhearts', null, '♥'.repeat(lv))),
+        h('div.dnote', null, `Served ${page.served} · ${page.hearts} hearts`
+          + (toNext === null ? ' · best friends' : ` · ${toNext} to ♥${lv + 1}`)),
+        h('div.rowline', null,
           h('span.card-sub', null, 'loves'), taste(page.likeSeen, g.loves),
-          h('span.card-sub', null, 'hates'), taste(page.hateSeen, g.loathes),
-        ],
-      });
+          h('span.card-sub', null, 'hates'), taste(page.hateSeen, g.loathes)));
     });
 
-    this.hud.openSheet({
+    const turn = (d) => {
+      const next = Math.max(0, Math.min(pages - 1, this.diaryPage + d));
+      if (next === this.diaryPage) return;
+      this.diaryPage = next;
+      this.hud.turnPage(d);
+      this.openDiary(true);
+      this.game.sfx.play('tap');
+    };
+
+    const spec = {
       key: 'diary',
       title: 'Guest Diary',
+      book: 'diary',
       body: [
+        h('div.pagehead', null, 'Who Comes In'),
+        h('div.dgrid', null, entries),
         h('div.note', null, 'Serve a guest the flavour they ', h('b', null, 'love'),
           ' for triple hearts — and to find out what that flavour is. Every level they leave a present.'),
-        ...rows,
       ],
       foot: h('div.rowline', null,
-        h('span.card-sub.grow', null, `${s.diaryFound} of ${GUESTS.length} met`),
-        tag(`${s.diaryHearts} ♥`, 'tag-mint')),
-    });
+        this.#goBtn('‹', { cls: 'pill-quiet', disabled: this.diaryPage === 0, onclick: () => turn(-1) }),
+        h('span.card-sub.grow.mid', null, `Page ${this.diaryPage + 1} of ${pages} · ${s.diaryFound} of ${GUESTS.length} met`),
+        tag(`${s.diaryHearts} ♥`, 'tag-mint'),
+        this.#goBtn('›', { cls: 'pill-quiet', disabled: this.diaryPage >= pages - 1, onclick: () => turn(1) })),
+    };
+    keep ? this.hud.refreshSheet(spec) : this.hud.openSheet(spec);
   }
 
   /* ----------------------------------------------------------------- shop  */
@@ -842,13 +1048,44 @@ export class Panels {
   /* -------------------------------------------------------------- pottery  */
 
   /**
-   * The kiln. Below level five this is just a progress page; at five it becomes
-   * the only way to permanently improve one recipe, which is what makes the
-   * class worth levelling in the first place.
+   * The kiln. You get here by tapping the kiln you built in the works, not from
+   * a menu — the class happens somewhere. Below level five it is a progress
+   * page; at five it becomes the only way to permanently improve one recipe.
    */
   openPottery() {
     this.reopen = () => this.openPottery();
     const s = this.state;
+
+    // no kiln, no class. Say where to get one rather than showing a dead panel.
+    if (!s.hasKiln) {
+      this.hud.openSheet({
+        key: 'pottery',
+        title: 'Pottery Class',
+        body: [
+          this.#card({
+            src: this.assets.url('machines', 'bisque_kiln'),
+            title: 'You have no kiln',
+            sub: 'The class works out of a Harbour Kiln on the factory floor. Build one'
+              + ' in the works, under Pottery, then tap it to throw a dish.',
+            tags: [this.#cost(900)],
+          }),
+          h('div.note', null, 'A forged dish gives one recipe a permanent star and a',
+            ' permanent price rise, served on real crockery from then on.'),
+        ],
+        foot: h('div.rowline', null,
+          h('span.card-sub.grow', null, 'The works are the other room.'),
+          this.#goBtn('To the works', {
+            cls: 'pill-go',
+            onclick: () => {
+              this.game.setZone('factory');
+              this.factoryTab = 'pottery';
+              this.game.openBuild();
+            },
+          })),
+      });
+      return;
+    }
+
     const lv = s.potteryLv;
     const next = potteryNext(s.pottery);
     const open = lv >= FORGE_LEVEL;
@@ -873,7 +1110,8 @@ export class Panels {
         ' the kiln opens and you can forge serving dishes, which raise a recipe\'s stars and price for good.'));
     } else {
       body.push(h('div.note', null, 'Pick a dish to forge a new serving plate for. It costs sand dollars and clay, then you take a turn at the wheel — ',
-        h('b', null, 'stop the needle in the band'), '.'));
+        h('b', null, 'stop the needle in the band'), '.',
+        s.hasWheel ? ' Your wheel takes a round off.' : ' A Potter\'s Wheel in the works would take a round off.'));
       for (const r of RECIPES.filter((x) => s.isUnlocked(x.id))) {
         const tier = s.dishTier(r.id);
         const maxed = tier >= MAX_DISH;
@@ -899,7 +1137,16 @@ export class Panels {
       }
     }
 
-    this.hud.openSheet({ key: 'pottery', title: 'Pottery Class', body });
+    this.hud.openSheet({
+      key: 'pottery',
+      title: 'Pottery Class',
+      body,
+      foot: h('div.rowline', null,
+        h('span.card-sub.grow', null, s.hasGlaze
+          ? 'The glaze kiln is adding 15% to every forged dish.'
+          : 'A Glaze Kiln in the works would add 15% to forged dishes.'),
+        tag(`${s.clay} clay`, 'tag-mint')),
+    });
   }
 
   /**
@@ -910,7 +1157,7 @@ export class Panels {
    */
   #forge(recipe, tier, cost) {
     const s = this.state;
-    const rounds = s.hasResearch('wheel') ? 2 : 3;
+    const rounds = s.hasWheel ? 2 : 3;
     let round = 0;
     let hits = 0;
     let raf = 0;
@@ -999,13 +1246,14 @@ export class Panels {
       title: 'How to Play',
       body: [
         h('div.note', null, 'Everything costs ', h('b', null, 'sand dollars'), ' — furniture, machines, recipes and crew alike.'),
-        step(1, 'Plate up the menu', 'Open the Menu Book and set how many of each dish to make. Ingredients come out of your pantry right away.'),
-        step(2, 'Post a flyer', 'Nobody comes to a place they have not heard of. Tap the flyer by the Menu button until a poster goes up — ten taps to start with, fewer once you research it, and none at all once a Promo Stand or the Paste Crew does it for you. Yesterday\'s posters come down overnight.'),
-        step(3, 'Open up', 'Guests wander in and wait by the door. Tap one to seat them at a free chair.'),
-        step(4, 'Take the order', 'Tap the ! bubble over a seated guest to send the ticket to the chef.'),
-        step(5, 'Run the plate', 'Drag the finished dish off the kitchen pass onto the guest who ordered it.'),
-        step(6, 'Get paid', 'The faster you serve, the more they leave. Slow service loses stars.'),
-        step(7, 'Build the works', 'Once the till is healthy, head to the Factory: place a machine, drag a belt from it, and end the belt at a Pantry Intake. Ingredients then fill your pantry for free. The Workshop tab has a computer that banks research points and a stand that posts your flyers.'),
+        step(1, 'Read the morning', "Each day opens with the catch: three things cheap on the quay and one dish the harbour has a taste for, which pays a third over the odds."),
+        step(2, 'Plate up the menu', 'Open the Kitchen — the book icon on the right — and set how many of each dish to make. Ingredients come out of the larder right away.'),
+        step(3, 'Print a flyer', "Nobody comes to a place they have not heard of. Tap the flyer at the bottom left until a poster goes up — ten taps to start with, fewer once you research it, and none at all once a Promo Stand does it for you. Once you are open, a tap hands one out instead and brings a guest straight in."),
+        step(4, 'Open up', 'Guests wander in and wait by the door. Tap one to seat them at a free chair.'),
+        step(5, 'Take the order', 'Tap the ! sticker on the bubble over a seated guest to send the ticket to the chef.'),
+        step(6, 'Run the plate', 'Drag the finished dish off the kitchen pass onto the guest who ordered it.'),
+        step(7, 'Get paid', 'The faster you serve, the more they leave. Slow service loses stars. A table they leave needs washing before the next guest can sit down.'),
+        step(8, 'Build the works', 'Once the till is healthy, head to the Factory: place a machine, drag a belt from it, and end the belt at a Pantry Intake. Ingredients then fill the larder for free. The Workshop tab has a computer that banks research points and a stand that posts your flyers; the Pottery tab has the kiln.'),
         h('div.section', null, 'Getting to know them'),
         h('div.note', null, 'Every guest has a flavour they ', h('b', null, 'love'),
           ' and one they cannot stand. Serving the right one is worth triple hearts and a better tip, and it fills in their page in the ',
@@ -1014,7 +1262,9 @@ export class Panels {
           h('b', null, 'VIP'), ' pays double and a ', h('b', null, 'Mythical'),
           ' guest four times over. A busier harbour draws more of them.'),
         h('div.note', null, 'Serving also earns ', h('b', null, 'pottery'),
-          ' experience. At level five the kiln opens, and a forged serving dish raises one recipe\'s stars and price for good.'),
+          ' experience. Build a ', h('b', null, 'Harbour Kiln'),
+          ' in the works and tap it to take a turn at the class; from level five a',
+          ' forged serving dish raises one recipe\'s stars and price for good.'),
         h('div.note', null, 'Fancier tables and more decor raise ', h('b', null, 'ambience'), ', which brings guests in quicker and makes them tip better. Hire crew to automate seating, serving and the works.'),
       ],
     });

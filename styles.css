@@ -70,8 +70,6 @@
   /* one easing for every press and pop, so the whole UI answers the same way */
   --spring: cubic-bezier(.2, 1.7, .4, 1);
 
-  --dock-h: 4.15rem;     /* the floating nav rail, which sheets sit clear of */
-
   --safe-t: env(safe-area-inset-top, 0px);
   --safe-b: env(safe-area-inset-bottom, 0px);
 
@@ -127,92 +125,80 @@ html, body {
   gap: var(--gap);
 }
 #hud > * { pointer-events: auto; }
+/* …except the readouts. These float over the middle of the room — which is
+   where the kitchen pass sits — and a <b> in the service tally was quietly
+   eating taps meant for a finished plate. Needs the #hud prefix to outrank the
+   rule above. */
+#hud > .servicebar,
+#hud > .hint,
+#hud > .titlecard,
+#hud > #toasts { pointer-events: none; }
 
 .corner { display: flex; gap: 0.4rem; align-items: flex-start; }
 .top-left     { grid-area: 1 / 1; flex-direction: column; }
-.top-right    { grid-area: 1 / 3; flex-direction: column; align-items: flex-end; }
+.top-right    { grid-area: 1 / 3; flex-direction: column; align-items: flex-end; z-index: 8; }
 
 /* the bottom bar ------------------------------------------------------- */
 
-/* Above the scrim and above the sheet, on purpose: with the dock buried the
-   only way from one panel to another was close-then-open, which is the two-tap
-   problem all over again. Floating it means tapping Shop while the Diary is up
-   simply switches. The sheet reserves room for it below its own footer. */
+/* The thumb row: the flyer on the left, Open! on the right, and nothing else
+   competing for the corner a hand covers anyway. */
 #bottombar {
   grid-area: 3 / 1 / 4 / 4;
   display: flex; flex-direction: column; gap: 0.4rem;
   min-width: 0;
   z-index: 7;
 }
-/* with a panel up, the dock is the only thing that needs to stay reachable */
+/* with a panel up, only the side rail needs to stay reachable */
 #hud.sheeting .barrow { display: none }
 #hud.sheeting .zoneswitch,
 #hud.sheeting .servicebar { opacity: 0; pointer-events: none }
 .barrow { display: flex; align-items: flex-end; gap: 0.5rem; }
 .barspace { flex: 1 }
 
-/* A single rail of destinations, sized like a phone game's tab bar: six keys
-   across, each one a thumb wide, captioned, and never wrapping — a dock that
-   changes height as the game grows is a dock you stop trusting. */
-.dock {
-  display: flex; gap: 0.34rem;
-  padding: 0.34rem;
-  border: var(--bw) solid var(--ink);
-  border-radius: var(--r-lg);
-  background: var(--panel-2);
-  box-shadow: 0 var(--lift) 0 var(--tan-shadow), inset 0 0.16rem 0.22rem rgba(95, 61, 38, .22);
-  overflow-x: auto;
-  scrollbar-width: none;
-  -webkit-overflow-scrolling: touch;
-  scroll-snap-type: x proximity;
-}
-.dock::-webkit-scrollbar { display: none }
+/* The side rail --------------------------------------------------------- */
 
-.dock-btn {
+/* Icons only, stacked down the right edge. A phone game puts its shortcuts
+   there because that is where a thumb already is, and because a picture in a
+   circle needs no caption once you have pressed it twice. It floats above the
+   scrim and the sheet on purpose: with it buried, moving between panels meant
+   close-then-open, so tapping Diary while the Kitchen is up simply switches. */
+.rail {
+  display: flex; flex-direction: column; gap: 0.42rem;
+  align-items: center;
+}
+.railbtn {
   position: relative;
-  flex: 1 1 0;
-  min-width: 3.1rem;
-  min-height: 3.1rem;
-  display: flex; flex-direction: column; align-items: center; justify-content: center;
-  gap: 0.16rem;
-  padding: 0.42rem 0.2rem 0.34rem;
-  border: 0;
-  border-radius: var(--r-md);
+  width: 3.1rem; height: 3.1rem;
+  border: var(--bw) solid var(--ink);
+  border-radius: 999px;
   background-color: var(--paper);
-  box-shadow: 0 0.18rem 0 var(--tan-shadow), var(--face);
+  background-image: var(--sheen);
+  background-repeat: no-repeat;
+  box-shadow: 0 var(--lift) 0 var(--tan-shadow), var(--face);
+  display: grid; place-items: center;
   font: inherit;
-  color: var(--ink-deep);
   cursor: pointer;
-  scroll-snap-align: center;
   transition: transform .1s var(--spring), box-shadow .1s ease, background-color .14s ease;
 }
-.dock-btn .ico { width: 1.6rem; height: 1.6rem; transition: transform .16s var(--spring) }
-.dock-btn .cap {
-  font-size: 0.6rem; font-weight: 900; letter-spacing: .03em;
-  text-transform: uppercase; line-height: 1;
-  color: var(--ink-soft);
-}
-.dock-btn:active { transform: translateY(0.18rem); box-shadow: 0 0 0 var(--tan-shadow), var(--face) }
+.railbtn .ico { width: 1.7rem; height: 1.7rem; transition: transform .16s var(--spring) }
+.railbtn:active { transform: translateY(var(--lift)); box-shadow: 0 0 0 var(--tan-shadow), var(--face) }
 
-/* the live one sits proud of the rail, wears the money colour, and grows its
-   glyph — three signals, because on a phone one of them is always half-lost */
-.dock-btn.on {
+/* the live one wears the money colour and slides out towards the thumb */
+.railbtn.on {
   background-color: var(--sun);
-  box-shadow: 0 0.18rem 0 var(--sun-deep), var(--face);
-  transform: translateY(-0.16rem);
+  box-shadow: 0 var(--lift) 0 var(--sun-deep), var(--face);
+  transform: translateX(-0.3rem);
 }
-.dock-btn.on .cap { color: var(--ink-deep) }
-.dock-btn.on .ico { transform: scale(1.12) }
-.dock-btn.on:active { transform: translateY(0.05rem) }
+.railbtn.on .ico { transform: scale(1.1) }
+.railbtn.on:active { transform: translateX(-0.3rem) translateY(var(--lift)) }
 
-/* the tap that lands: a short squash, so every dock press feels answered */
-@keyframes dockPop {
-  0%   { transform: translateY(0.18rem) scaleX(1.07) scaleY(.88) }
-  60%  { transform: translateY(-0.2rem) scaleX(.97) scaleY(1.05) }
+@keyframes railPop {
+  0%   { transform: scale(.86) }
+  55%  { transform: scale(1.09) }
   100% { transform: none }
 }
-.dock-btn.pressed { animation: dockPop .3s var(--spring) }
-.dock-btn.on.pressed { animation: none }
+.railbtn.pressed { animation: railPop .3s var(--spring) }
+.railbtn.on.pressed { animation: none }
 
 /* ------------------------------------------------------------- surfaces  */
 
@@ -227,7 +213,7 @@ html, body {
 }
 /* Everything else that reads as a raised face takes the same sheen. The sheet
    itself does not: it is a sheet of paper, and paper does not catch light. */
-.flyer, .dock-btn, .toast, .hint, .titlecard, .placebar, .sb-row, .daytag,
+.flyer, .toast, .hint, .titlecard, .placebar, .sb-row, .daytag,
 .ing, .ing-cell, .swatch, .sheet-foot, .stepper button, .zoneswitch button.on,
 .tab.on, .boot-card .pill {
   background-image: var(--sheen);
@@ -239,6 +225,7 @@ html, body {
 /* Coins and stars are one plaque with a carved divider, not two loose pills —
    they are read together and they never appear apart. */
 .wallet {
+  pointer-events: none;
   display: flex; align-items: stretch;
   border-radius: 999px;
   box-shadow: 0 var(--lift) 0 var(--tan-shadow), var(--face);
@@ -261,6 +248,7 @@ html, body {
 }
 
 .daytag {
+  pointer-events: none;
   align-self: flex-start;
   border-radius: 999px;
   padding: 0.16rem 0.62rem;
@@ -487,11 +475,16 @@ html, body {
 
 /* service bar --------------------------------------------------------- */
 
+/* Readouts, not controls. This one floats over the middle of the room, which is
+   exactly where the kitchen pass sits — and a <b> in it was quietly eating taps
+   meant for a finished plate. Nothing in here is clickable, so nothing in here
+   takes a click. */
 .servicebar {
   grid-area: 2 / 2;
   align-self: start;
   justify-self: center;
   margin-top: 0.25rem;
+  pointer-events: none;
 }
 .sb-row {
   display: flex; align-items: center; gap: 0.45rem;
@@ -509,25 +502,54 @@ html, body {
 
 /* place bar ----------------------------------------------------------- */
 
+/* The blueprint strip. It matches what the ghost on the floor now looks like:
+   drafting blue on paper, with the piece named and its facing shown as four
+   dots, because "Rotate" on its own never said what it had rotated to. */
 .placebar {
   /* row 2 so it never fights the bottom corner clusters on a phone */
   grid-area: 2 / 1 / 3 / 4;
   justify-self: center; align-self: end;
   margin-bottom: 0.4rem;
   max-width: calc(100% - 1rem);
-  display: flex; align-items: center; gap: 0.45rem;
-  border: var(--bw) solid var(--ink);
-  border-radius: 999px;
-  background-color: var(--panel);
-  box-shadow: 0 var(--lift) 0 var(--tan-shadow), var(--face);
-  padding: 0.32rem 0.35rem 0.32rem 0.95rem;
+  display: flex; align-items: center; gap: 0.5rem;
+  border: var(--bw) solid #2f5771;
+  border-radius: var(--r-md);
+  background-color: #eaf3fa;
+  background-image: linear-gradient(rgba(255,255,255,.5), rgba(255,255,255,0) 60%),
+    repeating-linear-gradient(0deg, rgba(63,111,143,.14) 0 1px, transparent 1px 8px),
+    repeating-linear-gradient(90deg, rgba(63,111,143,.14) 0 1px, transparent 1px 8px);
+  box-shadow: 0 var(--lift) 0 #7fa2ba, var(--face);
+  padding: 0.34rem 0.4rem 0.34rem 0.6rem;
   font-size: 0.83rem; font-weight: 800;
-  animation: popIn .25s cubic-bezier(.2,1.5,.5,1);
+  animation: popIn .25s var(--spring);
 }
+.plan-mark {
+  flex: none;
+  width: 1.5rem; height: 1.5rem;
+  border: 0.16rem solid #2f5771;
+  border-radius: 0.3rem;
+  background:
+    linear-gradient(45deg, transparent 46%, #2f5771 46% 54%, transparent 54%),
+    linear-gradient(-45deg, transparent 46%, #2f5771 46% 54%, transparent 54%),
+    #d7e8f4;
+}
+.plan-text { display: flex; flex-direction: column; line-height: 1.15; min-width: 0 }
+.plan-text b { font-size: 0.88rem; font-weight: 900; color: #1f4159 }
+.plan-text span { font-size: 0.72rem; font-weight: 700; color: #4d7797 }
+
+/* which of the four sides it is facing */
+.turns { display: flex; gap: 0.2rem; flex: none }
+.turns i {
+  width: 0.42rem; height: 0.42rem; border-radius: 999px;
+  background: #a8c6da;
+  box-shadow: inset 0 0 0 0.08rem rgba(47,87,113,.4);
+}
+.turns i.on { background: var(--sun); box-shadow: inset 0 0 0 0.08rem #2f5771; transform: scale(1.35) }
 
 /* hint ---------------------------------------------------------------- */
 
 .hint {
+  pointer-events: none;
   grid-area: 2 / 2;
   align-self: center; justify-self: center;
   max-width: 22rem; text-align: center;
@@ -618,8 +640,8 @@ html, body {
   border-radius: 1.7rem 1.7rem 0 0;
   border-bottom: 0;
   box-shadow: 0 -0.5rem 1.4rem rgba(58, 36, 20, .22);
-  /* leave the floating dock its own room, plus the gap the HUD keeps under it */
-  padding-bottom: calc(var(--dock-h) + var(--safe-b) + 0.75rem);
+  /* the rail moved to the side, so the sheet can own the bottom of the screen */
+  padding-bottom: calc(var(--safe-b) + 0.4rem);
   z-index: 6;
   animation: sheetIn .38s cubic-bezier(.13,1.14,.32,1) both;
   overflow: hidden;
@@ -657,18 +679,17 @@ html, body {
 .sheet-head .round { background-color: var(--paper) }
 
 /* tab track — sunken, so the live tab reads as sitting proud of it */
+/* Wraps rather than scrolls. A clipped word on the right edge reads as broken,
+   and six tabs on a phone will always be too many for one line. */
 .sheet-tabs {
-  display: flex; gap: 0.2rem;
+  display: flex; flex-wrap: wrap; gap: 0.2rem;
   margin: 0.6rem 0.75rem 0.1rem;
   padding: 0.18rem;
-  border-radius: 999px;
+  border-radius: var(--r-md);
   background: var(--panel-2);
   box-shadow: inset 0 0.14rem 0.2rem rgba(95, 61, 38, .2);
-  overflow-x: auto;
   flex: none;
-  scrollbar-width: none;
 }
-.sheet-tabs::-webkit-scrollbar { display: none }
 .sheet-tabs:empty { display: none }
 .tab {
   border: 0;
@@ -680,6 +701,7 @@ html, body {
   cursor: pointer;
   white-space: nowrap;
   flex: 1 1 auto;
+  min-width: max-content;
   min-height: 2rem;
   transition: background-color .12s ease, color .12s ease, transform .1s var(--spring);
 }
@@ -706,6 +728,139 @@ html, body {
   display: flex; gap: var(--gap); align-items: center;
 }
 .sheet-foot .grow { flex: 1 }
+
+/* books --------------------------------------------------------------- */
+
+/* The kitchen and the diary are drawn books from the art pack, so the panel
+   stops pretending to be a card list and becomes the spread itself: the paper
+   is the background, the header is set like a menu heading, and the covers
+   swing open when it appears. */
+.sheet.book {
+  background-color: #f4ead2;
+  background-repeat: no-repeat;
+  background-position: center;
+  /* stretched to the panel on purpose: the spread is a frame, and a frame that
+     only covered the top third left the rest of the list sitting on nothing */
+  background-size: 100% 100%;
+  border-radius: 1.7rem 1.7rem 0 0;
+}
+/* a cream wash over the art so ink on top of it stays readable */
+.sheet.book::before {
+  content: "";
+  position: absolute; inset: 0;
+  border-radius: inherit;
+  background: rgba(253, 247, 232, 0.3);
+  pointer-events: none;
+}
+.sheet.book > * { position: relative; z-index: 1 }
+/* content sits inside the drawn border rather than across it */
+.sheet.book .sheet-body { padding: 0.5rem 1.5rem 1.4rem }
+.sheet.book .sheet-tabs { margin-left: 1.5rem; margin-right: 1.5rem }
+.sheet.book .sheet-head { padding-left: 1.3rem; padding-right: 0.8rem }
+/* the close button eats space on the right, so balance it on the left and the
+   title lands on the panel's centre rather than the flex box's */
+.sheet.book .sheet-head h2 { text-align: center; padding-left: 2.4rem }
+@media (max-width: 26rem) {
+  .sheet.book .sheet-body { padding-left: 1rem; padding-right: 1rem }
+  .sheet.book .sheet-tabs { margin-left: 0.8rem; margin-right: 0.8rem }
+}
+.sheet.book-menu  { background-image: url("assets/ui/book_menu.jpg") }
+.sheet.book-diary { background-image: url("assets/ui/book_diary.jpg") }
+
+/* the spread's own border is the frame, so the panel drops its chrome */
+.sheet.book .sheet-head {
+  background: transparent;
+  border-bottom: 0;
+  box-shadow: none;
+  padding-bottom: 0.2rem;
+}
+.sheet.book .sheet-head h2 { color: var(--ink); text-shadow: 0 0.08rem 0 rgba(255,255,255,.6) }
+.sheet.book .sheet-grip { background: rgba(95,61,38,.22) }
+.sheet.book .sheet-tabs { background: rgba(255,252,244,.75); box-shadow: inset 0 0.1rem 0.16rem rgba(95,61,38,.14) }
+.sheet.book .sheet-foot { background: rgba(253,247,232,.72); border-top-color: rgba(95,61,38,.2) }
+.sheet.book .card { background-color: #fdf7e8 }
+
+/* a menu heading: centred, spaced, with a rule under it like a real card */
+.pagehead {
+  text-align: center;
+  font-size: 1.15rem; font-weight: 900;
+  letter-spacing: .12em; text-transform: uppercase;
+  color: var(--ink);
+  padding: 0.1rem 0 0.5rem;
+  position: relative;
+}
+.pagehead::after {
+  content: "";
+  position: absolute; left: 22%; right: 22%; bottom: 0.2rem;
+  height: 0.14rem; border-radius: 2px;
+  background: var(--tan-shadow); opacity: .5;
+}
+
+/* opening the covers, then turning a leaf */
+@keyframes bookOpen {
+  0%   { transform: perspective(900px) rotateX(38deg) scale(.94); opacity: 0 }
+  100% { transform: none; opacity: 1 }
+}
+.sheet-body.opening { animation: bookOpen .42s cubic-bezier(.2,1.1,.35,1) both; transform-origin: 50% 0 }
+@keyframes pageFwd {
+  0%   { transform: perspective(900px) rotateY(-22deg) translateX(14%); opacity: 0 }
+  100% { transform: none; opacity: 1 }
+}
+@keyframes pageBack {
+  0%   { transform: perspective(900px) rotateY(22deg) translateX(-14%); opacity: 0 }
+  100% { transform: none; opacity: 1 }
+}
+.sheet-body.turn-fwd  { animation: pageFwd .3s ease-out both; transform-origin: 0 50% }
+.sheet-body.turn-back { animation: pageBack .3s ease-out both; transform-origin: 100% 50% }
+@media (prefers-reduced-motion: reduce) {
+  .sheet-body.opening, .sheet-body.turn-fwd, .sheet-body.turn-back { animation: none }
+}
+
+/* a card blown up to fill a page — the day's catch, mostly */
+.bigcard { display: grid; place-items: center; padding: 0.2rem 0 0.5rem }
+.bigcard img {
+  width: min(15rem, 62%);
+  border-radius: var(--r-sm);
+  filter: drop-shadow(0 0.3rem 0.4rem rgba(95,61,38,.25));
+}
+.catchcard { background-color: var(--sun-pale) !important }
+
+/* diary entries ------------------------------------------------------- */
+
+.dgrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(9.5rem, 1fr));
+  gap: 0.45rem;
+}
+.dentry {
+  border: 0.14rem solid rgba(95,61,38,.55);
+  border-radius: var(--r-sm);
+  /* opaque: the spread has its own drawn slots, and a translucent card on top of
+     one reads as two boxes fighting */
+  background: #fdf7e8;
+  box-shadow: 0 0.14rem 0 rgba(171,138,92,.6);
+  padding: 0.4rem 0.45rem 0.45rem;
+  display: flex; flex-direction: column; gap: 0.2rem;
+  min-height: 7.2rem;
+}
+/* an unmet guest stays opaque — going see-through let the spread's own drawn
+   slot show through the card and read as a layout fault */
+.dentry.locked { filter: grayscale(.6); background: #f2e9d5; color: var(--ink-faint) }
+.dentry.locked .dnote { color: var(--ink-faint) }
+.dportrait {
+  height: 3.1rem;
+  display: grid; place-items: center;
+  border-bottom: 0.1rem dashed rgba(95,61,38,.3);
+  margin-bottom: 0.15rem;
+}
+.dportrait i { width: 100%; height: 100%; background: center/contain no-repeat }
+/* a three-frame walk strip: show the first frame only */
+.dportrait i.strip { background-size: 300% auto; background-position: 0 50% }
+.dportrait .dq { font-size: 1.5rem; font-weight: 900; color: var(--ink-faint) }
+.dname { font-size: 0.86rem; font-weight: 900; line-height: 1.1; display: flex; gap: 0.25rem; align-items: baseline }
+.dhearts { color: #d0517f; font-size: 0.78rem }
+.dnote { font-size: 0.7rem; font-weight: 700; color: var(--ink-soft); line-height: 1.25 }
+.mid { text-align: center }
 
 /* cards --------------------------------------------------------------- */
 
@@ -964,8 +1119,7 @@ html, body {
 
 .hidden { display: none !important }
 
-/* On a narrow phone the chrome gives ground before the dock does: the rail is
-   the one thing that has to stay six thumbs wide and captioned. */
+/* On a narrow phone the chrome gives ground before the rail does. */
 @media (max-width: 26rem) {
   .tile { width: 3.1rem; height: 3rem }
   .tile .ico { width: 1.25rem; height: 1.25rem }
@@ -977,10 +1131,9 @@ html, body {
   .servicebar { margin-top: .15rem }
   .wallet .seg { font-size: .92rem; padding: .28rem .6rem .28rem .4rem; min-height: 2rem }
   .thumb { width: 3.5rem; height: 3.5rem }
-  .dock { gap: .22rem; padding: .28rem; border-radius: var(--r-md) }
-  .dock-btn { min-width: 0; padding: .36rem .1rem .3rem }
-  .dock-btn .ico { width: 1.45rem; height: 1.45rem }
-  .dock-btn .cap { font-size: .53rem; letter-spacing: 0 }
+  .railbtn { width: 2.8rem; height: 2.8rem }
+  .railbtn .ico { width: 1.5rem; height: 1.5rem }
+  .rail { gap: .34rem }
   .flyer { padding: .3rem .5rem .3rem .36rem }
   .flyer-bar { width: 2.8rem }
 }

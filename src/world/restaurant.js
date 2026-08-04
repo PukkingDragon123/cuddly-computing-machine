@@ -13,7 +13,7 @@ import { FURNITURE_BY_ID, STYLE_BY_ID, groupFor } from '../data/catalog.js';
 import { GUEST_BY_ID, RARITY_BY_ID } from '../data/guests.js';
 import { plateFor } from '../data/progress.js';
 import {
-  drawIcon, drawSprite, ellipse, ring, squash, sticker, text,
+  blueprint, drawIcon, drawSprite, ellipse, ring, squash, sticker, text,
 } from '../gfx/paint.js';
 
 export { FURN_SCALE };
@@ -452,8 +452,11 @@ export class Restaurant {
       : { hearts: 0, mood: 'fine', levelled: null };
     const moodPay = note.mood === 'loved' ? 1.35 : note.mood === 'hated' ? 0.7 : 1;
 
+    // and whatever the harbour asked for this morning pays over the odds
+    const asked = this.state.catchBonus(guest.dish);
     const pay = Math.max(1, Math.round(
-      price * speed * this.state.tipMult * (1 + (tableTip - 1) * 0.4) * rarity.pay * moodPay));
+      price * speed * this.state.tipMult * (1 + (tableTip - 1) * 0.4)
+      * rarity.pay * moodPay * asked));
     const stars = guest.patience > 0.3
       ? this.state.starsOf(guest.dish) + (STYLE_BY_ID[guest.seat?.f?.style]?.star ?? 0)
         + this.state.bonusStar + (note.mood === 'loved' ? 1 : 0)
@@ -470,6 +473,11 @@ export class Restaurant {
     this.earned += pay;
     this.starsToday += stars;
 
+    if (asked > 1) {
+      this.fx.pop(guest.pos.x + 40, guest.headY - 46, 'Catch of the day!', {
+        color: '#4a8cb0', size: 14, rise: 40, max: 1,
+      });
+    }
     this.fx.coins(guest.pos.x, guest.headY + 10, 5 + Math.min(6, Math.floor(pay / 18)), 62);
     this.fx.pop(guest.pos.x, guest.headY - 24, `+${money(pay)}`, { color: '#b8481c', size: 23 });
     if (stars > 0) {
@@ -765,7 +773,10 @@ export class Restaurant {
     // a selected plate is waiting to be handed over
     const held = this.kitchen.selected;
     if (held) {
-      const guest = this.guestAt(world);
+      // whoever ordered this dish wins the tap, exactly as they win a drop: a
+      // bystander's order bubble can easily float over the guest behind them
+      const wants = (x) => x.state === CS.WAIT && x.dish === held.recipeId;
+      const guest = this.guestAt(world, wants) ?? this.guestAt(world);
       if (guest && this.deliver(held, guest)) { this.kitchen.clearSelection(); return null; }
       const plate = this.kitchen.plateAt(world);
       if (plate === held) { held.selected = false; return null; }
@@ -848,9 +859,10 @@ export class Restaurant {
             scale: FURN_SCALE,
             scaleX: sx, scaleY: sy,
             flipX: this.mirrorFor(f),
-            glow: isSel ? '#f8d167' : null,
-            glowWidth: 3.5,
           });
+          // the selected piece is marked on its tile rather than lit up: a halo
+          // around hand-drawn art only ever looks like a mistake
+          if (isSel) Room.outlineTile(ctx, f.c, f.r, 'pick', this.room.pulse ?? 0);
         },
       });
     }
@@ -886,16 +898,12 @@ export class Restaurant {
     if (!s) return;
     const p = toScreen(g.c, g.r);
     const hang = !!g.item.hang;
-    ctx.save();
-    ctx.globalAlpha = 0.72;
-    drawSprite(ctx, s, 0, p.x, hang ? p.y - 132 : p.y + HALF_H * 0.36, {
+    blueprint(ctx, s, 0, p.x, hang ? p.y - 132 : p.y + HALF_H * 0.36, {
       scale: FURN_SCALE,
-      scaleY: 1 + Math.sin(t * 6) * 0.03,
+      scaleY: 1 + Math.sin(t * 6) * 0.02,
       flipX: mirrorAt(g.item.sprite, this.#ghostRot(g)),
-      glow: g.ok ? '#8bbb6a' : '#e4652f',
-      glowWidth: 3,
+      ok: g.ok,
     });
-    ctx.restore();
     Room.outlineTile(ctx, g.c, g.r, g.ok ? 'ok' : 'bad', t);
   }
 

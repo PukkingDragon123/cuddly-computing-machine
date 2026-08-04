@@ -12,7 +12,7 @@ import { Panels } from './ui/panels.js';
 import { GameState, SAVE_KEY } from './state.js';
 import { TAU, range, rnd } from './core/util.js';
 import { ingName } from './data/ingredients.js';
-import { FURNITURE_BY_ID } from './data/catalog.js';
+import { FURNITURE_BY_ID, MACHINE_BY_ID } from './data/catalog.js';
 
 const OFFLINE_CAP = 4 * 3600;   // seconds of away-time the works will catch up on
 
@@ -164,24 +164,57 @@ export class Game {
     this.restaurant.beginPlace(id, style);
     this.hud.closeSheet();
     const item = FURNITURE_BY_ID[id];
-    this.hud.showPlaceBar(`Tap the floor to set the ${item?.label ?? 'piece'}`);
+    this.hud.showPlaceBar('Tap the floor to set it down', {
+      title: item?.label ?? 'Piece',
+      turn: this.restaurant.ghost?.rot ?? 0,
+    });
   }
 
   startFactoryPlacing(kind, id) {
     this.factory.beginPlace(kind, id);
     this.hud.closeSheet();
-    this.hud.showPlaceBar(kind === 'belt' ? 'Drag to draw a belt line' : 'Tap a tile to set it down');
+    this.hud.showPlaceBar(
+      kind === 'belt' ? 'Drag across the floor to draw a line' : 'Tap a tile to set it down',
+      { title: MACHINE_BY_ID[id]?.label ?? (kind === 'belt' ? 'Conveyor' : 'Machine'),
+        turn: this.factory.ghost?.dir ?? 0 },
+    );
   }
 
   startFactoryErase() {
     this.factory.beginErase();
     this.hud.closeSheet();
-    this.hud.showPlaceBar('Drag over things to remove them', { rotate: false });
+    this.hud.showPlaceBar('Drag over things to remove them',
+      { rotate: false, title: 'Remove Tool' });
   }
 
   rotatePlacement() {
     this.zone.rotateGhost?.();
     this.sfx.play('tap');
+    this.#syncPlaceBar();
+  }
+
+  /** Keep the blueprint strip showing what is actually on the cursor. */
+  #syncPlaceBar(label = null) {
+    const g = this.zone.ghost;
+    if (!g) { this.hud.hidePlaceBar(); return; }
+    if (g.kind === 'erase') {
+      this.hud.showPlaceBar('Drag over things to remove them',
+        { rotate: false, title: 'Remove Tool' });
+      return;
+    }
+    const inFactory = this.zone === this.factory;
+    const title = inFactory
+      ? (g.kind === 'belt' ? 'Conveyor' : MACHINE_BY_ID[g.id]?.label ?? 'Machine')
+      : (g.item?.label ?? 'Piece');
+    const text = label ?? (inFactory && g.kind === 'belt'
+      ? 'Drag across the floor to draw a line'
+      : 'Tap a tile to set it down');
+    this.hud.showPlaceBar(inFactory && g.kind === 'belt'
+      ? 'Drag across the floor to draw a line' : text, {
+      rotate: g.kind !== 'belt',
+      title,
+      turn: (inFactory ? g.dir : g.rot) ?? 0,
+    });
   }
 
   cancelPlacement() {
@@ -236,14 +269,7 @@ export class Game {
     if (this.hud.isSheetOpen) return;
     const hint = this.zone.tap(world);
     if (hint) this.hud.hint(hint, 2.2);
-    if (this.zone.ghost) {
-      this.hud.showPlaceBar(
-        this.zone === this.factory && this.zone.ghost.kind === 'belt'
-          ? 'Drag to draw a belt line'
-          : 'Tap the floor to place another',
-        { rotate: this.zone.ghost.kind !== 'erase' },
-      );
-    } else this.hud.hidePlaceBar();
+    this.#syncPlaceBar('Tap the floor to place another');
     this.hud.sync();
   }
 
@@ -288,13 +314,19 @@ export class Game {
     this.panels.openReport(reason);
   }
 
+  /**
+   * Tomorrow. The day starts by reading the market rather than by tapping Open:
+   * what is cheap on the quay and what the harbour has a taste for both change
+   * overnight, so the catch card is the first thing you see.
+   */
   beginNextDay() {
     this.hud.closeSheet();
     this.state.nextDay();
     this.closing = false;
     this.hud.sync();
-    this.hud.titleCard(`Day ${this.state.day}`, 'Morning delivery arrived');
+    this.hud.titleCard(`Day ${this.state.day}`, 'Off the boats');
     this.sfx.play('ding');
+    this.tweens.after(1.1, () => this.panels.openCatch());
   }
 
   /* ------------------------------------------------------------ ui bridges */
@@ -304,6 +336,7 @@ export class Game {
   openShop() { this.panels.openShop(); }
   openResearch() { this.panels.openResearch(); }
   openPottery() { this.panels.openPottery(); }
+  openCatch() { this.panels.openCatch(); }
 
   /**
    * The flyer button does two different jobs, one per phase. In the morning each
