@@ -141,6 +141,8 @@ export class Hud {
     if (this.el.flyerFill.style.width !== w) this.el.flyerFill.style.width = w;
     this.el.flyer.classList.toggle('full', !open && s.posters >= max);
     this.el.flyer.classList.toggle('spent', open && s.posters <= 0);
+    // no posters and the doors shut: this is the job, so let it fidget
+    this.el.flyer.classList.toggle('nudge', !open && s.posters === 0);
     const wants = open ? 'Hand out a flyer' : 'Print a flyer';
     if (this.el.flyer.title !== wants) this.el.flyer.title = wants;
 

@@ -85,12 +85,25 @@ src/
 The world is a single `<canvas>`; the HUD and panels are real DOM so CSS can do
 the rounded-sticker styling and native scrolling.
 
-The navigation is five round icons down the right-hand edge, above the scrim and
-the sheet on purpose: with them buried, moving between panels meant
+The navigation is a column of the pack's own painted icons down the right-hand
+edge — no button, no frame, no caption. Every icon in that sheet is already drawn
+as a little card with cream paper, an ink outline and a shadow of its own, so
+wrapping each one in another cream circle drew the same frame twice and looked
+it. The button is now nothing but a tap target with a picture in it.
+
+Nothing in that column sits still: each icon floats on its own slow loop, offset
+from its neighbours so the rail ripples rather than pumps; a press squashes and
+overshoots; the live one arrives with a bounce and rides bigger and closer to the
+thumb; and they all drop in one after another when the game opens. It is above
+the scrim and the sheet on purpose — with it buried, moving between panels meant
 close-then-open, so tapping Diary while the Kitchen is up simply switches, and
-tapping the panel already showing closes it. No captions — a picture in a circle
-needs none once you have pressed it twice — and nothing but the flyer and the
-Open! button in the thumb row along the bottom.
+tapping the panel already showing closes it. The flyer fidgets when the satchel
+is empty of a morning, and Open! breathes until you press it: motion is what
+tells you a corner of the screen is for pressing.
+
+`skinIcons` installs those images as one injected stylesheet rather than as
+inline styles on whatever existed at boot, so every card the panels build later
+gets the painted icon too.
 
 The Kitchen and the Diary are not lists but **books**: the panel is a drawn
 spread from the art pack, the covers swing open when it appears, and the diary's

@@ -157,48 +157,97 @@ html, body {
 
 /* The side rail --------------------------------------------------------- */
 
-/* Icons only, stacked down the right edge. A phone game puts its shortcuts
-   there because that is where a thumb already is, and because a picture in a
-   circle needs no caption once you have pressed it twice. It floats above the
-   scrim and the sheet on purpose: with it buried, moving between panels meant
-   close-then-open, so tapping Diary while the Kitchen is up simply switches. */
+/* Just the artwork. Every icon in the pack is already drawn as a little card —
+   cream paper, ink outline, a shadow of its own — so wrapping each one in
+   another cream circle drew the same frame twice and looked it. The button is
+   now nothing but a tap target with a picture in it, sized to the thumb.
+
+   And it never sits still: each icon floats on its own slow loop, a press
+   squashes it, and the live one rides up bigger and bobs faster. Motion is what
+   tells you a corner of the screen is for pressing. */
 .rail {
-  display: flex; flex-direction: column; gap: 0.42rem;
+  display: flex; flex-direction: column;
+  gap: 0.1rem;
   align-items: center;
 }
 .railbtn {
   position: relative;
-  width: 3.1rem; height: 3.1rem;
-  border: var(--bw) solid var(--ink);
-  border-radius: 999px;
-  background-color: var(--paper);
-  background-image: var(--sheen);
-  background-repeat: no-repeat;
-  box-shadow: 0 var(--lift) 0 var(--tan-shadow), var(--face);
+  width: 3.9rem; height: 3.9rem;
+  border: 0;
+  background: none;
+  box-shadow: none;
+  padding: 0;
   display: grid; place-items: center;
   font: inherit;
   cursor: pointer;
-  transition: transform .1s var(--spring), box-shadow .1s ease, background-color .14s ease;
+  transition: transform .12s var(--spring), filter .16s ease;
+  filter: drop-shadow(0 0.2rem 0.14rem rgba(95, 61, 38, 0.32));
 }
-.railbtn .ico { width: 1.7rem; height: 1.7rem; transition: transform .16s var(--spring) }
-.railbtn:active { transform: translateY(var(--lift)); box-shadow: 0 0 0 var(--tan-shadow), var(--face) }
+.railbtn .ico {
+  width: 3.2rem; height: 3.2rem;
+  animation: railBob 3.4s ease-in-out infinite;
+}
+/* how-to-play is a utility, not a destination, so it rides smaller */
+.railbtn-sm { width: 2.9rem; height: 2.9rem; opacity: .85 }
+.railbtn-sm .ico { width: 2.2rem; height: 2.2rem }
+/* staggered, so the column ripples instead of pumping in unison */
+.railbtn:nth-child(1) .ico { animation-delay: 0s }
+.railbtn:nth-child(2) .ico { animation-delay: .38s }
+.railbtn:nth-child(3) .ico { animation-delay: .76s }
+.railbtn:nth-child(4) .ico { animation-delay: 1.14s }
+.railbtn:nth-child(5) .ico { animation-delay: 1.52s }
+.railbtn:nth-child(6) .ico { animation-delay: 1.9s }
 
-/* the live one wears the money colour and slides out towards the thumb */
+@keyframes railBob {
+  0%, 100% { transform: translateY(0) rotate(0deg) }
+  50%      { transform: translateY(-0.26rem) rotate(-1.6deg) }
+}
+
+.railbtn:active { transform: scale(.88); filter: drop-shadow(0 0.06rem 0.1rem rgba(95, 61, 38, 0.3)) }
+
+/* the live one: bigger, closer to the thumb, and busier. It arrives with an
+   overshoot of its own, which is the answer to the press that opened it. */
 .railbtn.on {
-  background-color: var(--sun);
-  box-shadow: 0 var(--lift) 0 var(--sun-deep), var(--face);
-  transform: translateX(-0.3rem);
+  filter: drop-shadow(0 0.24rem 0.18rem rgba(95, 61, 38, 0.4));
+  animation: railOn .36s var(--spring) forwards;
 }
-.railbtn.on .ico { transform: scale(1.1) }
-.railbtn.on:active { transform: translateX(-0.3rem) translateY(var(--lift)) }
+@keyframes railOn {
+  0%   { transform: scale(.9) translateX(0) }
+  60%  { transform: scale(1.26) translateX(-0.4rem) }
+  100% { transform: scale(1.16) translateX(-0.3rem) }
+}
+.railbtn.on .ico { animation-duration: 1.5s }
+.railbtn.on:active { transform: scale(1.02) translateX(-0.3rem) }
 
+/* the tap that lands: squash, overshoot, settle */
 @keyframes railPop {
-  0%   { transform: scale(.86) }
-  55%  { transform: scale(1.09) }
+  0%   { transform: scale(.82) rotate(-6deg) }
+  45%  { transform: scale(1.22) rotate(4deg) }
+  70%  { transform: scale(.96) rotate(-1deg) }
   100% { transform: none }
 }
-.railbtn.pressed { animation: railPop .3s var(--spring) }
-.railbtn.on.pressed { animation: none }
+.railbtn.pressed { animation: railPop .42s var(--spring) }
+.railbtn.on.pressed { animation: railOn .36s var(--spring) forwards }
+
+/* and they drop in one after another when the game opens */
+@keyframes railDrop {
+  0%   { transform: translateX(2.4rem) scale(.7); opacity: 0 }
+  70%  { transform: translateX(-0.25rem) scale(1.06); opacity: 1 }
+  100% { transform: none; opacity: 1 }
+}
+.railbtn { animation: railDrop .5s var(--spring) both }
+.railbtn:nth-child(1) { animation-delay: .05s }
+.railbtn:nth-child(2) { animation-delay: .12s }
+.railbtn:nth-child(3) { animation-delay: .19s }
+.railbtn:nth-child(4) { animation-delay: .26s }
+.railbtn:nth-child(5) { animation-delay: .33s }
+.railbtn:nth-child(6) { animation-delay: .4s }
+
+.railbtn .badge { top: 0.1rem; right: 0.1rem }
+
+@media (prefers-reduced-motion: reduce) {
+  .railbtn, .railbtn .ico, .railbtn.pressed { animation: none }
+}
 
 /* ------------------------------------------------------------- surfaces  */
 
@@ -305,6 +354,16 @@ html, body {
 .flyer.handout { background-color: var(--sun-pale); }
 .flyer.handout .flyer-bar i { background: var(--sun-deep); }
 .flyer.spent { filter: grayscale(.55) opacity(.62); }
+
+/* an empty satchel of a morning is the one thing you have to do before opening,
+   so it nudges until it is not empty any more */
+@keyframes flyerNudge {
+  0%, 72%, 100% { transform: translateY(0) rotate(0deg) }
+  80%           { transform: translateY(-0.22rem) rotate(-2.5deg) }
+  90%           { transform: translateY(-0.1rem) rotate(1.5deg) }
+}
+.flyer.nudge { animation: flyerNudge 2.6s ease-in-out infinite }
+@media (prefers-reduced-motion: reduce) { .flyer.nudge { animation: none } }
 
 /* the potter's wheel ---------------------------------------------------- */
 
@@ -1131,9 +1190,10 @@ html, body {
   .servicebar { margin-top: .15rem }
   .wallet .seg { font-size: .92rem; padding: .28rem .6rem .28rem .4rem; min-height: 2rem }
   .thumb { width: 3.5rem; height: 3.5rem }
-  .railbtn { width: 2.8rem; height: 2.8rem }
-  .railbtn .ico { width: 1.5rem; height: 1.5rem }
-  .rail { gap: .34rem }
+  .railbtn { width: 3.3rem; height: 3.3rem }
+  .railbtn .ico { width: 2.8rem; height: 2.8rem }
+  .railbtn-sm { width: 2.5rem; height: 2.5rem }
+  .railbtn-sm .ico { width: 1.9rem; height: 1.9rem }
   .flyer { padding: .3rem .5rem .3rem .36rem }
   .flyer-bar { width: 2.8rem }
 }

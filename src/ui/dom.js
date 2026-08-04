@@ -38,9 +38,13 @@ function add(el, kids) {
 }
 
 /**
- * Swap the hand-drawn SVG icons for the pack's own artwork wherever the pack
- * has a match. Called once at boot: the markup keeps its `.ico-*` classes as
- * the fallback, so anything the pack does not cover still draws.
+ * Swap the hand-drawn SVG icons for the pack's own artwork wherever the pack has
+ * a match.
+ *
+ * Written as one injected stylesheet rather than as inline styles on the
+ * elements that happen to exist at boot — every card the panels build later gets
+ * the painted icon too, and the markup keeps its `.ico-*` classes as the
+ * fallback for anything the pack does not cover.
  */
 export function skinIcons(assets) {
   const swap = {
@@ -48,13 +52,16 @@ export function skinIcons(assets) {
     'ico-help': 'help', 'ico-hammer': 'tools', 'ico-shop': 'market',
     'ico-star': 'list', 'ico-lab': 'book', 'ico-kiln': 'refresh',
   };
+  const rules = [];
   for (const [cls, id] of Object.entries(swap)) {
     const url = assets.url('ui', id);
-    if (!url) continue;
-    for (const el of document.querySelectorAll(`.${cls}`)) {
-      el.style.backgroundImage = `url("${url}")`;
-    }
+    if (url) rules.push(`.${cls}{background-image:url("${url}")}`);
   }
+  if (!rules.length) return;
+  const style = document.createElement('style');
+  style.id = 'icon-skin';
+  style.textContent = rules.join('\n');
+  document.head.append(style);
 }
 
 export const $ = (sel, root = document) => root.querySelector(sel);
