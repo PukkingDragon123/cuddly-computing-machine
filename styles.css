@@ -790,136 +790,321 @@ html, body {
 
 /* books --------------------------------------------------------------- */
 
-/* The kitchen and the diary are drawn books from the art pack, so the panel
-   stops pretending to be a card list and becomes the spread itself: the paper
-   is the background, the header is set like a menu heading, and the covers
-   swing open when it appears. */
+/* The kitchen, the diary and the morning catch are drawn spreads from the art
+   pack, and the drawing has real boxes ruled on it — three to a page on the menu
+   book, an index of four and a page-sized panel on the diary. So the content is
+   cut to fit those boxes and nothing is laid over the top of them.
+   
+   The spread keeps its own 3:2 shape. It used to be stretched to whatever the
+   panel happened to be, which squashed the binding and the ruled frame and made
+   the whole thing look mashed flat. Now the panel gives the drawing its shape,
+   not the other way round: on a narrow screen there is only room for one page,
+   so the box is 3:4 and the picture is shown at twice the width offset to the
+   side you are reading — half the width at twice the scale is the same picture,
+   exactly, with no distortion at all. */
 .sheet.book {
-  background-color: #f4ead2;
-  background-repeat: no-repeat;
-  background-position: center;
-  /* stretched to the panel on purpose: the spread is a frame, and a frame that
-     only covered the top third left the rest of the list sitting on nothing */
-  background-size: 100% 100%;
-  border-radius: 1.7rem 1.7rem 0 0;
+  background: none;
+  border: 0;
+  box-shadow: none;
+  width: min(46rem, 100%);
 }
-/* a cream wash over the art so ink on top of it stays readable */
-.sheet.book::before {
-  content: "";
-  position: absolute; inset: 0;
-  border-radius: inherit;
-  background: rgba(253, 247, 232, 0.3);
-  pointer-events: none;
-}
-.sheet.book > * { position: relative; z-index: 1 }
-/* content sits inside the drawn border rather than across it */
-.sheet.book .sheet-body { padding: 0.5rem 1.5rem 1.4rem }
-.sheet.book .sheet-tabs { margin-left: 1.5rem; margin-right: 1.5rem }
-.sheet.book .sheet-head { padding-left: 1.3rem; padding-right: 0.8rem }
-/* the close button eats space on the right, so balance it on the left and the
-   title lands on the panel's centre rather than the flex box's */
-.sheet.book .sheet-head h2 { text-align: center; padding-left: 2.4rem }
-@media (max-width: 26rem) {
-  .sheet.book .sheet-body { padding-left: 1rem; padding-right: 1rem }
-  .sheet.book .sheet-tabs { margin-left: 0.8rem; margin-right: 0.8rem }
-}
-.sheet.book-menu  { background-image: url("assets/ui/book_menu.jpg") }
-.sheet.book-diary { background-image: url("assets/ui/book_diary.jpg") }
-
-/* the spread's own border is the frame, so the panel drops its chrome */
 .sheet.book .sheet-head {
   background: transparent;
   border-bottom: 0;
   box-shadow: none;
-  padding-bottom: 0.2rem;
+  padding: 0.85rem 0.75rem 0.3rem;
 }
-.sheet.book .sheet-head h2 { color: var(--ink); text-shadow: 0 0.08rem 0 rgba(255,255,255,.6) }
-.sheet.book .sheet-grip { background: rgba(95,61,38,.22) }
-.sheet.book .sheet-tabs { background: rgba(255,252,244,.75); box-shadow: inset 0 0.1rem 0.16rem rgba(95,61,38,.14) }
-.sheet.book .sheet-foot { background: rgba(253,247,232,.72); border-top-color: rgba(95,61,38,.2) }
-.sheet.book .card { background-color: #fdf7e8 }
-
-/* a menu heading: centred, spaced, with a rule under it like a real card */
-.pagehead {
+/* the title, the tabs and the footer each float as their own little plaque, so
+   they stay readable over the room without boxing the book back in */
+.sheet.book .sheet-head h2 {
+  flex: none;
+  margin: 0 auto;
   text-align: center;
-  font-size: 1.15rem; font-weight: 900;
-  letter-spacing: .12em; text-transform: uppercase;
-  color: var(--ink);
-  padding: 0.1rem 0 0.5rem;
-  position: relative;
+  padding: 0.24rem 1rem;
+  border: var(--bw) solid var(--ink);
+  border-radius: 999px;
+  background-color: var(--panel);
+  background-image: var(--sheen);
+  box-shadow: 0 var(--lift) 0 var(--tan-shadow), var(--face);
+  color: var(--ink-deep);
+  font-size: 1rem;
+  text-shadow: none;
 }
-.pagehead::after {
-  content: "";
-  position: absolute; left: 22%; right: 22%; bottom: 0.2rem;
-  height: 0.14rem; border-radius: 2px;
-  background: var(--tan-shadow); opacity: .5;
+.sheet.book .sheet-grip { display: none }
+.sheet.book .sheet-head .round { background-color: var(--paper) }
+.sheet.book .sheet-tabs {
+  margin: 0 auto 0.4rem;
+  max-width: calc(100% - 1rem);
+  border: var(--bw) solid var(--ink);
+  background: var(--panel-2);
+  box-shadow: 0 0.18rem 0 var(--tan-shadow), inset 0 0.14rem 0.2rem rgba(95, 61, 38, .2);
+}
+.sheet.book .sheet-body {
+  padding: 0 0.4rem;
+  overflow: visible;
+  display: grid; place-items: center;
+}
+.sheet.book .sheet-foot {
+  background: transparent;
+  border-top: 0;
+  padding: 0.45rem 0.5rem 0.2rem;
+  justify-content: center;
+}
+.sheet.book .sheet-foot > .rowline {
+  flex: 0 1 auto;
+  border: var(--bw) solid var(--ink);
+  border-radius: 999px;
+  background-color: var(--panel);
+  background-image: var(--sheen);
+  box-shadow: 0 var(--lift) 0 var(--tan-shadow), var(--face);
+  padding: 0.26rem 0.4rem;
+  gap: 0.4rem;
+}
+
+.bookwrap { width: 100%; container-type: inline-size }
+
+.spread {
+  position: relative;
+  width: 100%;
+  max-height: 100%;
+  margin: 0 auto;
+  background-repeat: no-repeat;
+  background-position: center;
+  filter: drop-shadow(0 0.5rem 0.6rem rgba(58, 36, 20, .28));
+  /* everything inside is sized off the spread's own width, so a page reads the
+     same on a phone as on a desktop */
+  font-size: 3.1cqw;
+}
+.spread-menu  { --ratio: 1200 / 785; background-image: url("assets/ui/book_menu.webp") }
+.spread-diary { --ratio: 1200 / 767; background-image: url("assets/ui/book_diary.webp") }
+
+/* the whole spread. The ratio is the trimmed drawing's own, measured — the
+   slot percentages are in the same coordinates, so they land on the ruled boxes
+   whatever size the panel ends up. */
+.spread.pg-spread {
+  aspect-ratio: var(--ratio);
+  background-size: 100% 100%;
+  --kx: 1; --dx: 0%;
+}
+/* one page of it: same picture, twice the scale, slid to the page you want */
+.spread.pg-left, .spread.pg-right {
+  aspect-ratio: calc(var(--ratio) / 2);
+  background-size: 200% 100%;
+  --kx: 2;
+}
+.spread.pg-left  { background-position: left center;  --dx: 0% }
+.spread.pg-right { background-position: right center; --dx: -100% }
+@container (min-width: 40rem) {
+  .spread { font-size: 1.06rem }
+}
+
+/* Boxes ruled on the paper, measured off the drawing itself. --x/--w are in
+   spread coordinates; --kx scales them into whichever page is showing. */
+.slot {
+  position: absolute;
+  left: calc((var(--x) + var(--dx) / var(--kx)) * var(--kx));
+  top: var(--y);
+  width: calc(var(--w) * var(--kx));
+  height: var(--h);
+  display: flex; align-items: stretch;
+  overflow: hidden;
+}
+
+/* menu book: three ruled boxes to a page, measured off the drawing */
+.spread-menu .s1 { --x: 7.3%;  --y: 11.8%; --w: 37.3%; --h: 20.1% }
+.spread-menu .s2 { --x: 7.3%;  --y: 36.3%; --w: 37.3%; --h: 20.5% }
+.spread-menu .s3 { --x: 7.3%;  --y: 61.5%; --w: 37.3%; --h: 23.2% }
+.spread-menu .s4 { --x: 55.4%; --y: 11.8%; --w: 37.2%; --h: 20.1% }
+.spread-menu .s5 { --x: 55.3%; --y: 36.3%; --w: 37.3%; --h: 20.5% }
+.spread-menu .s6 { --x: 55.3%; --y: 61.5%; --w: 37.4%; --h: 23.2% }
+
+/* diary: an index of four, then the page-sized panel and its three notes */
+.spread-diary .s1 { --x: 9.6%;  --y: 12%;   --w: 35.9%; --h: 16.7% }
+.spread-diary .s2 { --x: 9.6%;  --y: 31.9%; --w: 35.9%; --h: 16.7% }
+.spread-diary .s3 { --x: 9.6%;  --y: 52.2%; --w: 36%;   --h: 16.4% }
+.spread-diary .s4 { --x: 9.8%;  --y: 72%;   --w: 35.8%; --h: 15.1% }
+.spread-diary .s5 { --x: 52.8%; --y: 10.4%; --w: 37.6%; --h: 45% }
+.spread-diary .s6 { --x: 52.9%; --y: 59.3%; --w: 11.5%; --h: 26.6% }
+.spread-diary .s7 { --x: 66%;   --y: 59.3%; --w: 11.2%; --h: 26.6% }
+.spread-diary .s8 { --x: 78.8%; --y: 59.3%; --w: 11.8%; --h: 26.6% }
+/* reading the right page on its own: the panel and its notes shift into view */
+.spread-diary.pg-right .s1 { --x: 52.8%; --y: 10.4%; --w: 37.6%; --h: 45% }
+.spread-diary.pg-right .s2 { --x: 52.9%; --y: 59.3%; --w: 11.5%; --h: 26.6% }
+.spread-diary.pg-right .s3 { --x: 66%;   --y: 59.3%; --w: 11.2%; --h: 26.6% }
+.spread-diary.pg-right .s4 { --x: 78.8%; --y: 59.3%; --w: 11.8%; --h: 26.6% }
+
+/* a menu line: dish, leader dots, price, and how many to plate */
+.line {
+  flex: 1; min-width: 0;
+  display: flex; align-items: center; gap: 0.4em;
+  padding: 0.2em 0.5em;
+  color: var(--ink-deep);
+  border-radius: 0.5em;
+  transition: background-color .14s ease;
+}
+.line.on { background: rgba(248, 209, 103, .34) }
+.line-art {
+  flex: none; width: 2.2em; height: 2.2em;
+  display: grid; place-items: center;
+}
+.line-art i { width: 100%; height: 100%; background: center/contain no-repeat }
+.line-art.dim { filter: grayscale(.7) opacity(.55) }
+.line-body { flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; gap: 0.1em }
+/* name … price, set with leader dots the way a printed menu does it */
+.line-top { display: flex; align-items: baseline; gap: 0.3em; min-width: 0 }
+.line-name {
+  font-size: 1.02em; font-weight: 900; line-height: 1.1;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  flex: 0 1 auto;
+}
+.dots {
+  flex: 1 1 1em; min-width: 0.6em;
+  align-self: center; height: 0.55em;
+  border-bottom: 0.09em dotted var(--ink-faint);
+}
+.lv { font-size: 0.68em; font-weight: 900; color: var(--ink-faint); flex: none }
+.asked {
+  font-size: 0.6em; font-weight: 900; text-transform: uppercase; letter-spacing: .04em;
+  color: #2f6f8f; flex: none;
+}
+.line-bot { display: flex; align-items: center; gap: 0.3em; min-width: 0 }
+.line-sub {
+  font-size: 0.7em; font-weight: 800; color: var(--ink-soft);
+  white-space: nowrap; flex: none;
+}
+.ings { display: flex; gap: 0.12em; min-width: 0; overflow: hidden }
+.line-bot .ing { font-size: 0.62em; padding: 0.05em 0.3em 0.05em 0.05em }
+.line-bot .ing i { width: 1.1em; height: 1.1em }
+.line-price { flex: none; font-size: 0.92em; font-weight: 900; font-variant-numeric: tabular-nums }
+
+/* the stepper is a page-sized control in here, not a panel-sized one */
+.line .stepper { gap: 0.15em }
+.line .stepper button {
+  width: 1.45em; height: 1.45em;
+  border-width: 0.1em;
+  font-size: 0.9em;
+  box-shadow: 0 0.1em 0 var(--sun-deep), var(--face);
+}
+.line .stepper .num { min-width: 1.1em; font-size: 0.9em }
+.line .pill-sm { padding: 0.14em 0.5em; font-size: 0.7em; box-shadow: 0 0.1em 0 var(--sun-deep), var(--face) }
+.line-side { flex: none; margin-left: auto; display: flex; align-items: center; gap: 0.2em }
+.line-side .dot { font-size: 0.74em; font-weight: 900; color: var(--ink-soft) }
+.empty-line {
+  justify-content: center; text-align: center;
+  font-size: 0.82em; font-weight: 800; color: var(--ink-soft);
+}
+
+/* the larder: three jars to a box */
+.shelf { flex: 1; display: flex; align-items: center; justify-content: space-around; gap: 0.3em }
+.jar { display: flex; flex-direction: column; align-items: center; gap: 0.05em; min-width: 0 }
+.jar i { width: 2.3em; height: 2.3em; background: center/contain no-repeat }
+.jar-n {
+  font-size: 0.62em; font-weight: 800; color: var(--ink-soft);
+  max-width: 5em; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.jar-q { font-size: 0.8em; font-weight: 900; font-variant-numeric: tabular-nums }
+
+/* the catch: a card pinned to the page, a line about it, and the cheap crates */
+/* Flex, not grid. A percentage height on a grid item resolves against an auto
+   row, which is circular — the card came out at its intrinsic 237px inside an
+   83px box and got clipped. In a flex line with a definite cross size, the
+   max-height has something real to measure against. */
+.poster {
+  flex: 1; min-width: 0; min-height: 0;
+  display: flex; align-items: center; justify-content: center;
+  padding: 0.25em;
+}
+.poster img {
+  max-height: 100%; max-width: 100%;
+  object-fit: contain;
+  border-radius: 0.3em;
+}
+.blurb {
+  flex: 1; display: flex; flex-direction: column; justify-content: center; gap: 0.15em;
+  padding: 0.2em 0.6em; text-align: center;
+}
+.blurb b { font-size: 0.96em; font-weight: 900 }
+.blurb span { font-size: 0.74em; font-weight: 800; color: var(--ink-soft); line-height: 1.3 }
+.crate { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.05em }
+.crate i { width: 2.6em; height: 2.6em; background: center/contain no-repeat }
+.crate-n { font-size: 0.68em; font-weight: 800; color: var(--ink-soft) }
+.crate-p { font-size: 0.95em; font-weight: 900; color: var(--tangerine-deep) }
+.crate-was { font-size: 0.6em; font-weight: 800; color: var(--ink-faint); text-decoration: line-through }
+
+/* the diary's index down the left page */
+.entry {
+  flex: 1; min-width: 0;
+  display: flex; align-items: center; gap: 0.45em;
+  padding: 0.15em 0.5em;
+  border-radius: 0.5em;
+  cursor: pointer;
+  transition: background-color .14s ease;
+}
+.entry.pick { background: rgba(120, 168, 136, .3) }
+.entry.unmet { filter: grayscale(.6); color: var(--ink-faint) }
+.entry-face { flex: none; width: 2.5em; height: 2.5em; display: grid; place-items: center }
+.entry-face i { width: 100%; height: 100%; background: center/contain no-repeat }
+.entry-face i.strip { background-size: 300% auto; background-position: 0 50% }
+.entry-face .qq { font-size: 1.4em; font-weight: 900; color: var(--ink-faint) }
+.entry-main { flex: 1; min-width: 0 }
+.entry-name {
+  font-size: 0.95em; font-weight: 900; line-height: 1.1;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.entry-sub { font-size: 0.68em; font-weight: 800; color: var(--ink-soft) }
+.entry-hearts { flex: none; font-size: 0.8em; color: #d0517f; letter-spacing: .05em }
+
+/* and their page on the right */
+.plate {
+  flex: 1;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 0.2em; padding: 0.4em; text-align: center;
+}
+.plate.unmet { filter: grayscale(.55); color: var(--ink-faint) }
+.plate-face { width: 58%; height: 52%; display: grid; place-items: center }
+.plate-face i { width: 100%; height: 100%; background: center/contain no-repeat }
+.plate-face i.strip { background-size: 300% auto; background-position: 0 50% }
+.plate-face .qq { font-size: 3em; font-weight: 900; color: var(--ink-faint) }
+.plate-name { font-size: 1.15em; font-weight: 900; line-height: 1.1 }
+.plate-hearts { font-size: 1em; color: #d0517f; letter-spacing: .08em }
+.plate-sub { font-size: 0.74em; font-weight: 800; color: var(--ink-soft); line-height: 1.3 }
+.chip-box {
+  flex: 1;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 0.1em; padding: 0.2em; text-align: center;
+}
+.chip-l {
+  font-size: 0.62em; font-weight: 900; text-transform: uppercase; letter-spacing: .06em;
+  color: var(--ink-faint);
+}
+.chip-v { font-size: 0.84em; font-weight: 900; line-height: 1.1 }
+.chip-box.ok .chip-v { color: var(--leaf-deep) }
+.chip-box.bad .chip-v { color: var(--tangerine-deep) }
+
+.leafno {
+  font-size: 0.76rem; font-weight: 900; color: var(--ink-soft);
+  font-variant-numeric: tabular-nums; white-space: nowrap;
 }
 
 /* opening the covers, then turning a leaf */
 @keyframes bookOpen {
-  0%   { transform: perspective(900px) rotateX(38deg) scale(.94); opacity: 0 }
+  0%   { transform: perspective(1200px) rotateX(34deg) scale(.94); opacity: 0 }
   100% { transform: none; opacity: 1 }
 }
-.sheet-body.opening { animation: bookOpen .42s cubic-bezier(.2,1.1,.35,1) both; transform-origin: 50% 0 }
+.sheet-body.opening { animation: bookOpen .42s cubic-bezier(.2,1.1,.35,1) both; transform-origin: 50% 100% }
 @keyframes pageFwd {
-  0%   { transform: perspective(900px) rotateY(-22deg) translateX(14%); opacity: 0 }
+  0%   { transform: perspective(1200px) rotateY(-26deg) translateX(9%); opacity: .2 }
   100% { transform: none; opacity: 1 }
 }
 @keyframes pageBack {
-  0%   { transform: perspective(900px) rotateY(22deg) translateX(-14%); opacity: 0 }
+  0%   { transform: perspective(1200px) rotateY(26deg) translateX(-9%); opacity: .2 }
   100% { transform: none; opacity: 1 }
 }
-.sheet-body.turn-fwd  { animation: pageFwd .3s ease-out both; transform-origin: 0 50% }
-.sheet-body.turn-back { animation: pageBack .3s ease-out both; transform-origin: 100% 50% }
+.sheet-body.turn-fwd  { animation: pageFwd .32s ease-out both; transform-origin: 0 50% }
+.sheet-body.turn-back { animation: pageBack .32s ease-out both; transform-origin: 100% 50% }
 @media (prefers-reduced-motion: reduce) {
   .sheet-body.opening, .sheet-body.turn-fwd, .sheet-body.turn-back { animation: none }
 }
-
-/* a card blown up to fill a page — the day's catch, mostly */
-.bigcard { display: grid; place-items: center; padding: 0.2rem 0 0.5rem }
-.bigcard img {
-  width: min(15rem, 62%);
-  border-radius: var(--r-sm);
-  filter: drop-shadow(0 0.3rem 0.4rem rgba(95,61,38,.25));
-}
-.catchcard { background-color: var(--sun-pale) !important }
-
-/* diary entries ------------------------------------------------------- */
-
-.dgrid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(9.5rem, 1fr));
-  gap: 0.45rem;
-}
-.dentry {
-  border: 0.14rem solid rgba(95,61,38,.55);
-  border-radius: var(--r-sm);
-  /* opaque: the spread has its own drawn slots, and a translucent card on top of
-     one reads as two boxes fighting */
-  background: #fdf7e8;
-  box-shadow: 0 0.14rem 0 rgba(171,138,92,.6);
-  padding: 0.4rem 0.45rem 0.45rem;
-  display: flex; flex-direction: column; gap: 0.2rem;
-  min-height: 7.2rem;
-}
-/* an unmet guest stays opaque — going see-through let the spread's own drawn
-   slot show through the card and read as a layout fault */
-.dentry.locked { filter: grayscale(.6); background: #f2e9d5; color: var(--ink-faint) }
-.dentry.locked .dnote { color: var(--ink-faint) }
-.dportrait {
-  height: 3.1rem;
-  display: grid; place-items: center;
-  border-bottom: 0.1rem dashed rgba(95,61,38,.3);
-  margin-bottom: 0.15rem;
-}
-.dportrait i { width: 100%; height: 100%; background: center/contain no-repeat }
-/* a three-frame walk strip: show the first frame only */
-.dportrait i.strip { background-size: 300% auto; background-position: 0 50% }
-.dportrait .dq { font-size: 1.5rem; font-weight: 900; color: var(--ink-faint) }
-.dname { font-size: 0.86rem; font-weight: 900; line-height: 1.1; display: flex; gap: 0.25rem; align-items: baseline }
-.dhearts { color: #d0517f; font-size: 0.78rem }
-.dnote { font-size: 0.7rem; font-weight: 700; color: var(--ink-soft); line-height: 1.25 }
-.mid { text-align: center }
 
 /* cards --------------------------------------------------------------- */
 

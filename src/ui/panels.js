@@ -13,7 +13,7 @@ import {
   starsOf,
 } from '../data/catalog.js';
 import {
-  GUESTS, MAX_FRIEND, TASTES, heartsToNext,
+  GUESTS, GUEST_BY_ID, MAX_FRIEND, TASTES, heartsToNext,
 } from '../data/guests.js';
 import {
   FORGE_LEVEL, MAX_DISH, RESEARCH, RESEARCH_BY_ID, RESEARCH_GROUPS, SHOP,
@@ -305,16 +305,22 @@ export class Panels {
       { id: 'upgrade', label: 'Upgrade' },
       { id: 'pantry', label: 'Larder' },
     ];
-    const body = this.recipeTab === 'upgrade' ? this.#upgradeTab()
-      : this.recipeTab === 'learn' ? this.#learnTab()
-        : this.recipeTab === 'pantry' ? this.#larderTab()
-          : this.#menuTab();
+    const leaves = this.recipeTab === 'upgrade' ? this.#upgradeLeaves()
+      : this.recipeTab === 'learn' ? this.#learnLeaves()
+        : this.recipeTab === 'pantry' ? this.#larderLeaves()
+          : this.#menuLeaves();
 
-    this.menuTotalEl = h('span.card-sub.grow');
+    const book = this.#paginate('menu', leaves, `recipes:${this.recipeTab}`,
+      this.recipeTab === 'menu' ? this.#specials() : []);
+
+    this.menuTotalEl = h('span.card-sub.grow.mid');
     this.menuOpenBtn = this.#goBtn('Open Up!', {
       cls: 'pill-go',
       onclick: () => { this.hud.closeSheet(); this.game.toggleService(); },
     });
+    // the footer has page arrows either side of it now, so the one button that
+    // matters gets a name rather than being "the first button in the footer"
+    this.menuOpenBtn.id = 'menu-open';
     this.#syncMenuFoot();
 
     const spec = {
@@ -324,17 +330,122 @@ export class Panels {
       tabs,
       tab: this.recipeTab,
       onTab: (id) => { this.recipeTab = id; this.openRecipes(true); this.hud.turnPage(); },
-      body,
-      foot: h('div.rowline', null, this.menuTotalEl, this.menuOpenBtn),
+      body: book.el,
+      foot: h('div.rowline', null,
+        book.prev, this.menuTotalEl, book.leaf, this.menuOpenBtn, book.next),
     };
     keep ? this.hud.refreshSheet(spec) : this.hud.openSheet(spec);
   }
 
+  /* ------------------------------------------------------------------ book  */
+
   /**
-   * Today's menu. Rows update themselves rather than re-rendering the sheet, so
-   * holding "+" doesn't yank the button out from under your finger.
+   * How many drawn boxes a page of a given book has.
+   *
+   * The spread art has real slots on it — three to a page on the menu book, four
+   * on the diary's index — so the content is cut to fit them rather than poured
+   * over the top. On a narrow screen only one page of the spread is showing, so
+   * only that page's slots are available.
    */
-  #menuTab() {
+  #slotCount(book) {
+    const wide = this.#wideBook();
+    if (book === 'diary') return 4;
+    return wide ? 6 : 3;
+  }
+
+  /** Is there room for the whole spread, or only one page of it? */
+  #wideBook() {
+    return typeof window !== 'undefined'
+      && window.matchMedia('(min-width: 40rem)').matches;
+  }
+
+  /**
+   * Lay leaves into the drawn boxes of a spread, one page at a time.
+   *
+   * Returns the spread element plus the two page arrows, because a book that
+   * scrolls is not a book. Anything past the last slot is simply on the next
+   * page, which is what the arrows are for.
+   */
+  #paginate(book, leaves, key, extra = []) {
+    // a spread reads left page then right. When there is something fixed for the
+    // right — the day's specials on a menu — the left page paginates on its own
+    // and the right keeps standing; on one page they simply queue up together.
+    const wide = this.#wideBook();
+    const half = book === 'diary' ? 4 : 3;
+    const per = wide && extra.length ? half : this.#slotCount(book);
+    const list = wide && extra.length ? leaves : [...leaves, ...extra];
+    leaves = list;
+    const pages = Math.max(1, Math.ceil(leaves.length / per));
+    this.pageAt ??= {};
+    const at = Math.max(0, Math.min(this.pageAt[key] ?? 0, pages - 1));
+    this.pageAt[key] = at;
+
+    const page = leaves.slice(at * per, at * per + per);
+    while (wide && extra.length && page.length < half) page.push(h('div.line.empty-line'));
+    const shown = wide && extra.length ? [...page, ...extra] : page;
+    const el = this.#spread(book, shown, wide ? 'spread' : 'left');
+
+    const turn = (d) => {
+      const next = Math.max(0, Math.min(pages - 1, at + d));
+      if (next === at) return;
+      this.pageAt[key] = next;
+      this.hud.turnPage(d);
+      this.game.sfx.play('tap');
+      this.reopen?.(true);
+    };
+    return {
+      el,
+      pages,
+      page: at,
+      leaf: h('span.leafno', null, pages > 1 ? `${at + 1} / ${pages}` : ''),
+      prev: this.#goBtn('‹', { cls: 'pill-quiet', disabled: at === 0, onclick: () => turn(-1) }),
+      next: this.#goBtn('›', { cls: 'pill-quiet', disabled: at >= pages - 1, onclick: () => turn(1) }),
+    };
+  }
+
+  /**
+   * The spread itself: the drawing, with one child per drawn box.
+   *
+   * `layout` picks which of it is showing — the whole spread, or just the left
+   * or right page when there is only room for one. Cropping to a page is exact
+   * rather than a guess: half the width at twice the scale is the same picture.
+   */
+  #spread(book, slots, layout = null) {
+    const mode = layout ?? (this.#wideBook() ? 'spread' : 'left');
+    return h('div.bookwrap', null,
+      h(`div.spread.spread-${book}.pg-${mode}`, null,
+        slots.map((node, i) => h(`div.slot.s${i + 1}`, null, node))));
+  }
+
+  /**
+   * The right-hand page of today's menu: what the boats brought in, and what the
+   * kitchen has ready. A menu book with three dishes in it would otherwise leave
+   * a whole page blank.
+   */
+  #specials() {
+    const s = this.state;
+    const c = s.catch;
+    const dish = c?.star ? RECIPE_BY_ID[c.star] : null;
+    const cheap = (c?.cheap ?? []).map((id) => ingName(id)).join(', ');
+    return [
+      h('div.blurb.head', null,
+        h('b', null, 'Today'),
+        h('span', null, dish
+          ? [ 'The harbour is asking for ', h('i', null, dish.name), ' — a third over the odds.' ]
+          : 'Nothing special asked for.')),
+      h('div.blurb', null,
+        h('b', null, 'Cheap on the quay'),
+        h('span', null, cheap || 'Nothing on offer.')),
+      h('div.blurb', null,
+        h('b', null, `${s.plannedCount} plated`),
+        h('span', null, s.plannedCount
+          ? 'Ingredients are already out of the larder.'
+          : 'Set a number beside a dish to plate it up.')),
+    ];
+  }
+
+  /** One line of a menu: the dish, what it costs, and how many to plate. */
+  #menuLeaves() {
     const s = this.state;
     const open = s.phase === 'open';
     const unlocked = RECIPES.filter((r) => s.isUnlocked(r.id));
@@ -346,8 +457,9 @@ export class Panels {
       this.game.hud.sync();
     };
 
-    const cards = unlocked.map((r) => {
+    const leaves = unlocked.map((r) => {
       const level = s.levelOf(r.id);
+      const asked = s.catchDish === r.id;
       const chips = new Map();
       for (const [id, q] of Object.entries(r.ing)) {
         chips.set(id, { el: ingChip(this.assets.url('ingredients', id), `${q}`, s.have(id) < q), need: q });
@@ -358,7 +470,7 @@ export class Panels {
         max: (s.menu[r.id] ?? 0) + s.servingsPossible(r.id),
         onChange: (v, d) => {
           if (d > 0) {
-            if (!s.payIng(r.ing)) { this.game.toast('Pantry is short', 'bad'); syncAll(); return; }
+            if (!s.payIng(r.ing)) { this.game.toast('Larder is short', 'bad'); syncAll(); return; }
             s.menu[r.id] = (s.menu[r.id] ?? 0) + 1;
             this.game.sfx.play('tap');
           } else {
@@ -373,42 +485,114 @@ export class Panels {
         },
       });
 
-      const leftTag = tag(`${s.stock[r.id] ?? 0} left`, 'tag-mint');
-      const card = this.#card({
-        src: this.assets.url('food', r.id),
-        title: `${r.name}${level > 1 ? ` · Lv${level}` : ''}`,
-        sub: `${prepAt(r, level)}s to cook · ${starsAt(r, level)}★`,
-        tags: [tag(money(priceAt(r, level)), 'tag-cost', 'sand'), ...[...chips.values()].map((c) => c.el)],
-        side: open ? leftTag : step.el,
-        cls: (s.menu[r.id] ?? 0) > 0 ? 'sel' : '',
-      });
+      const leftTag = h('b.dot', null, `${s.stock[r.id] ?? 0} left`);
+      const qty = h('b.dot');
+      const el = h('div.line', null,
+        h('div.line-art', null, h('i', {
+          style: { backgroundImage: `url("${this.assets.url('food', r.id)}")` },
+        })),
+        h('div.line-body', null,
+          h('div.line-top', null,
+            h('b.line-name', null, r.name),
+            level > 1 ? h('span.lv', null, `Lv${level}`) : null,
+            asked ? h('span.asked', { title: "Today's catch — pays a third more" }, '★') : null,
+            h('span.dots'),
+            h('span.line-price', null, money(priceAt(r, level)))),
+          h('div.line-bot', null,
+            h('span.line-sub', null, `${prepAt(r, level)}s · ${starsAt(r, level)}★`),
+            h('span.ings', null, [...chips.values()].map((c) => c.el)),
+            h('span.line-side', null, open ? leftTag : step.el))));
 
       rows.push({
         sync: () => {
-          const qty = s.menu[r.id] ?? 0;
-          step.sync(qty, qty + s.servingsPossible(r.id));
-          card.classList.toggle('sel', qty > 0);
+          const n = s.menu[r.id] ?? 0;
+          step.sync(n, n + s.servingsPossible(r.id));
+          el.classList.toggle('on', n > 0);
           for (const [id, c] of chips) c.el.classList.toggle('short', s.have(id) < c.need);
           if (open) leftTag.textContent = `${s.stock[r.id] ?? 0} left`;
+          qty.textContent = String(n);
         },
       });
-      return card;
+      if ((s.menu[r.id] ?? 0) > 0) el.classList.add('on');
+      return el;
     });
 
     this.menuRows = rows;
-    return [
-      this.#catchStrip(),
-      h('div.note', null,
-        open
-          ? 'Service is on. Stock ticks down as guests order.'
-          : ['Set how many of each dish to plate up. Ingredients come out of your larder now, so ', h('b', null, 'plate what you can sell'), '.'],
-      ),
-      ...cards,
-      unlocked.length === 0 ? h('div.empty', null, 'No recipes yet.') : null,
-    ].filter(Boolean);
+    return leaves;
   }
 
-  /** Refresh the menu sheet footer totals without rebuilding the list. */
+  #learnLeaves() {
+    const s = this.state;
+    return RECIPES.filter((r) => !s.isUnlocked(r.id)).map((r) => h('div.line', null,
+      h('div.line-art.dim', null, h('i', {
+        style: { backgroundImage: `url("${this.assets.url('food', r.id)}")` },
+      })),
+      h('div.line-body', null,
+        h('div.line-top', null,
+          h('b.line-name', null, r.name),
+          h('span.dots'),
+          h('span.line-price', null, money(r.price))),
+        h('div.line-bot', null,
+          h('span.line-sub', null, `${r.stars}★`),
+          h('span.ings', null, Object.keys(r.ing).map((id) =>
+            ingChip(this.assets.url('ingredients', id), '', false))),
+          h('span.line-side', null, this.#goBtn(`Learn ${money(r.unlock)}`, {
+            disabled: s.coins < r.unlock,
+            onclick: () => {
+              if (!s.spend(r.unlock)) return;
+              s.unlock(r.id);
+              s.save();
+              this.game.celebrate(`Learned ${r.name}!`);
+              this.refresh();
+            },
+          }))))));
+  }
+
+  #upgradeLeaves() {
+    const s = this.state;
+    return RECIPES.filter((r) => s.isUnlocked(r.id)).map((r) => {
+      const level = s.levelOf(r.id);
+      const maxed = level >= MAX_LEVEL;
+      const cost = maxed ? null : upgradeCost(r, level);
+      const afford = !maxed && s.coins >= cost.coins && s.hasAll(cost.ing);
+      return h('div.line', null,
+        h('div.line-art', null, h('i', {
+          style: { backgroundImage: `url("${this.assets.url('food', r.id)}")` },
+        })),
+        h('div.line-body', null,
+          h('div.line-top', null,
+            h('b.line-name', null, r.name),
+            h('span.lv', null, `Lv${level}`),
+            h('span.dots'),
+            h('span.line-price', null, maxed ? 'MAX' : money(cost.coins))),
+          h('div.line-bot', null,
+            h('span.line-sub', null, maxed ? 'Fully mastered.'
+              : `${money(priceAt(r, level))} → ${money(priceAt(r, level + 1))}`),
+            maxed ? null : h('span.ings', null, this.#ingRow(cost.ing)),
+            h('span.line-side', null, maxed ? null : this.#goBtn('Upgrade', {
+              disabled: !afford,
+              onclick: () => this.#doUpgrade(r),
+            })))));
+    });
+  }
+
+  /** The larder, as shelves on the page. */
+  #larderLeaves() {
+    const s = this.state;
+    const ids = Object.keys(INGREDIENTS).filter((id) => s.have(id) > 0);
+    if (!ids.length) {
+      return [h('div.line.empty-line', null, 'Bare shelves. Build a machine in the works, or buy from the market.')];
+    }
+    // three to a slot: a larder is a list of small things, and one per box
+    // would take four page turns to read
+    const groups = [];
+    for (let i = 0; i < ids.length; i += 3) groups.push(ids.slice(i, i + 3));
+    return groups.map((g) => h('div.shelf', null, g.map((id) => h('div.jar', null,
+      h('i', { style: { backgroundImage: `url("${this.assets.url('ingredients', id)}")` } }),
+      h('span.jar-n', null, ingName(id)),
+      h('b.jar-q', null, `×${s.have(id)}`)))));
+  }
+
   #syncMenuFoot() {
     const s = this.state;
     const planned = s.plannedCount;
@@ -676,23 +860,37 @@ export class Panels {
     c.seen = true;
     const dish = c.star ? RECIPE_BY_ID[c.star] : null;
     this.reopen = null;
+
+    // the card and what the harbour wants on the left page, the cheap crates on
+    // the right — the two halves of a morning, one to a page
+    const leaves = [
+      h('div.poster', null,
+        h('img', { src: this.cardFor(c.star ?? 'kelp'), alt: '' })),
+      h('div.blurb', null,
+        h('b', null, dish ? `They want ${dish.name}` : 'Quiet on the quay'),
+        h('span', null, dish
+          ? 'Every one you serve today pays 30% over the odds.'
+          : 'Nothing special asked for this morning.')),
+      h('div.blurb', null,
+        h('b', null, 'Prices hold until closing'),
+        h('span', null, 'Buy the cheap crates from the market while they last.')),
+    ];
+    const crates = (c.cheap ?? []).map((id) => h('div.crate', null,
+      h('i', { style: { backgroundImage: `url("${this.assets.url('ingredients', id)}")` } }),
+      h('span.crate-n', null, ingName(id)),
+      h('b.crate-p', null, money(s.catchPrice(id))),
+      h('span.crate-was', null, `was ${money(INGREDIENTS[id].price)}`)));
+
+    const book = this.#paginate('menu', leaves, 'catch', crates);
     this.hud.openSheet({
       key: 'catch',
       title: `Day ${s.day} — off the boats`,
       book: 'menu',
-      body: [
-        h('div.pagehead', null, "Today's Catch"),
-        h('div.bigcard', null,
-          h('img', { src: this.cardFor(c.star ?? 'kelp'), alt: '' })),
-        dish ? h('div.note', null, 'The harbour has a taste for ', h('b', null, dish.name),
-          ' today. Every one you serve pays ', h('b', null, '30% more'), '.')
-          : h('div.note', null, 'Quiet morning on the quay.'),
-        h('div.section', null, 'Cheap on the quay'),
-        h('div.grid-ing', null, (c.cheap ?? []).map((id) => this.#cell(
-          this.assets.url('ingredients', id), ingName(id), money(s.catchPrice(id))))),
-      ],
+      body: book.el,
       foot: h('div.rowline', null,
-        h('span.card-sub.grow', null, 'Prices hold until closing.'),
+        book.prev,
+        h('span.card-sub.grow.mid', null, "Today's catch"),
+        book.next,
         this.#goBtn('To the kitchen', {
           cls: 'pill-go',
           onclick: () => { this.recipeTab = 'menu'; this.openRecipes(); },
@@ -927,71 +1125,121 @@ export class Panels {
   /* ---------------------------------------------------------------- diary  */
 
   /**
-   * The diary, as an actual diary: six guests to a spread, arrows to turn the
-   * page, and the page visibly turning when you do. Everything on it is still
-   * earned — the name and portrait appear once they have walked in, and each
-   * taste only resolves from "?" once you have served them something they loved
-   * or couldn't stand.
+   * The diary, laid out the way the drawing is: an index of four names down the
+   * left page, and the page of whoever you picked on the right — one big box for
+   * them, three small ones for what they love, what they cannot stand, and what
+   * they have left you. On a narrow screen the two pages take turns.
+   *
+   * Everything on it is still earned: the name and portrait appear once they have
+   * walked in, and a taste only resolves from "?" once you have served them
+   * something they loved or couldn't stand.
    */
   openDiary(keep = false) {
     this.reopen = () => this.openDiary(true);
     const s = this.state;
-    const per = 6;
+    const wide = this.#wideBook();
+    const per = 4;
     const pages = Math.max(1, Math.ceil(GUESTS.length / per));
     this.diaryPage = Math.max(0, Math.min(this.diaryPage ?? 0, pages - 1));
-    const from = this.diaryPage * per;
-    const shown = GUESTS.slice(from, from + per);
+    // open on somebody you actually know — a page reading "not met yet" is a
+    // poor first impression of a diary you have been filling in
+    this.diaryPick ??= (Object.entries(s.diary)
+      .sort((a, b) => (b[1].hearts ?? 0) - (a[1].hearts ?? 0))[0]?.[0] ?? GUESTS[0].id);
+    this.diaryView ??= 'index';
 
-    const entries = shown.map((g) => {
+    const from = this.diaryPage * per;
+    const index = GUESTS.slice(from, from + per).map((g) => {
       const page = s.diary[g.id];
-      if (!page) {
-        return h('div.dentry.locked', null,
-          h('div.dportrait', null, h('span.dq', null, '?')),
-          h('div.dname', null, '???'),
-          h('div.dnote', null, 'Not seen in the harbour yet.'));
-      }
-      const lv = page.level ?? 1;
-      const toNext = heartsToNext(page.hearts);
-      const taste = (known, id) => (known
-        ? tag(TASTES[id].label, 'tag-ok')
-        : tag('?', 'tag-need'));
-      return h('div.dentry', null,
-        h('div.dportrait', null, h('i', {
+      const lv = page?.level ?? 0;
+      const el = h(`div.entry${page ? '' : '.unmet'}${g.id === this.diaryPick ? '.pick' : ''}`, {
+        onclick: () => {
+          this.diaryPick = g.id;
+          this.diaryView = 'entry';
+          this.game.sfx.play('tap');
+          if (!wide) this.hud.turnPage(1);
+          this.openDiary(true);
+        },
+      },
+      h('div.entry-face', null, page
+        ? h('i', {
           style: { backgroundImage: `url("${this.assets.url('customers', g.id)}")` },
           class: this.assets.frameCount('customers', g.id) > 1 ? 'strip' : '',
-        })),
-        h('div.dname', null, g.name, h('span.dhearts', null, '♥'.repeat(lv))),
-        h('div.dnote', null, `Served ${page.served} · ${page.hearts} hearts`
-          + (toNext === null ? ' · best friends' : ` · ${toNext} to ♥${lv + 1}`)),
-        h('div.rowline', null,
-          h('span.card-sub', null, 'loves'), taste(page.likeSeen, g.loves),
-          h('span.card-sub', null, 'hates'), taste(page.hateSeen, g.loathes)));
+        })
+        : h('span.qq', null, '?')),
+      h('div.entry-main', null,
+        h('div.entry-name', null, page ? g.name : '???'),
+        h('div.entry-sub', null, page
+          ? `${page.served} served`
+          : 'not seen yet')),
+      h('div.entry-hearts', null, '♥'.repeat(lv) + '·'.repeat(MAX_FRIEND - lv)));
+      return el;
     });
+
+    const g = GUEST_BY_ID[this.diaryPick] ?? GUESTS[0];
+    const page = s.diary[g.id];
+    const lv = page?.level ?? 0;
+    const toNext = page ? heartsToNext(page.hearts) : null;
+    const face = h('div.plate-face', null, page
+      ? h('i', {
+        style: { backgroundImage: `url("${this.assets.url('customers', g.id)}")` },
+        class: this.assets.frameCount('customers', g.id) > 1 ? 'strip' : '',
+      })
+      : h('span.qq', null, '?'));
+
+    const big = h(`div.plate${page ? '' : '.unmet'}`, null,
+      face,
+      h('div.plate-name', null, page ? g.name : 'Not met yet'),
+      h('div.plate-hearts', null, '♥'.repeat(lv) + '·'.repeat(MAX_FRIEND - lv)),
+      h('div.plate-sub', null, page
+        ? (toNext === null
+          ? 'Best friends — nothing left to earn.'
+          : `${page.hearts} hearts · ${toNext} more to the next`)
+        : 'Serve them once and their page fills itself in.'));
+
+    const note = (label, value, cls) => h(`div.chip-box${cls ? `.${cls}` : ''}`, null,
+      h('span.chip-l', null, label), h('b.chip-v', null, value));
+
+    const small = [
+      note('loves', page?.likeSeen ? TASTES[g.loves].label : '?', page?.likeSeen ? 'ok' : ''),
+      note('hates', page?.hateSeen ? TASTES[g.loathes].label : '?', page?.hateSeen ? 'bad' : ''),
+      note('gifts', String(page?.gifts ?? 0), (page?.gifts ?? 0) > 0 ? 'ok' : ''),
+    ];
+
+    // the drawing's own order: four index boxes, the big one, then the three
+    const slots = wide
+      ? [...index, big, ...small]
+      : (this.diaryView === 'entry' ? [big, ...small] : index);
 
     const turn = (d) => {
       const next = Math.max(0, Math.min(pages - 1, this.diaryPage + d));
       if (next === this.diaryPage) return;
       this.diaryPage = next;
       this.hud.turnPage(d);
-      this.openDiary(true);
       this.game.sfx.play('tap');
+      this.openDiary(true);
     };
 
     const spec = {
       key: 'diary',
       title: 'Guest Diary',
       book: 'diary',
-      body: [
-        h('div.pagehead', null, 'Who Comes In'),
-        h('div.dgrid', null, entries),
-        h('div.note', null, 'Serve a guest the flavour they ', h('b', null, 'love'),
-          ' for triple hearts — and to find out what that flavour is. Every level they leave a present.'),
-      ],
+      bookLayout: wide ? 'spread' : (this.diaryView === 'entry' ? 'right' : 'left'),
+      body: this.#spread('diary', slots, wide ? 'spread'
+        : (this.diaryView === 'entry' ? 'right' : 'left')),
       foot: h('div.rowline', null,
-        this.#goBtn('‹', { cls: 'pill-quiet', disabled: this.diaryPage === 0, onclick: () => turn(-1) }),
-        h('span.card-sub.grow.mid', null, `Page ${this.diaryPage + 1} of ${pages} · ${s.diaryFound} of ${GUESTS.length} met`),
-        tag(`${s.diaryHearts} ♥`, 'tag-mint'),
-        this.#goBtn('›', { cls: 'pill-quiet', disabled: this.diaryPage >= pages - 1, onclick: () => turn(1) })),
+        !wide && this.diaryView === 'entry'
+          ? this.#goBtn('‹ Index', {
+            cls: 'pill-quiet',
+            onclick: () => { this.diaryView = 'index'; this.hud.turnPage(-1); this.openDiary(true); },
+          })
+          : this.#goBtn('‹', { cls: 'pill-quiet', disabled: this.diaryPage === 0, onclick: () => turn(-1) }),
+        h('span.card-sub.grow.mid', null,
+          `${s.diaryFound} of ${GUESTS.length} met · ${s.diaryHearts} ♥`),
+        this.#goBtn('›', {
+          cls: 'pill-quiet',
+          disabled: this.diaryPage >= pages - 1,
+          onclick: () => turn(1),
+        })),
     };
     keep ? this.hud.refreshSheet(spec) : this.hud.openSheet(spec);
   }

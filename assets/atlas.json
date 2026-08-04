@@ -2007,18 +2007,6 @@
    "src": "ui/recipes.png",
    "w": 119,
    "h": 100
-  },
-  {
-   "id": "book_menu",
-   "src": "ui/book_menu.jpg",
-   "w": 1200,
-   "h": 800
-  },
-  {
-   "id": "book_diary",
-   "src": "ui/book_diary.jpg",
-   "w": 1200,
-   "h": 800
   }
  ],
  "cards": [

@@ -105,10 +105,24 @@ tells you a corner of the screen is for pressing.
 inline styles on whatever existed at boot, so every card the panels build later
 gets the painted icon too.
 
-The Kitchen and the Diary are not lists but **books**: the panel is a drawn
-spread from the art pack, the covers swing open when it appears, and the diary's
-arrows turn the page rather than swapping the contents. The day's catch arrives
-on one of the pack's twenty illustrated menu cards.
+The Kitchen, the Diary and the morning catch are not lists but **books**, and
+they are books properly: the spread keeps its own shape and the content is cut
+to fit the boxes actually ruled on the drawing — three to a page on the menu
+book, an index of four and a page-sized panel on the diary. The slot geometry is
+measured off the art rather than guessed, so a dish lands inside its box at any
+size. Nothing is laid over the top of the drawing, nothing is washed out to make
+room for text, and the margin the books were drawn on is flooded to
+transparency, so the covers float instead of sitting on a rectangle of paper.
+
+The spread is never stretched. Where there is room it shows both pages; where
+there is not it shows one, at twice the scale, slid to the page you are reading —
+half the width at twice the size is the same picture, exactly, so a phone gets a
+single undistorted page rather than a squashed spread. Content follows: three
+dishes and their specials across a desktop spread, three dishes then their
+specials as two phone pages; the diary's index and a guest's page side by side,
+or one then the other with a *‹ Index* to come back. A menu line is set the way a
+printed one is — name, leader dots, price — and pages turn instead of scrolling.
+The day's catch arrives on one of the pack's twenty illustrated menu cards.
 
 Two things a placement preview must say — what am I holding, and which way is it
 facing — so the ghost is a **blueprint** (drafting blue, hard white cut line, the

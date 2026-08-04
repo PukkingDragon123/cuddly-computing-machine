@@ -10,10 +10,13 @@ Three quite different jobs:
                            paper, so they are NOT keyed out — a card wants its
                            own page kept. Each cell is snapped to the card's own
                            edge instead.
-  book_*.png               one open book each, for the menu and the diary. They
-                           back a DOM panel rather than a canvas sprite, so they
-                           are trimmed, scaled to a sane width and written as
-                           JPEG next to the stylesheet's other art.
+  book_*.png               one open book each, for the menu and the diary. These
+                           back a DOM panel rather than a canvas sprite, so the
+                           margin they were drawn on is flooded away to
+                           transparency — an opaque cream rectangle behind the
+                           covers reads as a sheet of paper the book is sitting
+                           on, which is not what a floating panel wants — then
+                           trimmed, scaled and written as PNG.
 
     python3 tools/slice_pack04.py
 """
@@ -207,25 +210,46 @@ def slice_cards(manifest):
 
 
 def slice_books(manifest):
-    """The two book spreads, for the DOM panels rather than the canvas."""
+    """The two book spreads, for the DOM panels rather than the canvas.
+
+    The margin has to go, not just get cropped: the covers are rounded, so a
+    rectangular crop still leaves cream in the corners and the panel reads as a
+    book lying on a sheet of paper. So the backdrop is flooded from the edge —
+    safe here, because a closed cover has no gaps for the flood to leak through.
+    """
     os.makedirs(os.path.join(OUT, 'ui'), exist_ok=True)
     entries = list(manifest.get('ui', []))
     for fname, name in BOOKS:
         img = Image.open(os.path.join(PACK, fname)).convert('RGB')
         rgb = np.asarray(img).astype(np.int16)
-        # trim the white margin the book was drawn on
-        ink = ndimage.binary_opening(rgb.min(axis=-1) < 244, np.ones((5, 5)))
-        ys, xs = np.nonzero(ink)
+        # the margin is a flat pale wash; the paper inside is warmer and the
+        # covers are dark, so the two never meet on this test
+        corner = rgb[2, 2]
+        pale = (np.abs(rgb - corner).sum(axis=-1) < 26)
+        lbl, _ = ndimage.label(pale)
+        edge = set(lbl[0].tolist()) | set(lbl[-1].tolist())
+        edge |= set(lbl[:, 0].tolist()) | set(lbl[:, -1].tolist())
+        edge.discard(0)
+        back = np.isin(lbl, list(edge))
+        alpha = Image.fromarray(np.where(back, 0, 255).astype(np.uint8), mode='L')
+        alpha = alpha.filter(ImageFilter.MinFilter(3)).filter(ImageFilter.GaussianBlur(0.7))
+        out = img.convert('RGBA')
+        out.putalpha(alpha)
+        ys, xs = np.nonzero(np.asarray(alpha) > 8)
         if len(xs):
-            img = img.crop((int(xs.min()), int(ys.min()), int(xs.max()) + 1, int(ys.max()) + 1))
-        if img.width > BOOK_W:
-            k = BOOK_W / img.width
-            img = img.resize((BOOK_W, max(1, round(img.height * k))), Image.LANCZOS)
-        rel = f'ui/{name}.jpg'
-        img.save(os.path.join(OUT, rel), quality=88, optimize=True)
+            out = out.crop((int(xs.min()), int(ys.min()), int(xs.max()) + 1, int(ys.max()) + 1))
+        if out.width > BOOK_W:
+            k = BOOK_W / out.width
+            out = out.resize((BOOK_W, max(1, round(out.height * k))), Image.LANCZOS)
+        # WebP, and deliberately NOT registered in the atlas: these are CSS
+        # backgrounds for two panels, so putting them in the sprite manifest
+        # would have the loader fetch two megabytes at boot for art the player
+        # may never open.
+        rel = f'ui/{name}.webp'
+        out.save(os.path.join(OUT, rel), quality=88, method=6)
         entries = [e for e in entries if e['id'] != name]
-        entries.append({'id': name, 'src': rel, 'w': img.width, 'h': img.height})
-        print(f'  {rel}: {img.width}x{img.height}')
+        print(f'  {rel}: {out.width}x{out.height}'
+              f' ({os.path.getsize(os.path.join(OUT, rel)) // 1024} KB)')
     manifest['ui'] = entries
 
 
