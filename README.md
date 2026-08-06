@@ -7,6 +7,7 @@ ringing in orders, and running plates out to tables while the tip clock ticks.
 
 Everything is bought with one currency: **sand dollars**.
 
+![the main menu](docs/shot-title.png)
 ![restaurant](docs/shot-restaurant.png)
 ![factory](docs/shot-factory.png)
 
@@ -24,6 +25,27 @@ python3 -m http.server 8080
 Any static server works (`npx http-server`, `caddy file-server`, …). Progress
 saves to `localStorage` and the works keep producing while the tab is closed,
 up to four hours of catch-up.
+
+## The front door
+
+The game opens on a **main menu** that is not a picture of a restaurant: your own
+dining room is running behind it, the camera drifting slowly across the place you
+have been building, and the chef at the pass. The logo is a toy — press it and it
+squashes and blows bubbles — and tapping the room does the same. **Open the
+doors** simply hands you the controls.
+
+**Settings** (sound, motion, tips, and starting over) and **Credits** open as
+ordinary panels over it. Motion off stops the idling, drifting and breathing
+parts of the interface but never the answer to a press: feedback is not
+decoration. Tips off silences the one-line nudges.
+
+A first run then walks you through a **guide**: nine steps, each pointing at the
+thing you have to press and waiting for you to actually press it. The spotlight
+is a hole in a dark sheet, and the sheet takes no pointer events at any point —
+the guide's job is to draw the eye, never to trap the finger, so every step is
+done exactly the way it will be done later. It follows things that move, too: the
+step that says *seat a guest* puts its light on whoever is waiting by the door.
+The whole thing replays from Settings.
 
 ## Playing
 
@@ -78,7 +100,7 @@ src/
   core/               loader, tweens/springs, pointer, blip synth, helpers
   gfx/                canvas drawing kit and the particle system
   world/              iso math, procedural rooms, guests, kitchen, factory
-  ui/                 HUD and the bottom-sheet panels
+  ui/                 HUD, the bottom-sheet panels, the menu and the guide
   data/               ingredients, recipes, buildables, staff, guests, progress
 ```
 

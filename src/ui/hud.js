@@ -291,9 +291,13 @@ export class Hud {
     while (this.el.toasts.children.length > 3) this.el.toasts.firstElementChild.remove();
   }
 
-  /** Centre-screen nudge that fades on its own. */
+  /**
+   * Centre-screen nudge that fades on its own. Honours the Tips switch here
+   * rather than at each call site — there are a dozen of those and only one of
+   * this.
+   */
   hint(text, seconds = 2.6) {
-    if (!text) { show(this.el.hint, false); return; }
+    if (!text || !this.game.state.tipsOn) { show(this.el.hint, false); return; }
     this.el.hint.textContent = text;
     show(this.el.hint, true);
     this.hintTimer = seconds;

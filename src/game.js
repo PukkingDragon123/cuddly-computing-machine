@@ -9,6 +9,8 @@ import { Pointer } from './core/input.js';
 import { sfx } from './core/audio.js';
 import { Hud } from './ui/hud.js';
 import { Panels } from './ui/panels.js';
+import { Title } from './ui/title.js';
+import { Tutor } from './ui/tutor.js';
 import { GameState, SAVE_KEY } from './state.js';
 import { TAU, range, rnd } from './core/util.js';
 import { ingName } from './data/ingredients.js';
@@ -30,6 +32,7 @@ export class Game {
 
     this.hud = new Hud(this);
     this.panels = new Panels(this);
+    this.attract = false;         // the main menu is up and the world is idling
 
     this.restaurant = new Restaurant(this);
     this.factory = new Factory(this);
@@ -68,6 +71,11 @@ export class Game {
       onTap: (w) => this.#onTap(w),
       onHover: (w) => this.zone.moveGhost?.(w),
     });
+
+    this.title = new Title(this);
+    this.tutor = new Tutor(this);
+    this.sfx.enabled = this.state.settings?.sound !== false;
+    document.body.classList.toggle('still', !this.state.motionOn);
 
     this.state.bus.on('change', () => { this.hud.sync(); });
     this.state.bus.on('shop', () => { this.syncRoomSize(); });
@@ -231,6 +239,7 @@ export class Game {
   }
 
   #onGrab(world) {
+    if (this.attract) return false;
     const g = this.zone.ghost;
     if (this.zone === this.factory && g && (g.kind === 'belt' || g.kind === 'erase')) {
       this.painting = true;
@@ -266,9 +275,17 @@ export class Game {
   }
 
   #onTap(world) {
+    // while the menu is up the room is a picture, so a tap on it is a splash
+    // rather than an order
+    if (this.attract) {
+      this.zone.fx.sparkles(world.x, world.y, 6, 18);
+      this.zone.fx.bubbles(world.x, world.y, 3, 16);
+      this.sfx.play('tap');
+      return;
+    }
     if (this.hud.isSheetOpen) return;
     const hint = this.zone.tap(world);
-    if (hint) this.hud.hint(hint, 2.2);
+    if (hint && this.state.tipsOn) this.hud.hint(hint, 2.2);
     this.#syncPlaceBar('Tap the floor to place another');
     this.hud.sync();
   }
@@ -448,6 +465,8 @@ export class Game {
 
   update(dt) {
     this.time += dt;
+    this.title?.update(dt, this.time);
+    this.tutor?.update();
     this.tweens.update(dt);
     this.restaurant.fx.update(dt);
     this.factory.fx.update(dt);
@@ -478,6 +497,22 @@ export class Game {
     this.state.save();
   }
 
+  /**
+   * The menu is closed and the player has the controls. A brand new save gets
+   * the guide straight away — it is the one moment a tutorial is welcome — and
+   * anyone coming back gets the morning's catch instead.
+   */
+  onTitleDone() {
+    const s = this.state;
+    if (!s.tutorial?.done) { this.tutor.begin(); return; }
+    if (s.phase === 'prep' && !s.catch?.seen) setTimeout(() => this.openCatch(), 350);
+  }
+
+  openTitle() { this.title.reopen(); }
+  openSettings() { this.panels.openSettings(); }
+  openCredits() { this.panels.openCredits(); }
+  openGuide() { this.hud.closeSheet(); this.tutor.begin(true); }
+
   /* ---------------------------------------------------------------- render */
 
   render() {
@@ -485,7 +520,7 @@ export class Game {
     const t = this.time;
     this.#backdrop(ctx);
 
-    const shake = this.zone.fx.shake;
+    const shake = this.state.motionOn ? this.zone.fx.shake : 0;
     const shakeX = shake ? Math.sin(t * 61) * shake : 0;
     const shakeY = shake ? Math.cos(t * 47) * shake : 0;
     const cam = this.zone.cam;

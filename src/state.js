@@ -17,7 +17,7 @@ import {
 } from './data/progress.js';
 
 const KEY = 'bubbleworks.harbor.save.v1';
-const VERSION = 6;
+const VERSION = 7;
 export const SAVE_KEY = KEY;
 
 function fresh() {
@@ -51,6 +51,8 @@ function fresh() {
     clay: 0,
     dishes: {},                      // recipe id -> forged serving-dish tier
     catch: null,                     // the day's catch — see rollCatch()
+    settings: { sound: true, motion: true, tips: true },
+    tutorial: { step: 0, done: false },
     seenHelp: false,
     lastSeen: Date.now(),
     stats: { served: 0, walkouts: 0, earned: 0, best: 0 },
@@ -90,6 +92,8 @@ function migrate(data) {
   data.clay ??= 0;
   data.dishes ??= {};
   data.catch ??= null;
+  data.settings = { sound: true, motion: true, tips: true, ...(data.settings ?? {}) };
+  data.tutorial ??= { step: 0, done: !!data.seenHelp };
   // the pens are gone, so their machines and the two recipes that needed them
   // would otherwise sit in the save as unbuildable tiles and unmakeable dishes
   data.machines = (data.machines ?? []).filter((m) => m.kind !== 'pen');
@@ -141,6 +145,7 @@ export class GameState {
       researched: this.researched, bought: this.bought,
       pottery: this.pottery, clay: this.clay, dishes: this.dishes,
       catch: this.catch,
+      settings: this.settings, tutorial: this.tutorial,
       furniture: this.furniture.map(({ c, r, id, style, rot }) => ({ c, r, id, style, rot })),
       machines: this.machines.map(({ c, r, kind, id, dir, level, buf }) =>
         ({ c, r, kind, id, dir, level, buf })),
@@ -535,6 +540,22 @@ export class GameState {
     this.bus.emit('change');
     this.save();
   }
+
+  /* -------------------------------------------------------------- settings */
+
+  /**
+   * Player preferences. Small, but they have to survive a reload, so they live
+   * in the save beside everything else rather than in their own key.
+   */
+  setSetting(key, on) {
+    this.settings = { ...this.settings, [key]: !!on };
+    this.bus.emit('settings', this.settings);
+    this.bus.emit('change');
+    this.save();
+  }
+
+  get motionOn() { return this.settings?.motion !== false; }
+  get tipsOn() { return this.settings?.tips !== false; }
 
   /* --------------------------------------------------------- the day's catch */
 

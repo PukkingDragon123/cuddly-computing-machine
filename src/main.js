@@ -48,14 +48,8 @@ async function main() {
   boot.classList.add('gone');
   setTimeout(() => boot.remove(), 450);
 
-  if (!game.state.seenHelp) {
-    game.state.seenHelp = true;
-    game.state.save();
-    setTimeout(() => game.openHelp(), 550);
-  } else if (game.state.phase === 'prep' && !game.state.catch?.seen) {
-    // a day that was never opened still owes you its catch card
-    setTimeout(() => game.openCatch(), 500);
-  }
+  // straight into the main menu, with the restaurant idling behind it
+  game.title.show();
 
   let last = performance.now();
   let acc = 0;

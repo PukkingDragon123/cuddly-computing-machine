@@ -20,6 +20,7 @@ import {
   SHOP_BY_ID, forgeCost, plateFor, potteryLevel, potteryNext,
 } from '../data/progress.js';
 import { DIR_NAMES } from '../world/factory.js';
+import { settingRows } from './title.js';
 
 /** The wood each finish is painted in, for the swatch picker. */
 const STYLE_SWATCH = { plain: '#e0c39a', cottage: '#c98d5e', antique: '#7c4a33' };
@@ -847,7 +848,9 @@ export class Panels {
       lobster_tail: 'card_royal', nori: 'card_reef', kelp: 'card_reef',
       sea_grapes: 'card_reef',
     };
-    return this.assets.url('cards', CARDS[key] ?? 'card_cloche');
+    // a card can be asked for by name as well as by what it illustrates
+    const id = key?.startsWith('card_') ? key : CARDS[key];
+    return this.assets.url('cards', id ?? 'card_cloche');
   }
 
   /** One line about today's catch, for the top of the menu and the market. */
@@ -1121,22 +1124,21 @@ export class Panels {
             : `Level ${s.potteryLv} · forging opens at ${FORGE_LEVEL}`)
           : 'Build a Harbour Kiln in the works first',
         () => this.openPottery(), 'kiln'),
-        h('div.section', null, 'Help'),
-        row('How to Play', 'The short version', () => this.game.openHelp(), 'help'),
-        h('div.section', null, 'Danger zone'),
-        this.#card({
-          title: 'Start over',
-          sub: 'Wipes the save and reopens on day one.',
-          side: this.#goBtn('Reset', {
-            cls: 'pill-stop',
-            onclick: () => {
-              if (this.resetArmed) { this.game.hardReset(); return; }
-              this.resetArmed = true;
-              this.game.toast('Tap Reset again to confirm', 'bad');
-              setTimeout(() => { this.resetArmed = false; }, 4000);
-            },
+        h('div.section', null, 'The house'),
+        row('How to Play', 'The short version, in writing', () => this.game.openHelp(), 'help'),
+        row('Run the guide', 'Nine steps, pointing at each thing in turn',
+          () => this.game.openGuide(), 'refresh'),
+        row('Settings', 'Sound, motion, tips — and starting over',
+          () => this.openSettings(), 'tools'),
+        row('Credits', 'Made by Pukking Dragon', () => this.openCredits(), 'crew'),
+        s.phase === 'prep'
+          ? row('Main menu', 'Back out and look at the place', () => this.game.openTitle(), 'shop')
+          : this.#card({
+            icon: 'shop',
+            title: 'Main menu',
+            sub: s.phase === 'open' ? 'Close up first — service is running.' : 'Finish the day first.',
+            locked: true,
           }),
-        }),
       ],
     };
     this.hud.openSheet(spec);
@@ -1498,6 +1500,80 @@ export class Panels {
       foot: h('div.rowline', null,
         h('span.card-sub.grow', null, `${cost.coins} sand dollars and ${cost.clay} clay spent`),
         go),
+    });
+  }
+
+  /* ------------------------------------------------------ settings, credits */
+
+  openSettings() {
+    this.reopen = () => this.openSettings();
+    const s = this.state;
+    this.hud.openSheet({
+      key: 'settings',
+      title: 'Settings',
+      body: [
+        h('div.note', null, 'Everything here is remembered with your save.'),
+        ...settingRows(this.game),
+        h('div.section', null, 'The guide'),
+        this.#card({
+          icon: 'help',
+          title: 'Run the guide again',
+          sub: 'The nine steps of a first shift, pointing at each thing in turn.',
+          side: this.#goBtn('Start', { onclick: () => this.game.openGuide() }),
+        }),
+        h('div.section', null, 'Danger zone'),
+        this.#card({
+          icon: 'refresh',
+          title: 'Start over',
+          sub: `Day ${s.day}, ${s.stats.served} guests served. Wiping is permanent.`,
+          side: this.#goBtn('Reset', {
+            cls: 'pill-stop',
+            onclick: () => {
+              if (this.resetArmed) { this.game.hardReset(); return; }
+              this.resetArmed = true;
+              this.game.toast('Tap Reset again to confirm', 'bad');
+              setTimeout(() => { this.resetArmed = false; }, 4000);
+            },
+          }),
+        }),
+      ],
+    });
+  }
+
+  openCredits() {
+    this.reopen = () => this.openCredits();
+    const s = this.state;
+    const line = (label, value) => h('div.report-row', null,
+      h('span', null, label), h('b', null, value));
+    this.hud.openSheet({
+      key: 'credits',
+      title: 'Credits',
+      body: [
+        h('div.card.catchcard', null,
+          h('div.thumb.wide', null, h('i', {
+            style: { backgroundImage: `url("${this.cardFor('card_whale')}")` },
+          })),
+          h('div.card-main', null,
+            h('div.card-title', null, 'Bubbleworks Harbor'),
+            h('div.card-sub', null, 'A cosy harbour restaurant, built one sprite at a time.'))),
+        h('div.section', null, 'Made by'),
+        this.#card({
+          icon: 'star',
+          title: 'Pukking Dragon',
+          sub: 'Design, direction, and every drawing in the harbour.',
+        }),
+        h('div.section', null, 'The art'),
+        h('div.note', null, 'Four sprite packs: the character pack, the furniture and',
+          ' joinery, the rare cast with the plates and machines, and the pottery works',
+          ' with the two books. Rooms are generated so the tiles always line up.'),
+        h('div.section', null, 'Your harbour so far'),
+        line('Days open', String(s.day)),
+        line('Guests served', String(s.stats.served)),
+        line('Taken', money(s.stats.earned)),
+        line('Species met', `${s.diaryFound} of ${GUESTS.length}`),
+        line('Hearts', String(s.diaryHearts)),
+        h('div.note', null, 'Thank you for minding the place.'),
+      ],
     });
   }
 

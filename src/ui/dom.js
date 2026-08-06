@@ -51,6 +51,7 @@ export function skinIcons(assets) {
     'ico-diary': 'diary', 'ico-book': 'recipes', 'ico-crate': 'market',
     'ico-help': 'help', 'ico-hammer': 'tools', 'ico-shop': 'market',
     'ico-star': 'list', 'ico-lab': 'book', 'ico-kiln': 'refresh',
+    'ico-tools': 'tools', 'ico-crew': 'crew', 'ico-refresh': 'refresh',
   };
   const rules = [];
   for (const [cls, id] of Object.entries(swap)) {

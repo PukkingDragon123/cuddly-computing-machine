@@ -1372,7 +1372,187 @@ html, body {
 .ico-lab   { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Crect x='3.4' y='4.4' width='17' height='11.5' rx='2' fill='%23fdf7e8' stroke='%235f3d26' stroke-width='2'/%3E%3Cpath d='M7 19.6h10' stroke='%235f3d26' stroke-width='2' stroke-linecap='round'/%3E%3Cpath d='M12 15.9v3.7' stroke='%235f3d26' stroke-width='2'/%3E%3Cpath d='M6.6 8.4l2.6 2.2-2.6 2.2' fill='none' stroke='%236fb4d8' stroke-width='1.9' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") }
 .ico-kiln  { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M7 20.4c-1.6-2.6-1.6-5 0-8 1.2 1 1.9 1.5 2.2 1.2.6-.6-1.4-3 .6-6 1.1-1.6 2.6-2.3 4.4-2.6-1 2.4-.4 3.7.7 5 1.4 1.6 2.6 3.2 2.6 5.5a7 7 0 01-1.5 4.9z' fill='%23e4652f' stroke='%235f3d26' stroke-width='1.9' stroke-linejoin='round'/%3E%3C/svg%3E") }
 .ico-heart { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M12 20.2C6.8 16.6 3.6 14 3.6 10.2A4.3 4.3 0 0112 8.1a4.3 4.3 0 018.4 2.1c0 3.8-3.2 6.4-8.4 10z' fill='%23e4652f' stroke='%235f3d26' stroke-width='2' stroke-linejoin='round'/%3E%3C/svg%3E") }
+.ico-tools { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M14.5 3.6l6 6-2.2 2.2-6-6z' fill='%23fdf7e8' stroke='%235f3d26' stroke-width='2' stroke-linejoin='round'/%3E%3Cpath d='M12 12L4.6 19.4l1.6 1.6L13.6 13.6z' fill='%23e08464' stroke='%235f3d26' stroke-width='2' stroke-linejoin='round'/%3E%3Cpath d='M6 3.6l3.4 3.4-2 2L4 5.6z' fill='%23e3d0a8' stroke='%235f3d26' stroke-width='2' stroke-linejoin='round'/%3E%3C/svg%3E") }
+.ico-crew  { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Ccircle cx='8.4' cy='9' r='3.4' fill='%23fdf7e8' stroke='%235f3d26' stroke-width='2'/%3E%3Ccircle cx='16' cy='10' r='2.8' fill='%23e3d0a8' stroke='%235f3d26' stroke-width='2'/%3E%3Cpath d='M3 20c0-3 2.4-5 5.4-5s5.4 2 5.4 5' fill='none' stroke='%235f3d26' stroke-width='2' stroke-linecap='round'/%3E%3Cpath d='M15 20c0-2.4 1.6-4 3.6-4S22 17.6 22 20' fill='none' stroke='%235f3d26' stroke-width='2' stroke-linecap='round'/%3E%3C/svg%3E") }
+.ico-refresh { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M20 12a8 8 0 11-2.6-5.9' fill='none' stroke='%235f3d26' stroke-width='2.4' stroke-linecap='round'/%3E%3Cpath d='M20 3.4V8h-4.6' fill='none' stroke='%235f3d26' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") }
 .ico-x     { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M6.5 6.5l11 11M17.5 6.5l-11 11' stroke='%235f3d26' stroke-width='2.8' stroke-linecap='round'/%3E%3C/svg%3E") }
+
+/* --------------------------------------------------------- the main menu  */
+
+/* The menu sits over the running game, not over a picture of one, so it keeps
+   its own furniture light: a plaque in the middle, the room drifting behind it,
+   and nothing between the two but a warm wash. */
+/* under the scrim and the sheet on purpose: Settings and Credits open as
+   ordinary panels over the menu, and the menu dims behind them like anything
+   else would */
+.title {
+  position: absolute; inset: 0;
+  z-index: 4;
+  /* low on the screen, so the room and whoever is in it keep the top half */
+  display: grid; place-items: end center;
+  padding: calc(1rem + var(--safe-t)) 1rem calc(1.6rem + var(--safe-b));
+  background:
+    radial-gradient(120% 80% at 50% 40%, rgba(253, 247, 232, .1), rgba(94, 63, 38, .42) 100%);
+  animation: fade .5s ease both;
+}
+.title.out { animation: titleOut .3s ease both; pointer-events: none }
+@keyframes titleOut { to { opacity: 0; transform: scale(1.04) } }
+
+.title-card {
+  display: flex; flex-direction: column; align-items: center;
+  gap: 0.5rem;
+  max-width: min(26rem, 100%);
+  text-align: center;
+  /* a plaque, so the type never has to fight the room behind it */
+  padding: 1.1rem 1.4rem 1rem;
+  border: var(--bw) solid var(--ink);
+  border-radius: var(--r-lg);
+  background-color: rgba(253, 247, 232, .93);
+  background-image: var(--sheen);
+  box-shadow: 0 var(--lift) 0 var(--tan-shadow), 0 1rem 2rem rgba(58, 36, 20, .3), var(--face);
+}
+
+/* the logo is a toy: press it and it squashes and blows bubbles */
+.title-logo {
+  display: flex; flex-direction: column; line-height: .92;
+  cursor: pointer;
+  padding: 0.2rem 0.6rem;
+  animation: logoSway 5s ease-in-out infinite;
+  transform-origin: 50% 100%;
+}
+.tl-1 {
+  font-size: 2.1rem; font-weight: 900; color: var(--ink);
+  letter-spacing: -.01em;
+  text-shadow: 0 0.14rem 0 rgba(255, 255, 255, .65);
+}
+.tl-2 {
+  font-size: 3.4rem; font-weight: 900; color: var(--tangerine);
+  letter-spacing: .01em;
+  -webkit-text-stroke: .14rem var(--ink);
+  paint-order: stroke fill;
+  text-shadow: 0 0.22rem 0 rgba(95, 61, 38, .45);
+}
+@keyframes logoSway {
+  0%, 100% { transform: rotate(-1.1deg) translateY(0) }
+  50%      { transform: rotate(1.1deg) translateY(-0.3rem) }
+}
+@keyframes logoBump {
+  0%   { transform: scale(.9, 1.12) }
+  45%  { transform: scale(1.12, .9) }
+  100% { transform: none }
+}
+.title-logo.bump { animation: logoBump .45s var(--spring) }
+
+.title-sub {
+  font-size: 0.86rem; font-weight: 800; color: var(--ink-soft);
+  letter-spacing: .04em;
+}
+.title-stat {
+  border: var(--bw) solid var(--ink);
+  border-radius: 999px;
+  background-color: var(--panel);
+  background-image: var(--sheen);
+  box-shadow: 0 var(--lift) 0 var(--tan-shadow), var(--face);
+  padding: 0.28rem 0.9rem;
+  font-size: 0.78rem; font-weight: 800;
+  max-width: 100%;
+}
+.title-play { margin-top: 0.35rem; font-size: 1.15rem; padding: 0.8rem 2rem }
+.title-row { display: flex; flex-wrap: wrap; gap: 0.4rem; justify-content: center }
+.title-by { font-size: 0.76rem; font-weight: 800; color: var(--ink-soft); margin-top: 0.2rem }
+.title-by b { color: var(--ink-deep) }
+
+/* the buttons arrive one after another, so the menu assembles itself */
+.title-card > * { animation: titleIn .5s var(--spring) both }
+.title-card > *:nth-child(1) { animation-delay: .04s }
+.title-card > *:nth-child(2) { animation-delay: .1s }
+.title-card > *:nth-child(3) { animation-delay: .16s }
+.title-card > *:nth-child(4) { animation-delay: .22s }
+.title-card > *:nth-child(5) { animation-delay: .28s }
+.title-card > *:nth-child(6) { animation-delay: .34s }
+@keyframes titleIn { from { transform: translateY(1.2rem) scale(.92); opacity: 0 } }
+
+/* with the menu up, the HUD steps out of the way entirely */
+#hud.titling { opacity: 0; pointer-events: none; transition: opacity .25s ease }
+
+/* ------------------------------------------------------------- the guide  */
+
+/* A hole in a dark sheet, and a bubble beside it. The sheet takes no pointer
+   events at any point: the guide's job is to draw the eye, never to trap the
+   finger, so every step can be done exactly as it will be done later. */
+.tutor { position: absolute; inset: 0; z-index: 11; pointer-events: none }
+.tutor-hole {
+  position: absolute;
+  box-shadow: 0 0 0 100vmax rgba(58, 36, 20, .5);
+  border: 0.2rem solid var(--sun);
+  transition: left .18s ease, top .18s ease, width .18s ease, height .18s ease;
+  animation: holePulse 1.6s ease-in-out infinite;
+}
+@keyframes holePulse {
+  0%, 100% { border-color: var(--sun); box-shadow: 0 0 0 100vmax rgba(58, 36, 20, .5) }
+  50%      { border-color: #fff3c8; box-shadow: 0 0 0 100vmax rgba(58, 36, 20, .58) }
+}
+.tutor-say {
+  position: absolute;
+  width: min(19rem, calc(100vw - 1.6rem));
+  pointer-events: auto;
+  cursor: pointer;
+  border: var(--bw) solid var(--ink);
+  border-radius: var(--r-md);
+  background-color: var(--paper);
+  background-image: var(--sheen);
+  box-shadow: 0 var(--lift) 0 var(--tan-shadow), var(--face);
+  padding: 0.55rem 0.7rem;
+  display: flex; flex-direction: column; gap: 0.2rem;
+}
+.tutor-say b { font-size: 0.98rem; font-weight: 900 }
+.tutor-say span { font-size: 0.82rem; font-weight: 700; color: var(--ink-soft); line-height: 1.35 }
+.tutor-foot { display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; margin-top: 0.15rem }
+.tutor-dots { font-size: 0.72rem; font-weight: 900; color: var(--ink-faint) }
+/* a step with nothing to wait for says so */
+.tutor-say:not(.waits)::after {
+  content: "tap to carry on";
+  font-size: 0.68rem; font-weight: 900; color: var(--ink-faint);
+  text-transform: uppercase; letter-spacing: .06em;
+}
+@keyframes sayPop { from { transform: scale(.92); opacity: 0 } }
+.tutor-say.pop { animation: sayPop .28s var(--spring) }
+
+/* ----------------------------------------------------------- settings  */
+
+/* A switch, drawn as the same painted wood as everything else. */
+.switch {
+  width: 3.1rem; height: 1.7rem;
+  border: var(--bw) solid var(--ink);
+  border-radius: 999px;
+  background: var(--panel-2);
+  box-shadow: inset 0 0.14rem 0.2rem rgba(95, 61, 38, .25);
+  padding: 0.14rem;
+  cursor: pointer;
+  display: flex; align-items: center;
+  transition: background-color .16s ease;
+}
+.switch i {
+  width: 1.15rem; height: 1.15rem;
+  border-radius: 999px;
+  border: 0.13rem solid var(--ink);
+  background-color: var(--paper);
+  background-image: var(--sheen);
+  box-shadow: 0 0.12rem 0 var(--tan-shadow);
+  transition: transform .18s var(--spring);
+}
+.switch.on { background: var(--leaf) }
+.switch.on i { transform: translateX(1.32rem) }
+
+/* motion off: the idling, drifting, breathing parts stop. Presses still
+   answer — feedback is not decoration. */
+body.still .railbtn .ico,
+body.still .railbtn,
+body.still .flyer.nudge,
+body.still .title-logo,
+body.still #btn-service.pill-go:not([disabled])::after,
+body.still .plate-face i.posing,
+body.still .tutor-hole { animation: none }
 
 /* --------------------------------------------------------------- boot  */
 

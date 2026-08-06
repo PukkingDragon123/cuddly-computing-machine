@@ -957,6 +957,9 @@ export class Restaurant {
     this.kitchen.drawOverlay(ctx);
 
     if (this.state.phase !== 'open') {
+      // the main menu is a look at the place, not a job list, so the "this chair
+      // has no table" markers stay out of the shot
+      if (this.game.attract) return;
       for (const s of this.seats) {
         if (s.table) continue;
         const p = toScreen(s.c, s.r);

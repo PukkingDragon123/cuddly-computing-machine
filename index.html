@@ -138,6 +138,42 @@
     <footer class="sheet-foot hidden" id="sheet-foot"></footer>
   </div>
 
+  <!--
+    The main menu. It sits over the restaurant rather than over a picture of
+    one: the camera drifts across your own dining room behind it, so the first
+    thing the game shows you is the place you have been building.
+  -->
+  <div id="title" class="title hidden">
+    <div class="title-card">
+      <div class="title-logo" id="title-logo">
+        <span class="tl-1">Bubbleworks</span>
+        <span class="tl-2">Harbor</span>
+      </div>
+      <p class="title-sub">a cosy harbour restaurant</p>
+      <div class="title-stat" id="title-stat"></div>
+      <button class="pill pill-go pill-lg title-play" id="title-play">Open the doors</button>
+      <div class="title-row">
+        <button class="pill pill-sun pill-sm" id="title-guide">How to play</button>
+        <button class="pill pill-quiet pill-sm" id="title-settings">Settings</button>
+        <button class="pill pill-quiet pill-sm" id="title-credits">Credits</button>
+      </div>
+      <p class="title-by">made by <b>Pukking Dragon</b></p>
+    </div>
+  </div>
+
+  <!-- the guide's spotlight and its speech bubble, anchored per step -->
+  <div id="tutor" class="tutor hidden">
+    <div class="tutor-hole" id="tutor-hole"></div>
+    <div class="tutor-say" id="tutor-say">
+      <b id="tutor-title">Step</b>
+      <span id="tutor-text">…</span>
+      <div class="tutor-foot">
+        <span class="tutor-dots" id="tutor-dots"></span>
+        <button class="pill pill-sm pill-quiet" id="tutor-skip">Skip</button>
+      </div>
+    </div>
+  </div>
+
   <div id="boot" class="boot">
     <div class="boot-card">
       <div class="boot-logo">
