@@ -32,9 +32,9 @@ up to four hours of catch-up.
 | **Factory** | Place a machine, drag a conveyor away from it, and end the line at a Pantry Intake. Refiners sit mid-line and turn cheap goods into valuable ones. |
 | **The morning** | Every day opens with the catch: three things cheap on the quay, and one dish the harbour has a taste for that pays a third over the odds. |
 | **The Kitchen** | One book for everything about food — today's menu, what you can learn, what you can improve, and the larder. Set how many of each dish to plate up; ingredients leave the larder immediately, so only plate what you can sell. |
-| **Flyers** | Nobody comes to a place they have not heard of. Of a morning, tap the flyer to print one — ten taps to begin with, fewer as you research it, none once a Promo Stand does it for you. Print as many as the satchel holds; they come down overnight. |
+| **Flyers** | Nobody comes to a place they have not heard of. Of a morning, tap the flyer to print one — ten taps to begin with, fewer as you research it, none once a Promo Stand does it for you. Posters draw people in on their own while you work, and come down overnight. |
 | **Open up** | Guests wander in and wait by the door. Tap one to seat them at a free chair, or tap an empty seat to pull in whoever has been waiting longest. |
-| **Handing them out** | Once you are open the flyer button changes job: one tap spends one flyer and brings one guest through the door there and then, instead of waiting on the arrival clock. |
+| **Working the board** | Once you are open the flyer becomes the board out front: another ten taps calls somebody in there and then, no satchel needed. Nothing caps the queue — the day ends when the food does, so what is left on the menu sits on screen, dish by dish, while you serve. |
 | **Orders** | Tap the bubble over a seated guest — the one with the `!` sticker — to send the ticket to the chef. |
 | **Service** | Drag the finished dish off the kitchen pass onto the guest who ordered it. Tap-then-tap works too. |
 | **Payment** | Guests pay on how briskly they were served. Let a patience meter empty and they walk out, costing reputation. |

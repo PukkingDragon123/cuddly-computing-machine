@@ -347,7 +347,7 @@ export class Game {
    */
   tapFlyer() {
     const s = this.state;
-    if (s.phase === 'open') { this.#handOutFlyer(); return; }
+    if (s.phase === 'open') { this.#barkOutside(); return; }
     if (s.phase !== 'prep') return;
     if (s.posters >= s.flyerMax) {
       this.hud.toast('The satchel is full', '');
@@ -362,26 +362,32 @@ export class Game {
     this.hud.sync();
   }
 
-  #handOutFlyer() {
+  /**
+   * Working the board out front. Ten taps brings somebody in off the harbour,
+   * and there is no ceiling on how many — the queue can be as long as you can
+   * feed. What stops the day is the stock you plated this morning, which is the
+   * number worth watching, so it is the one the board shows.
+   */
+  #barkOutside() {
     const r = this.restaurant;
-    if (this.state.posters <= 0) {
-      this.hud.toast('Out of flyers — print more in the morning', 'bad');
-      this.sfx.play('no');
-      return;
-    }
     if (this.state.stockCount <= 0) {
       this.hud.toast('Nothing left to serve them', 'bad');
       this.sfx.play('no');
+      this.hud.sync();
       return;
     }
+    const done = this.state.tapFlyer();
+    if (!done) { this.sfx.play('tap'); this.hud.sync(); return; }
+
     if (!r.summonGuest()) {
-      this.hud.toast('The room is packed — seat someone first', '');
+      // no seats or no pass — the taps are not wasted, they simply have nowhere
+      // to send anyone, so say which
+      this.hud.toast(r.hasPass ? 'Put a chair beside a table first' : 'You need a kitchen pass', 'bad');
       this.sfx.play('no');
+      this.hud.sync();
       return;
     }
-    this.state.flyer.posters -= 1;
-    this.state.bus.emit('change');
-    this.sfx.play('pop');
+    this.sfx.play('star');
     this.hud.bumpFlyer();
     this.hud.sync();
   }

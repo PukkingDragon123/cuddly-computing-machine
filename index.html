@@ -80,6 +80,10 @@
       </div>
     </div>
 
+    <!--
+      The service readout, and under it what is actually left on the menu — the
+      number that decides when the day ends, so it is the one on screen.
+    -->
     <div class="servicebar hidden" id="servicebar">
       <div class="sb-row">
         <span class="sb-label">Served</span>
@@ -88,9 +92,10 @@
         <span class="sb-label">Earned</span>
         <b data-bind="earned">0</b>
         <span class="sb-sep"></span>
-        <span class="sb-label">Stock</span>
+        <span class="sb-label">Left</span>
         <b data-bind="stock">0</b>
       </div>
+      <div class="sb-menu" id="sb-menu"></div>
     </div>
 
     <div id="titlecard" class="titlecard hidden">

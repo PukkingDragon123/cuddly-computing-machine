@@ -555,6 +555,25 @@ html, body {
   font-size: 0.86rem; font-weight: 800;
   font-variant-numeric: tabular-nums;
 }
+/* what is left on the menu, dish by dish — the number that ends the day */
+.sb-menu {
+  display: flex; justify-content: center; flex-wrap: wrap;
+  gap: 0.25rem;
+  margin-top: 0.3rem;
+}
+.sb-dish {
+  display: flex; align-items: center; gap: 0.16rem;
+  border: 0.13rem solid var(--ink);
+  border-radius: 999px;
+  background-color: var(--paper);
+  background-image: var(--sheen);
+  box-shadow: 0 0.14rem 0 var(--tan-shadow);
+  padding: 0.1rem 0.42rem 0.1rem 0.14rem;
+  font-size: 0.78rem; font-weight: 900;
+  font-variant-numeric: tabular-nums;
+}
+.sb-dish i { width: 1.25rem; height: 1.25rem; background: center/contain no-repeat; display: block }
+
 .sb-label { color: var(--ink-faint); font-weight: 800; }
 .sb-row b { font-weight: 900; }
 .sb-sep { width: 0.13rem; height: 0.85rem; background: var(--tan-deep); border-radius: 2px; }
@@ -1043,8 +1062,10 @@ html, body {
 .entry.pick { background: rgba(120, 168, 136, .3) }
 .entry.unmet { filter: grayscale(.6); color: var(--ink-faint) }
 .entry-face { flex: none; width: 2.5em; height: 2.5em; display: grid; place-items: center }
-.entry-face i { width: 100%; height: 100%; background: center/contain no-repeat }
-.entry-face i.strip { background-size: 300% auto; background-position: 0 50% }
+.entry-face i {
+  height: 100%; width: auto; max-width: 100%;
+  background-repeat: no-repeat; background-position: 0 50%;
+}
 .entry-face .qq { font-size: 1.4em; font-weight: 900; color: var(--ink-faint) }
 .entry-main { flex: 1; min-width: 0 }
 .entry-name {
@@ -1061,9 +1082,24 @@ html, body {
   gap: 0.2em; padding: 0.4em; text-align: center;
 }
 .plate.unmet { filter: grayscale(.55); color: var(--ink-faint) }
-.plate-face { width: 58%; height: 52%; display: grid; place-items: center }
-.plate-face i { width: 100%; height: 100%; background: center/contain no-repeat }
-.plate-face i.strip { background-size: 300% auto; background-position: 0 50% }
+/* the whole sprite, as large as the page allows */
+.plate-face { width: 78%; height: 58%; display: grid; place-items: center }
+.plate-face i {
+  height: 100%; width: auto; max-width: 100%;
+  background-repeat: no-repeat;
+  background-position: 0 50%;
+  filter: drop-shadow(0 0.14em 0.1em rgba(95, 61, 38, .25));
+}
+/* The element carries the frame's own aspect and the strip is exactly N frames
+   wide across it, so 0% / 50% / 100% land on the three drawings dead on. The
+   page walks through all of them rather than freezing the guest mid-stride. */
+.plate-face i.posing { animation: posing 3.9s steps(1) infinite }
+@keyframes posing {
+  0%, 33%   { background-position: 0 50% }
+  34%, 66%  { background-position: 50% 50% }
+  67%, 100% { background-position: 100% 50% }
+}
+@media (prefers-reduced-motion: reduce) { .plate-face i.posing { animation: none } }
 .plate-face .qq { font-size: 3em; font-weight: 900; color: var(--ink-faint) }
 .plate-name { font-size: 1.15em; font-weight: 900; line-height: 1.1 }
 .plate-hearts { font-size: 1em; color: #d0517f; letter-spacing: .08em }

@@ -419,13 +419,23 @@ export class GameState {
   get autoPost() { return this.hasResearch('flyer_auto'); }
 
   /** One tap on the flyer. Returns true when that finished a poster. */
+  /**
+   * One tap on the flyer. Returns true on the tap that completes a round.
+   *
+   * The round is the same ten taps in both halves of the day; what it produces
+   * changes. In the morning it finishes a poster for the satchel. Once the doors
+   * are open it is a barker's board out front, and finishing the round walks
+   * somebody in off the harbour — no satchel needed and no ceiling on it, since
+   * the thing that actually limits a day is how much food you plated.
+   */
   tapFlyer() {
     const f = this.flyer;
-    if (f.posters >= this.flyerMax) return false;
+    const barking = this.phase === 'open';
+    if (!barking && f.posters >= this.flyerMax) return false;
     f.taps += 1;
     if (f.taps < this.flyerTaps) { this.bus.emit('change'); return false; }
     f.taps = 0;
-    f.posters += 1;
+    if (!barking) f.posters += 1;
     this.bus.emit('change');
     return true;
   }

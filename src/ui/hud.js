@@ -4,6 +4,7 @@
 import { $, $$, clear, h, show } from './dom.js';
 import { clamp, money } from '../core/util.js';
 import { RESEARCH } from '../data/progress.js';
+import { RECIPE_BY_ID } from '../data/recipes.js';
 
 export class Hud {
   constructor(game) {
@@ -19,6 +20,7 @@ export class Hud {
       coinChip: $('#chip-coins'),
       starChip: $('#chip-stars'),
       serviceBar: $('#servicebar'),
+      sbMenu: $('#sb-menu'),
       service: $('#btn-service'),
       toasts: $('#toasts'),
       hint: $('#hint'),
@@ -108,6 +110,7 @@ export class Hud {
       this.#text('served', String(r.served));
       this.#text('earned', money(r.earned));
       this.#text('stock', String(s.stockCount));
+      this.#syncMenuLeft(s);
     }
 
     show(this.el.menuBadge, !open && planned > 0);
@@ -128,28 +131,54 @@ export class Hud {
     const canOpen = planned > 0 && r.seatCount > 0 && r.hasPass;
     this.el.service.disabled = s.phase === 'report' || (!open && !canOpen);
 
-    // Flyers are a job in both halves of the day: printed of a morning, handed
-    // out at the door once the doors are open — one flyer, one guest. So the
-    // button stays put and only changes what it is counting.
+    // The flyer is the same ten taps all day; only what it produces changes. In
+    // the morning it prints a poster for the satchel, and the gauge fills toward
+    // one. Once the doors are open it is the board out front, and the same gauge
+    // fills toward the next guest through the door.
     const max = s.flyerMax;
+    const taps = s.flyer?.taps ?? 0;
+    const need = s.flyerTaps;
     this.el.flyer.classList.toggle('handout', open);
-    this.#text('flyerCount', open ? `${s.posters} left` : `${s.posters}/${max}`);
+    this.#text('flyerCount', open
+      ? `${taps}/${need} · calling`
+      : `${s.posters}/${max}`);
     const pct = open
-      ? (max > 0 ? s.posters / max : 0)
-      : (s.posters >= max ? 1 : (s.flyer?.taps ?? 0) / s.flyerTaps);
+      ? taps / need
+      : (s.posters >= max ? 1 : taps / need);
     const w = `${Math.round(clamp(pct, 0, 1) * 100)}%`;
     if (this.el.flyerFill.style.width !== w) this.el.flyerFill.style.width = w;
     this.el.flyer.classList.toggle('full', !open && s.posters >= max);
-    this.el.flyer.classList.toggle('spent', open && s.posters <= 0);
-    // no posters and the doors shut: this is the job, so let it fidget
+    // nothing plated is the only thing that stops the board working
+    this.el.flyer.classList.toggle('spent', open && s.stockCount <= 0);
+    // an empty satchel of a morning is the job, so let it fidget
     this.el.flyer.classList.toggle('nudge', !open && s.posters === 0);
-    const wants = open ? 'Hand out a flyer' : 'Print a flyer';
+    const wants = open ? 'Call somebody in — ten taps' : 'Print a flyer';
     if (this.el.flyer.title !== wants) this.el.flyer.title = wants;
 
     const icon = `ico ico-${this.game.sfx.enabled ? 'sound' : 'mute'}`;
     if (this.el.sound.firstElementChild.className !== icon) {
       this.el.sound.firstElementChild.className = icon;
     }
+  }
+
+  /**
+   * What is left on the menu, dish by dish. Rebuilt only when the numbers
+   * actually change — this runs every frame during service.
+   */
+  #syncMenuLeft(s) {
+    const el = this.el.sbMenu;
+    if (!el) return;
+    const rows = Object.entries(s.stock).filter(([, n]) => n > 0);
+    const sig = rows.map(([id, n]) => `${id}:${n}`).join(',');
+    if (sig === this.menuLeftSig) return;
+    this.menuLeftSig = sig;
+    clear(el);
+    for (const [id, n] of rows) {
+      el.append(h('span.sb-dish', { title: RECIPE_BY_ID[id]?.name ?? id },
+        h('i', { style: { backgroundImage: `url("${this.game.assets.url('food', id)}")` } }),
+        h('b', null, String(n))));
+    }
+    show(el, rows.length > 0);
   }
 
   /** Restart the squash so a repeat tap still reads as a tap. */

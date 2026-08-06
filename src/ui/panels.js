@@ -694,6 +694,26 @@ export class Panels {
     keep ? this.hud.refreshSheet(spec) : this.hud.openSheet(spec);
   }
 
+  /**
+   * One frame of a character strip, shown whole.
+   *
+   * The element is given the frame's own aspect ratio and the strip is sized to
+   * exactly N frames across it, so a frame lands on the box edge-to-edge with
+   * nothing of its neighbours leaking in — and `posing` can then step the
+   * background across all three drawings without any arithmetic.
+   */
+  #sprite(group, id, { pose = false } = {}) {
+    const sp = this.assets.get(group, id);
+    const n = sp?.count ?? 1;
+    return h(`i${n > 1 && pose ? '.posing' : ''}`, {
+      style: {
+        backgroundImage: `url("${this.assets.url(group, id)}")`,
+        backgroundSize: `${n * 100}% 100%`,
+        aspectRatio: sp ? `${sp.fw} / ${sp.fh}` : '1 / 1',
+      },
+    });
+  }
+
   /** A cell in one of the inventory grids. */
   #cell(src, name, qty, { icon = null, zero = false } = {}) {
     return h(`div.ing-cell${zero ? '.zero' : ''}`, null,
@@ -1161,10 +1181,7 @@ export class Panels {
         },
       },
       h('div.entry-face', null, page
-        ? h('i', {
-          style: { backgroundImage: `url("${this.assets.url('customers', g.id)}")` },
-          class: this.assets.frameCount('customers', g.id) > 1 ? 'strip' : '',
-        })
+        ? this.#sprite('customers', g.id)
         : h('span.qq', null, '?')),
       h('div.entry-main', null,
         h('div.entry-name', null, page ? g.name : '???'),
@@ -1179,11 +1196,11 @@ export class Panels {
     const page = s.diary[g.id];
     const lv = page?.level ?? 0;
     const toNext = page ? heartsToNext(page.hearts) : null;
+    // The whole drawing, not a thumbnail of it: a diary page is where you get to
+    // look at somebody properly, and the pack draws each guest three times —
+    // standing, walking, eating — so the page walks through all three.
     const face = h('div.plate-face', null, page
-      ? h('i', {
-        style: { backgroundImage: `url("${this.assets.url('customers', g.id)}")` },
-        class: this.assets.frameCount('customers', g.id) > 1 ? 'strip' : '',
-      })
+      ? this.#sprite('customers', g.id, { pose: true })
       : h('span.qq', null, '?'));
 
     const big = h(`div.plate${page ? '' : '.unmet'}`, null,
@@ -1496,12 +1513,13 @@ export class Panels {
         h('div.note', null, 'Everything costs ', h('b', null, 'sand dollars'), ' — furniture, machines, recipes and crew alike.'),
         step(1, 'Read the morning', "Each day opens with the catch: three things cheap on the quay and one dish the harbour has a taste for, which pays a third over the odds."),
         step(2, 'Plate up the menu', 'Open the Kitchen — the book icon on the right — and set how many of each dish to make. Ingredients come out of the larder right away.'),
-        step(3, 'Print a flyer', "Nobody comes to a place they have not heard of. Tap the flyer at the bottom left until a poster goes up — ten taps to start with, fewer once you research it, and none at all once a Promo Stand does it for you. Once you are open, a tap hands one out instead and brings a guest straight in."),
+        step(3, 'Print a flyer', "Nobody comes to a place they have not heard of. Tap the flyer at the bottom left until a poster goes up — ten taps to start with, fewer once you research it, and none at all once a Promo Stand does it for you. Posters bring people in on their own while you work."),
         step(4, 'Open up', 'Guests wander in and wait by the door. Tap one to seat them at a free chair.'),
-        step(5, 'Take the order', 'Tap the ! sticker on the bubble over a seated guest to send the ticket to the chef.'),
-        step(6, 'Run the plate', 'Drag the finished dish off the kitchen pass onto the guest who ordered it.'),
-        step(7, 'Get paid', 'The faster you serve, the more they leave. Slow service loses stars. A table they leave needs washing before the next guest can sit down.'),
-        step(8, 'Build the works', 'Once the till is healthy, head to the Factory: place a machine, drag a belt from it, and end the belt at a Pantry Intake. Ingredients then fill the larder for free. The Workshop tab has a computer that banks research points and a stand that posts your flyers; the Pottery tab has the kiln.'),
+        step(5, 'Work the board', "Once the doors are open the flyer becomes the board out front: another ten taps calls somebody in there and then. There is no limit on the queue — the only thing that ends a day is running out of food, which is why what is left on the menu is on screen while you serve."),
+        step(6, 'Take the order', 'Tap the ! sticker on the bubble over a seated guest to send the ticket to the chef.'),
+        step(7, 'Run the plate', 'Drag the finished dish off the kitchen pass onto the guest who ordered it.'),
+        step(8, 'Get paid', 'The faster you serve, the more they leave. Slow service loses stars. A table they leave needs washing before the next guest can sit down.'),
+        step(9, 'Build the works', 'Once the till is healthy, head to the Factory: place a machine, drag a belt from it, and end the belt at a Pantry Intake. Ingredients then fill the larder for free. The Workshop tab has a computer that banks research points and a stand that posts your flyers; the Pottery tab has the kiln.'),
         h('div.section', null, 'Getting to know them'),
         h('div.note', null, 'Every guest has a flavour they ', h('b', null, 'love'),
           ' and one they cannot stand. Serving the right one is worth triple hearts and a better tip, and it fills in their page in the ',

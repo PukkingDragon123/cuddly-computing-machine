@@ -294,17 +294,17 @@ export class Restaurant {
   }
 
   /**
-   * Bring one guest in now, in exchange for a flyer. Returns false when there is
-   * genuinely no room, so the flyer is not spent for nothing.
+   * Bring one guest in now, off the board out front. Unlike the arrival clock
+   * this has no ceiling: a queue can be as long as you can feed, and the day is
+   * limited by the food you plated rather than by a headcount. It still refuses
+   * when there is nowhere to sit anybody at all, so the taps are not wasted.
    */
   summonGuest() {
-    const pending = this.guests.filter((g) => g.state !== CS.LEAVE && g.state !== CS.DONE).length;
-    if (pending >= this.#maxGuests()) return false;
     if (this.seatCount === 0 || !this.hasPass) return false;
     this.#spawn();
     const g = this.guests[this.guests.length - 1];
     if (g) {
-      this.fx.pop(g.pos.x, g.headY - 30, 'A flyer worked!', {
+      this.fx.pop(g.pos.x, g.headY - 30, 'Heard you calling!', {
         color: '#e4652f', size: 15, rise: 38, max: 0.9,
       });
       this.fx.sparkles(g.pos.x, g.pos.y - 20, 8, 22);
@@ -312,21 +312,38 @@ export class Restaurant {
     return true;
   }
 
+  /**
+   * Where the next arrival waits.
+   *
+   * The board out front has no ceiling on it, so a queue can be genuinely long
+   * and a fixed list of nine spots would pile everyone on the doormat. This
+   * walks outward from the door instead and takes the nearest free tile, keeping
+   * two tiles between people where it can — adjacent iso tiles are only half a
+   * sprite apart, so a tight queue reads as one heap of guests.
+   */
   #queueSpot() {
     const taken = new Set(this.guests
       .filter((g) => g.state === CS.QUEUE || g.state === CS.ENTER)
-      .map((g) => (g.path.length ? this.key(g.path[g.path.length - 1].c, g.path[g.path.length - 1].r) : this.key(g.tile.c, g.tile.r))));
+      .map((g) => (g.path.length
+        ? this.key(g.path[g.path.length - 1].c, g.path[g.path.length - 1].r)
+        : this.key(g.tile.c, g.tile.r))));
     const e = this.entry;
-    // spaced two tiles apart where possible — adjacent iso tiles are only half a
-    // sprite width apart, so a tight queue turns into one pile of guests
-    const cands = [
-      e, { c: e.c + 2, r: e.r }, { c: e.c, r: e.r + 2 }, { c: e.c - 2, r: e.r },
-      { c: e.c + 2, r: e.r + 2 }, { c: e.c + 1, r: e.r }, { c: e.c, r: e.r + 1 },
-      { c: e.c + 3, r: e.r + 1 }, { c: e.c + 1, r: e.r + 2 },
-    ];
-    for (const t of cands) {
-      if (this.walkable(t.c, t.r) && !taken.has(this.key(t.c, t.r))) return t;
+    const free = (t) => this.walkable(t.c, t.r) && !taken.has(this.key(t.c, t.r));
+
+    const ring = [];
+    for (let d = 0; d <= this.cols + this.rows; d++) {
+      for (let dc = -d; dc <= d; dc++) {
+        const dr = d - Math.abs(dc);
+        for (const t of dr === 0
+          ? [{ c: e.c + dc, r: e.r }]
+          : [{ c: e.c + dc, r: e.r + dr }, { c: e.c + dc, r: e.r - dr }]) {
+          if (this.room.inside(t.c, t.r)) ring.push({ t, d });
+        }
+      }
     }
+    // spaced first, then anything walkable at all
+    for (const { t, d } of ring) if (d % 2 === 0 && free(t)) return t;
+    for (const { t } of ring) if (free(t)) return t;
     return e;
   }
 
