@@ -61,11 +61,13 @@ The whole thing replays from Settings.
 | **Service** | Drag the finished dish off the kitchen pass onto the guest who ordered it. Tap-then-tap works too. |
 | **Payment** | Guests pay on how briskly they were served. Let a patience meter empty and they walk out, costing reputation. |
 | **Washing up** | A guest who has eaten leaves a plate behind, and that chair is out of service for five seconds while it is scrubbed. The Deep Sink halves it and a Dishwasher all but removes it. |
-| **Inventory** | Everything you own in one place: the larder, what is plated, your flyers, clay, research and forged crockery. The market is a tab of it. |
+| **Inventory** | Everything you own in one place: the larder, what is plated, your flyers, clay, research and forged crockery — written on a leaf of the same notebook the menu is bound in. |
+| **The market** | The other tab of the inventory. The boats land once an hour: a fresh stall, a fresh set of prices. Every crate is counted, so a stall can sell out, and every price drifts up or down by as much as a third against its usual — the card says which way and by how much, and a countdown says how long until the next delivery. Today's catch takes another 40% off three of them. |
 
 Fancier furniture finishes (Seaside Pine → Cosy Cottage → Antique) and decor raise the
 room's **ambience**, which pulls guests in faster, stretches their patience and
-grows their tips. Hiring crew automates the fiddly parts: the Oyster Host seats
+grows their tips. Hiring crew — the Crew tab of the build menu, since a hire is
+something you put in the room — automates the fiddly parts: the Oyster Host seats
 guests, the Cuttlefish Server runs plates, cooks add parallel burners, the
 Mechanic speeds up the works.
 
@@ -75,7 +77,7 @@ Mechanic speeds up the works.
 |---|---|
 | **Guest Diary** | Every species has a flavour they love and one they cannot stand. Serving the right one is triple hearts and a better tip, and it is the only way to learn what that flavour was. Fill the hearts and they start bringing presents. |
 | **Rarity** | Six **VIPs** — a crowned whale shark, a top-hatted seahorse, a pearl manta — pay double. Four **Mythicals** out of deep time pay four times over. Each has its own animation, so a rare guest is a different animal and not a recoloured regular. |
-| **Research** | A Harbour Computer on the factory floor banks points while you work. Spend them on flyers, machine speed, the washing-up and trade, from the Research Board under More. |
+| **Research** | A Harbour Computer on the factory floor banks points while you work. Tap the machine itself to spend them, on flyers, machine speed, the washing-up and trade. |
 | **Pottery** | Build a **Harbour Kiln** in the works and tap it to take a turn at the class. Serving levels it; from level five you can forge: spend clay and money, stop the needle in the band, and one recipe gains a star and a permanent price rise — served from then on on real crockery, plainer or finer with the tier. A Clay Press digs the clay, a Potter's Wheel takes a round off the forge, a Glaze Kiln adds 15% to anything forged. |
 | **Expanding** | Knocking through to the wharf and then the terrace grows the dining room from 9×9 to 13×13 — the only way to fit more tables. It is the Expand tab in the build menu, beside the furniture it makes room for. |
 
@@ -158,10 +160,28 @@ Readouts do not take pointer events. The service tally floats over the middle of
 the room, which is exactly where the kitchen pass sits, and a `<b>` inside it was
 quietly eating taps meant for a finished plate.
 
-Panels earn their place on the rail by being opened often. Expanding the room is
-a tab in the build menu, because it is a thing you place. The kiln is not on the
-rail at all: you build it in the works and tap it, since throwing a pot is a job
-that happens somewhere.
+Two panels are not books but loose paper. The inventory is a stock list on a
+leaf torn from the same notebook, and the build menu is a drafting sheet — both
+real scans, cropped to a single leaf so a fold never runs down the middle of a
+list, and both always full height, however little is written on them, because a
+short panel scales the picture down until the binding creeps back into view. The
+blueprint is deep blue, so anything written straight onto it is chalk white and
+the cards keep their cream: chits pinned to a drawing rather than part of it.
+
+Panels earn their place on the rail by being opened often, and the ones that did
+not are gone. There is no Harbour Menu any more — a hub whose job was to hold
+four buttons is four buttons and one extra tap. Expanding the room and hiring
+crew are tabs in the build menu, because both are things you put in the room.
+Research is on the Harbour Computer: the machine banks the points, so the machine
+spends them. The kiln is the same — you build it in the works and tap it, since
+throwing a pot is a job that happens somewhere. What is left on the rail is
+Build, Kitchen, Inventory, Diary and Settings, and Settings is where the guide,
+the credits and the way back to the main menu live.
+
+On a phone the panel fills the width, which puts the rail straight over its close
+button, so the rail steps aside while a panel is open. On a wide screen the panel
+is narrower than the room and the rail stays, so one tap still flicks between
+panels.
 
 ### Notes on the art
 
@@ -200,9 +220,14 @@ index. `art_pack_03` came from the companion **reimagined-sniffle** repo, and
   differing sizes rather than gridded, so they are found by colour: the backdrop
   measures (247,242,236) against the cards' warmer (248,226,190), which is a
   clean 40 levels apart on the blue channel.
-- `art_pack_04/book_menu.png`, `book_diary.png` — two open spreads. These back a
-  DOM panel rather than a canvas sprite, so they are trimmed, scaled and written
-  as JPEG for CSS to pick up.
+- `art_pack_04/book_menu.png`, `book_diary.png`, `book_plain.png` — three open
+  spreads: the ruled menu, the diary, and a blank notebook the inventory is
+  written on. `blueprint_sheet.png` is a fourth sheet of paper, a drafting sheet,
+  and it backs the build menu. All four back a DOM panel rather than a canvas
+  sprite, so they are trimmed, scaled and written as WebP for CSS to pick up —
+  with the margin the books were drawn on flooded to transparency, so a cover
+  floats instead of sitting on a rectangle of paper. The blueprint keeps its
+  margin: it is a sheet of paper, and a sheet of paper is opaque.
 
 Every sheet across the four packs is sliced except the three superseded
 furniture sheets, the two painted room plates that the generated rooms replace,
@@ -213,7 +238,7 @@ pip install pillow numpy scipy
 python3 tools/slice_assets.py    # character pack
 python3 tools/slice_pack02.py    # furniture, joinery, extra guests
 python3 tools/slice_pack03.py    # the rare cast, plates, machines, UI icons
-python3 tools/slice_pack04.py    # the pottery works, menu cards, the two books
+python3 tools/slice_pack04.py    # the pottery works, menu cards, the paper
 ```
 
 They lift the backdrop, group ink blobs so hand-laid items never clip their

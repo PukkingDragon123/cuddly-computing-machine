@@ -60,7 +60,7 @@ export class Hud {
       ['btn-recipes', 'recipes', () => g.openRecipes()],
       ['btn-pantry', 'pantry', () => g.openPantry()],
       ['btn-diary', 'diary', () => g.openDiary()],
-      ['btn-menu', 'hub', () => g.openHub()],
+      ['btn-menu', 'settings', () => g.openSettings()],
     ];
     for (const [id, key, open] of this.docked) {
       const el = $(`#${id}`);
@@ -117,9 +117,7 @@ export class Hud {
     this.#text('menuBadge', String(planned));
 
     // a spendable research point is worth a nudge; a spent one is not
-    const spendable = s.researched
-      ? RESEARCH.some((n) => s.canResearch(n.id))
-      : false;
+    const spendable = s.hasWorks('lab') && RESEARCH.some((n) => s.canResearch(n.id));
     show(this.el.researchBadge, spendable);
     this.#text('researchBadge', String(s.research));
 
@@ -338,12 +336,19 @@ export class Hud {
     this.sheetOpen = spec.key ?? spec.title;
     this.el.sheetTitle.textContent = spec.title;
 
-    // panels that are books get the drawn spread behind them and open like one
+    // Panels that are books get the drawn spread behind them and open like one.
+    // Two of the backdrops are not books but backing paper — a plain ledger for
+    // the inventory, a drafting sheet for the build menu — and those simply sit
+    // behind an ordinary scrolling list.
     const book = spec.book ?? null;
     const sheet = this.el.sheet;
-    sheet.classList.toggle('book', !!book);
+    const spread = book === 'menu' || book === 'diary';
+    sheet.classList.toggle('book', spread);
     sheet.classList.toggle('book-menu', book === 'menu');
     sheet.classList.toggle('book-diary', book === 'diary');
+    sheet.classList.toggle('paper', book === 'plain' || book === 'plan');
+    sheet.classList.toggle('paper-plain', book === 'plain');
+    sheet.classList.toggle('paper-plan', book === 'plan');
     if (book && wasOpen !== this.sheetOpen) this.openBook();
 
     clear(this.el.sheetTabs);

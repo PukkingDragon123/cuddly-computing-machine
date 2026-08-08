@@ -102,7 +102,8 @@ export class Panels {
     const kinds = groups[this.buildTab] ?? groups.seating;
     const items = FURNITURE.filter((f) => kinds.includes(f.kind));
 
-    const body = this.buildTab === 'expand' ? this.#expandTab() : [
+    const body = this.buildTab === 'expand' ? this.#expandTab()
+      : this.buildTab === 'crew' ? this.#crewRows() : [
       h('div.note', null,
         'Pick a finish, then tap a piece and tap the floor. ', h('b', null, 'Rotate'),
         ' turns it to any of four sides; chairs turn to face their table on their own.'),
@@ -123,10 +124,12 @@ export class Panels {
     const spec = {
       key: 'build',
       title: 'Build the Dining Room',
+      book: 'plan',
       tabs: [
         { id: 'seating', label: 'Seating' },
         { id: 'kitchen', label: 'Kitchen' },
         { id: 'decor', label: 'Decor' },
+        { id: 'crew', label: 'Crew' },
         { id: 'expand', label: 'Expand' },
       ],
       tab: this.buildTab,
@@ -687,6 +690,7 @@ export class Panels {
     const spec = {
       key: 'pantry',
       title: 'Inventory',
+      book: 'plain',
       tabs: [{ id: 'pantry', label: 'What You Own' }, { id: 'market', label: 'Harbor Market' }],
       tab: this.pantryTab,
       onTab: (id) => { this.pantryTab = id; this.openPantry(true); },
@@ -790,37 +794,57 @@ export class Panels {
     ].filter(Boolean);
   }
 
+  /**
+   * The stall. It restocks on the hour and its prices move with it, so a crate
+   * has a number of them and an arrow saying which way the price went — buying
+   * cheap and buying early are both worth doing now, where a fixed list made
+   * this a vending machine.
+   */
   #marketTab() {
     const s = this.state;
     const rows = MARKET_ORDER.map((id) => {
       const price = s.catchPrice(id);
-      const full = INGREDIENTS[id].price;
-      const deal = price < full;
+      const left = s.marketStock(id);
+      const drift = s.priceDrift(id);
+      const deal = s.catch?.cheap?.includes(id);
+      const out = left <= 0;
       const buy = (n) => {
-        const total = price * n;
-        if (!s.spend(total)) { this.game.toast('Not enough sand dollars', 'bad'); return; }
-        s.addIng(id, n);
-        s.save();
+        const got = s.buyFromMarket(id, n);
+        if (!got) {
+          this.game.toast(left <= 0 ? 'Sold out until the next delivery' : 'Not enough sand dollars', 'bad');
+          return;
+        }
         this.game.sfx.play('coin');
         this.game.hud.sync();
         this.refresh();
       };
+      const pct = Math.round(Math.abs(drift) * 100);
+      const arrow = deal ? tag(`catch −40%`, 'tag-ok')
+        : drift > 0.04 ? tag(`▲ ${pct}%`, 'tag-need')
+          : drift < -0.04 ? tag(`▼ ${pct}%`, 'tag-ok')
+            : tag('steady', 'tag-mint');
       return this.#card({
         src: this.assets.url('ingredients', id),
         title: ingName(id),
-        sub: deal ? `In today's catch — normally ${money(full)}` : `You have ${s.have(id)}`,
-        tags: [this.#cost(price), deal ? tag('Catch of the day', 'tag-ok') : null].filter(Boolean),
+        sub: out
+          ? 'Sold out — more on the next delivery.'
+          : `${left} crate${left === 1 ? '' : 's'} on the stall · you have ${s.have(id)}`,
+        tags: [this.#cost(price), arrow],
         side: h('div.rowline', null,
-          this.#goBtn('×1', { disabled: s.coins < price, onclick: () => buy(1) }),
-          this.#goBtn('×10', { disabled: s.coins < price * 10, onclick: () => buy(10) })),
+          this.#goBtn('×1', { disabled: out || s.coins < price, onclick: () => buy(1) }),
+          this.#goBtn('×5', { disabled: out || s.coins < price, onclick: () => buy(5) })),
         cls: deal ? 'sel' : '',
+        locked: out,
       });
     });
+    const mins = s.marketIn;
     return [
       this.#catchStrip(),
-      h('div.note', null, 'Fresh off the boats. Whatever came in heavy this morning goes cheap — the rest is the price it always is.'),
+      h('div.note', null, 'Fresh off the boats, and only so much of it. A new delivery lands ',
+        h('b', null, mins <= 1 ? 'any minute now' : `in ${mins} minutes`),
+        ' — with new prices.'),
       ...rows,
-    ];
+    ].filter(Boolean);
   }
 
   /* ------------------------------------------------------- the day's catch  */
@@ -924,10 +948,28 @@ export class Panels {
 
   /* ------------------------------------------------------------------ crew  */
 
+  /** Hiring is building: the same list, now a tab of the build menu. */
+  #crewRows() {
+    return [
+      h('div.note', null, 'Hires are permanent and do the fiddly jobs for you — seating guests,',
+        ' running plates, keeping the works humming.'),
+      ...this.#staffCards(),
+    ];
+  }
+
   openCrew(keep = false) {
     this.reopen = () => this.openCrew(true);
+    const spec = {
+      key: 'crew',
+      title: 'Crew',
+      body: this.#crewRows(),
+    };
+    keep ? this.hud.refreshSheet(spec) : this.hud.openSheet(spec);
+  }
+
+  #staffCards() {
     const s = this.state;
-    const rows = STAFF.map((st) => {
+    return STAFF.map((st) => {
       const hired = s.hasStaff(st.id);
       return this.#card({
         src: this.assets.url('staff', st.sprite),
@@ -948,15 +990,6 @@ export class Panels {
         cls: hired ? 'sel' : '',
       });
     });
-    const spec = {
-      key: 'crew',
-      title: 'Crew',
-      body: [
-        h('div.note', null, 'Hires are permanent and do the fiddly jobs for you — seating guests, running plates, keeping the works humming.'),
-        ...rows,
-      ],
-    };
-    keep ? this.hud.refreshSheet(spec) : this.hud.openSheet(spec);
   }
 
   /* ------------------------------------------------------------- inspectors */
@@ -1092,57 +1125,17 @@ export class Panels {
 
   /* ------------------------------------------------------------------- hub  */
 
-  openHub() {
-    this.reopen = () => this.openHub();
-    const s = this.state;
-    const row = (title, sub, onclick, icon = null) => this.#card({ title, sub, onclick, icon });
-    const spec = {
-      key: 'hub',
-      title: 'Harbor Menu',
-      body: [
-        h('div.card', null,
-          thumb(this.assets.url('customers', '05_sea_otter'),
-            { frames: this.assets.frameCount('customers', '05_sea_otter') }),
-          h('div.card-main', null,
-            h('div.card-title', null, `Day ${s.day} · ${'★'.repeat(s.rating)}`),
-            h('div.card-sub', null, `${money(s.stars)} reputation · ${s.stats.served} guests served · ${money(s.stats.earned)} earned all told`))),
-        row('The Kitchen', 'Plate up, learn dishes, upgrade them, check the larder',
-          () => this.openRecipes(), 'book'),
-        row('Inventory', 'Everything you own, and the market', () => this.openPantry(), 'crate'),
-        row("Today's Catch", 'What is cheap and what sells high', () => this.openCatch(), 'sand'),
-        row('Crew', 'Hire staff to run the place for you', () => this.openCrew(), 'star'),
-        row('Build', 'Furniture and machines', () => this.game.openBuild(), 'hammer'),
-        h('div.section', null, 'The long game'),
-        row('Guest Diary', `${s.diaryFound}/${GUESTS.length} met · ${s.diaryHearts} hearts collected`,
-          () => this.openDiary(), 'diary'),
-        row('Expand the Room', `Now ${s.roomSize}×${s.roomSize} — knock through for more floor`,
-          () => this.openShop(), 'shop'),
-        row('Research Board', `${s.research} points to spend`, () => this.openResearch(), 'lab'),
-        row('Pottery Class', s.hasKiln
-          ? (s.potteryLv >= FORGE_LEVEL
-            ? `Level ${s.potteryLv} · the kiln is lit`
-            : `Level ${s.potteryLv} · forging opens at ${FORGE_LEVEL}`)
-          : 'Build a Harbour Kiln in the works first',
-        () => this.openPottery(), 'kiln'),
-        h('div.section', null, 'The house'),
-        row('How to Play', 'The short version, in writing', () => this.game.openHelp(), 'help'),
-        row('Run the guide', 'Nine steps, pointing at each thing in turn',
-          () => this.game.openGuide(), 'refresh'),
-        row('Settings', 'Sound, motion, tips — and starting over',
-          () => this.openSettings(), 'tools'),
-        row('Credits', 'Made by Pukking Dragon', () => this.openCredits(), 'crew'),
-        s.phase === 'prep'
-          ? row('Main menu', 'Back out and look at the place', () => this.game.openTitle(), 'shop')
-          : this.#card({
-            icon: 'shop',
-            title: 'Main menu',
-            sub: s.phase === 'open' ? 'Close up first — service is running.' : 'Finish the day first.',
-            locked: true,
-          }),
-      ],
-    };
-    this.hud.openSheet(spec);
-  }
+  /**
+   * There is no Harbour Menu any more.
+   *
+   * It was a list of links to panels that all have somewhere better to be: the
+   * crew are a tab of the build menu because hiring is building, the research
+   * board opens off the computer that banks the points the way the class opens
+   * off the kiln, and the diary, the kitchen and the inventory are already keys
+   * on the rail. What was left — settings, credits, the guide, the way back to
+   * the menu — is one panel, and this is it.
+   */
+  openHub() { this.openSettings(); }
 
   /* ---------------------------------------------------------------- diary  */
 
@@ -1278,9 +1271,19 @@ export class Panels {
     this.reopen = () => this.openResearch();
     const s = this.state;
     const body = [
-      h('div.note', null, 'A ', h('b', null, 'Harbour Computer'),
-        ' on the factory floor turns quiet hours into points. Spend them here.'),
+      h('div.note', null, 'The ', h('b', null, 'Harbour Computer'),
+        ' banks a point every quiet minute. Tap it on the factory floor any time',
+        ' to open this board.'),
     ];
+    if (!s.hasWorks('lab')) {
+      body.push(this.#card({
+        src: this.assets.url('machines', 'computer_desk'),
+        title: 'You have no computer',
+        sub: 'Build a Harbour Computer in the works, under Workshop, and it starts'
+          + ' banking points on its own.',
+        tags: [this.#cost(1200)],
+      }));
+    }
     const nodeIcon = { flyer: 'flyer', works: 'hammer', trade: 'sand' };
     for (const grp of RESEARCH_GROUPS) {
       body.push(h('div.section', null, grp.label));
@@ -1514,6 +1517,32 @@ export class Panels {
       body: [
         h('div.note', null, 'Everything here is remembered with your save.'),
         ...settingRows(this.game),
+        h('div.section', null, 'The house'),
+        this.#card({
+          icon: 'help',
+          title: 'How to play',
+          sub: 'The whole job, in writing.',
+          side: this.#goBtn('Read', { onclick: () => this.openHelp() }),
+        }),
+        this.#card({
+          icon: 'crew',
+          title: 'Credits',
+          sub: 'Made by Pukking Dragon.',
+          side: this.#goBtn('Open', { onclick: () => this.openCredits() }),
+        }),
+        s.phase === 'prep'
+          ? this.#card({
+            icon: 'shop',
+            title: 'Main menu',
+            sub: 'Back out and look at the place.',
+            side: this.#goBtn('Go', { cls: 'pill-quiet', onclick: () => this.game.openTitle() }),
+          })
+          : this.#card({
+            icon: 'shop',
+            title: 'Main menu',
+            sub: s.phase === 'open' ? 'Close up first — service is running.' : 'Finish the day first.',
+            locked: true,
+          }),
         h('div.section', null, 'The guide'),
         this.#card({
           icon: 'help',

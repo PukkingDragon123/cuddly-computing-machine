@@ -17,7 +17,7 @@ import {
 } from './data/progress.js';
 
 const KEY = 'bubbleworks.harbor.save.v1';
-const VERSION = 7;
+const VERSION = 8;
 export const SAVE_KEY = KEY;
 
 function fresh() {
@@ -51,6 +51,7 @@ function fresh() {
     clay: 0,
     dishes: {},                      // recipe id -> forged serving-dish tier
     catch: null,                     // the day's catch — see rollCatch()
+    market: null,                    // stall stock and prices — see rollMarket()
     settings: { sound: true, motion: true, tips: true },
     tutorial: { step: 0, done: false },
     seenHelp: false,
@@ -92,6 +93,7 @@ function migrate(data) {
   data.clay ??= 0;
   data.dishes ??= {};
   data.catch ??= null;
+  data.market ??= null;
   data.settings = { sound: true, motion: true, tips: true, ...(data.settings ?? {}) };
   data.tutorial ??= { step: 0, done: !!data.seenHelp };
   // the pens are gone, so their machines and the two recipes that needed them
@@ -145,7 +147,7 @@ export class GameState {
       researched: this.researched, bought: this.bought,
       pottery: this.pottery, clay: this.clay, dishes: this.dishes,
       catch: this.catch,
-      settings: this.settings, tutorial: this.tutorial,
+      market: this.market, settings: this.settings, tutorial: this.tutorial,
       furniture: this.furniture.map(({ c, r, id, style, rot }) => ({ c, r, id, style, rot })),
       machines: this.machines.map(({ c, r, kind, id, dir, level, buf }) =>
         ({ c, r, kind, id, dir, level, buf })),
@@ -577,10 +579,77 @@ export class GameState {
     return this.catch;
   }
 
-  /** Today's market discount on an ingredient, as a multiplier. */
+  /* ------------------------------------------------------------- the market */
+
+  /**
+   * The stall restocks on the hour, and its prices move with it.
+   *
+   * A fixed price list made the market a vending machine: there was never a
+   * reason to look at it twice. Now every crate has a number of them and a price
+   * that has drifted up or down since the last delivery, so buying cheap and
+   * buying early are both worth doing — and the day's catch lands on top as the
+   * deepest cut of the lot.
+   */
+  get marketHour() { return Math.floor(Date.now() / 3600000); }
+
+  /** Roll a fresh delivery. Returns the new stall. */
+  rollMarket(rand = Math.random) {
+    const stock = {};
+    const price = {};
+    for (const id of MARKET_ORDER) {
+      const base = INGREDIENTS[id].price;
+      // cheap staples come in by the crate, the pricey catch in ones and twos
+      const plenty = Math.max(2, Math.round(26 / Math.max(2, base)));
+      stock[id] = plenty + Math.floor(rand() * plenty);
+      // ±35%, quantised to whole sand dollars, never free
+      const swing = 0.65 + rand() * 0.7;
+      price[id] = Math.max(1, Math.round(base * swing));
+    }
+    this.market = { hour: this.marketHour, stock, price };
+    return this.market;
+  }
+
+  /** The stall as it stands, rolling a delivery if the hour has turned. */
+  get stall() {
+    if (!this.market || this.market.hour !== this.marketHour) {
+      const fresh = this.rollMarket();
+      this.bus.emit('market', fresh);
+      return fresh;
+    }
+    return this.market;
+  }
+
+  /** Minutes until the next delivery. */
+  get marketIn() {
+    return Math.max(0, 60 - Math.floor((Date.now() % 3600000) / 60000));
+  }
+
+  marketStock(id) { return this.stall.stock[id] ?? 0; }
+
+  /** What a crate costs right now, catch discount and all. */
   catchPrice(id) {
-    const base = INGREDIENTS[id]?.price ?? 0;
+    const base = this.stall.price[id] ?? INGREDIENTS[id]?.price ?? 0;
     return this.catch?.cheap?.includes(id) ? Math.max(1, Math.round(base * 0.6)) : base;
+  }
+
+  /** How far off the usual price this is, as a signed fraction. */
+  priceDrift(id) {
+    const base = INGREDIENTS[id]?.price ?? 0;
+    if (!base) return 0;
+    return (this.catchPrice(id) - base) / base;
+  }
+
+  /** Buy `n` crates if the stall has them and the till can cover it. */
+  buyFromMarket(id, n = 1) {
+    const have = this.marketStock(id);
+    if (have <= 0) return 0;
+    const take = Math.min(n, have);
+    const total = this.catchPrice(id) * take;
+    if (!this.spend(total)) return 0;
+    this.market.stock[id] = have - take;
+    this.addIng(id, take);
+    this.save();
+    return take;
   }
 
   /** The dish the harbour is asking for today pays over the odds. */

@@ -152,6 +152,15 @@ html, body {
 #hud.sheeting .barrow { display: none }
 #hud.sheeting .zoneswitch,
 #hud.sheeting .servicebar { opacity: 0; pointer-events: none }
+/* On a phone the panel fills the width, which puts the rail straight over its
+   close button and its last tab. There is nowhere else for either to go, so the
+   rail steps aside while a panel is open — the scrim still closes it. On a wide
+   screen the panel is narrower than the room and the rail stays put, so you can
+   still flick between panels with one tap. */
+.rail { transition: opacity .16s ease }
+@media (max-width: 44rem) {
+  #hud.sheeting .rail { opacity: 0; pointer-events: none }
+}
 .barrow { display: flex; align-items: flex-end; gap: 0.5rem; }
 .barspace { flex: 1 }
 
@@ -798,6 +807,11 @@ html, body {
   padding: 0.6rem 0.75rem 0.85rem;
   display: flex; flex-direction: column; gap: var(--gap);
 }
+/* A long list is a scrolling list, not a squashed one. Flex children shrink by
+   default, and once ten crew cards overflowed the panel every card was pressed
+   shorter than its own text — the name and the price spilled out over the card
+   above and below. Rows keep their height and the body scrolls. */
+.sheet-body > * { flex: none }
 .sheet-foot {
   flex: none;
   border-top: var(--bw) solid var(--tan-deep);
@@ -879,6 +893,99 @@ html, body {
   padding: 0.26rem 0.4rem;
   gap: 0.4rem;
 }
+
+/* single sheets ------------------------------------------------------- */
+
+/* Two panels are not books but loose paper: the pantry is a stock list on a
+   leaf torn from the same notebook, and the build menu is a drafting sheet.
+   Both are real scans from the art pack, so the panel drops its flat cream fill
+   and wears the paper itself — cover-cropped, since a stock list may be one
+   card long or twenty and the paper simply runs on. */
+.sheet.paper {
+  background-color: #efe0c4;
+  background-repeat: no-repeat;
+  /* Both scans are two-page spreads, and a fold down the middle of a stock list
+     reads as a crease rather than a binding. Cropping from the left edge shows
+     one leaf only — which needs the panel to stay tall, since a short panel
+     scales the picture down until the spine creeps into view. So a paper sheet
+     is always full height, however little is written on it. */
+  background-position: left top;
+  background-size: cover;
+  min-height: min(84%, 50rem);
+  border-top: var(--bw) solid rgba(58, 36, 20, .35);
+}
+.sheet.paper-plain { background-image: url("assets/ui/book_plain.webp") }
+.sheet.paper-plan  { background-image: url("assets/ui/blueprint.webp"); background-color: #215e95 }
+
+/* the head bar would hide the top of the sheet, so it becomes a plaque like the
+   book panels use rather than a stained board across the whole width */
+.sheet.paper .sheet-head {
+  background: transparent;
+  border-bottom: 0;
+  box-shadow: none;
+  padding: 0.85rem 0.6rem 0.3rem;
+}
+.sheet.paper .sheet-head h2 {
+  flex: none;
+  margin: 0 auto;
+  text-align: center;
+  padding: 0.24rem 1rem;
+  border: var(--bw) solid var(--ink);
+  border-radius: 999px;
+  background-color: var(--panel);
+  background-image: var(--sheen);
+  box-shadow: 0 var(--lift) 0 var(--tan-shadow), var(--face);
+  color: var(--ink-deep);
+  font-size: 1rem;
+  text-shadow: none;
+}
+.sheet.paper .sheet-grip { display: none }
+.sheet.paper .sheet-tabs {
+  border: var(--bw) solid var(--ink);
+  box-shadow: 0 0.18rem 0 var(--tan-shadow), inset 0 0.14rem 0.2rem rgba(95, 61, 38, .2);
+}
+.sheet.paper .sheet-foot {
+  border-top: 0;
+  background-color: transparent;
+}
+/* the scans are ruled with a margin, so the writing keeps inside it */
+.sheet.paper .sheet-body { padding-inline: 6% }
+.sheet.paper .sheet-tabs { margin-inline: 6% }
+.sheet.paper .sheet-foot { padding-inline: 6% }
+.sheet.paper .sheet-foot > .rowline {
+  flex: 1;
+  border: var(--bw) solid var(--ink);
+  border-radius: 999px;
+  background-color: var(--panel);
+  background-image: var(--sheen);
+  box-shadow: 0 var(--lift) 0 var(--tan-shadow), var(--face);
+  padding: 0.26rem 0.5rem;
+  gap: 0.4rem;
+}
+
+/* Blueprint. The paper is deep blue, so anything written straight onto it is
+   drawn in chalk white; the cards keep their cream, reading as chits pinned to
+   the drawing rather than part of it. */
+.sheet.paper-plan .note,
+.sheet.paper-plan .empty,
+.sheet.paper-plan .section {
+  color: #eaf3ff;
+  text-shadow: 0 0.08rem 0 rgba(12, 40, 70, .75);
+}
+.sheet.paper-plan .note {
+  border: 0.12rem dashed rgba(233, 243, 255, .55);
+  border-radius: var(--r-md);
+  background: rgba(12, 44, 78, .34);
+  padding: 0.42rem 0.55rem;
+}
+.sheet.paper-plan .note b { color: var(--sun) }
+.sheet.paper-plan .section::after { background: rgba(233, 243, 255, .4) }
+.sheet.paper-plan .sheet-tabs {
+  background: rgba(12, 44, 78, .5);
+  box-shadow: inset 0 0.14rem 0.2rem rgba(6, 26, 48, .5);
+}
+.sheet.paper-plan .tab { color: #dbe8f7 }
+.sheet.paper-plan .tab.on { color: var(--ink-deep) }
 
 .bookwrap { width: 100%; container-type: inline-size }
 

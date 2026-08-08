@@ -452,12 +452,16 @@ export class Factory {
     }
     const m = this.at(t.c, t.r);
     if (m) {
-      // the kiln is a workplace, not a machine to tune: tapping it opens the
-      // class, which is the whole reason it earns a floor tile
-      if (m.def?.kind === 'kiln') {
+      // Some machines are places rather than things to tune. The kiln is where
+      // the pottery class happens and the computer is where the research is
+      // spent, so tapping either opens its board — which is the whole reason
+      // they earn a floor tile instead of a menu entry.
+      const opens = { kiln: () => this.game.openPottery(), lab: () => this.game.openResearch() };
+      const open = opens[m.def?.kind];
+      if (open) {
         this.selection = m;
         this.sfx.play('select');
-        this.game.openPottery();
+        open();
         return null;
       }
       this.selection = m;

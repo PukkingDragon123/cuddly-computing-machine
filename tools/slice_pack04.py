@@ -66,8 +66,18 @@ CARDS = [
 
 # ------------------------------------------------------------------- books ---
 
-BOOKS = [('book_menu.png', 'book_menu'), ('book_diary.png', 'book_diary')]
+BOOKS = [
+    ('book_menu.png', 'book_menu'),
+    ('book_diary.png', 'book_diary'),
+    # no ruled boxes on this one, so it backs the panels whose content is a grid
+    ('book_plain.png', 'book_plain'),
+]
 BOOK_W = 1200
+
+# The drafting sheet behind the build menu: a grid, corner ticks and title
+# blocks. Rectangular, so it only needs its white margin trimmed off.
+PLANS = [('blueprint_sheet.png', 'blueprint')]
+PLAN_W = 1100
 
 
 def lift_magenta(img: Image.Image) -> Image.Image:
@@ -253,6 +263,25 @@ def slice_books(manifest):
     manifest['ui'] = entries
 
 
+def slice_plans(manifest):
+    """The drafting sheet. Opaque and rectangular — it is a sheet of paper."""
+    os.makedirs(os.path.join(OUT, 'ui'), exist_ok=True)
+    for fname, name in PLANS:
+        img = Image.open(os.path.join(PACK, fname)).convert('RGB')
+        rgb = np.asarray(img).astype(np.int16)
+        ink = ndimage.binary_opening(rgb.min(axis=-1) < 232, np.ones((7, 7)))
+        ys, xs = np.nonzero(ink)
+        if len(xs):
+            img = img.crop((int(xs.min()), int(ys.min()), int(xs.max()) + 1, int(ys.max()) + 1))
+        if img.width > PLAN_W:
+            k = PLAN_W / img.width
+            img = img.resize((PLAN_W, max(1, round(img.height * k))), Image.LANCZOS)
+        rel = f'ui/{name}.webp'
+        img.save(os.path.join(OUT, rel), quality=86, method=6)
+        print(f'  {rel}: {img.width}x{img.height}'
+              f' ({os.path.getsize(os.path.join(OUT, rel)) // 1024} KB)')
+
+
 def main():
     path = os.path.join(OUT, 'atlas.json')
     manifest = json.load(open(path)) if os.path.exists(path) else {}
@@ -262,6 +291,8 @@ def main():
     slice_cards(manifest)
     print('slicing the books…')
     slice_books(manifest)
+    print('slicing the drafting sheet…')
+    slice_plans(manifest)
     with open(path, 'w') as fh:
         json.dump(manifest, fh, indent=1)
     print('groups:', {k: len(v) for k, v in manifest.items()})
