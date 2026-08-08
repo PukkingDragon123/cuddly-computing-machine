@@ -8,9 +8,9 @@ import {
   MAX_LEVEL, RECIPES, RECIPE_BY_ID, priceAt, prepAt, starsAt, upgradeCost,
 } from '../data/recipes.js';
 import {
-  BELT, FURNITURE, MACHINES, MACHINE_MAX_LEVEL, POTTERY, SILO, STAFF, STYLES,
-  STYLE_BY_ID, WORKSHOP, costOf, groupFor, machineInterval, machineUpgradeCost,
-  starsOf,
+  BELT, CREW_ROOMS, FURNITURE, MACHINES, MACHINE_MAX_LEVEL, POTTERY, SILO, STAFF,
+  STYLES, STYLE_BY_ID, WORKSHOP, costOf, groupFor, machineInterval,
+  machineUpgradeCost, starsOf,
 } from '../data/catalog.js';
 import {
   GUESTS, GUEST_BY_ID, MAX_FRIEND, TASTES, heartsToNext,
@@ -88,6 +88,43 @@ export class Panels {
     )));
   }
 
+  /**
+   * One piece in the catalogue.
+   *
+   * A build menu is a shop window, so the drawing is the biggest thing on the
+   * card and it is shown in the finish you have picked — the same chair in pine
+   * and in walnut are different things to buy, and you should be able to see
+   * that before you pay for it. What it does to the room is set out beneath as
+   * plain figures, and how many you already own is on the card, since the usual
+   * question at this point is "do I need another one".
+   */
+  #pieceCard(item) {
+    const cost = costOf(item, this.buildStyle);
+    const stars = starsOf(item, this.buildStyle);
+    const owned = this.state.furniture.filter((f) => f.id === item.id).length;
+    const notes = [];
+    if (item.kind === 'seat') notes.push('seats one');
+    if (item.kind === 'table') notes.push('takes chairs');
+    if (item.patience) notes.push(`+${Math.round((item.patience - 1) * 100)}% patience`);
+    if (item.patienceRoom) notes.push(`+${Math.round((item.patienceRoom - 1) * 100)}% patience, room-wide`);
+    if (item.tip || item.tipRoom) notes.push(`+${Math.round(((item.tip ?? item.tipRoom) - 1) * 100)}% tips`);
+    if (item.draw) notes.push('guests arrive faster');
+    if (item.order) notes.push('quicker to the kitchen');
+    return h(`div.card.piece.tap${this.state.coins < cost ? '.thin' : ''}`, {
+      onclick: () => this.game.startPlacing(item.id, this.buildStyle),
+    },
+    h('div.stage', null, h('i', {
+      style: { backgroundImage: `url("${this.assets.url(groupFor(item, this.buildStyle), spriteIdOf(item))}")` },
+    }), owned ? h('span.owned', null, `×${owned}`) : null),
+    h('div.card-main', null,
+      h('div.card-title', null, item.label),
+      h('div.card-sub', null, item.blurb),
+      notes.length ? h('div.card-sub.faint', null, notes.join(' · ')) : null,
+      h('div.rowline', null,
+        this.#cost(cost),
+        stars > 0 ? tag(`${stars}★`, 'tag-star') : null)));
+  }
+
   /* ----------------------------------------------------------------- build  */
 
   openBuild(keep = false) {
@@ -105,26 +142,15 @@ export class Panels {
     const body = this.buildTab === 'expand' ? this.#expandTab()
       : this.buildTab === 'crew' ? this.#crewRows() : [
       h('div.note', null,
-        'Pick a finish, then tap a piece and tap the floor. ', h('b', null, 'Rotate'),
-        ' turns it to any of four sides; chairs turn to face their table on their own.'),
+        'Pick a finish, then tap a piece and tap the floor. ', h('b', null, 'Turn'),
+        ' faces it any of four ways; chairs turn to their table on their own.'),
       this.#styleRow(),
-      ...items.map((item) => {
-        const cost = costOf(item, this.buildStyle);
-        const stars = starsOf(item, this.buildStyle);
-        return this.#card({
-          src: this.assets.url(groupFor(item, this.buildStyle), spriteIdOf(item)),
-          title: item.label,
-          sub: item.blurb,
-          tags: [this.#cost(cost), stars > 0 ? tag(`${stars}★`, 'tag-star') : null].filter(Boolean),
-          onclick: () => this.game.startPlacing(item.id, this.buildStyle),
-        });
-      }),
+      ...items.map((item) => this.#pieceCard(item)),
     ];
 
     const spec = {
       key: 'build',
       title: 'Build the Dining Room',
-      book: 'plan',
       tabs: [
         { id: 'seating', label: 'Seating' },
         { id: 'kitchen', label: 'Kitchen' },
@@ -194,14 +220,14 @@ export class Panels {
       body = [
         h('div.note', null, 'Tap ', h('b', null, 'Conveyor'), ' then drag across the floor to draw a line. Belts carry whatever the machine behind them makes.'),
         this.#card({
-          src: null,
+          icon: 'belt',
           title: BELT.label,
           sub: BELT.blurb,
           tags: [this.#cost(BELT.cost)],
           onclick: () => this.game.startFactoryPlacing('belt', 'belt'),
         }),
         this.#card({
-          src: null,
+          icon: 'erase',
           title: 'Remove Tool',
           sub: 'Drag over belts or machines to take them back for half price.',
           tags: [tag('50% back', 'tag-ok')],
@@ -690,7 +716,6 @@ export class Panels {
     const spec = {
       key: 'pantry',
       title: 'Inventory',
-      book: 'plain',
       tabs: [{ id: 'pantry', label: 'What You Own' }, { id: 'market', label: 'Harbor Market' }],
       tab: this.pantryTab,
       onTab: (id) => { this.pantryTab = id; this.openPantry(true); },
@@ -948,13 +973,59 @@ export class Panels {
 
   /* ------------------------------------------------------------------ crew  */
 
-  /** Hiring is building: the same list, now a tab of the build menu. */
+  /**
+   * The rota. Hiring is building, so it is a tab of the build menu — and it is
+   * read the way a rota is: by where somebody works, not as one long list of
+   * strangers. A room you have nobody in still gets its heading, because the
+   * gap in the rota is the thing worth seeing.
+   */
   #crewRows() {
-    return [
-      h('div.note', null, 'Hires are permanent and do the fiddly jobs for you — seating guests,',
-        ' running plates, keeping the works humming.'),
-      ...this.#staffCards(),
+    const s = this.state;
+    const hired = STAFF.filter((st) => s.hasStaff(st.id)).length;
+    const out = [
+      h('div.note', null, 'A hire is permanent, and takes one of the fiddly jobs off you for good. ',
+        h('b', null, `${hired} of ${STAFF.length}`), ' on the books.'),
     ];
+    for (const room of CREW_ROOMS) {
+      const crew = STAFF.filter((st) => (st.crew ?? 'floor') === room.id);
+      if (!crew.length) continue;
+      const on = crew.filter((st) => s.hasStaff(st.id)).length;
+      out.push(h('div.section', null, room.label,
+        h('span.section-n', null, `${on}/${crew.length}`)));
+      out.push(...crew.map((st) => this.#hireCard(st)));
+    }
+    return out;
+  }
+
+  /**
+   * One name on the rota.
+   *
+   * The portrait is the point — every hire is a drawn character, so they get a
+   * standing frame rather than the little square well a crate of carrots gets,
+   * and once they are on the crew the card is stamped and the button goes.
+   */
+  #hireCard(st) {
+    const s = this.state;
+    const hired = s.hasStaff(st.id);
+    const poor = s.coins < st.cost;
+    return h(`div.card.hire${hired ? '.on' : ''}${!hired && poor ? '.thin' : ''}`, null,
+      h('div.port', null, this.#sprite('staff', st.sprite)),
+      h('div.card-main', null,
+        h('div.card-title', null, st.label),
+        h('div.card-sub', null, st.blurb),
+        hired
+          ? h('div.rowline', null, tag('On the crew', 'tag-ok'))
+          : h('div.rowline', null, this.#cost(st.cost), this.#goBtn('Hire', {
+            disabled: poor,
+            onclick: () => {
+              if (!s.spend(st.cost)) return;
+              s.hire(st.id);
+              s.save();
+              this.game.celebrate(`${st.label} joined the crew!`);
+              this.refresh();
+            },
+          }))),
+      hired ? h('span.stamp', null, '✓') : null);
   }
 
   openCrew(keep = false) {
@@ -965,31 +1036,6 @@ export class Panels {
       body: this.#crewRows(),
     };
     keep ? this.hud.refreshSheet(spec) : this.hud.openSheet(spec);
-  }
-
-  #staffCards() {
-    const s = this.state;
-    return STAFF.map((st) => {
-      const hired = s.hasStaff(st.id);
-      return this.#card({
-        src: this.assets.url('staff', st.sprite),
-        frames: this.assets.frameCount('staff', st.sprite),
-        title: st.label,
-        sub: st.blurb,
-        tags: hired ? [tag('On the crew', 'tag-ok')] : [this.#cost(st.cost)],
-        side: hired ? null : this.#goBtn('Hire', {
-          disabled: s.coins < st.cost,
-          onclick: () => {
-            if (!s.spend(st.cost)) return;
-            s.hire(st.id);
-            s.save();
-            this.game.celebrate(`${st.label} joined the crew!`);
-            this.refresh();
-          },
-        }),
-        cls: hired ? 'sel' : '',
-      });
-    });
   }
 
   /* ------------------------------------------------------------- inspectors */
@@ -1063,7 +1109,7 @@ export class Panels {
             ? ['Carrying ', h('b', null, `${m.items.length} item${m.items.length === 1 ? '' : 's'}`), ` toward ${DIR_NAMES[m.dir]}.`]
             : 'Everything dropped here goes straight into the pantry.'),
           isBelt ? this.#card({
-            src: null, title: 'Turn belt', sub: `Now pointing ${DIR_NAMES[m.dir]}`,
+            icon: 'turn', title: 'Turn belt', sub: `Now pointing ${DIR_NAMES[m.dir]}`,
             side: this.#goBtn('Rotate', { onclick: () => { m.dir = (m.dir + 1) % 4; this.state.save(); this.openMachine(m, true); } }),
           }) : null,
         ].filter(Boolean),
@@ -1098,7 +1144,7 @@ export class Panels {
             bar(m.level / MACHINE_MAX_LEVEL),
             h('div.card-sub', null, `Level ${m.level} of ${MACHINE_MAX_LEVEL}`))),
         this.#card({
-          src: null,
+          icon: 'turn',
           title: 'Output direction',
           sub: `Currently ${DIR_NAMES[m.dir]} — it needs a belt or the intake on that tile.`,
           side: this.#goBtn('Rotate', {
@@ -1106,7 +1152,7 @@ export class Panels {
           }),
         }),
         maxed ? null : this.#card({
-          src: null,
+          icon: 'tools',
           title: 'Tune it up',
           sub: `${now.toFixed(2)}s → ${next.toFixed(2)}s per item`,
           tags: [this.#cost(cost)],
@@ -1594,7 +1640,7 @@ export class Panels {
         h('div.section', null, 'The art'),
         h('div.note', null, 'Four sprite packs: the character pack, the furniture and',
           ' joinery, the rare cast with the plates and machines, and the pottery works',
-          ' with the two books. Rooms are generated so the tiles always line up.'),
+          ' with the books you are reading this in. Rooms are generated so the tiles always line up.'),
         h('div.section', null, 'Your harbour so far'),
         line('Days open', String(s.day)),
         line('Guests served', String(s.stats.served)),

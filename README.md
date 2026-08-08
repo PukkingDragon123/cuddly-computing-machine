@@ -61,7 +61,7 @@ The whole thing replays from Settings.
 | **Service** | Drag the finished dish off the kitchen pass onto the guest who ordered it. Tap-then-tap works too. |
 | **Payment** | Guests pay on how briskly they were served. Let a patience meter empty and they walk out, costing reputation. |
 | **Washing up** | A guest who has eaten leaves a plate behind, and that chair is out of service for five seconds while it is scrubbed. The Deep Sink halves it and a Dishwasher all but removes it. |
-| **Inventory** | Everything you own in one place: the larder, what is plated, your flyers, clay, research and forged crockery — written on a leaf of the same notebook the menu is bound in. |
+| **Inventory** | Everything you own in one place: the larder, what is plated, your flyers, clay, research and forged crockery. |
 | **The market** | The other tab of the inventory. The boats land once an hour: a fresh stall, a fresh set of prices. Every crate is counted, so a stall can sell out, and every price drifts up or down by as much as a third against its usual — the card says which way and by how much, and a countdown says how long until the next delivery. Today's catch takes another 40% off three of them. |
 
 Fancier furniture finishes (Seaside Pine → Cosy Cottage → Antique) and decor raise the
@@ -129,24 +129,42 @@ tells you a corner of the screen is for pressing.
 inline styles on whatever existed at boot, so every card the panels build later
 gets the painted icon too.
 
-The Kitchen, the Diary and the morning catch are not lists but **books**, and
-they are books properly: the spread keeps its own shape and the content is cut
-to fit the boxes actually ruled on the drawing — three to a page on the menu
-book, an index of four and a page-sized panel on the diary. The slot geometry is
-measured off the art rather than guessed, so a dish lands inside its box at any
-size. Nothing is laid over the top of the drawing, nothing is washed out to make
-room for text, and the margin the books were drawn on is flooded to
-transparency, so the covers float instead of sitting on a rectangle of paper.
+**Every panel is a book.** Not a cream rectangle with a picture behind it — the
+drawing is the panel, and the writing goes on the page. Three of them are ruled
+spreads whose boxes the content is cut to fit: the Kitchen (three to a page), the
+Diary (an index of four and a page-sized panel), and the morning catch. The rest
+are written into the blank notebook. The slot geometry is measured off the art
+rather than guessed, so a dish lands inside its box at any size, and the margin
+the books were drawn on is flooded to transparency so the covers float instead of
+sitting on a rectangle of paper.
 
-The spread is never stretched. Where there is room it shows both pages; where
-there is not it shows one, at twice the scale, slid to the page you are reading —
-half the width at twice the size is the same picture, exactly, so a phone gets a
-single undistorted page rather than a squashed spread. Content follows: three
-dishes and their specials across a desktop spread, three dishes then their
-specials as two phone pages; the diary's index and a guest's page side by side,
-or one then the other with a *‹ Index* to come back. A menu line is set the way a
-printed one is — name, leader dots, price — and pages turn instead of scrolling.
-The day's catch arrives on one of the pack's twenty illustrated menu cards.
+Nothing is ever stretched and nothing is ever cropped. The wrapper is a CSS size
+container, so the drawing takes the largest width that still leaves room for its
+own height — "contain", done in the layout rather than by cutting the picture.
+Where there is room it shows both leaves; where there is not it shows one, at
+twice the scale, slid to the page you are reading — half the width at twice the
+size is the same picture, exactly, so a phone gets a single undistorted page
+rather than a squashed spread.
+
+A book that scrolls is not a book, so the blank notebook **paginates**. Each card
+is laid on the page at the width it will be read at and its height is read back —
+margins included, since a section heading carries one — and when the next card
+would run off the bottom it starts the next page. Two leaves on a wide screen and
+one on a phone, so the same list simply falls into more pages on a phone, which is
+what a smaller book does. Three printer's rules come with that: a heading left at
+the foot of a column goes over with the list it announces rather than standing
+there as a widow; a list short enough to fit is broken halfway down by height, so
+you never get a full left page and a blank right one; and a page with two lines on
+it centres them on the leaf instead of jamming them under the top rule.
+
+Turning a page turns a page. The leaf is cut to the size of the page on screen
+and pinned to the panel — not inside the body it is about to replace — so it
+rotates about the gutter in 3D with a light running off it while the new page is
+written underneath. Both its faces are the paper itself, offset to the leaf each
+one stands in for.
+
+A menu line is set the way a printed one is — name, leader dots, price. The day's
+catch arrives on one of the pack's twenty illustrated menu cards.
 
 Two things a placement preview must say — what am I holding, and which way is it
 facing — so the ghost is a **blueprint** (drafting blue, hard white cut line, the
@@ -160,13 +178,16 @@ Readouts do not take pointer events. The service tally floats over the middle of
 the room, which is exactly where the kitchen pass sits, and a `<b>` inside it was
 quietly eating taps meant for a finished plate.
 
-Two panels are not books but loose paper. The inventory is a stock list on a
-leaf torn from the same notebook, and the build menu is a drafting sheet — both
-real scans, cropped to a single leaf so a fold never runs down the middle of a
-list, and both always full height, however little is written on them, because a
-short panel scales the picture down until the binding creeps back into view. The
-blueprint is deep blue, so anything written straight onto it is chalk white and
-the cards keep their cream: chits pinned to a drawing rather than part of it.
+The rota and the catalogue are the two panels worth designing properly, because
+they are the two you spend money in. A hire is a drawn character, so they get a
+standing portrait frame rather than the little square well a crate of carrots
+gets, and the roster is read the way a rota is — front of house, the kitchen, the
+works, the office, each with how many of its posts you have filled. Somebody on
+the books turns their card green and stamps it. The catalogue is a shop window:
+the drawing is the biggest thing on the card and it is shown in the finish you
+have picked, since the same chair in pine and in walnut are two different things
+to buy, with what it does to the room set out as plain figures and how many you
+already own on the corner of the art.
 
 Panels earn their place on the rail by being opened often, and the ones that did
 not are gone. There is no Harbour Menu any more — a hub whose job was to hold
@@ -221,13 +242,14 @@ index. `art_pack_03` came from the companion **reimagined-sniffle** repo, and
   measures (247,242,236) against the cards' warmer (248,226,190), which is a
   clean 40 levels apart on the blue channel.
 - `art_pack_04/book_menu.png`, `book_diary.png`, `book_plain.png` — three open
-  spreads: the ruled menu, the diary, and a blank notebook the inventory is
-  written on. `blueprint_sheet.png` is a fourth sheet of paper, a drafting sheet,
-  and it backs the build menu. All four back a DOM panel rather than a canvas
-  sprite, so they are trimmed, scaled and written as WebP for CSS to pick up —
-  with the margin the books were drawn on flooded to transparency, so a cover
-  floats instead of sitting on a rectangle of paper. The blueprint keeps its
-  margin: it is a sheet of paper, and a sheet of paper is opaque.
+  spreads: the ruled menu, the diary, and the blank notebook every other panel is
+  written into. They back a DOM panel rather than a canvas sprite, so they are
+  trimmed, scaled and written as WebP for CSS to pick up — with the margin they
+  were drawn on flooded to transparency, so a cover floats instead of sitting on
+  a rectangle of paper.
+- `art_pack_04/blueprint_sheet.png` — a drafting sheet, kept opaque and
+  rectangular because that is what a sheet of paper is. It is the placement
+  ghost's paper.
 
 Every sheet across the four packs is sliced except the three superseded
 furniture sheets, the two painted room plates that the generated rooms replace,

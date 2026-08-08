@@ -336,47 +336,215 @@ export class Hud {
     this.sheetOpen = spec.key ?? spec.title;
     this.el.sheetTitle.textContent = spec.title;
 
-    // Panels that are books get the drawn spread behind them and open like one.
-    // Two of the backdrops are not books but backing paper — a plain ledger for
-    // the inventory, a drafting sheet for the build menu — and those simply sit
-    // behind an ordinary scrolling list.
-    const book = spec.book ?? null;
+    // Every panel is a book now. Two of them are drawn spreads with boxes ruled
+    // on the page — the kitchen and the diary — and build their own pages; the
+    // rest are written into the blank notebook, which paginates whatever it is
+    // handed. Nothing in the game is a plain cream rectangle any more.
+    const book = spec.book ?? 'page';
     const sheet = this.el.sheet;
-    const spread = book === 'menu' || book === 'diary';
-    sheet.classList.toggle('book', spread);
+    sheet.classList.toggle('book', true);
     sheet.classList.toggle('book-menu', book === 'menu');
     sheet.classList.toggle('book-diary', book === 'diary');
-    sheet.classList.toggle('paper', book === 'plain' || book === 'plan');
-    sheet.classList.toggle('paper-plain', book === 'plain');
-    sheet.classList.toggle('paper-plan', book === 'plan');
-    if (book && wasOpen !== this.sheetOpen) this.openBook();
+    sheet.classList.toggle('book-page', book === 'page');
+    if (wasOpen !== this.sheetOpen) this.openBook();
+
+    const first = sheet.classList.contains('hidden');
 
     clear(this.el.sheetTabs);
     if (spec.tabs?.length) {
       for (const t of spec.tabs) {
-        this.el.sheetTabs.append(h(`button.tab${t.id === spec.tab ? '.on' : ''}`, {
+        const on = t.id === spec.tab;
+        this.el.sheetTabs.append(h(`button.tab${on ? '.on' : ''}`, {
           type: 'button',
-          onclick: () => spec.onTab?.(t.id),
+          onclick: () => { if (!on) this.bookPage[this.sheetOpen] = 0; spec.onTab?.(t.id); },
         }, t.label));
       }
     }
 
     clear(this.el.sheetBody);
-    this.el.sheetBody.append(...[].concat(spec.body ?? []));
-
     clear(this.el.sheetFoot);
-    if (spec.foot) {
-      this.el.sheetFoot.append(...[].concat(spec.foot));
-      show(this.el.sheetFoot, true);
-    } else show(this.el.sheetFoot, false);
+    // On screen before anything is written into it. Setting a page needs to
+    // measure the paper, and a panel that is still `display: none` measures
+    // nothing at all — every card would come out taller than the page.
+    show(this.el.sheet, true);
+    // The footer goes on before the page is set, and for a book it keeps its
+    // height whether it has anything in it or not — otherwise the arrows appear
+    // after the measuring and the last card on the page is pushed off it.
+    const foot = [].concat(spec.foot ?? []).filter(Boolean);
+    if (foot.length) this.el.sheetFoot.append(...foot);
+    show(this.el.sheetFoot, foot.length > 0 || book === 'page');
+
+    let leaves = null;
+    if (book === 'page') {
+      leaves = this.#writeInto(this.el.sheetBody, [].concat(spec.body ?? []));
+      if (leaves.pages > 1) this.el.sheetFoot.append(this.#pageArrows(leaves));
+    } else {
+      this.el.sheetBody.append(...[].concat(spec.body ?? []));
+    }
 
     this.syncDock();
     document.getElementById('hud').classList.add('sheeting');
-    const first = this.el.sheet.classList.contains('hidden');
-    show(this.el.sheet, true);
     show(this.el.scrim, true);
     this.el.sheet.classList.remove('out');
     if (!first) this.el.sheetBody.scrollTop = spec.keepScroll ? this.el.sheetBody.scrollTop : 0;
+  }
+
+  /* ------------------------------------------------------- writing the book */
+
+  /** Is there room for the whole spread, or only one leaf of it? */
+  get wideBook() {
+    return typeof window !== 'undefined'
+      && window.matchMedia('(min-width: 40rem)').matches;
+  }
+
+  /**
+   * Write a panel's content onto the blank notebook.
+   *
+   * The paper is a drawing with a fixed shape, so it is never stretched to fit
+   * a list and never cropped to hide one. Instead the list is set into the page
+   * the way a printer would: cards are poured into the writing area until the
+   * next one would run off the bottom, and that one starts the next page. Two
+   * leaves are showing on a wide screen and one on a phone, so the same list
+   * simply falls into more pages on a phone — which is what a smaller book does.
+   *
+   * The measuring is real. Each card is put on the page and its height read
+   * back, so a two-line card and a five-line card both land where they should
+   * without a table of guessed row heights to keep in step with the CSS.
+   */
+  #writeInto(host, nodes) {
+    const wide = this.wideBook;
+    const cols = wide ? 2 : 1;
+    const pens = [h('div.pagecol'), h('div.pagecol')];
+    const spread = h(`div.spread.spread-plain.${wide ? 'pg-spread' : 'pg-left'}`, null,
+      h('div.slot.c1', null, pens[0]),
+      h('div.slot.c2', null, pens[1]));
+    host.append(h('div.bookwrap', null, spread));
+
+    const items = nodes.filter(Boolean);
+    if (!items.length) return { pages: 1, at: 0, key: this.sheetOpen };
+
+    // One trip to the layout engine: every card goes on a page at the width it
+    // will be read at, and its height is written down. Everything after this is
+    // arithmetic, which is what makes the balancing and the widow rule below
+    // cheap enough to be worth having.
+    pens[0].append(...items);
+    // margins as well as the box: a section heading carries one, and eight of
+    // them unaccounted for is a card hanging off the bottom of the page
+    const tall = items.map((el) => {
+      const cs = getComputedStyle(el);
+      return el.offsetHeight + (parseFloat(cs.marginTop) || 0) + (parseFloat(cs.marginBottom) || 0);
+    });
+    const gap = parseFloat(getComputedStyle(pens[0]).rowGap) || 0;
+    const room = pens[0].clientHeight - 2;
+    pens[0].replaceChildren();
+
+    const heading = (i) => items[i].classList?.contains('section');
+    const runs = (i, cap) => {
+      let used = 0;
+      let j = i;
+      while (j < items.length) {
+        const add = tall[j] + (j > i ? gap : 0);
+        if (used + add > cap && j > i) break;
+        used += add;
+        j++;
+      }
+      // A heading left at the foot of a column is a widow: it announces a list
+      // that is over the page. It goes with what it announces.
+      if (j > i + 1 && j < items.length && heading(j - 1)) j--;
+      return j;
+    };
+
+    // walk the whole list once to learn where every page starts
+    const starts = [0];
+    let i = 0;
+    for (let guard = 0; i < items.length && guard < 400; guard++) {
+      for (let c = 0; c < cols && i < items.length; c++) i = runs(i, room);
+      if (i < items.length) starts.push(i);
+    }
+
+    const key = this.sheetOpen;
+    this.bookPage ??= {};
+    const at = clamp(this.bookPage[key] ?? 0, 0, starts.length - 1);
+    this.bookPage[key] = at;
+
+    const from = starts[at];
+    const to = starts[at + 1] ?? items.length;
+    // A short panel would otherwise leave the right-hand leaf blank, which reads
+    // as a bug rather than a book. When it all fits, it is set across the two
+    // leaves the way a printer would break a column: halfway down by height.
+    let split = to;
+    if (cols === 2) {
+      if (starts.length === 1) {
+        const total = tall.reduce((a, b) => a + b + gap, -gap);
+        let used = 0;
+        split = from;
+        while (split < to - 1 && used + tall[split] / 2 < total / 2) {
+          used += tall[split] + gap;
+          split++;
+        }
+        if (split > from + 1 && heading(split - 1)) split--;
+      } else split = runs(from, room);
+    }
+    pens[0].append(...items.slice(from, Math.min(split, to)));
+    if (cols === 2) pens[1].append(...items.slice(Math.min(split, to), to));
+    // A page with two lines on it should not have them jammed against the top
+    // rule with a hand's width of blank paper underneath. Short pages sit in
+    // the middle of the leaf, the way a short note written on one does.
+    const deep = (a, b) => tall.slice(a, b).reduce((x, y) => x + y + gap, -gap);
+    const mid = Math.min(split, to);
+    pens[0].classList.toggle('airy', mid > from && deep(from, mid) < room * 0.62);
+    pens[1].classList.toggle('airy', to > mid && deep(mid, to) < room * 0.62);
+    return { pages: starts.length, at, key };
+  }
+
+  /** ‹ 2 / 5 › along the bottom of the book. */
+  #pageArrows({ pages, at, key }) {
+    const turn = (d) => {
+      const next = clamp(at + d, 0, pages - 1);
+      if (next === at) return;
+      this.bookPage[key] = next;
+      this.flip(d);
+      this.game.sfx?.play('tap');
+      this.game.panels.refresh();
+    };
+    const arrow = (label, d, off) => h('button.pill.pill-sm.pill-quiet', {
+      type: 'button', disabled: off, onclick: () => turn(d),
+    }, label);
+    return h('div.rowline.leafrow', null,
+      arrow('‹', -1, at === 0),
+      h('span.leafno', null, `${at + 1} / ${pages}`),
+      arrow('›', 1, at >= pages - 1));
+  }
+
+  /**
+   * A leaf turning over.
+   *
+   * The panel re-renders under it, so the leaf cannot live inside the body that
+   * is about to be emptied — it is cut to the size of the page on screen and
+   * pinned to the sheet, where it turns on its own and bows out. Its two faces
+   * are the paper itself, offset to the page each one is standing in for, so
+   * what sweeps across is a page of the book and not a rectangle.
+   */
+  flip(dir = 1) {
+    const sheet = this.el.sheet;
+    const spread = sheet.querySelector('.spread');
+    if (!spread || this.game.state?.motionOn === false) return;
+    const a = spread.getBoundingClientRect();
+    const b = sheet.getBoundingClientRect();
+    const wide = spread.classList.contains('pg-spread');
+    const w = wide ? a.width / 2 : a.width;
+    const back = dir < 0;
+    const leaf = h(`div.leaf${back ? '.leaf-back' : ''}`, {
+      style: {
+        left: `${a.left - b.left + (wide && !back ? a.width / 2 : 0)}px`,
+        top: `${a.top - b.top}px`,
+        width: `${w}px`,
+        height: `${a.height}px`,
+      },
+    }, h('div.leaf-face.leaf-front'), h('div.leaf-face.leaf-rear'));
+    leaf.addEventListener('animationend', () => leaf.remove());
+    sheet.append(leaf);
+    setTimeout(() => leaf.remove(), 900);
   }
 
   /**

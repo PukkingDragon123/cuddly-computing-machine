@@ -183,27 +183,38 @@ export const machineInterval = (m, level, factorySpeed = 1) =>
 /**
  * One-off hires that automate the fiddly parts. This is the idle curve: early
  * on you tap every seat and every plate, later the crew handles it.
+ *
+ * `crew` is where they work, so the roster can be read the way a rota is —
+ * front of house, the kitchen, the works, the office — rather than as one long
+ * alphabetical list of strangers.
  */
+export const CREW_ROOMS = [
+  { id: 'floor',   label: 'Front of house' },
+  { id: 'kitchen', label: 'The kitchen' },
+  { id: 'works',   label: 'The works' },
+  { id: 'office',  label: 'The office' },
+];
+
 export const STAFF = [
-  { id: 'oyster_host',    sprite: '01_oyster_host',    label: 'Oyster Host',
+  { id: 'oyster_host',    sprite: '01_oyster_host', crew: 'floor', label: 'Oyster Host',
     cost: 900,  blurb: 'Seats waiting guests on their own, every few seconds.', effect: 'autoSeat' },
-  { id: 'cuttlefish_server', sprite: '02_cuttlefish_server', label: 'Cuttlefish Server',
+  { id: 'cuttlefish_server', sprite: '02_cuttlefish_server', crew: 'floor', label: 'Cuttlefish Server',
     cost: 1400, blurb: 'Runs finished plates out to tables for you.', effect: 'autoServe' },
-  { id: 'moray_cook',     sprite: '05_moray_eel_noodle_cook', label: 'Noodle Cook',
+  { id: 'moray_cook',     sprite: '05_moray_eel_noodle_cook', crew: 'kitchen', label: 'Noodle Cook',
     cost: 750,  blurb: '+1 dish cooking at the same time.', effect: 'cookSlot' },
-  { id: 'walrus_cook',    sprite: '06_walrus_grill_cook', label: 'Grill Cook',
+  { id: 'walrus_cook',    sprite: '06_walrus_grill_cook', crew: 'kitchen', label: 'Grill Cook',
     cost: 1250, blurb: '+1 dish cooking at the same time.', effect: 'cookSlot' },
-  { id: 'sea_lion_dish',  sprite: '03_sea_lion_dishwasher', label: 'Dishwasher',
+  { id: 'sea_lion_dish',  sprite: '03_sea_lion_dishwasher', crew: 'kitchen', label: 'Dishwasher',
     cost: 480,  blurb: 'Clears tables in a blink after guests leave.', effect: 'fastClean' },
-  { id: 'hammerhead_mech',sprite: '07_hammerhead_mechanic', label: 'Mechanic',
+  { id: 'hammerhead_mech',sprite: '07_hammerhead_mechanic', crew: 'works', label: 'Mechanic',
     cost: 700,  blurb: 'Factory machines run 18% faster.', effect: 'factorySpeed', amount: 0.18 },
-  { id: 'isopod_boiler',  sprite: '08_giant_isopod_boiler_operator', label: 'Boiler Operator',
+  { id: 'isopod_boiler',  sprite: '08_giant_isopod_boiler_operator', crew: 'works', label: 'Boiler Operator',
     cost: 1100, blurb: 'Factory machines run another 18% faster.', effect: 'factorySpeed', amount: 0.18 },
-  { id: 'swordfish_qa',   sprite: '09_swordfish_quality_inspector', label: 'Quality Inspector',
+  { id: 'swordfish_qa',   sprite: '09_swordfish_quality_inspector', crew: 'office', label: 'Quality Inspector',
     cost: 1600, blurb: '+1 reputation star from every guest served.', effect: 'bonusStar' },
-  { id: 'orca_manager',   sprite: '10_orca_harbor_manager', label: 'Harbor Manager',
+  { id: 'orca_manager',   sprite: '10_orca_harbor_manager', crew: 'office', label: 'Harbor Manager',
     cost: 2200, blurb: 'Guests tip 15% more.', effect: 'tips', amount: 0.15 },
-  { id: 'gull_courier',   sprite: '02_cuttlefish_server', label: 'Gull Courier',
+  { id: 'gull_courier',   sprite: '02_cuttlefish_server', crew: 'floor', label: 'Gull Courier',
     cost: 1300, blurb: 'Runs the flyers out: three fewer taps a poster.', effect: 'flyer' },
 ];
 
