@@ -9,8 +9,8 @@
  */
 export const STYLES = [
   { id: 'plain',   label: 'Seaside Pine', furn: 'furn_plain',   fixt: 'fixt_oak',    costMul: 1,   star: 0, tip: 1.00 },
-  { id: 'cottage', label: 'Cosy Cottage', furn: 'furn_cottage', fixt: 'fixt_oak',    costMul: 2.4, star: 1, tip: 1.28 },
-  { id: 'antique', label: 'Antique',      furn: 'furn_antique', fixt: 'fixt_walnut', costMul: 5.5, star: 3, tip: 1.65 },
+  { id: 'cottage', label: 'Cosy Cottage', furn: 'furn_cottage', fixt: 'fixt_oak',    costMul: 2.4, star: 1, tip: 1.28, rank: 1 },
+  { id: 'antique', label: 'Antique',      furn: 'furn_antique', fixt: 'fixt_walnut', costMul: 5.5, star: 3, tip: 1.65, rank: 3 },
 ];
 
 export const STYLE_BY_ID = Object.fromEntries(STYLES.map((s) => [s.id, s]));
@@ -43,23 +43,23 @@ export const FURNITURE = [
   { id: 'chair',    kind: 'seat', set: 'furn', sprite: { f: 'chair_f', b: 'chair_b' },
     label: 'Dining Chair', cost: 50, star: 1, blurb: 'Place it beside a table — it turns to face it.' },
   { id: 'armchair', kind: 'seat', set: 'furn', sprite: { f: 'armchair_f', b: 'armchair_b' },
-    label: 'Armchair', cost: 120, star: 2, patience: 1.3, blurb: 'Deep and soft — guests wait far longer.' },
+    label: 'Armchair', cost: 120, star: 2, patience: 1.3, blurb: 'Deep and soft — guests wait far longer.', rank: 1 },
 
   { id: 'pass_counter', kind: 'pass', set: 'fixt', sprite: 'pass_counter',
     label: 'Kitchen Pass', cost: 220, star: 2, blurb: 'Where the chef plates finished dishes.' },
 
   { id: 'host_desk', kind: 'decor', set: 'fixt', sprite: 'host_desk',
-    label: 'Host Desk', cost: 210, star: 3, draw: 0.12, blurb: 'A welcome out front pulls guests in faster.' },
+    label: 'Host Desk', cost: 210, star: 3, draw: 0.12, blurb: 'A welcome out front pulls guests in faster.', rank: 2 },
   { id: 'cabinet',   kind: 'decor', set: 'furn', sprite: { f: 'cabinet_f', b: 'cabinet_b' },
-    label: 'Sideboard', cost: 95, star: 2, blurb: 'Handsome by a wall.' },
+    label: 'Sideboard', cost: 95, star: 2, blurb: 'Handsome by a wall.', rank: 1 },
   { id: 'drawers',   kind: 'decor', set: 'furn', sprite: { f: 'drawers_f', b: 'drawers_b' },
-    label: 'Chest of Drawers', cost: 90, star: 2, blurb: 'Tucks into a corner.' },
+    label: 'Chest of Drawers', cost: 90, star: 2, blurb: 'Tucks into a corner.', rank: 1 },
   { id: 'shelf',     kind: 'decor', set: 'furn', sprite: { f: 'shelf_f', b: 'shelf_b' },
-    label: 'Basket Shelf', cost: 110, star: 2, order: 0.9, blurb: 'Keeps the kitchen stocked and quicker.' },
+    label: 'Basket Shelf', cost: 110, star: 2, order: 0.9, blurb: 'Keeps the kitchen stocked and quicker.', rank: 2 },
   { id: 'lamp',      kind: 'decor', set: 'furn', sprite: { f: 'lamp_f', b: 'lamp_b' }, hang: true,
-    label: 'Pendant Lamp', cost: 115, star: 3, blurb: 'Warm light hanging overhead.' },
+    label: 'Pendant Lamp', cost: 115, star: 3, blurb: 'Warm light hanging overhead.', rank: 2 },
   { id: 'rug',       kind: 'decor', set: 'furn', sprite: 'rug', flat: true,
-    label: 'Patterned Rug', cost: 80, star: 2, patienceRoom: 1.06, blurb: 'Guests settle in more patiently.' },
+    label: 'Patterned Rug', cost: 80, star: 2, patienceRoom: 1.06, blurb: 'Guests settle in more patiently.', rank: 1 },
   { id: 'rug_rolled',kind: 'decor', set: 'furn', sprite: 'rug_rolled',
     label: 'Rolled Rug', cost: 45, star: 1, blurb: 'Spare, leaning by the wall.' },
   { id: 'books',     kind: 'decor', set: 'furn', sprite: 'books',
@@ -67,15 +67,15 @@ export const FURNITURE = [
   { id: 'books_lean',kind: 'decor', set: 'furn', sprite: 'books_lean',
     label: 'Leaning Books', cost: 55, star: 1, blurb: 'A softer pile of the same.' },
   { id: 'ornament',  kind: 'decor', set: 'furn', sprite: 'ornament',
-    label: 'Mascot', cost: 130, star: 3, tipRoom: 1.05, blurb: 'The regulars love it. Tips go up.' },
+    label: 'Mascot', cost: 130, star: 3, tipRoom: 1.05, blurb: 'The regulars love it. Tips go up.', rank: 3 },
   { id: 'ornament_mat', kind: 'decor', set: 'furn', sprite: 'ornament_mat',
-    label: 'Mascot on a Mat', cost: 145, star: 3, tipRoom: 1.05, blurb: 'Same charm, settled in.' },
+    label: 'Mascot on a Mat', cost: 145, star: 3, tipRoom: 1.05, blurb: 'Same charm, settled in.', rank: 3 },
   { id: 'mirror',    kind: 'decor', set: 'furn', sprite: 'mirror', hang: true,
-    label: 'Framed Mirror', cost: 100, star: 2, blurb: 'Makes the room feel wider.' },
+    label: 'Framed Mirror', cost: 100, star: 2, blurb: 'Makes the room feel wider.', rank: 2 },
   { id: 'mirror_wide',kind: 'decor', set: 'furn', sprite: 'mirror_wide', hang: true,
-    label: 'Cloud Mirror', cost: 105, star: 2, blurb: 'A soft shape on the wall.' },
+    label: 'Cloud Mirror', cost: 105, star: 2, blurb: 'A soft shape on the wall.', rank: 3 },
   { id: 'key_rack',  kind: 'decor', set: 'fixt', sprite: 'key_rack', hang: true,
-    label: 'Key Rack', cost: 60, star: 1, blurb: 'Small hooks by the door.' },
+    label: 'Key Rack', cost: 60, star: 1, blurb: 'Small hooks by the door.', rank: 1 },
 ];
 
 export const FURNITURE_BY_ID = Object.fromEntries(FURNITURE.map((f) => [f.id, f]));
@@ -107,17 +107,17 @@ export const starsOf = (item, styleId) =>
  *   belt      — moves items one tile per step
  */
 export const MACHINES = [
-  { id: 'rice_grinder',     kind: 'producer',  label: 'Rice Mill',        sprite: 'rice_grinder',     out: 'rice',      interval: 3.0, cost: 150 },
-  { id: 'berry_tumbler',    kind: 'producer',  label: 'Berry Tumbler',    sprite: 'berry_tumbler',    out: 'blueberry', interval: 3.2, cost: 180 },
-  { id: 'citrus_press',     kind: 'producer',  label: 'Citrus Press',     sprite: 'citrus_press',     out: 'lime',      interval: 3.2, cost: 180 },
-  { id: 'onion_boiler',     kind: 'producer',  label: 'Onion Boiler',     sprite: 'onion_boiler',     out: 'onion',     interval: 2.8, cost: 160 },
-  { id: 'egg_roller',       kind: 'producer',  label: 'Egg Roller',       sprite: 'egg_roller',       out: 'egg',       interval: 3.4, cost: 220 },
-  { id: 'cream_churn',      kind: 'producer',  label: 'Cream Churn',      sprite: 'cream_churn',      out: 'milk',      interval: 3.6, cost: 260 },
-  { id: 'pineapple_slicer', kind: 'producer',  label: 'Pineapple Slicer', sprite: 'pineapple_slicer', out: 'pineapple', interval: 4.4, cost: 340 },
+  { id: 'rice_grinder',     kind: 'producer',  label: 'Rice Mill',        sprite: 'rice_grinder',     out: 'rice',      interval: 3.0, cost: 150, rank: 2 },
+  { id: 'berry_tumbler',    kind: 'producer',  label: 'Berry Tumbler',    sprite: 'berry_tumbler',    out: 'blueberry', interval: 3.2, cost: 180, rank: 2 },
+  { id: 'citrus_press',     kind: 'producer',  label: 'Citrus Press',     sprite: 'citrus_press',     out: 'lime',      interval: 3.2, cost: 180, rank: 2 },
+  { id: 'onion_boiler',     kind: 'producer',  label: 'Onion Boiler',     sprite: 'onion_boiler',     out: 'onion',     interval: 2.8, cost: 160, rank: 2 },
+  { id: 'egg_roller',       kind: 'producer',  label: 'Egg Roller',       sprite: 'egg_roller',       out: 'egg',       interval: 3.4, cost: 220, rank: 2 },
+  { id: 'cream_churn',      kind: 'producer',  label: 'Cream Churn',      sprite: 'cream_churn',      out: 'milk',      interval: 3.6, cost: 260, rank: 3 },
+  { id: 'pineapple_slicer', kind: 'producer',  label: 'Pineapple Slicer', sprite: 'pineapple_slicer', out: 'pineapple', interval: 4.4, cost: 340, rank: 3 },
 
-  { id: 'ice_mill',         kind: 'processor', label: 'Grain Mill',   sprite: 'ice_mill',      inId: 'rice', inQty: 2, out: 'flour',  interval: 3.4, cost: 300 },
-  { id: 'butter_roller',    kind: 'processor', label: 'Butter Roller',sprite: 'butter_roller', inId: 'milk', inQty: 2, out: 'butter', interval: 3.8, cost: 420 },
-  { id: 'cheese_press',     kind: 'processor', label: 'Cheese Press', sprite: 'cheese_press',  inId: 'milk', inQty: 3, out: 'cheese', interval: 4.4, cost: 520 },
+  { id: 'ice_mill',         kind: 'processor', label: 'Grain Mill',   sprite: 'ice_mill',      inId: 'rice', inQty: 2, out: 'flour',  interval: 3.4, cost: 300, rank: 3 },
+  { id: 'butter_roller',    kind: 'processor', label: 'Butter Roller',sprite: 'butter_roller', inId: 'milk', inQty: 2, out: 'butter', interval: 3.8, cost: 420, rank: 3 },
+  { id: 'cheese_press',     kind: 'processor', label: 'Cheese Press', sprite: 'cheese_press',  inId: 'milk', inQty: 3, out: 'cheese', interval: 4.4, cost: 520, rank: 4 },
 ];
 
 /**
@@ -135,42 +135,42 @@ export const MACHINES = [
  */
 export const WORKSHOP = [
   { id: 'promo_stand', kind: 'promo', label: 'Promo Stand', sprite: 'plotter',
-    cost: 800, interval: 22, blurb: 'Pastes a poster up by itself every so often, and makes room for one more.' },
+    cost: 800, interval: 22, blurb: 'Pastes a poster up by itself every so often, and makes room for one more.', rank: 4 },
   { id: 'harbour_computer', kind: 'lab', label: 'Harbour Computer', sprite: 'computer_desk',
     cost: 1200, interval: 14, out: 1,
-    blurb: 'Turns quiet hours into research points to spend on the board.' },
+    blurb: 'Turns quiet hours into research points to spend on the board.', rank: 4 },
   { id: 'mainframe', kind: 'lab', label: 'Harbour Mainframe', sprite: 'computer_tall',
     cost: 4200, interval: 6, out: 3,
-    blurb: 'The big one. Three points at a time, and far faster about it.' },
+    blurb: 'The big one. Three points at a time, and far faster about it.', rank: 6 },
   { id: 'broadcast', kind: 'promo', label: 'Broadcast Set', sprite: 'radio_set',
     cost: 2600, interval: 9,
-    blurb: 'Puts the word out over the air — posters go up three times as often.' },
+    blurb: 'Puts the word out over the air — posters go up three times as often.', rank: 6 },
 ];
 
 /** The pottery works: its own tab, because it is a trade of its own. */
 export const POTTERY = [
   { id: 'kiln', kind: 'kiln', label: 'Harbour Kiln', sprite: 'bisque_kiln',
     cost: 900,
-    blurb: 'The pottery class works out of here. Tap the kiln to throw a dish.' },
+    blurb: 'The pottery class works out of here. Tap the kiln to throw a dish.', rank: 5 },
   { id: 'clay_press', kind: 'clay', label: 'Clay Press', sprite: 'clay_press',
     cost: 700, interval: 20, out: 1,
-    blurb: 'Packs harbour silt into usable clay, one block at a time.' },
+    blurb: 'Packs harbour silt into usable clay, one block at a time.', rank: 5 },
   { id: 'clay_works', kind: 'clay', label: 'Silt Works', sprite: 'glaze_mill',
     cost: 2400, interval: 8, out: 2,
-    blurb: 'Two blocks at a time, and far quicker about it.' },
+    blurb: 'Two blocks at a time, and far quicker about it.', rank: 6 },
   { id: 'pot_wheel', kind: 'wheel', label: "Potter's Wheel", sprite: 'pot_wheel',
     cost: 1600,
-    blurb: 'A properly balanced wheel: one round less at the kiln, every time.' },
+    blurb: 'A properly balanced wheel: one round less at the kiln, every time.', rank: 5 },
   { id: 'glaze_kiln', kind: 'glaze', label: 'Glaze Kiln', sprite: 'glaze_kiln',
     cost: 3200,
-    blurb: 'Fires a glaze over a finished dish — forged plates pay 15% more.' },
+    blurb: 'Fires a glaze over a finished dish — forged plates pay 15% more.', rank: 6 },
 ];
 
 export const ALL_MACHINES = [...MACHINES, ...WORKSHOP, ...POTTERY];
 export const MACHINE_BY_ID = Object.fromEntries(ALL_MACHINES.map((m) => [m.id, m]));
 
-export const BELT = { id: 'belt', kind: 'belt', label: 'Conveyor', cost: 16, blurb: 'Drag to draw a line of belts.' };
-export const SILO = { id: 'silo', kind: 'silo', label: 'Pantry Intake', cost: 200,
+export const BELT = { id: 'belt', kind: 'belt', label: 'Conveyor', cost: 16, rank: 2, blurb: 'Drag to draw a line of belts.' };
+export const SILO = { id: 'silo', kind: 'silo', label: 'Pantry Intake', cost: 200, rank: 2,
   group: 'furn_plain', sprite: 'shelf_b', blurb: 'Anything delivered here lands in your pantry.' };
 
 export const MACHINE_MAX_LEVEL = 5;
@@ -197,25 +197,25 @@ export const CREW_ROOMS = [
 
 export const STAFF = [
   { id: 'oyster_host',    sprite: '01_oyster_host', crew: 'floor', label: 'Oyster Host',
-    cost: 900,  blurb: 'Seats waiting guests on their own, every few seconds.', effect: 'autoSeat' },
+    cost: 900,  blurb: 'Seats waiting guests on their own, every few seconds.', effect: 'autoSeat', rank: 3 },
   { id: 'cuttlefish_server', sprite: '02_cuttlefish_server', crew: 'floor', label: 'Cuttlefish Server',
-    cost: 1400, blurb: 'Runs finished plates out to tables for you.', effect: 'autoServe' },
+    cost: 1400, blurb: 'Runs finished plates out to tables for you.', effect: 'autoServe', rank: 3 },
   { id: 'moray_cook',     sprite: '05_moray_eel_noodle_cook', crew: 'kitchen', label: 'Noodle Cook',
-    cost: 750,  blurb: '+1 dish cooking at the same time.', effect: 'cookSlot' },
+    cost: 750,  blurb: '+1 dish cooking at the same time.', effect: 'cookSlot', rank: 1 },
   { id: 'walrus_cook',    sprite: '06_walrus_grill_cook', crew: 'kitchen', label: 'Grill Cook',
-    cost: 1250, blurb: '+1 dish cooking at the same time.', effect: 'cookSlot' },
+    cost: 1250, blurb: '+1 dish cooking at the same time.', effect: 'cookSlot', rank: 4 },
   { id: 'sea_lion_dish',  sprite: '03_sea_lion_dishwasher', crew: 'kitchen', label: 'Dishwasher',
-    cost: 480,  blurb: 'Clears tables in a blink after guests leave.', effect: 'fastClean' },
+    cost: 480,  blurb: 'Clears tables in a blink after guests leave.', effect: 'fastClean', rank: 1 },
   { id: 'hammerhead_mech',sprite: '07_hammerhead_mechanic', crew: 'works', label: 'Mechanic',
-    cost: 700,  blurb: 'Factory machines run 18% faster.', effect: 'factorySpeed', amount: 0.18 },
+    cost: 700,  blurb: 'Factory machines run 18% faster.', effect: 'factorySpeed', amount: 0.18, rank: 2 },
   { id: 'isopod_boiler',  sprite: '08_giant_isopod_boiler_operator', crew: 'works', label: 'Boiler Operator',
-    cost: 1100, blurb: 'Factory machines run another 18% faster.', effect: 'factorySpeed', amount: 0.18 },
+    cost: 1100, blurb: 'Factory machines run another 18% faster.', effect: 'factorySpeed', amount: 0.18, rank: 4 },
   { id: 'swordfish_qa',   sprite: '09_swordfish_quality_inspector', crew: 'office', label: 'Quality Inspector',
-    cost: 1600, blurb: '+1 reputation star from every guest served.', effect: 'bonusStar' },
+    cost: 1600, blurb: '+1 reputation star from every guest served.', effect: 'bonusStar', rank: 6 },
   { id: 'orca_manager',   sprite: '10_orca_harbor_manager', crew: 'office', label: 'Harbor Manager',
-    cost: 2200, blurb: 'Guests tip 15% more.', effect: 'tips', amount: 0.15 },
+    cost: 2200, blurb: 'Guests tip 15% more.', effect: 'tips', amount: 0.15, rank: 6 },
   { id: 'gull_courier',   sprite: '02_cuttlefish_server', crew: 'floor', label: 'Gull Courier',
-    cost: 1300, blurb: 'Three fewer taps to call somebody in.', effect: 'flyer' },
+    cost: 1300, blurb: 'Three fewer taps to call somebody in.', effect: 'flyer', rank: 2 },
 ];
 
 export const STAFF_BY_ID = Object.fromEntries(STAFF.map((s) => [s.id, s]));

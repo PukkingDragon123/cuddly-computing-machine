@@ -13,6 +13,9 @@ export class Hud {
       coins: $('[data-bind="coins"]'),
       stars: $('[data-bind="stars"]'),
       phase: $('[data-bind="phase"]'),
+      rank: $('[data-bind="rank"]'),
+      rankFill: $('#rank-fill'),
+      rankChip: $('#chip-rank'),
       served: $('[data-bind="served"]'),
       earned: $('[data-bind="earned"]'),
       stock: $('[data-bind="stock"]'),
@@ -78,6 +81,7 @@ export class Hud {
     this.el.flyer.onclick = () => g.tapFlyer();
     $('#btn-help').onclick = () => g.openHelp();
     this.el.sound.onclick = () => g.toggleSound();
+    this.el.rankChip.onclick = () => g.panels.openFame();
     this.el.auto.onclick = () => {
       g.state.auto = !g.state.auto;
       g.state.save();
@@ -112,6 +116,9 @@ export class Hud {
     this.#roll('coins', s.coins);
     this.#text('stars', money(s.stars));
     this.#text('phase', `Day ${s.day} · ${label}`);
+    this.#text('rank', s.rankName);
+    const fw = `${Math.round(s.rankPct * 100)}%`;
+    if (this.el.rankFill.style.width !== fw) this.el.rankFill.style.width = fw;
 
     show(this.el.serviceBar, open);
     if (open) {

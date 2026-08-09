@@ -9,6 +9,7 @@ Everything is bought with one currency: **sand dollars**.
 
 ![the main menu](docs/shot-title.png)
 ![restaurant](docs/shot-restaurant.png)
+![the fame ladder](docs/shot-fame.png)
 ![factory](docs/shot-factory.png)
 
 ## Running it
@@ -53,6 +54,38 @@ any point — the guide's job is to draw the eye, never to trap the finger, so
 every step is done exactly the way it will be done later. It follows things that
 move: the step that says *seat a guest* puts its light on whoever is waiting.
 
+## Fame
+
+The game had money and it had a menu but no spine: everything was buyable on day
+one if you saved up, so nothing ever *opened*. **Fame** is that spine. It is the
+same number reputation always was — earned by feeding people well, lost by
+keeping them waiting — but it has rungs on it now, and every rung puts something
+new on the shelf.
+
+| | |
+|---|---|
+| **Driftwood Shack** | Three recipes, pine furniture, a room and two chairs |
+| **Quayside Stall** — 60 | Cosy Cottage finish, three more recipes, the dishwasher and the noodle cook |
+| **Harbour Café** — 200 | The works: belts, machines, the intake. The Wharf extension |
+| **Harbour Bistro** — 500 | Antique finish, refiners, a host and a server |
+| **Supper Room** — 1,000 | The workshop, research, three more recipes |
+| **Harbour Favourite** — 1,900 | The pottery works and the kiln, the Lantern Terrace |
+| **The Landmark** — 3,400 | The glaze kiln, the last of the crew, the big plates |
+| **Legend of the Harbour** — 6,000 | Treasure Bento. Nothing left to open |
+
+One rule, everywhere: **fame gates what exists, coins gate when you get it.** A
+rung never hands you a thing, it puts the thing on the shelf. Every catalogue in
+the game — furniture, finishes, recipes, machines, crew, the extensions — runs
+through the same gate, so a locked card shows the rank that opens it instead of a
+price you cannot use. It reads as a shop window: you can see the whole thing, you
+just cannot buy all of it yet.
+
+The rank strip in the top-left is rank, fame, day and how far along the rung you
+are, in one plaque — it replaced three separate readouts. Tapping it opens the
+ladder. Crossing a rung is a card across the screen, a shower of sparks and the
+chef's opinion; it never stops play, because it can land while you are holding
+three plates.
+
 ## The chef
 
 There is one voice in the game and it belongs to the octopus at the pass. He has
@@ -64,9 +97,12 @@ stars. The bars come in, the camera goes to the thing being talked about, and he
 says one or two short lines. They never interrupt an open panel and never talk
 over the guide, and each plays once.
 
-**Quests** are the same voice, standing still. One job at a time, pinned under
-the day with a number you can watch go up, from *plate 3 dishes* to *save up
-3,000*. Finishing one pays out and gets a line back from the pass.
+**Quests** are the same voice, standing still. Eighteen of them, one at a time,
+pinned under the rank strip with a number you can watch go up — from *plate 3
+dishes* through *build a machine* and *serve 100 guests* to the last rung of the
+fame ladder. They interleave with the ranks on purpose: a quest either teaches
+you a system or points you at the next rung. Finishing one pays out and gets a
+line back from the pass.
 
 ## Playing
 

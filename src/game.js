@@ -16,6 +16,7 @@ import { GameState, SAVE_KEY } from './state.js';
 import { TAU, range, rnd } from './core/util.js';
 import { ingName } from './data/ingredients.js';
 import { FURNITURE_BY_ID, MACHINE_BY_ID } from './data/catalog.js';
+import { RANKS, RANK_LINES } from './data/fame.js';
 
 const OFFLINE_CAP = 4 * 3600;   // seconds of away-time the works will catch up on
 
@@ -80,6 +81,7 @@ export class Game {
     document.body.classList.toggle('still', !this.state.motionOn);
 
     this.state.bus.on('change', () => { this.hud.sync(); });
+    this.state.bus.on('rank', (n) => this.#rankUp(n));
     this.state.bus.on('shop', () => { this.syncRoomSize(); });
     this.hud.sync();
     this.hud.setZone('restaurant');
@@ -507,6 +509,25 @@ export class Game {
     // the main menu is running the game on a set; none of that is yours
     if (this.attract) return;
     this.state.lastSeen = Date.now();
+    this.state.save();
+  }
+
+  /**
+   * A rung climbed.
+   *
+   * Not a cutscene: this can land in the middle of service, and stopping the
+   * game to congratulate somebody who is holding three plates is a punishment.
+   * A card, a shower, the chef's opinion, and then straight back to work.
+   */
+  #rankUp(n) {
+    if (this.attract) return;
+    const name = RANKS[n]?.name ?? 'Fame';
+    this.hud.titleCard(name, 'Fame rank up');
+    this.sfx.play('level');
+    const cam = this.zone.cam;
+    this.zone.fx.sparkles(cam.x, cam.y - 20, 26, 140);
+    this.zone.fx.hearts(cam.x, cam.y, 5);
+    if (RANK_LINES[n]) setTimeout(() => this.hud.chefSays(RANK_LINES[n]), 1400);
     this.state.save();
   }
 

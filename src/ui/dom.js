@@ -50,8 +50,11 @@ export function skinIcons(assets) {
   const swap = {
     'ico-diary': 'diary', 'ico-book': 'recipes', 'ico-crate': 'market',
     'ico-help': 'help', 'ico-hammer': 'tools', 'ico-shop': 'market',
-    'ico-star': 'list', 'ico-lab': 'book', 'ico-kiln': 'refresh',
+    'ico-lab': 'book',
     'ico-tools': 'tools', 'ico-crew': 'crew', 'ico-refresh': 'refresh',
+    // fame keeps the drawn star and the kiln keeps its drawn flame: the pack has
+    // neither, and the nearest thing in it (a list, a refresh arrow) says the
+    // wrong word entirely
   };
   const rules = [];
   for (const [cls, id] of Object.entries(swap)) {

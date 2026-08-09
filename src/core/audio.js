@@ -83,6 +83,8 @@ export class Sfx {
       case 'coin':   return this.#arp([NOTE.a5, NOTE.e6], 0.05, 'triangle', 0.5);
       case 'cash':   return this.#arp([NOTE.c5, NOTE.e5, NOTE.g5, NOTE.c6], 0.048, 'triangle', 0.45);
       case 'star':   return this.#arp([NOTE.g5, NOTE.c6, NOTE.e6, NOTE.g6], 0.05, 'sine', 0.4);
+      // a rung on the fame ladder: longer, and it lands on the octave
+      case 'level':  return this.#arp([NOTE.c5, NOTE.e5, NOTE.g5, NOTE.c6, NOTE.g6, NOTE.c6], 0.075, 'triangle', 0.45);
       case 'ding':   return this.#arp([NOTE.c6, NOTE.g6], 0.07, 'sine', 0.4);
       case 'order':  return this.#arp([NOTE.a4, NOTE.d5], 0.06, 'square', 0.22);
       case 'place':  this.#thump({ dur: 0.16, gain: 0.55 }); return this.#tone({ freq: 190, to: 120, type: 'sine', dur: 0.12, gain: 0.4 });

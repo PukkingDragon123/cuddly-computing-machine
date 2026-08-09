@@ -15,6 +15,7 @@ import {
   FLYER_BASE_MAX, FLYER_TAPS, RESEARCH_BY_ID, SHOP_BY_ID, dishPrice, dishStars,
   flyerDraw, potteryLevel,
 } from './data/progress.js';
+import { RANKS, rankAt, rankProgress, toNextRank } from './data/fame.js';
 
 const KEY = 'bubbleworks.harbor.save.v1';
 const VERSION = 9;
@@ -201,10 +202,29 @@ export class GameState {
     this.bus.emit('change');
   }
 
+  /**
+   * Fame. The same number reputation always was, with rungs on it now: every
+   * rank puts something new on the shelf, so the game opens up as you cook
+   * rather than as you save. Crossing a rung is announced, once.
+   */
   addStars(n) {
+    const was = this.rank;
     this.stars = Math.max(0, this.stars + n);
     this.bus.emit('change');
+    if (this.rank > was) this.bus.emit('rank', this.rank);
   }
+
+  get fame() { return this.stars; }
+  get rank() { return rankAt(this.stars); }
+  get rankName() { return RANKS[this.rank].name; }
+  get rankUp() { return toNextRank(this.stars); }
+  get rankPct() { return rankProgress(this.stars); }
+
+  /** Is this thing on the shelf yet? Everything buyable answers to this. */
+  open(item) { return (item?.rank ?? 0) <= this.rank; }
+
+  /** What it takes, for the label on a locked card. */
+  rankNeeded(item) { return RANKS[item?.rank ?? 0]?.name ?? ''; }
 
   /* --------------------------------------------------------------- pantry */
 

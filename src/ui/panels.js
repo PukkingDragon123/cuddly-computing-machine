@@ -21,6 +21,7 @@ import {
 } from '../data/progress.js';
 import { DIR_NAMES } from '../world/factory.js';
 import { settingRows } from './title.js';
+import { RANKS } from '../data/fame.js';
 
 /** The wood each finish is painted in, for the swatch picker. */
 const STYLE_SWATCH = { plain: '#e0c39a', cottage: '#c98d5e', antique: '#7c4a33' };
@@ -60,6 +61,26 @@ export class Panels {
       side ? h('div.card-side', null, side) : null);
   }
 
+  /**
+   * Wrap a card spec in its fame gate.
+   *
+   * A thing your rank has not reached is not a thing you cannot afford: it is
+   * not on the shelf at all. So the price comes off, the rank goes on, and the
+   * card stops being pressable — one rule, applied to every catalogue in the
+   * game from one place.
+   */
+  #gated(item, spec) {
+    if (this.state.open(item)) return this.#card(spec);
+    return this.#card({
+      ...spec,
+      sub: spec.sub,
+      tags: [tag(this.state.rankNeeded(item), 'tag-need')],
+      side: null,
+      onclick: null,
+      locked: true,
+    });
+  }
+
   /** Price pill. Carries the sand-dollar glyph so a bare number is never
    *  mistaken for a count, and turns coral the moment you can't afford it. */
   #cost(n) {
@@ -79,13 +100,18 @@ export class Panels {
   }
 
   #styleRow() {
-    return h('div.swatches', null, STYLES.map((s) => swatch(
-      s.label,
-      STYLE_SWATCH[s.id] ?? '#d9ae76',
-      this.buildStyle === s.id,
-      () => { this.buildStyle = s.id; this.openBuild(true); },
-      s.star ? `+${s.star}★` : null,
-    )));
+    return h('div.swatches', null, STYLES.map((st) => {
+      const shut = !this.state.open(st);
+      return swatch(
+        st.label,
+        STYLE_SWATCH[st.id] ?? '#d9ae76',
+        this.buildStyle === st.id,
+        shut
+          ? () => this.game.toast(`${this.state.rankNeeded(st)} unlocks this finish`, 'bad')
+          : () => { this.buildStyle = st.id; this.openBuild(true); },
+        shut ? '🔒' : (st.star ? `+${st.star}★` : null),
+      );
+    }));
   }
 
   /**
@@ -113,6 +139,7 @@ export class Panels {
   #pieceCard(item) {
     const cost = costOf(item, this.buildStyle);
     const stars = starsOf(item, this.buildStyle);
+    const shut = !this.state.open(item);
     const owned = this.state.furniture.filter((f) => f.id === item.id).length;
     const perk = item.kind === 'seat' ? 'seats one'
       : item.kind === 'table' ? 'takes chairs'
@@ -120,17 +147,56 @@ export class Panels {
           : item.tip || item.tipRoom ? 'tips'
             : item.draw ? 'draws guests'
               : item.order ? 'faster orders' : null;
-    return h(`div.card.piece.tap${this.state.coins < cost ? '.thin' : ''}`, {
-      onclick: () => this.game.startPlacing(item.id, this.buildStyle),
-    },
-    h('div.stage', null, h('i', {
-      style: { backgroundImage: `url("${this.assets.url(groupFor(item, this.buildStyle), spriteIdOf(item))}")` },
-    }), owned ? h('span.owned', null, `×${owned}`) : null),
-    h('div.piece-name', null, item.label),
-    perk ? h('div.piece-perk', null, perk) : null,
-    h('div.rowline.mid', null,
-      this.#cost(cost),
-      stars > 0 ? tag(`${stars}★`, 'tag-star') : null));
+    return h(`div.card.piece${shut ? '.shut' : '.tap'}${!shut && this.state.coins < cost ? '.thin' : ''}`,
+      shut ? null : { onclick: () => this.game.startPlacing(item.id, this.buildStyle) },
+      h('div.stage', null, h('i', {
+        style: { backgroundImage: `url("${this.assets.url(groupFor(item, this.buildStyle), spriteIdOf(item))}")` },
+      }), owned ? h('span.owned', null, `×${owned}`) : null),
+      h('div.piece-name', null, item.label),
+      perk && !shut ? h('div.piece-perk', null, perk) : null,
+      h('div.rowline.mid', null, shut
+        ? tag(this.state.rankNeeded(item), 'tag-need')
+        : [this.#cost(cost), stars > 0 ? tag(`${stars}★`, 'tag-star') : null].filter(Boolean)));
+  }
+
+  /* ------------------------------------------------------------------ fame  */
+
+  /**
+   * The ladder.
+   *
+   * Fame is the spine of the game — every rung puts something new on the shelf —
+   * so it needs one page that shows the whole climb at once: where you are, what
+   * that got you, and what the next one costs. Nothing here is buyable. It is a
+   * map, and the point of a map is that you can see the end of it.
+   */
+  openFame(keep = false) {
+    this.reopen = () => this.openFame(true);
+    const s = this.state;
+    const at = s.rank;
+    const body = RANKS.map((r, i) => {
+      const got = i <= at;
+      const here = i === at;
+      return h(`div.card.rung${got ? '.on' : ''}${here ? '.here' : ''}${got ? '' : '.thin'}`, null,
+        h('div.rung-no', null, got ? '✓' : String(r.at)),
+        h('div.card-main', null,
+          h('div.card-title', null, r.name),
+          h('div.card-sub', null, r.gives.join(' · '))),
+        here && RANKS[i + 1]
+          ? h('div.card-side', null, tag(`${money(s.rankUp)} to go`, 'tag-star'))
+          : null);
+    });
+    const spec = {
+      key: 'fame',
+      title: 'Fame',
+      body: [
+        h('div.note', null, 'Feed people well and the harbour talks. Every rung opens something new.'),
+        ...body,
+      ],
+      foot: h('div.rowline', null,
+        h('span.card-sub.grow', null, `${money(s.fame)} fame · ${s.rankName}`),
+        tag(`${money(s.stats.served)} served`, 'tag-mint')),
+    };
+    keep ? this.hud.refreshSheet(spec) : this.hud.openSheet(spec);
   }
 
   /* ----------------------------------------------------------------- build  */
@@ -189,7 +255,7 @@ export class Panels {
     for (const item of SHOP) {
       const owned = s.hasBought(item.id);
       const locked = item.needs && !s.hasBought(item.needs);
-      body.push(this.#card({
+      body.push(this.#gated(item, {
         icon: 'shop',
         title: item.label,
         sub: locked ? `Needs ${SHOP_BY_ID[item.needs].label} first.` : item.blurb,
@@ -225,7 +291,7 @@ export class Panels {
     if (this.factoryTab === 'belt') {
       body = [
         h('div.note', null, 'Tap ', h('b', null, 'Conveyor'), ', then drag across the floor.'),
-        this.#card({
+        this.#gated(BELT, {
           icon: 'belt',
           title: BELT.label,
           sub: BELT.blurb,
@@ -249,7 +315,7 @@ export class Panels {
         ...POTTERY.map((m) => {
           const built = s.hasWorks(m.kind);
           const oneOff = m.kind === 'kiln' || m.kind === 'wheel' || m.kind === 'glaze';
-          return this.#card({
+          return this.#gated(m, {
             src: this.assets.url('machines', m.sprite),
             title: m.label,
             sub: m.blurb,
@@ -266,7 +332,7 @@ export class Panels {
     } else if (this.factoryTab === 'workshop') {
       body = [
         h('div.note', null, 'No belt needed. Drop them anywhere; they tick away on their own.'),
-        ...WORKSHOP.map((m) => this.#card({
+        ...WORKSHOP.map((m) => this.#gated(m, {
           src: this.assets.url('machines', m.sprite),
           title: m.label,
           sub: m.blurb,
@@ -277,7 +343,7 @@ export class Panels {
     } else if (this.factoryTab === 'store') {
       body = [
         h('div.note', null, 'A belt into the intake fills your ', h('b', null, 'pantry'), '.'),
-        this.#card({
+        this.#gated(SILO, {
           src: this.assets.url(SILO.group, SILO.sprite),
           title: SILO.label,
           sub: SILO.blurb,
@@ -291,7 +357,7 @@ export class Panels {
         kind === 'processor'
           ? h('div.note', null, 'Cheap goods in, valuable ones out. Belt in, belt onward.')
           : h('div.note', null, 'One ingredient, over and over. Point it at a belt with ', h('b', null, 'Turn'), '.'),
-        ...MACHINES.filter((m) => m.kind === kind).map((m) => this.#card({
+        ...MACHINES.filter((m) => m.kind === kind).map((m) => this.#gated(m, {
           src: this.assets.url('machines', m.sprite),
           title: m.label,
           sub: m.kind === 'processor'
@@ -557,31 +623,46 @@ export class Panels {
     return leaves;
   }
 
+  /**
+   * What there is left to learn.
+   *
+   * A recipe you cannot afford is a thing to save for; a recipe your fame has
+   * not reached is a thing to *cook* for, and the two want to look different.
+   * Locked-by-rank lines say the rank and nothing else — no price to stare at,
+   * because the price is not the problem.
+   */
   #learnLeaves() {
     const s = this.state;
-    return RECIPES.filter((r) => !s.isUnlocked(r.id)).map((r) => h('div.line', null,
-      h('div.line-art.dim', null, h('i', {
-        style: { backgroundImage: `url("${this.assets.url('food', r.id)}")` },
-      })),
-      h('div.line-body', null,
-        h('div.line-top', null,
-          h('b.line-name', null, r.name),
-          h('span.dots'),
-          h('span.line-price', null, money(r.price))),
-        h('div.line-bot', null,
-          h('span.line-sub', null, `${r.stars}★`),
-          h('span.ings', null, Object.keys(r.ing).map((id) =>
-            ingChip(this.assets.url('ingredients', id), '', false))),
-          h('span.line-side', null, this.#goBtn(`Learn ${money(r.unlock)}`, {
-            disabled: s.coins < r.unlock,
-            onclick: () => {
-              if (!s.spend(r.unlock)) return;
-              s.unlock(r.id);
-              s.save();
-              this.game.celebrate(`Learned ${r.name}!`);
-              this.refresh();
-            },
-          }))))));
+    const shown = RECIPES.filter((r) => !s.isUnlocked(r.id))
+      .sort((a2, b2) => (a2.rank ?? 0) - (b2.rank ?? 0));
+    return shown.map((r) => {
+      const shut = !s.open(r);
+      return h(`div.line${shut ? '.shut' : ''}`, null,
+        h('div.line-art.dim', null, h('i', {
+          style: { backgroundImage: `url("${this.assets.url('food', r.id)}")` },
+        })),
+        h('div.line-body', null,
+          h('div.line-top', null,
+            h('b.line-name', null, r.name),
+            h('span.dots'),
+            h('span.line-price', null, money(r.price))),
+          h('div.line-bot', null,
+            h('span.line-sub', null, `${r.stars}★`),
+            h('span.ings', null, Object.keys(r.ing).map((id) =>
+              ingChip(this.assets.url('ingredients', id), '', false))),
+            h('span.line-side', null, shut
+              ? tag(s.rankNeeded(r), 'tag-need')
+              : this.#goBtn(`Learn ${money(r.unlock)}`, {
+                disabled: s.coins < r.unlock,
+                onclick: () => {
+                  if (!s.spend(r.unlock)) return;
+                  s.unlock(r.id);
+                  s.save();
+                  this.game.celebrate(`Learned ${r.name}!`);
+                  this.refresh();
+                },
+              })))));
+    });
   }
 
   #upgradeLeaves() {
@@ -1013,15 +1094,18 @@ export class Panels {
   #hireCard(st) {
     const s = this.state;
     const hired = s.hasStaff(st.id);
+    const shut = !s.open(st);
     const poor = s.coins < st.cost;
-    return h(`div.card.hire${hired ? '.on' : ''}${!hired && poor ? '.thin' : ''}`, null,
+    return h(`div.card.hire${hired ? '.on' : ''}${!hired && (poor || shut) ? '.thin' : ''}${shut ? '.shut' : ''}`, null,
       h('div.port', null, this.#sprite('staff', st.sprite)),
       h('div.card-main', null,
         h('div.card-title', null, st.label),
         h('div.card-sub', null, st.blurb),
         hired
           ? h('div.rowline', null, tag('On the crew', 'tag-ok'))
-          : h('div.rowline', null, this.#cost(st.cost), this.#goBtn('Hire', {
+          : shut
+            ? h('div.rowline', null, tag(s.rankNeeded(st), 'tag-need'))
+            : h('div.rowline', null, this.#cost(st.cost), this.#goBtn('Hire', {
             disabled: poor,
             onclick: () => {
               if (!s.spend(st.cost)) return;
@@ -1676,6 +1760,9 @@ export class Panels {
         step(6, 'Run the plate', 'Drag it off the pass onto the right guest.'),
         step(7, 'Get paid', 'Fast service pays more. Their table needs washing after.'),
         step(8, 'Build the works', 'Machine, belt, Pantry Intake. Ingredients then arrive free.'),
+        h('div.section', null, 'Fame'),
+        h('div.note', null, 'Feeding people earns ', h('b', null, 'fame'),
+          '. Every rank opens new recipes, furniture, machines and crew — tap the rank strip, top left, to see the whole ladder.'),
         h('div.section', null, 'Worth knowing'),
         h('div.note', null, 'Every guest ', h('b', null, 'loves'), ' one flavour and hates another. Get it right for triple hearts. It all goes in the Diary.'),
         h('div.note', null, 'A crown is a ', h('b', null, 'VIP'), ' — double pay. A violet star is ',

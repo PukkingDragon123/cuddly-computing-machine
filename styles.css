@@ -2060,3 +2060,68 @@ body.still .tutor-hole { animation: none }
   margin: -0.5rem 0 -0.35rem;
   background: left bottom/300% 100% no-repeat;
 }
+
+/* fame ----------------------------------------------------------------- */
+
+/* Rank, day and the fame banked toward the next rung, in one strip. It replaced
+   three separate readouts, which is three fewer things to look at. */
+.rankchip {
+  display: flex; flex-direction: column; gap: 0.18rem;
+  align-self: flex-start;
+  padding: 0.2rem 0.6rem 0.28rem;
+  border: var(--bw) solid var(--ink);
+  border-radius: var(--r-hand);
+  background-color: var(--panel);
+  font: inherit;
+  cursor: pointer;
+  text-align: left;
+  min-width: 13.5rem;
+}
+.rankchip:active { transform: scale(.96) }
+.rank-row {
+  display: flex; align-items: center; gap: 0.35rem;
+  flex-wrap: nowrap; white-space: nowrap;
+}
+.rank-row > b { min-width: 0; overflow: hidden; text-overflow: ellipsis }
+.rank-row .seg {
+  flex: none;
+  display: inline-flex; align-items: center;
+  border: 0; padding: 0; background: none;
+  font-size: 0.72rem; font-weight: 900; gap: 0.14rem;
+}
+.rank-row .seg .ico { width: 0.8rem; height: 0.8rem }
+.rank-row b { font-size: 0.78rem; font-weight: 900; color: var(--ink-deep) }
+.rank-day { flex: none; font-size: 0.62rem; font-weight: 800; color: var(--ink-faint); margin-left: auto }
+.rank-bar {
+  display: block; height: 0.26rem; border-radius: 999px;
+  background: var(--panel-2); overflow: hidden;
+  border: 0.08rem solid var(--ink-faint);
+}
+.rank-bar > i {
+  display: block; height: 100%; border-radius: 999px;
+  background: var(--sun); transition: width .4s ease;
+}
+
+/* the ladder, one rung to a card */
+.rung { align-items: center }
+.rung-no {
+  flex: none;
+  min-width: 2.6rem; height: 2.1rem;
+  display: grid; place-items: center;
+  border: 0.13rem solid var(--ink-faint);
+  border-radius: var(--r-sm);
+  font-size: 0.78rem; font-weight: 900;
+  color: var(--ink-soft);
+  font-variant-numeric: tabular-nums;
+}
+.rung.on .rung-no { background: var(--leaf-pale); color: var(--leaf-deep); border-color: var(--leaf-deep) }
+.rung.here {
+  background-color: var(--sun-pale);
+  border-color: var(--ink);
+}
+.rung.here .rung-no { background: var(--sun); color: var(--ink-deep); border-color: var(--ink) }
+
+/* not yet on the shelf: readable, obviously out of reach, not for pressing */
+.card.shut, .line.shut { opacity: .55 }
+.card.shut .stage > i, .line.shut .line-art { filter: grayscale(.85) }
+.card.shut::after { display: none }

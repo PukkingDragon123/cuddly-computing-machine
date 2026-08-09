@@ -18,9 +18,20 @@
       <!-- coins and stars read together, so they share one plaque -->
       <div class="wallet">
         <span class="seg" id="chip-coins"><i class="ico ico-sand"></i><b data-bind="coins">300</b></span>
-        <span class="seg" id="chip-stars"><i class="ico ico-star"></i><b data-bind="stars">0</b></span>
       </div>
-      <span class="daytag" data-bind="phase">Day 1 · Prep</span>
+      <!--
+        Rank, day and the fame you have banked toward the next rung, in one
+        strip. Three separate readouts used to say what this says. Tapping it
+        opens the ladder.
+      -->
+      <button class="rankchip" id="chip-rank" title="Fame">
+        <span class="rank-row">
+          <b data-bind="rank">Driftwood Shack</b>
+          <span class="seg" id="chip-stars"><i class="ico ico-star"></i><b data-bind="stars">0</b></span>
+          <span class="rank-day" data-bind="phase">Day 1 · Prep</span>
+        </span>
+        <span class="rank-bar"><i id="rank-fill"></i></span>
+      </button>
       <!-- the standing job, right under the day, where it cannot be missed -->
       <div id="quest" class="quest hidden">
         <span class="quest-tick" id="quest-tick"></span>

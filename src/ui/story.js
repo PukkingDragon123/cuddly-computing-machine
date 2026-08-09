@@ -9,6 +9,7 @@
 import { $, h, show } from './dom.js';
 import { CHEF_SPRITE } from '../data/catalog.js';
 import { toScreen } from '../world/iso.js';
+import { RANKS } from '../data/fame.js';
 
 /**
  * Scripted moments. `at` names what the camera should look at; `when` is
@@ -76,21 +77,48 @@ export const QUESTS = [
   { id: 'market', title: 'Buy from the market', need: 1, coins: 90,
     have: (g) => g.state.stats.bought ?? 0,
     done: "Boats land every hour. Prices move. Watch them." },
+  { id: 'r1', title: `Reach ${RANKS[1].name}`, need: RANKS[1].at, coins: 150,
+    have: (g) => g.state.fame,
+    done: "New shelf. Go and look at what's on it." },
   { id: 'seats', title: 'Get to 4 seats', need: 4, coins: 150,
     have: (g) => g.restaurant.seatCount,
     done: "More chairs, more dinners." },
   { id: 'crew', title: 'Hire anybody', need: 1, coins: 200,
     have: (g) => g.state.staff.length,
     done: "You can't run a room on your own. Nobody can." },
+  { id: 'r2', title: `Reach ${RANKS[2].name}`, need: RANKS[2].at, coins: 300,
+    have: (g) => g.state.fame,
+    done: "The works are open. Go and get your hands dirty." },
   { id: 'machine', title: 'Build a machine', need: 1, coins: 250,
-    have: (g) => g.state.machines.length,
+    have: (g) => g.state.machines.filter((m) => m.kind === 'producer').length,
     done: "Now the harbour works while you sleep." },
-  { id: 'rating', title: 'Reach 3 stars', need: 3, coins: 400,
-    have: (g) => g.state.rating,
-    done: "Three stars. I'll allow myself a smile." },
-  { id: 'rich', title: 'Save up 3,000', need: 3000, coins: 500,
-    have: (g) => g.state.coins,
-    done: "That's a kitchen with money in it. Rare thing." },
+  { id: 'intake', title: 'Build a Pantry Intake', need: 1, coins: 300,
+    have: (g) => g.state.machines.filter((m) => m.kind === 'silo').length,
+    done: "Belt into that and the larder fills itself." },
+  { id: 'learn', title: 'Know 6 recipes', need: 6, coins: 400,
+    have: (g) => g.state.unlocked.length,
+    done: "A menu worth reading." },
+  { id: 'r3', title: `Reach ${RANKS[3].name}`, need: RANKS[3].at, coins: 500,
+    have: (g) => g.state.fame,
+    done: "Bistro. Buy the walnut. You've earned it." },
+  { id: 'hundred', title: 'Serve 100 guests', need: 100, coins: 600,
+    have: (g) => g.state.stats.served,
+    done: "A hundred. I've stopped counting. You shouldn't." },
+  { id: 'r4', title: `Reach ${RANKS[4].name}`, need: RANKS[4].at, coins: 800,
+    have: (g) => g.state.fame,
+    done: "Workshop's yours. Let a computer do the thinking." },
+  { id: 'forge', title: 'Forge a dish', need: 1, coins: 900,
+    have: (g) => Object.keys(g.state.dishes ?? {}).length,
+    done: "Better bowl, better price. Told you." },
+  { id: 'r5', title: `Reach ${RANKS[5].name}`, need: RANKS[5].at, coins: 1200,
+    have: (g) => g.state.fame,
+    done: "Somebody's favourite. Don't ruin it." },
+  { id: 'r6', title: `Reach ${RANKS[6].name}`, need: RANKS[6].at, coins: 2000,
+    have: (g) => g.state.fame,
+    done: "A landmark. People give directions by us." },
+  { id: 'r7', title: `Reach ${RANKS[7].name}`, need: RANKS[7].at, coins: 5000,
+    have: (g) => g.state.fame,
+    done: "Legend. Now cook me something." },
 ];
 
 export class Story {

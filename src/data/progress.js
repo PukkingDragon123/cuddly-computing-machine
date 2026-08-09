@@ -73,10 +73,10 @@ export const RESEARCH_GROUPS = [
  * where it reads as an upgrade rather than a purchase.
  */
 export const SHOP = [
-  { id: 'area_wharf', label: 'The Wharf Extension', cost: 1400,
-    size: 11, blurb: 'Knock through to the wharf: the dining room grows to 11×11.' },
-  { id: 'area_lantern', label: 'Lantern Terrace', cost: 6500,
-    size: 13, needs: 'area_wharf', blurb: 'Take the terrace too, for a 13×13 room.' },
+  { id: 'area_wharf', label: 'The Wharf Extension', cost: 1400, rank: 2,
+    size: 11, blurb: 'Knock through to the wharf: 11×11.' },
+  { id: 'area_lantern', label: 'Lantern Terrace', cost: 6500, rank: 5,
+    size: 13, needs: 'area_wharf', blurb: 'Take the terrace too: 13×13.' },
 ];
 
 export const SHOP_BY_ID = Object.fromEntries(SHOP.map((s) => [s.id, s]));
