@@ -299,11 +299,11 @@ export class Restaurant {
    * limited by the food you plated rather than by a headcount. It still refuses
    * when there is nowhere to sit anybody at all, so the taps are not wasted.
    */
-  summonGuest() {
+  summonGuest(loud = true) {
     if (this.seatCount === 0 || !this.hasPass) return false;
     this.#spawn();
     const g = this.guests[this.guests.length - 1];
-    if (g) {
+    if (g && loud) {
       this.fx.pop(g.pos.x, g.headY - 30, 'Heard you calling!', {
         color: '#e4652f', size: 15, rise: 38, max: 0.9,
       });
@@ -600,11 +600,11 @@ export class Restaurant {
 
     if (!this.open) return;
 
-    // arrivals — no posters up, no trade
+    // arrivals. Food on the pass is the only condition — the harbour knows you
+    // are open, and the board out front is for calling somebody in *now*.
     const stock = this.state.stockCount;
     const pending = this.guests.filter((g) => g.state !== CS.LEAVE && g.state !== CS.DONE).length;
-    if (stock > 0 && this.state.posters > 0
-        && pending < this.#maxGuests() && this.seatCount > 0 && this.hasPass) {
+    if (stock > 0 && pending < this.#maxGuests() && this.seatCount > 0 && this.hasPass) {
       this.spawnT -= dt;
       if (this.spawnT <= 0) {
         this.spawnT = this.state.arrivalGap * range(0.8, 1.25);

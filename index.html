@@ -21,6 +21,15 @@
         <span class="seg" id="chip-stars"><i class="ico ico-star"></i><b data-bind="stars">0</b></span>
       </div>
       <span class="daytag" data-bind="phase">Day 1 · Prep</span>
+      <!-- the standing job, right under the day, where it cannot be missed -->
+      <div id="quest" class="quest hidden">
+        <span class="quest-tick" id="quest-tick"></span>
+        <span class="quest-body">
+          <b id="quest-title">—</b>
+          <span class="quest-bar"><i id="quest-fill"></i></span>
+        </span>
+        <span class="quest-n" id="quest-n"></span>
+      </div>
     </div>
 
     <!--
@@ -66,8 +75,8 @@
     -->
     <div id="bottombar">
       <div class="barrow">
-        <!-- flyers: printed of a morning, handed out at the door once open -->
-        <button class="flyer" id="btn-flyer" title="Print a flyer">
+        <!-- the board out front. Only there while the doors are open -->
+        <button class="flyer hidden" id="btn-flyer" title="Call somebody in">
           <i class="ico ico-flyer"></i>
           <span class="flyer-body">
             <b id="flyer-count">0/8</b>
@@ -75,6 +84,8 @@
           </span>
         </button>
         <span class="barspace"></span>
+        <!-- auto: a sold-out dish goes straight back on while the larder lasts -->
+        <button class="pill pill-sm pill-quiet" id="btn-auto" title="Keep the menu topped up">Auto</button>
         <button class="round round-sm" id="btn-sound" title="Sound"><i class="ico ico-sound"></i></button>
         <button class="pill pill-go" id="btn-service">Open!</button>
       </div>
@@ -144,6 +155,7 @@
     thing the game shows you is the place you have been building.
   -->
   <div id="title" class="title hidden">
+    <div class="title-wash"></div>
     <div class="title-card">
       <div class="title-logo" id="title-logo">
         <span class="tl-1">Bubbleworks</span>
@@ -151,15 +163,26 @@
       </div>
       <p class="title-sub">a cosy harbour restaurant</p>
       <div class="title-stat" id="title-stat"></div>
-      <button class="pill pill-go pill-lg title-play" id="title-play">Open the doors</button>
-      <div class="title-row">
-        <button class="pill pill-sun pill-sm" id="title-guide">How to play</button>
-        <button class="pill pill-quiet pill-sm" id="title-settings">Settings</button>
-        <button class="pill pill-quiet pill-sm" id="title-credits">Credits</button>
-      </div>
+      <button class="pill pill-go pill-lg title-play" id="title-play">Enter Restaurant</button>
+      <button class="pill pill-sun pill-lg title-play" id="title-load">Load Save</button>
       <p class="title-by">made by <b>Pukking Dragon</b></p>
     </div>
   </div>
+
+  <!-- a cutscene: bars in, camera moves, the chef says his piece -->
+  <div id="scene" class="scene hidden">
+    <div class="bar-top"></div>
+    <div class="bar-bot"></div>
+    <div class="say" id="say">
+      <div class="say-face" id="say-face"></div>
+      <div class="say-body">
+        <b class="say-who" id="say-who">Chef</b>
+        <p class="say-text" id="say-text"></p>
+      </div>
+      <span class="say-next" id="say-next">tap</span>
+    </div>
+  </div>
+
 
   <!-- the guide's spotlight and its speech bubble, anchored per step -->
   <div id="tutor" class="tutor hidden">

@@ -36,7 +36,7 @@ export class Panels {
     this.state = game.state;
     this.assets = game.assets;
     this.buildStyle = 'plain';
-    this.buildTab = 'seating';
+    this.buildTab = 'room';
     this.factoryTab = 'belt';
     this.recipeTab = 'menu';
     this.pantryTab = 'pantry';
@@ -89,40 +89,48 @@ export class Panels {
   }
 
   /**
-   * One piece in the catalogue.
+   * The catalogue, laid out two across.
    *
-   * A build menu is a shop window, so the drawing is the biggest thing on the
-   * card and it is shown in the finish you have picked — the same chair in pine
-   * and in walnut are different things to buy, and you should be able to see
-   * that before you pay for it. What it does to the room is set out beneath as
-   * plain figures, and how many you already own is on the card, since the usual
-   * question at this point is "do I need another one".
+   * One piece to a row left the page half empty and the drawings small, which
+   * is the wrong way round for a shop window. Pairs are emitted as single rows
+   * so the page can still be measured and broken between them.
+   */
+  #pieceRows(items) {
+    const out = [];
+    for (let i = 0; i < items.length; i += 2) {
+      out.push(h('div.duo', null,
+        this.#pieceCard(items[i]),
+        items[i + 1] ? this.#pieceCard(items[i + 1]) : h('span.duo-gap')));
+    }
+    return out;
+  }
+
+  /**
+   * One piece in the catalogue: the drawing, in the finish you picked, with
+   * what it costs under it. The same chair in pine and in walnut are different
+   * things to buy, so you see which one you are buying.
    */
   #pieceCard(item) {
     const cost = costOf(item, this.buildStyle);
     const stars = starsOf(item, this.buildStyle);
     const owned = this.state.furniture.filter((f) => f.id === item.id).length;
-    const notes = [];
-    if (item.kind === 'seat') notes.push('seats one');
-    if (item.kind === 'table') notes.push('takes chairs');
-    if (item.patience) notes.push(`+${Math.round((item.patience - 1) * 100)}% patience`);
-    if (item.patienceRoom) notes.push(`+${Math.round((item.patienceRoom - 1) * 100)}% patience, room-wide`);
-    if (item.tip || item.tipRoom) notes.push(`+${Math.round(((item.tip ?? item.tipRoom) - 1) * 100)}% tips`);
-    if (item.draw) notes.push('guests arrive faster');
-    if (item.order) notes.push('quicker to the kitchen');
+    const perk = item.kind === 'seat' ? 'seats one'
+      : item.kind === 'table' ? 'takes chairs'
+        : item.patience || item.patienceRoom ? 'patience'
+          : item.tip || item.tipRoom ? 'tips'
+            : item.draw ? 'draws guests'
+              : item.order ? 'faster orders' : null;
     return h(`div.card.piece.tap${this.state.coins < cost ? '.thin' : ''}`, {
       onclick: () => this.game.startPlacing(item.id, this.buildStyle),
     },
     h('div.stage', null, h('i', {
       style: { backgroundImage: `url("${this.assets.url(groupFor(item, this.buildStyle), spriteIdOf(item))}")` },
     }), owned ? h('span.owned', null, `×${owned}`) : null),
-    h('div.card-main', null,
-      h('div.card-title', null, item.label),
-      h('div.card-sub', null, item.blurb),
-      notes.length ? h('div.card-sub.faint', null, notes.join(' · ')) : null,
-      h('div.rowline', null,
-        this.#cost(cost),
-        stars > 0 ? tag(`${stars}★`, 'tag-star') : null)));
+    h('div.piece-name', null, item.label),
+    perk ? h('div.piece-perk', null, perk) : null,
+    h('div.rowline.mid', null,
+      this.#cost(cost),
+      stars > 0 ? tag(`${stars}★`, 'tag-star') : null));
   }
 
   /* ----------------------------------------------------------------- build  */
@@ -131,30 +139,29 @@ export class Panels {
     this.reopen = () => this.openBuild(true);
     if (this.game.zone === this.game.factory) return this.#openFactoryBuild(keep);
 
-    const groups = {
-      seating: ['table', 'seat'],
-      kitchen: ['pass'],
-      decor: ['decor'],
-    };
-    const kinds = groups[this.buildTab] ?? groups.seating;
-    const items = FURNITURE.filter((f) => kinds.includes(f.kind));
+    // One catalogue, not three. Splitting it into Seating / Kitchen / Decor gave
+    // the first tab four things in it and a page and a half of blank paper —
+    // the whole room's worth fits in one list with headings down it.
+    const shelves = [
+      ['Tables and chairs', ['table', 'seat']],
+      ['The kitchen', ['pass']],
+      ['Decoration', ['decor']],
+    ];
 
     const body = this.buildTab === 'expand' ? this.#expandTab()
       : this.buildTab === 'crew' ? this.#crewRows() : [
-      h('div.note', null,
-        'Pick a finish, then tap a piece and tap the floor. ', h('b', null, 'Turn'),
-        ' faces it any of four ways; chairs turn to their table on their own.'),
       this.#styleRow(),
-      ...items.map((item) => this.#pieceCard(item)),
+      ...shelves.flatMap(([label, kinds]) => {
+        const items = FURNITURE.filter((f) => kinds.includes(f.kind));
+        return items.length ? [h('div.section', null, label), ...this.#pieceRows(items)] : [];
+      }),
     ];
 
     const spec = {
       key: 'build',
       title: 'Build the Dining Room',
       tabs: [
-        { id: 'seating', label: 'Seating' },
-        { id: 'kitchen', label: 'Kitchen' },
-        { id: 'decor', label: 'Decor' },
+        { id: 'room', label: 'Furnish' },
         { id: 'crew', label: 'Crew' },
         { id: 'expand', label: 'Expand' },
       ],
@@ -177,8 +184,7 @@ export class Panels {
   #expandTab() {
     const s = this.state;
     const body = [
-      h('div.note', null, 'The dining room is ', h('b', null, `${s.roomSize}×${s.roomSize}`),
-        '. Knock through and every wall moves out — the only way to fit more tables.'),
+      h('div.note', null, 'The room is ', h('b', null, `${s.roomSize}×${s.roomSize}`), '. Knocking through is the only way to fit more tables.'),
     ];
     for (const item of SHOP) {
       const owned = s.hasBought(item.id);
@@ -218,7 +224,7 @@ export class Panels {
 
     if (this.factoryTab === 'belt') {
       body = [
-        h('div.note', null, 'Tap ', h('b', null, 'Conveyor'), ' then drag across the floor to draw a line. Belts carry whatever the machine behind them makes.'),
+        h('div.note', null, 'Tap ', h('b', null, 'Conveyor'), ', then drag across the floor.'),
         this.#card({
           icon: 'belt',
           title: BELT.label,
@@ -259,7 +265,7 @@ export class Panels {
       ];
     } else if (this.factoryTab === 'workshop') {
       body = [
-        h('div.note', null, 'Neither of these needs a belt. Drop them anywhere on the floor and they tick away on their own — even with the tab shut.'),
+        h('div.note', null, 'No belt needed. Drop them anywhere; they tick away on their own.'),
         ...WORKSHOP.map((m) => this.#card({
           src: this.assets.url('machines', m.sprite),
           title: m.label,
@@ -270,7 +276,7 @@ export class Panels {
       ];
     } else if (this.factoryTab === 'store') {
       body = [
-        h('div.note', null, 'Anything a belt drops into the intake lands in your ', h('b', null, 'pantry'), ' and can be cooked with.'),
+        h('div.note', null, 'A belt into the intake fills your ', h('b', null, 'pantry'), '.'),
         this.#card({
           src: this.assets.url(SILO.group, SILO.sprite),
           title: SILO.label,
@@ -283,8 +289,8 @@ export class Panels {
       const kind = this.factoryTab;
       body = [
         kind === 'processor'
-          ? h('div.note', null, 'Refiners turn cheap goods into valuable ones. Feed them with a belt and send the output onward.')
-          : h('div.note', null, 'Machines make one ingredient over and over. Point them at a belt with the ', h('b', null, 'Rotate'), ' button.'),
+          ? h('div.note', null, 'Cheap goods in, valuable ones out. Belt in, belt onward.')
+          : h('div.note', null, 'One ingredient, over and over. Point it at a belt with ', h('b', null, 'Turn'), '.'),
         ...MACHINES.filter((m) => m.kind === kind).map((m) => this.#card({
           src: this.assets.url('machines', m.sprite),
           title: m.label,
@@ -658,7 +664,7 @@ export class Panels {
       });
     });
     return [
-      h('div.note', null, 'Spend sand dollars plus more ', h('b', null, 'signature ingredient'), ' to raise a dish: better price, faster cook, extra stars.'),
+      h('div.note', null, 'Raise a dish: better price, faster cook, more stars.'),
       ...rows,
     ];
   }
@@ -697,7 +703,7 @@ export class Panels {
       locked: s.coins < r.unlock,
     }));
     return [
-      h('div.note', null, 'New dishes cost sand dollars to learn. Fancier plates pull in fussier guests who pay more.'),
+      h('div.note', null, 'Fancier plates pull in fussier guests who pay more.'),
       ...rows,
       locked.length === 0 ? h('div.empty', null, 'You know every recipe in the harbour. Chef!') : null,
     ].filter(Boolean);
@@ -865,7 +871,7 @@ export class Panels {
     const mins = s.marketIn;
     return [
       this.#catchStrip(),
-      h('div.note', null, 'Fresh off the boats, and only so much of it. A new delivery lands ',
+      h('div.note', null, 'New boats land ',
         h('b', null, mins <= 1 ? 'any minute now' : `in ${mins} minutes`),
         ' — with new prices.'),
       ...rows,
@@ -983,7 +989,7 @@ export class Panels {
     const s = this.state;
     const hired = STAFF.filter((st) => s.hasStaff(st.id)).length;
     const out = [
-      h('div.note', null, 'A hire is permanent, and takes one of the fiddly jobs off you for good. ',
+      h('div.note', null, 'Permanent, and takes a job off you for good. ',
         h('b', null, `${hired} of ${STAFF.length}`), ' on the books.'),
     ];
     for (const room of CREW_ROOMS) {
@@ -1593,14 +1599,14 @@ export class Panels {
         this.#card({
           icon: 'help',
           title: 'Run the guide again',
-          sub: 'The nine steps of a first shift, pointing at each thing in turn.',
+          sub: 'The first shift, step by step.',
           side: this.#goBtn('Start', { onclick: () => this.game.openGuide() }),
         }),
         h('div.section', null, 'Danger zone'),
         this.#card({
           icon: 'refresh',
           title: 'Start over',
-          sub: `Day ${s.day}, ${s.stats.served} guests served. Wiping is permanent.`,
+          sub: `Day ${s.day}. Wiping is permanent.`,
           side: this.#goBtn('Reset', {
             cls: 'pill-stop',
             onclick: () => {
@@ -1661,28 +1667,22 @@ export class Panels {
       key: 'help',
       title: 'How to Play',
       body: [
-        h('div.note', null, 'Everything costs ', h('b', null, 'sand dollars'), ' — furniture, machines, recipes and crew alike.'),
-        step(1, 'Read the morning', "Each day opens with the catch: three things cheap on the quay and one dish the harbour has a taste for, which pays a third over the odds."),
-        step(2, 'Plate up the menu', 'Open the Kitchen — the book icon on the right — and set how many of each dish to make. Ingredients come out of the larder right away.'),
-        step(3, 'Print a flyer', "Nobody comes to a place they have not heard of. Tap the flyer at the bottom left until a poster goes up — ten taps to start with, fewer once you research it, and none at all once a Promo Stand does it for you. Posters bring people in on their own while you work."),
-        step(4, 'Open up', 'Guests wander in and wait by the door. Tap one to seat them at a free chair.'),
-        step(5, 'Work the board', "Once the doors are open the flyer becomes the board out front: another ten taps calls somebody in there and then. There is no limit on the queue — the only thing that ends a day is running out of food, which is why what is left on the menu is on screen while you serve."),
-        step(6, 'Take the order', 'Tap the ! sticker on the bubble over a seated guest to send the ticket to the chef.'),
-        step(7, 'Run the plate', 'Drag the finished dish off the kitchen pass onto the guest who ordered it.'),
-        step(8, 'Get paid', 'The faster you serve, the more they leave. Slow service loses stars. A table they leave needs washing before the next guest can sit down.'),
-        step(9, 'Build the works', 'Once the till is healthy, head to the Factory: place a machine, drag a belt from it, and end the belt at a Pantry Intake. Ingredients then fill the larder for free. The Workshop tab has a computer that banks research points and a stand that posts your flyers; the Pottery tab has the kiln.'),
-        h('div.section', null, 'Getting to know them'),
-        h('div.note', null, 'Every guest has a flavour they ', h('b', null, 'love'),
-          ' and one they cannot stand. Serving the right one is worth triple hearts and a better tip, and it fills in their page in the ',
-          h('b', null, 'Guest Diary'), '. Fill the hearts and they start bringing you presents.'),
-        h('div.note', null, 'Watch for a gold crown or a violet star over someone\'s head: a ',
-          h('b', null, 'VIP'), ' pays double and a ', h('b', null, 'Mythical'),
-          ' guest four times over. A busier harbour draws more of them.'),
-        h('div.note', null, 'Serving also earns ', h('b', null, 'pottery'),
-          ' experience. Build a ', h('b', null, 'Harbour Kiln'),
-          ' in the works and tap it to take a turn at the class; from level five a',
-          ' forged serving dish raises one recipe\'s stars and price for good.'),
-        h('div.note', null, 'Fancier tables and more decor raise ', h('b', null, 'ambience'), ', which brings guests in quicker and makes them tip better. Hire crew to automate seating, serving and the works.'),
+        h('div.note', null, 'Everything costs ', h('b', null, 'sand dollars'), '.'),
+        step(1, 'Read the morning', 'Three things cheap on the quay, one dish that pays over the odds.'),
+        step(2, 'Plate the menu', 'Kitchen → set how many of each. It costs ingredients now.'),
+        step(3, 'Open up', 'Guests wander in. Tap one to seat them.'),
+        step(4, 'Work the board', 'Ten taps calls somebody in. No limit — only the food runs out.'),
+        step(5, 'Take the order', 'Tap the ! bubble.'),
+        step(6, 'Run the plate', 'Drag it off the pass onto the right guest.'),
+        step(7, 'Get paid', 'Fast service pays more. Their table needs washing after.'),
+        step(8, 'Build the works', 'Machine, belt, Pantry Intake. Ingredients then arrive free.'),
+        h('div.section', null, 'Worth knowing'),
+        h('div.note', null, 'Every guest ', h('b', null, 'loves'), ' one flavour and hates another. Get it right for triple hearts. It all goes in the Diary.'),
+        h('div.note', null, 'A crown is a ', h('b', null, 'VIP'), ' — double pay. A violet star is ',
+          h('b', null, 'Mythical'), ' — quadruple.'),
+        h('div.note', null, 'Serving earns pottery experience. Build a kiln, take the class, forge a dish: one recipe gains a star and a price rise for good.'),
+        h('div.note', null, 'Better tables raise ', h('b', null, 'ambience'), ': quicker arrivals, bigger tips. Crew do the fiddly jobs for you.'),
+        h('div.note', null, h('b', null, 'Auto'), ' by the Open button keeps sold-out dishes going back on while the larder lasts.'),
       ],
     });
   }

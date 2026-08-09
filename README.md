@@ -28,24 +28,45 @@ up to four hours of catch-up.
 
 ## The front door
 
-The game opens on a **main menu** that is not a picture of a restaurant: your own
-dining room is running behind it, the camera drifting slowly across the place you
-have been building, and the chef at the pass. The logo is a toy — press it and it
-squashes and blows bubbles — and tapping the room does the same. **Open the
-doors** simply hands you the controls.
+The game opens on a **main menu** running on a **set**: not a picture of a
+restaurant, and not your restaurant either, but a dressed room nobody has to have
+built yet — antique tables, a lamp, a full house. The chef is at the pass, guests
+arrive, are seated, order, and eat, because nothing about it is faked: it is the
+game, played by something very good at it. The camera holds three composed shots
+and cuts between them on a slow count. Two buttons stand on the right, where a
+thumb is: **Enter Restaurant** and **Load Save**.
 
-**Settings** (sound, motion, tips, and starting over) and **Credits** open as
-ordinary panels over it. Motion off stops the idling, drifting and breathing
-parts of the interface but never the answer to a press: feedback is not
-decoration. Tips off silences the one-line nudges.
+The whole save is copied before the set goes up and handed straight back when you
+press the button, and autosave is off for the duration — the demo cannot cost you
+a coin or move a chair. The logo is a toy: press it and it squashes and blows
+bubbles.
 
-A first run then walks you through a **guide**: nine steps, each pointing at the
-thing you have to press and waiting for you to actually press it. The spotlight
-is a hole in a dark sheet, and the sheet takes no pointer events at any point —
-the guide's job is to draw the eye, never to trap the finger, so every step is
-done exactly the way it will be done later. It follows things that move, too: the
-step that says *seat a guest* puts its light on whoever is waiting by the door.
-The whole thing replays from Settings.
+Settings — sound, motion, tips, the guide, credits and starting over — is the
+last icon on the rail, in the game where the rest of the panels are. Motion off
+stops the idling, drifting and breathing parts of the interface but never the
+answer to a press: feedback is not decoration.
+
+Then the chef gets the first word, and the **guide** follows: eight steps, each
+pointing at the thing you have to press and waiting for you to actually press it.
+The spotlight is a hole in a dark sheet, and the sheet takes no pointer events at
+any point — the guide's job is to draw the eye, never to trap the finger, so
+every step is done exactly the way it will be done later. It follows things that
+move: the step that says *seat a guest* puts its light on whoever is waiting.
+
+## The chef
+
+There is one voice in the game and it belongs to the octopus at the pass. He has
+been here longer than you and he is not especially impressed yet.
+
+**Cutscenes** fire on their own at the moments worth marking — the first morning,
+the doors opening, the first guest fed, the first machine, the first kiln, three
+stars. The bars come in, the camera goes to the thing being talked about, and he
+says one or two short lines. They never interrupt an open panel and never talk
+over the guide, and each plays once.
+
+**Quests** are the same voice, standing still. One job at a time, pinned under
+the day with a number you can watch go up, from *plate 3 dishes* to *save up
+3,000*. Finishing one pays out and gets a line back from the pass.
 
 ## Playing
 
@@ -54,9 +75,9 @@ The whole thing replays from Settings.
 | **Factory** | Place a machine, drag a conveyor away from it, and end the line at a Pantry Intake. Refiners sit mid-line and turn cheap goods into valuable ones. |
 | **The morning** | Every day opens with the catch: three things cheap on the quay, and one dish the harbour has a taste for that pays a third over the odds. |
 | **The Kitchen** | One book for everything about food — today's menu, what you can learn, what you can improve, and the larder. Set how many of each dish to plate up; ingredients leave the larder immediately, so only plate what you can sell. |
-| **Flyers** | Nobody comes to a place they have not heard of. Of a morning, tap the flyer to print one — ten taps to begin with, fewer as you research it, none once a Promo Stand does it for you. Posters draw people in on their own while you work, and come down overnight. |
+| **The board** | Only there while the doors are open, because a button that prints a poster for tomorrow was one more morning chore and the morning is for the menu. Ten taps calls somebody in there and then — as often as you like. |
 | **Open up** | Guests wander in and wait by the door. Tap one to seat them at a free chair, or tap an empty seat to pull in whoever has been waiting longest. |
-| **Working the board** | Once you are open the flyer becomes the board out front: another ten taps calls somebody in there and then, no satchel needed. Nothing caps the queue — the day ends when the food does, so what is left on the menu sits on screen, dish by dish, while you serve. |
+| **Auto** | Beside the Open button. With it on, a dish that sells out goes straight back on for as long as the larder can pay for it — so a day ends when you run out of ingredients rather than when you run out of patience for the stepper. Nothing caps the queue either way: what is left on the menu sits on screen, dish by dish, while you serve. |
 | **Orders** | Tap the bubble over a seated guest — the one with the `!` sticker — to send the ticket to the chef. |
 | **Service** | Drag the finished dish off the kitchen pass onto the guest who ordered it. Tap-then-tap works too. |
 | **Payment** | Guests pay on how briskly they were served. Let a patience meter empty and they walk out, costing reputation. |
@@ -81,9 +102,8 @@ Mechanic speeds up the works.
 | **Pottery** | Build a **Harbour Kiln** in the works and tap it to take a turn at the class. Serving levels it; from level five you can forge: spend clay and money, stop the needle in the band, and one recipe gains a star and a permanent price rise — served from then on on real crockery, plainer or finer with the tier. A Clay Press digs the clay, a Potter's Wheel takes a round off the forge, a Glaze Kiln adds 15% to anything forged. |
 | **Expanding** | Knocking through to the wharf and then the terrace grows the dining room from 9×9 to 13×13 — the only way to fit more tables. It is the Expand tab in the build menu, beside the furniture it makes room for. |
 
-The ladder is deliberate: the flyer starts as ten taps a morning, and almost
-everything you buy exists to take that job — and the seating, the serving and
-the pantry runs — off your hands.
+The ladder is deliberate: everything you buy exists to take a job off your
+hands — the seating, the serving, the plating and the pantry runs.
 
 Pinch or scroll to zoom, drag to pan, `Tab` to switch rooms, `R` to turn what
 you're placing through its four sides, `Esc` to cancel.
@@ -102,12 +122,22 @@ src/
   core/               loader, tweens/springs, pointer, blip synth, helpers
   gfx/                canvas drawing kit and the particle system
   world/              iso math, procedural rooms, guests, kitchen, factory
-  ui/                 HUD, the bottom-sheet panels, the menu and the guide
+  ui/                 HUD, the book panels, the menu, the guide and the chef
   data/               ingredients, recipes, buildables, staff, guests, progress
 ```
 
 The world is a single `<canvas>`; the HUD and panels are real DOM so CSS can do
-the rounded-sticker styling and native scrolling.
+the styling and native scrolling.
+
+**Nothing in the interface is a moulded object.** The game is hand-drawn, so the
+interface has no business pretending to be plastic: no bevels, no lit top edges,
+no sheen down the front, no hard shadow underneath, nothing rotated in three
+dimensions. What separates one thing from another is the line and the fill — an
+ink outline round anything you can press, a flat paper fill inside it, and four
+mismatched corner radii so the rectangle looks like a hand went round it. A press
+is a press of a pen: the mark gets smaller and darker for a moment. The page
+turn is a leaf sweeping flat across the paper with a crease down its leading
+edge, not a card spinning on a Y axis.
 
 The navigation is a column of the pack's own painted icons down the right-hand
 edge — no button, no frame, no caption. Every icon in that sheet is already drawn
@@ -121,9 +151,8 @@ overshoots; the live one arrives with a bounce and rides bigger and closer to th
 thumb; and they all drop in one after another when the game opens. It is above
 the scrim and the sheet on purpose — with it buried, moving between panels meant
 close-then-open, so tapping Diary while the Kitchen is up simply switches, and
-tapping the panel already showing closes it. The flyer fidgets when the satchel
-is empty of a morning, and Open! breathes until you press it: motion is what
-tells you a corner of the screen is for pressing.
+tapping the panel already showing closes it. Open! breathes until you press it:
+motion is what tells you a corner of the screen is for pressing.
 
 `skinIcons` installs those images as one injected stylesheet rather than as
 inline styles on whatever existed at boot, so every card the panels build later

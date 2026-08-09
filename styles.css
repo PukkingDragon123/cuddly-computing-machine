@@ -1,12 +1,14 @@
 /* =====================================================================
-   Bubbleworks Harbor — the sticker UI
+   Bubbleworks Harbor — the drawn UI
 
-   One idea, applied everywhere: every control is a piece of painted wood.
-   Raised things (buttons, cards, chips) have a cream face, a chunky ink
-   outline and a hard shadow directly beneath — no blur, no gradient.
-   Sunken things (tab tracks, meter troughs, art wells) drop the outline and
-   take an inset shadow instead. Keeping those two apart is what stops a
-   screen of rounded rectangles reading as one flat pile.
+   One idea, applied everywhere: nothing is a moulded object, everything is
+   drawn. Ink outline, flat paper fill, four mismatched corner radii so the
+   rectangle looks like a hand went round it. No bevels, no lit top edges, no
+   sheen, no drop shadows, nothing rotated in three dimensions — the game is
+   hand-drawn and the interface has no business pretending to be plastic.
+
+   What separates one thing from another is the line and the fill: outlined
+   things are pressable, unoutlined tints are surfaces.
 
    Three type sizes, one spacing step, and colour that always means the same
    thing: sun = money, leaf = go, coral = blocked, mint = a count.
@@ -54,18 +56,21 @@
   --r-md: 0.95rem;
   --r-sm: 0.6rem;
   --bw: 0.17rem;         /* outline weight */
-  --lift: 0.26rem;       /* hard bottom shadow depth */
+  --lift: 0rem;          /* nothing is raised: the UI is drawn, not moulded */
   --gap: 0.5rem;
 
-  /* the highlight that makes a face look like painted wood rather than a
-     flat fill — a thin light band along the top inside edge */
-  --face: inset 0 0.15rem 0 rgba(255, 255, 255, 0.6);
+  /* A drawn box. Four mismatched corner radii is the oldest trick there is for
+     making a rectangle look like somebody's hand went round it, and it costs
+     nothing. Cards get it; pills stay round, because a drawn pill is round. */
+  --r-hand: 1.6rem 0.7rem 1.4rem 0.8rem / 0.8rem 1.5rem 0.7rem 1.5rem;
+  --r-hand-2: 0.9rem 1.5rem 0.7rem 1.4rem / 1.4rem 0.7rem 1.5rem 0.8rem;
 
-  /* and the sheen over it: painted wood catches the light across its whole top
-     half, not only at the very edge. Applied as background-image on every
-     raised face, which is why the coloured variants set background-COLOR — a
-     `background:` shorthand there would wipe this out. */
-  --sheen: linear-gradient(rgba(255, 255, 255, 0.34), rgba(255, 255, 255, 0) 62%);
+  /* Both of these used to fake a moulded plastic face — a lit top edge and a
+     sheen down the front. They are kept as no-ops so the forty places that ask
+     for them still parse, but nothing in this game is lit from anywhere any
+     more. It is ink on paper. */
+  --face: 0 0 rgba(0, 0, 0, 0);
+  --sheen: none;
 
   /* one easing for every press and pop, so the whole UI answers the same way */
   --spring: cubic-bezier(.2, 1.7, .4, 1);
@@ -132,6 +137,7 @@ html, body {
 #hud > .servicebar,
 #hud > .hint,
 #hud > .titlecard,
+#hud > .quest,
 #hud > #toasts { pointer-events: none; }
 
 .corner { display: flex; gap: 0.4rem; align-items: flex-start; }
@@ -286,7 +292,7 @@ html, body {
   pointer-events: none;
   display: flex; align-items: stretch;
   border-radius: 999px;
-  box-shadow: 0 var(--lift) 0 var(--tan-shadow), var(--face);
+  box-shadow: none;
   overflow: hidden;
   font-variant-numeric: tabular-nums;
 }
@@ -313,7 +319,7 @@ html, body {
   background-color: var(--wood);
   color: #fff;
   border: var(--bw) solid var(--ink);
-  box-shadow: 0 0.16rem 0 var(--wood-dark);
+  box-shadow: none;
   font-size: 0.72rem; font-weight: 900;
   letter-spacing: 0.03em;
   text-shadow: 0 1px 0 rgba(0, 0, 0, 0.25);
@@ -329,13 +335,13 @@ html, body {
   border: var(--bw) solid var(--ink);
   border-radius: var(--r-md);
   background-color: var(--paper);
-  box-shadow: 0 var(--lift) 0 var(--tan-shadow), var(--face);
+  box-shadow: none;
   padding: 0.32rem 0.6rem 0.32rem 0.42rem;
   font: inherit;
   cursor: pointer;
   transition: transform .06s ease, box-shadow .06s ease;
 }
-.flyer:active { transform: translateY(var(--lift)); box-shadow: 0 0 0 var(--tan-shadow), var(--face); }
+.flyer:active { transform: translateY(var(--lift)); box-shadow: none; }
 .flyer .ico { width: 1.55rem; height: 1.55rem; }
 .flyer-body { display: flex; flex-direction: column; gap: 0.2rem; align-items: stretch; }
 .flyer-body b {
@@ -346,7 +352,7 @@ html, body {
   display: block; width: 3.4rem; height: 0.42rem;
   border-radius: 999px;
   background: var(--panel-2);
-  box-shadow: inset 0 0.1rem 0.14rem rgba(95, 61, 38, .3);
+  box-shadow: none;
   overflow: hidden;
 }
 .flyer-bar i {
@@ -382,13 +388,13 @@ html, body {
   margin-top: 0.35rem;
   border-radius: 999px;
   background: var(--panel-2);
-  box-shadow: inset 0 0.14rem 0.2rem rgba(95, 61, 38, .28);
+  box-shadow: none;
   overflow: hidden;
 }
 .forge-band {
   position: absolute; top: 0; bottom: 0;
   background: var(--leaf);
-  box-shadow: inset 0 0.12rem 0 rgba(255, 255, 255, .35);
+  box-shadow: none;
 }
 .forge-needle {
   position: absolute; top: -0.12rem; bottom: -0.12rem;
@@ -396,7 +402,7 @@ html, body {
   margin-left: -0.14rem;
   border-radius: 999px;
   background: var(--ink);
-  box-shadow: 0 0 0 0.12rem rgba(253, 247, 232, .8);
+  box-shadow: none;
 }
 
 /* ------------------------------------------------------------- controls  */
@@ -405,7 +411,7 @@ html, body {
   display: flex; align-items: center; gap: 0.3rem;
   padding: 0.26rem 0.65rem 0.26rem 0.38rem;
   border-radius: 999px;
-  box-shadow: 0 var(--lift) 0 var(--tan-shadow), var(--face);
+  box-shadow: none;
   font-size: 0.86rem;
   min-height: 1.8rem;
   white-space: nowrap;
@@ -418,19 +424,19 @@ html, body {
   font-size: 0.95rem;
   font-weight: 900;
   letter-spacing: 0.02em;
-  box-shadow: 0 var(--lift) 0 var(--tan-shadow), var(--face);
+  box-shadow: none;
   cursor: pointer;
   min-height: 2.3rem;
   transition: transform .1s var(--spring), box-shadow .1s ease, filter .12s ease;
 }
 .pill-lg { padding: 0.62rem 1.4rem; font-size: 1.02rem; }
-.pill-sm { padding: 0.32rem 0.75rem; font-size: 0.78rem; box-shadow: 0 0.16rem 0 var(--tan-shadow), var(--face); }
-.pill-go   { background-color: var(--leaf); color: #fff; box-shadow: 0 var(--lift) 0 var(--leaf-deep), var(--face); text-shadow: 0 1px 0 rgba(0,0,0,.28); }
-.pill-stop { background-color: var(--tangerine); color: #fff; box-shadow: 0 var(--lift) 0 var(--tangerine-deep), var(--face); text-shadow: 0 1px 0 rgba(0,0,0,.28); }
-.pill-sun  { background-color: var(--sun); box-shadow: 0 var(--lift) 0 var(--sun-deep), var(--face); }
-.pill-sun.pill-sm  { box-shadow: 0 0.16rem 0 var(--sun-deep), var(--face); }
-.pill-quiet { background-color: var(--tan); box-shadow: 0 var(--lift) 0 var(--tan-shadow), var(--face); }
-.pill-quiet.pill-sm { box-shadow: 0 0.16rem 0 var(--tan-shadow), var(--face); }
+.pill-sm { padding: 0.32rem 0.75rem; font-size: 0.78rem; box-shadow: none; }
+.pill-go   { background-color: var(--leaf); color: #fff; box-shadow: none; text-shadow: 0 1px 0 rgba(0,0,0,.28); }
+.pill-stop { background-color: var(--tangerine); color: #fff; box-shadow: none; text-shadow: 0 1px 0 rgba(0,0,0,.28); }
+.pill-sun  { background-color: var(--sun); box-shadow: none; }
+.pill-sun.pill-sm  { box-shadow: none; }
+.pill-quiet { background-color: var(--tan); box-shadow: none; }
+.pill-quiet.pill-sm { box-shadow: none; }
 
 /* The main call to action gets its own weight — everything else steps back. It
    also breathes while it is waiting to be pressed: opening up is the one thing
@@ -460,7 +466,7 @@ html, body {
   width: 2.55rem; height: 2.55rem;
   border-radius: 999px;
   display: grid; place-items: center;
-  box-shadow: 0 var(--lift) 0 var(--tan-shadow), var(--face);
+  box-shadow: none;
   cursor: pointer;
   transition: transform .1s var(--spring), box-shadow .1s ease;
 }
@@ -475,7 +481,7 @@ html, body {
   width: 3.6rem; height: 3.4rem;
   border-radius: var(--r-md);
   background-color: var(--sun);
-  box-shadow: 0 var(--lift) 0 var(--sun-deep), var(--face);
+  box-shadow: none;
   display: flex; flex-direction: column; align-items: center; justify-content: center;
   gap: 0.1rem;
   cursor: pointer;
@@ -492,11 +498,11 @@ html, body {
 
 .pill:active, .round:active, .tile:active {
   transform: translateY(var(--lift));
-  box-shadow: 0 0 0 var(--tan-shadow), var(--face);
+  box-shadow: none;
 }
 .pill[disabled], .round[disabled], .tile[disabled] { filter: grayscale(.5) opacity(.55); cursor: default; }
 .pill[disabled]:active, .round[disabled]:active, .tile[disabled]:active {
-  transform: none; box-shadow: 0 var(--lift) 0 var(--tan-shadow), var(--face);
+  transform: none; box-shadow: none;
 }
 
 .badge {
@@ -507,7 +513,7 @@ html, body {
   background: var(--tangerine); color: #fff;
   font-size: 0.68rem; font-weight: 900;
   display: grid; place-items: center;
-  box-shadow: 0 0.12rem 0 var(--tangerine-deep);
+  box-shadow: none;
 }
 
 /* zone switch ---------------------------------------------------------- */
@@ -521,7 +527,7 @@ html, body {
   border: var(--bw) solid var(--ink);
   border-radius: 999px;
   background: var(--panel-2);
-  box-shadow: 0 var(--lift) 0 var(--tan-shadow), inset 0 0.16rem 0.2rem rgba(95, 61, 38, .22);
+  box-shadow: none;
   padding: 0.18rem;
   height: 2.5rem;
 }
@@ -538,7 +544,7 @@ html, body {
 .zoneswitch button.on {
   background-color: var(--paper);
   color: var(--ink-deep);
-  box-shadow: 0 0.13rem 0 var(--tan-shadow), var(--face);
+  box-shadow: none;
 }
 
 /* service bar --------------------------------------------------------- */
@@ -548,10 +554,13 @@ html, body {
    meant for a finished plate. Nothing in here is clickable, so nothing in here
    takes a click. */
 .servicebar {
-  grid-area: 2 / 2;
+  /* Up with the zone switch, not floating in the middle of the room. The
+     kitchen pass lives in the centre of the floor and a tally parked over it
+     hides the one thing you are watching. */
+  grid-area: 1 / 2;
   align-self: start;
   justify-self: center;
-  margin-top: 0.25rem;
+  margin-top: 3rem;
   pointer-events: none;
 }
 .sb-row {
@@ -559,7 +568,7 @@ html, body {
   border: var(--bw) solid var(--ink);
   border-radius: 999px;
   background-color: var(--panel);
-  box-shadow: 0 var(--lift) 0 var(--tan-shadow), var(--face);
+  box-shadow: none;
   padding: 0.32rem 0.95rem;
   font-size: 0.86rem; font-weight: 800;
   font-variant-numeric: tabular-nums;
@@ -576,7 +585,7 @@ html, body {
   border-radius: 999px;
   background-color: var(--paper);
   background-image: var(--sheen);
-  box-shadow: 0 0.14rem 0 var(--tan-shadow);
+  box-shadow: none;
   padding: 0.1rem 0.42rem 0.1rem 0.14rem;
   font-size: 0.78rem; font-weight: 900;
   font-variant-numeric: tabular-nums;
@@ -605,7 +614,7 @@ html, body {
   background-image: linear-gradient(rgba(255,255,255,.5), rgba(255,255,255,0) 60%),
     repeating-linear-gradient(0deg, rgba(63,111,143,.14) 0 1px, transparent 1px 8px),
     repeating-linear-gradient(90deg, rgba(63,111,143,.14) 0 1px, transparent 1px 8px);
-  box-shadow: 0 var(--lift) 0 #7fa2ba, var(--face);
+  box-shadow: none;
   padding: 0.34rem 0.4rem 0.34rem 0.6rem;
   font-size: 0.83rem; font-weight: 800;
   animation: popIn .25s var(--spring);
@@ -629,9 +638,9 @@ html, body {
 .turns i {
   width: 0.42rem; height: 0.42rem; border-radius: 999px;
   background: #a8c6da;
-  box-shadow: inset 0 0 0 0.08rem rgba(47,87,113,.4);
+  box-shadow: none;
 }
-.turns i.on { background: var(--sun); box-shadow: inset 0 0 0 0.08rem #2f5771; transform: scale(1.35) }
+.turns i.on { background: var(--sun); box-shadow: none; transform: scale(1.35) }
 
 /* hint ---------------------------------------------------------------- */
 
@@ -643,7 +652,7 @@ html, body {
   border: var(--bw) solid var(--ink);
   border-radius: var(--r-md);
   background-color: var(--panel);
-  box-shadow: 0 var(--lift) 0 var(--tan-shadow), var(--face);
+  box-shadow: none;
   padding: 0.55rem 0.95rem;
   font-size: 0.86rem; font-weight: 800;
   line-height: 1.35;
@@ -661,7 +670,7 @@ html, body {
   border: var(--bw) solid var(--ink);
   border-radius: var(--r-lg);
   background-color: var(--panel);
-  box-shadow: 0 var(--lift) 0 var(--tan-shadow), var(--face);
+  box-shadow: none;
   pointer-events: none;
   animation: cardSweep 1.9s cubic-bezier(.18,1.3,.4,1) both;
 }
@@ -689,7 +698,7 @@ html, body {
   border: var(--bw) solid var(--ink);
   border-radius: 999px;
   background-color: var(--panel);
-  box-shadow: 0 var(--lift) 0 var(--tan-shadow), var(--face);
+  box-shadow: none;
   padding: 0.38rem 1rem;
   font-size: 0.88rem; font-weight: 900;
   animation: toastIn .3s var(--spring) both;
@@ -697,8 +706,8 @@ html, body {
   max-width: min(22rem, calc(100vw - 2rem));
   overflow: hidden; text-overflow: ellipsis;
 }
-.toast.bad  { background-color: var(--coral-pale); box-shadow: 0 var(--lift) 0 var(--coral-deep), var(--face); }
-.toast.good { background-color: var(--leaf-pale); box-shadow: 0 var(--lift) 0 var(--leaf-deep), var(--face); }
+.toast.bad  { background-color: var(--coral-pale); box-shadow: none; }
+.toast.good { background-color: var(--leaf-pale); box-shadow: none; }
 .toast.out  { animation: toastOut .25s ease both; }
 
 @keyframes toastIn  { from { transform: translateY(-.6rem) scale(.86); opacity: 0 } }
@@ -726,7 +735,7 @@ html, body {
   background: var(--paper);
   border-radius: 1.7rem 1.7rem 0 0;
   border-bottom: 0;
-  box-shadow: 0 -0.5rem 1.4rem rgba(58, 36, 20, .22);
+  box-shadow: none;
   /* the rail moved to the side, so the sheet can own the bottom of the screen */
   padding-bottom: calc(var(--safe-b) + 0.4rem);
   z-index: 6;
@@ -753,7 +762,7 @@ html, body {
   flex: none;
   background: linear-gradient(var(--wood), var(--wood-deep));
   border-bottom: var(--bw) solid var(--ink);
-  box-shadow: inset 0 0.18rem 0 rgba(255, 255, 255, .28);
+  box-shadow: none;
 }
 .sheet-head h2 {
   flex: 1; min-width: 0;
@@ -774,7 +783,7 @@ html, body {
   padding: 0.18rem;
   border-radius: var(--r-md);
   background: var(--panel-2);
-  box-shadow: inset 0 0.14rem 0.2rem rgba(95, 61, 38, .2);
+  box-shadow: none;
   flex: none;
 }
 .sheet-tabs:empty { display: none }
@@ -796,7 +805,7 @@ html, body {
 .tab.on {
   background-color: var(--paper);
   color: var(--ink-deep);
-  box-shadow: 0 0.13rem 0 var(--tan-shadow), var(--face);
+  box-shadow: none;
 }
 
 .sheet-body {
@@ -866,7 +875,7 @@ html, body {
   border-radius: 999px;
   background-color: var(--panel);
   background-image: var(--sheen);
-  box-shadow: 0 var(--lift) 0 var(--tan-shadow), var(--face);
+  box-shadow: none;
   color: var(--ink-deep);
   font-size: 1rem;
   text-shadow: none;
@@ -878,7 +887,7 @@ html, body {
   max-width: calc(100% - 1rem);
   border: var(--bw) solid var(--ink);
   background: var(--panel-2);
-  box-shadow: 0 0.18rem 0 var(--tan-shadow), inset 0 0.14rem 0.2rem rgba(95, 61, 38, .2);
+  box-shadow: none;
 }
 /* one row, and it is allowed to be short: `minmax(0, 1fr)` is what gives the
    wrapper a real height to measure the book against */
@@ -904,7 +913,7 @@ html, body {
   border-radius: 999px;
   background-color: var(--panel);
   background-image: var(--sheen);
-  box-shadow: 0 var(--lift) 0 var(--tan-shadow), var(--face);
+  box-shadow: none;
   padding: 0.26rem 0.4rem;
   gap: 0.4rem;
 }
@@ -959,7 +968,7 @@ html, body {
   background-image: url("assets/ui/book_plain.webp");
   background-size: 200% 100%;
   background-repeat: no-repeat;
-  box-shadow: 0 0 1.2rem rgba(58, 36, 20, .35);
+  box-shadow: none;
 }
 .leaf .leaf-front { background-position: right center }
 .leaf .leaf-rear  { background-position: left center;  transform: rotateY(180deg) }
@@ -1109,10 +1118,10 @@ html, body {
   width: 1.45em; height: 1.45em;
   border-width: 0.1em;
   font-size: 0.9em;
-  box-shadow: 0 0.1em 0 var(--sun-deep), var(--face);
+  box-shadow: none;
 }
 .line .stepper .num { min-width: 1.1em; font-size: 0.9em }
-.line .pill-sm { padding: 0.14em 0.5em; font-size: 0.7em; box-shadow: 0 0.1em 0 var(--sun-deep), var(--face) }
+.line .pill-sm { padding: 0.14em 0.5em; font-size: 0.7em; box-shadow: none}
 .line-side { flex: none; margin-left: auto; display: flex; align-items: center; gap: 0.2em }
 .line-side .dot { font-size: 0.74em; font-weight: 900; color: var(--ink-soft) }
 .empty-line {
@@ -1255,13 +1264,13 @@ html, body {
   position: relative;
   border-radius: var(--r-md);
   background-color: var(--panel);
-  box-shadow: 0 var(--lift) 0 var(--tan-shadow), var(--face);
+  box-shadow: none;
   padding: 0.55rem 0.65rem;
   display: flex; gap: 0.65rem; align-items: center;
   min-height: 3.4rem;
 }
 .card.tap { cursor: pointer; padding-right: 1.5rem; transition: transform .1s var(--spring), box-shadow .1s ease }
-.card.tap:active { transform: translateY(var(--lift)) scale(.985); box-shadow: 0 0 0 var(--tan-shadow), var(--face) }
+.card.tap:active { transform: translateY(var(--lift)) scale(.985); box-shadow: none}
 /* a row you can buy says so before you read it: the price side sits proud */
 .card.tap::after {
   content: "";
@@ -1277,7 +1286,7 @@ html, body {
 .card.locked { filter: grayscale(.45) opacity(.66) }
 .card.sel {
   background-color: var(--sun-pale);
-  box-shadow: 0 var(--lift) 0 var(--sun-deep), var(--face), inset 0 0 0 0.14rem var(--sun);
+  box-shadow: none;
 }
 
 /* The art well is sunken, which reads as a shelf the piece is standing on and
@@ -1290,7 +1299,7 @@ html, body {
     radial-gradient(70% 58% at 50% 60%, rgba(255, 253, 244, .95), rgba(255, 253, 244, 0) 72%),
     var(--tan);
   background-repeat: no-repeat;
-  box-shadow: inset 0 0.16rem 0.22rem rgba(95, 61, 38, .2), inset 0 -0.1rem 0 rgba(255,255,255,.4);
+  box-shadow: none;
   display: grid; place-items: center;
   position: relative;
   overflow: hidden;
@@ -1321,7 +1330,7 @@ html, body {
   font-size: 0.76rem; font-weight: 900;
   background-color: var(--tan);
   font-variant-numeric: tabular-nums;
-  box-shadow: 0 0.1rem 0 rgba(95, 61, 38, .2);
+  box-shadow: none;
 }
 /* longhands only — `background:` here would blank the .ico-* image */
 .tag i {
@@ -1358,16 +1367,16 @@ html, body {
   width: 1.8rem; height: 1.8rem; border-radius: 999px;
   border: 0.15rem solid var(--ink); background-color: var(--sun);
   font: inherit; font-weight: 900; font-size: 1.05rem; line-height: 1;
-  cursor: pointer; box-shadow: 0 0.14rem 0 var(--sun-deep), var(--face);
+  cursor: pointer; box-shadow: none;
   display: grid; place-items: center; color: var(--ink-deep);
 }
-.stepper button:active { transform: translateY(.14rem); box-shadow: none }
+.stepper button:active { transform: translateY(.14rem); box-shadow: none}
 .stepper button[disabled] { filter: grayscale(.6) opacity(.5) }
 
 .bar {
   height: 0.5rem; border-radius: 999px;
   background: var(--panel-2);
-  box-shadow: inset 0 0.12rem 0.16rem rgba(95, 61, 38, .28);
+  box-shadow: none;
 }
 .bar i { display: block; height: 100%; background: var(--leaf); border-radius: 999px }
 
@@ -1388,7 +1397,7 @@ html, body {
   border-radius: 999px;
   background: var(--sun) center/0.55rem no-repeat
     url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 8 20'%3E%3Cpath d='M4 1v11' stroke='%235f3d26' stroke-width='2.6' stroke-linecap='round'/%3E%3Ccircle cx='4' cy='17.5' r='1.6' fill='%235f3d26'/%3E%3C/svg%3E");
-  box-shadow: 0 0 0 0.11rem var(--ink);
+  box-shadow: none;
 }
 .note b { color: var(--ink-deep) }
 
@@ -1413,7 +1422,7 @@ html, body {
   border: 0.15rem solid var(--ink);
   border-radius: var(--r-sm);
   background-color: var(--panel);
-  box-shadow: 0 0.18rem 0 var(--tan-shadow), var(--face);
+  box-shadow: none;
   padding: 0.3rem 0.2rem 0.25rem;
   text-align: center;
 }
@@ -1448,7 +1457,7 @@ html, body {
   background:
     radial-gradient(66% 46% at 50% 78%, rgba(255, 253, 244, .95), rgba(255, 253, 244, 0) 74%),
     linear-gradient(var(--tan), var(--panel-2));
-  box-shadow: inset 0 0.16rem 0.22rem rgba(95, 61, 38, .2), inset 0 -0.1rem 0 rgba(255,255,255,.4);
+  box-shadow: none;
   display: grid; place-items: end center;
   overflow: hidden;
   padding: 0.2rem 0.2rem 0;
@@ -1466,7 +1475,7 @@ html, body {
 /* somebody already on the books: the card goes green and gets stamped */
 .card.hire.on {
   background-color: #e7f3df;
-  box-shadow: 0 var(--lift) 0 #b6cfa6, var(--face), inset 0 0 0 0.14rem #a8c996;
+  box-shadow: none;
 }
 .card.hire.on .port { background: linear-gradient(#d8ebcc, #c8e0b8) }
 .stamp {
@@ -1476,7 +1485,7 @@ html, body {
   background-color: var(--mint, #86c06c);
   border: var(--bw) solid var(--ink);
   color: #fff; font-size: 0.86rem; font-weight: 900;
-  box-shadow: 0 0.14rem 0 rgba(58, 36, 20, .3);
+  box-shadow: none;
   transform: rotate(9deg);
 }
 /* out of reach for now — still legible, just clearly not yet yours */
@@ -1502,7 +1511,7 @@ html, body {
   background:
     radial-gradient(72% 40% at 50% 76%, rgba(255, 253, 244, .98), rgba(255, 253, 244, 0) 76%),
     linear-gradient(var(--panel-2), var(--tan));
-  box-shadow: inset 0 0.16rem 0.22rem rgba(95, 61, 38, .2), inset 0 -0.1rem 0 rgba(255,255,255,.4);
+  box-shadow: none;
   display: grid; place-items: center;
   overflow: hidden;
 }
@@ -1528,7 +1537,7 @@ html, body {
   border: var(--bw) solid var(--ink);
   border-radius: 999px;
   background-color: var(--panel);
-  box-shadow: 0 0.18rem 0 var(--tan-shadow), var(--face);
+  box-shadow: none;
   padding: 0.22rem 0.5rem 0.22rem 0.24rem;
   font: inherit; font-weight: 900; font-size: 0.74rem;
   color: var(--ink-soft);
@@ -1540,13 +1549,13 @@ html, body {
   flex: none;
   width: 1.15rem; height: 1.15rem; border-radius: 999px;
   border: 0.13rem solid var(--ink);
-  box-shadow: inset 0 -0.18rem 0 rgba(0, 0, 0, .16);
+  box-shadow: none;
 }
 .swatch .lbl { overflow: hidden; text-overflow: ellipsis; white-space: nowrap }
 .swatch .bonus { flex: none; color: var(--ink-faint); font-size: 0.7rem }
 .swatch.on .bonus { color: var(--ink-deep) }
-.swatch.on { background-color: var(--sun); color: var(--ink-deep); box-shadow: 0 0.18rem 0 var(--sun-deep), var(--face) }
-.swatch:active { transform: translateY(.16rem); box-shadow: none }
+.swatch.on { background-color: var(--sun); color: var(--ink-deep); box-shadow: none}
+.swatch:active { transform: translateY(.16rem); box-shadow: none}
 
 /* --------------------------------------------------------------- icons  */
 
@@ -1585,12 +1594,22 @@ html, body {
 .title {
   position: absolute; inset: 0;
   z-index: 4;
-  /* low on the screen, so the room and whoever is in it keep the top half */
-  display: grid; place-items: end center;
-  padding: calc(1rem + var(--safe-t)) 1rem calc(1.6rem + var(--safe-b));
-  background:
-    radial-gradient(120% 80% at 50% 40%, rgba(253, 247, 232, .1), rgba(94, 63, 38, .42) 100%);
+  /* The plate stands on the right, where a thumb is, and the room keeps the
+     left two thirds of the frame — which is where the set is dressed. */
+  display: grid; place-items: center end;
+  padding: calc(1rem + var(--safe-t)) clamp(1rem, 5vw, 4rem) calc(1.6rem + var(--safe-b));
   animation: fade .5s ease both;
+}
+/* The wash. A title screen is not gameplay, so it does not look like gameplay:
+   the room is warmed, darkened at the edges and given a soft horizon, and the
+   right-hand third is pulled down so the type has something to sit on. */
+.title-wash {
+  position: absolute; inset: 0;
+  pointer-events: none;
+  background:
+    linear-gradient(90deg, rgba(94, 63, 38, 0) 46%, rgba(72, 46, 26, .42) 100%),
+    radial-gradient(105% 74% at 42% 42%, rgba(255, 244, 214, .16), rgba(94, 63, 38, .34) 100%),
+    linear-gradient(rgba(255, 228, 176, .1), rgba(120, 78, 44, .16));
 }
 .title.out { animation: titleOut .3s ease both; pointer-events: none }
 @keyframes titleOut { to { opacity: 0; transform: scale(1.04) } }
@@ -1606,7 +1625,7 @@ html, body {
   border-radius: var(--r-lg);
   background-color: rgba(253, 247, 232, .93);
   background-image: var(--sheen);
-  box-shadow: 0 var(--lift) 0 var(--tan-shadow), 0 1rem 2rem rgba(58, 36, 20, .3), var(--face);
+  box-shadow: none;
 }
 
 /* the logo is a toy: press it and it squashes and blows bubbles */
@@ -1649,13 +1668,18 @@ html, body {
   border-radius: 999px;
   background-color: var(--panel);
   background-image: var(--sheen);
-  box-shadow: 0 var(--lift) 0 var(--tan-shadow), var(--face);
+  box-shadow: none;
   padding: 0.28rem 0.9rem;
   font-size: 0.78rem; font-weight: 800;
   max-width: 100%;
 }
-.title-play { margin-top: 0.35rem; font-size: 1.15rem; padding: 0.8rem 2rem }
-.title-row { display: flex; flex-wrap: wrap; gap: 0.4rem; justify-content: center }
+.title-play {
+  margin-top: 0.25rem;
+  font-size: 1.06rem;
+  padding: 0.72rem 1.4rem;
+  width: 100%;
+}
+.title-play[disabled] { opacity: .45 }
 .title-by { font-size: 0.76rem; font-weight: 800; color: var(--ink-soft); margin-top: 0.2rem }
 .title-by b { color: var(--ink-deep) }
 
@@ -1670,7 +1694,7 @@ html, body {
 @keyframes titleIn { from { transform: translateY(1.2rem) scale(.92); opacity: 0 } }
 
 /* with the menu up, the HUD steps out of the way entirely */
-#hud.titling { opacity: 0; pointer-events: none; transition: opacity .25s ease }
+#hud.titling, #hud.scening { opacity: 0; pointer-events: none; transition: opacity .25s ease }
 
 /* ------------------------------------------------------------- the guide  */
 
@@ -1686,8 +1710,8 @@ html, body {
   animation: holePulse 1.6s ease-in-out infinite;
 }
 @keyframes holePulse {
-  0%, 100% { border-color: var(--sun); box-shadow: 0 0 0 100vmax rgba(58, 36, 20, .5) }
-  50%      { border-color: #fff3c8; box-shadow: 0 0 0 100vmax rgba(58, 36, 20, .58) }
+  0%, 100% { border-color: var(--sun); box-shadow: 0 0 0 100vmax rgba(58, 36, 20, .5)}
+  50%      { border-color: #fff3c8; box-shadow: 0 0 0 100vmax rgba(58, 36, 20, .58)}
 }
 .tutor-say {
   position: absolute;
@@ -1698,7 +1722,7 @@ html, body {
   border-radius: var(--r-md);
   background-color: var(--paper);
   background-image: var(--sheen);
-  box-shadow: 0 var(--lift) 0 var(--tan-shadow), var(--face);
+  box-shadow: none;
   padding: 0.55rem 0.7rem;
   display: flex; flex-direction: column; gap: 0.2rem;
 }
@@ -1723,7 +1747,7 @@ html, body {
   border: var(--bw) solid var(--ink);
   border-radius: 999px;
   background: var(--panel-2);
-  box-shadow: inset 0 0.14rem 0.2rem rgba(95, 61, 38, .25);
+  box-shadow: none;
   padding: 0.14rem;
   cursor: pointer;
   display: flex; align-items: center;
@@ -1735,7 +1759,7 @@ html, body {
   border: 0.13rem solid var(--ink);
   background-color: var(--paper);
   background-image: var(--sheen);
-  box-shadow: 0 0.12rem 0 var(--tan-shadow);
+  box-shadow: none;
   transition: transform .18s var(--spring);
 }
 .switch.on { background: var(--leaf) }
@@ -1769,7 +1793,7 @@ body.still .tutor-hole { animation: none }
   width: 13rem; height: 0.85rem;
   border: var(--bw) solid var(--ink); border-radius: 999px;
   background: var(--panel-2); overflow: hidden; margin: 0 auto;
-  box-shadow: 0 var(--lift) 0 var(--tan-shadow), inset 0 0.14rem 0.18rem rgba(95,61,38,.25);
+  box-shadow: none;
 }
 .boot-bar i { display: block; height: 100%; width: 0; background: var(--sun); transition: width .2s ease }
 #boot-msg { margin-top: .7rem; font-weight: 800; font-size: .85rem; color: var(--ink-soft) }
@@ -1794,4 +1818,245 @@ body.still .tutor-hole { animation: none }
   .railbtn-sm .ico { width: 1.9rem; height: 1.9rem }
   .flyer { padding: .3rem .5rem .3rem .36rem }
   .flyer-bar { width: 2.8rem }
+}
+
+/* =====================================================================
+   The drawn pass.
+
+   Everything above was built for a moulded look — a lit face, a hard shadow
+   under it, a well sunk into the panel. The bevels are gone; this puts back
+   what actually held the design together, which was never the shadow: an ink
+   line round anything you can press, a flat fill inside it, and corners that
+   do not match. Kept in one block so there is one place to read the rule.
+   ===================================================================== */
+
+/* pressable: a line round it */
+.card, .chip, .toast, .tile, .pill, .round, .swatch, .stepper button,
+.zoneswitch button, .tag {
+  border: var(--bw) solid var(--ink);
+}
+/* the rail is bare artwork — every icon in the pack is already drawn as a card
+   with its own outline, and a second one round it is the same line twice */
+.railbtn { border: 0 }
+/* surfaces the eye reads as paper, not as objects */
+.thumb, .port, .stage, .ing-cell, .bar, .flyer-bar, .forge-track, .sheet-tabs {
+  border: 0.13rem solid var(--ink-faint);
+}
+
+/* corners a hand made */
+.card, .toast, .tile, .thumb, .stage, .ing-cell { border-radius: var(--r-hand) }
+.card:nth-child(even), .ing-cell:nth-child(even) { border-radius: var(--r-hand-2) }
+.port { border-radius: var(--r-hand-2) }
+.sheet-tabs { border-radius: var(--r-hand) }
+
+/* A press is a press of a pen: the mark gets smaller and darker for a moment.
+   Nothing sinks, because nothing was standing up. */
+.pill:active, .round:active, .tile:active, .swatch:active,
+.stepper button:active, .railbtn:active {
+  transform: scale(.93);
+  filter: brightness(.94);
+}
+.card.tap:active { transform: scale(.985); filter: brightness(.97) }
+.flyer:active { transform: scale(.95) }
+
+/* the tab track is a ruled line under the tabs, not a trough */
+.sheet-tabs {
+  background: rgba(255, 253, 244, .55);
+  border-width: 0.13rem;
+  border-style: dashed;
+}
+.tab.on { border: var(--bw) solid var(--ink); background-color: var(--sun) }
+
+/* meters: an outlined tube with a flat fill, the way a drawn gauge reads */
+.bar > i, .flyer-bar > i { border-radius: 999px }
+.bar, .flyer-bar { border-radius: 999px; background: var(--paper) }
+
+/* a wallet is written on the paper, so it needs its own line */
+.wallet, .daytag, .servicebar, .titlecard, .hint, .placebar {
+  border: var(--bw) solid var(--ink);
+}
+.wallet { border-radius: 999px }
+
+/* Nothing turns in three dimensions. The leaf still turns the page, but it
+   does it the way a drawn page does: it sweeps across, narrowing as it goes,
+   with the fold running down its leading edge. */
+.leaf { transform-style: flat; perspective: none }
+.spread { perspective: none }
+.leaf-face { box-shadow: none }
+.leaf .leaf-rear { display: none }
+@keyframes leafFwd {
+  from { transform: scaleX(1);   opacity: 1 }
+  to   { transform: scaleX(.02); opacity: .9 }
+}
+@keyframes leafBack {
+  from { transform: scaleX(1);   opacity: 1 }
+  to   { transform: scaleX(.02); opacity: .9 }
+}
+.leaf { transform-origin: left center }
+.leaf-back { transform-origin: right center }
+/* the fold: a soft crease down the edge the page is turning about */
+.leaf-face::after {
+  background: linear-gradient(90deg, rgba(120, 84, 48, .28), rgba(255, 255, 255, .16) 22%, rgba(255,255,255,0) 60%);
+  animation: none; opacity: 1;
+}
+.leaf-back .leaf-face::after {
+  background: linear-gradient(270deg, rgba(120, 84, 48, .28), rgba(255, 255, 255, .16) 22%, rgba(255,255,255,0) 60%);
+}
+
+/* the panel's own arrival: it slides, it does not tip towards you */
+@keyframes bookOpen { from { opacity: 0; transform: translateY(1.2rem) } }
+@keyframes pageFwd  { from { opacity: 0; transform: translateX(2.5%) } }
+@keyframes pageBack { from { opacity: 0; transform: translateX(-2.5%) } }
+
+/* the catalogue, two across ------------------------------------------- */
+
+.duo { display: flex; gap: var(--gap); align-items: stretch }
+.duo > * { flex: 1 1 0; min-width: 0 }
+.duo-gap { visibility: hidden }
+
+.card.piece {
+  flex-direction: column;
+  align-items: stretch;
+  gap: 0.25rem;
+  padding: 0.4rem 0.4rem 0.45rem;
+  text-align: center;
+}
+.card.piece .stage {
+  width: auto; height: 4.6rem;
+  border-radius: var(--r-sm);
+}
+.card.piece .stage > i { background-size: auto 84% }
+.piece-name {
+  font-size: 0.86rem; font-weight: 900; line-height: 1.15;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.piece-perk {
+  font-size: 0.66rem; font-weight: 800; color: var(--ink-faint);
+  text-transform: lowercase;
+}
+.rowline.mid { justify-content: center }
+.card.piece.tap::after { display: none }
+
+/* the title plate, standing on the right ------------------------------- */
+
+.title-card {
+  align-items: stretch;
+  text-align: center;
+  max-width: min(19rem, 76vw);
+}
+.title-card .title-logo, .title-card .title-sub, .title-card .title-by { text-align: center }
+
+/* cutscenes ------------------------------------------------------------ */
+
+/* Bars in, camera over, chef talks, bars out. It is the oldest trick in
+   games and it still works: the moment the frame changes shape, you stop
+   playing and start listening. */
+.scene {
+  position: absolute; inset: 0;
+  z-index: 7;
+  animation: fade .22s ease both;
+}
+.scene.out { animation: sceneOut .26s ease both; pointer-events: none }
+@keyframes sceneOut { to { opacity: 0 } }
+.bar-top, .bar-bot {
+  position: absolute; left: 0; right: 0; height: 11%;
+  background: #3a2414;
+  animation: barIn .34s cubic-bezier(.2,.9,.3,1) both;
+}
+.bar-top { top: 0 }
+.bar-bot { bottom: 0 }
+@keyframes barIn { from { transform: scaleY(0) } }
+.bar-top { transform-origin: top }
+.bar-bot { transform-origin: bottom }
+
+.say {
+  position: absolute;
+  left: 50%; bottom: 13%;
+  transform: translateX(-50%);
+  width: min(34rem, 92%);
+  display: flex; align-items: flex-end; gap: 0.7rem;
+  padding: 0.7rem 0.9rem;
+  background-color: var(--paper);
+  border: var(--bw) solid var(--ink);
+  border-radius: var(--r-hand);
+}
+.say.pop { animation: sayPop .22s var(--spring) both }
+@keyframes sayPop { from { transform: translateX(-50%) scale(.96) } }
+/* he leans in over the edge of his own speech, the way a puppet would */
+.say-face {
+  flex: none;
+  width: 5rem; height: 5.6rem;
+  margin: -2.4rem 0 -0.7rem;
+  background: left bottom/300% 100% no-repeat;
+  filter: drop-shadow(0 0.14rem 0.1rem rgba(95, 61, 38, .3));
+  animation: chefBob 2.4s ease-in-out infinite;
+}
+@keyframes chefBob { 50% { transform: translateY(-0.18rem) rotate(-1.4deg) } }
+.say-body { flex: 1; min-width: 0; text-align: left }
+.say-who {
+  display: block;
+  font-size: 0.7rem; font-weight: 900; letter-spacing: .07em;
+  text-transform: uppercase; color: var(--tangerine-deep);
+}
+.say-text { font-size: 1.02rem; font-weight: 800; line-height: 1.3; color: var(--ink-deep) }
+.say-next {
+  position: absolute; right: 0.8rem; bottom: 0.4rem;
+  font-size: 0.66rem; font-weight: 900; color: var(--ink-faint);
+  animation: nudge 1.4s ease-in-out infinite;
+}
+@keyframes nudge { 50% { transform: translateX(0.22rem) } }
+
+/* the standing job ----------------------------------------------------- */
+
+.quest {
+  display: flex; align-items: center; gap: 0.5rem;
+  width: min(15rem, 56vw);
+  margin-top: 0.1rem;
+  /* a readout, not a control: it must never eat a tap meant for the room */
+  pointer-events: none !important;
+  padding: 0.34rem 0.6rem 0.34rem 0.4rem;
+  background-color: var(--paper);
+  border: var(--bw) solid var(--ink);
+  border-radius: var(--r-hand-2);
+  pointer-events: none;
+  animation: questIn .4s var(--spring) both;
+}
+@keyframes questIn { from { opacity: 0; transform: translateX(-0.8rem) } }
+.quest.ding { animation: questDing .6s ease both }
+@keyframes questDing {
+  30% { transform: scale(1.06) rotate(-1.5deg); background-color: var(--leaf-pale) }
+  100% { transform: none }
+}
+.quest-tick {
+  flex: none; width: 1.15rem; height: 1.15rem;
+  border: 0.14rem solid var(--ink); border-radius: 0.35rem;
+}
+.quest-body { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 0.16rem }
+.quest-body b {
+  font-size: 0.78rem; font-weight: 900; line-height: 1.1;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.quest-bar {
+  display: block; height: 0.3rem; border-radius: 999px;
+  background: var(--panel-2); overflow: hidden;
+}
+.quest-bar > i { display: block; height: 100%; background: var(--leaf); border-radius: 999px; transition: width .3s ease }
+.quest-n { flex: none; font-size: 0.7rem; font-weight: 900; color: var(--ink-soft); font-variant-numeric: tabular-nums }
+
+/* a line from the pass, in the toast stack */
+.chefline {
+  display: flex; align-items: center; gap: 0.5rem;
+  padding: 0.35rem 0.7rem 0.35rem 0.35rem;
+  background-color: var(--sun-pale);
+  border: var(--bw) solid var(--ink);
+  border-radius: var(--r-hand);
+  font-size: 0.84rem; font-weight: 800; color: var(--ink-deep);
+  max-width: 20rem;
+  animation: toastIn .3s var(--spring) both;
+}
+.chefline.out { animation: toastOut .3s ease both }
+.chefline i {
+  flex: none; width: 2.1rem; height: 2.4rem;
+  margin: -0.5rem 0 -0.35rem;
+  background: left bottom/300% 100% no-repeat;
 }

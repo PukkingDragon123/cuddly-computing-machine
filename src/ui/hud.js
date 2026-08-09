@@ -35,6 +35,7 @@ export class Hud {
       sheetBody: $('#sheet-body'),
       sheetFoot: $('#sheet-foot'),
       sound: $('#btn-sound'),
+      auto: $('#btn-auto'),
       card: $('#titlecard'),
       flyer: $('#btn-flyer'),
       rail: $('#rail'),
@@ -77,6 +78,13 @@ export class Hud {
     this.el.flyer.onclick = () => g.tapFlyer();
     $('#btn-help').onclick = () => g.openHelp();
     this.el.sound.onclick = () => g.toggleSound();
+    this.el.auto.onclick = () => {
+      g.state.auto = !g.state.auto;
+      g.state.save();
+      g.sfx.play(g.state.auto ? 'select' : 'tap');
+      g.toast(g.state.auto ? 'Auto-plating on' : 'Auto-plating off', g.state.auto ? 'good' : '');
+      this.sync();
+    };
     this.el.service.onclick = () => g.toggleService();
 
     $('#sheet-close').onclick = () => this.closeSheet();
@@ -129,29 +137,22 @@ export class Hud {
     const canOpen = planned > 0 && r.seatCount > 0 && r.hasPass;
     this.el.service.disabled = s.phase === 'report' || (!open && !canOpen);
 
-    // The flyer is the same ten taps all day; only what it produces changes. In
-    // the morning it prints a poster for the satchel, and the gauge fills toward
-    // one. Once the doors are open it is the board out front, and the same gauge
-    // fills toward the next guest through the door.
-    const max = s.flyerMax;
+    // The board out front. It is only a thing while the doors are open — a
+    // button that prints a poster for tomorrow was one more morning chore, and
+    // the morning is for the menu. Ten taps calls somebody in, as many times as
+    // you like; what ends the day is the food running out.
+    show(this.el.flyer, open);
     const taps = s.flyer?.taps ?? 0;
     const need = s.flyerTaps;
-    this.el.flyer.classList.toggle('handout', open);
-    this.#text('flyerCount', open
-      ? `${taps}/${need} · calling`
-      : `${s.posters}/${max}`);
-    const pct = open
-      ? taps / need
-      : (s.posters >= max ? 1 : taps / need);
-    const w = `${Math.round(clamp(pct, 0, 1) * 100)}%`;
+    this.el.flyer.classList.add('handout');
+    this.#text('flyerCount', `${taps}/${need}`);
+    const w = `${Math.round(clamp(taps / need, 0, 1) * 100)}%`;
     if (this.el.flyerFill.style.width !== w) this.el.flyerFill.style.width = w;
-    this.el.flyer.classList.toggle('full', !open && s.posters >= max);
     // nothing plated is the only thing that stops the board working
-    this.el.flyer.classList.toggle('spent', open && s.stockCount <= 0);
-    // an empty satchel of a morning is the job, so let it fidget
-    this.el.flyer.classList.toggle('nudge', !open && s.posters === 0);
-    const wants = open ? 'Call somebody in — ten taps' : 'Print a flyer';
-    if (this.el.flyer.title !== wants) this.el.flyer.title = wants;
+    this.el.flyer.classList.toggle('spent', s.stockCount <= 0);
+
+    this.el.auto.classList.toggle('pill-sun', !!s.auto);
+    this.el.auto.classList.toggle('pill-quiet', !s.auto);
 
     const icon = `ico ico-${this.game.sfx.enabled ? 'sound' : 'mute'}`;
     if (this.el.sound.firstElementChild.className !== icon) {
@@ -287,6 +288,22 @@ export class Hud {
       setTimeout(() => el.remove(), 260);
     }, 1900);
     while (this.el.toasts.children.length > 3) this.el.toasts.firstElementChild.remove();
+  }
+
+  /**
+   * The chef, in passing. Not a cutscene — a line from the pass while you carry
+   * on working, which is where most of what he has to say belongs.
+   */
+  chefSays(text) {
+    if (!text) return;
+    const el = h('div.chefline', null,
+      h('i', { style: { backgroundImage: `url("${this.game.assets.url('staff', '04_octopus_head_chef')}")` } }),
+      h('span', null, text));
+    this.el.toasts.append(el);
+    setTimeout(() => {
+      el.classList.add('out');
+      setTimeout(() => el.remove(), 300);
+    }, 3400);
   }
 
   /**

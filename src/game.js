@@ -11,6 +11,7 @@ import { Hud } from './ui/hud.js';
 import { Panels } from './ui/panels.js';
 import { Title } from './ui/title.js';
 import { Tutor } from './ui/tutor.js';
+import { Story } from './ui/story.js';
 import { GameState, SAVE_KEY } from './state.js';
 import { TAU, range, rnd } from './core/util.js';
 import { ingName } from './data/ingredients.js';
@@ -74,6 +75,7 @@ export class Game {
 
     this.title = new Title(this);
     this.tutor = new Tutor(this);
+    this.story = new Story(this);
     this.sfx.enabled = this.state.settings?.sound !== false;
     document.body.classList.toggle('still', !this.state.motionOn);
 
@@ -300,12 +302,6 @@ export class Game {
     if (!r.hasPass) { this.hud.toast('You need a Kitchen Pass first', 'bad'); this.openBuild(); return; }
     if (r.seatCount === 0) { this.hud.toast('Put a chair beside a table', 'bad'); this.openBuild(); return; }
     if (this.state.plannedCount === 0) { this.hud.toast('Plate up a menu first', 'bad'); this.openRecipes(); return; }
-    if (this.state.posters === 0) {
-      this.hud.toast('Nobody knows you are open — post a flyer', 'bad');
-      this.hud.pulseFlyer();
-      return;
-    }
-
     this.setZone('restaurant');
     this.cancelPlacement();
     this.state.openDoors();
@@ -478,6 +474,8 @@ export class Game {
 
     if (this.state.phase === 'open') this.hud.sync();
     this.#autoPost(dt);
+    this.#autoPlate(dt);
+    this.story?.update(dt);
 
     this.saveT += dt;
     if (this.saveT > 12) { this.saveT = 0; this.#save(); }
@@ -492,9 +490,34 @@ export class Game {
     if (this.state.addPoster()) this.hud.sync();
   }
 
+  /**
+   * The auto switch: a dish that sells out goes straight back on, as long as
+   * the larder can pay for it. It means a day ends when you run out of
+   * ingredients rather than when you run out of patience for the stepper.
+   */
+  #autoPlate(dt) {
+    if (!this.state.auto || this.state.phase !== 'open') return;
+    this.plateT = (this.plateT ?? 0) + dt;
+    if (this.plateT < 1.1) return;
+    this.plateT = 0;
+    if (this.state.topUp()) this.hud.sync();
+  }
+
   #save() {
+    // the main menu is running the game on a set; none of that is yours
+    if (this.attract) return;
     this.state.lastSeen = Date.now();
     this.state.save();
+  }
+
+  hasSaveOnDisk() {
+    try { return !!localStorage.getItem(SAVE_KEY); } catch { return false; }
+  }
+
+  /** Load Save: throw this session away and take what is on disk. */
+  reloadSave() {
+    if (!this.hasSaveOnDisk()) return;
+    location.reload();
   }
 
   /**
@@ -504,7 +527,8 @@ export class Game {
    */
   onTitleDone() {
     const s = this.state;
-    if (!s.tutorial?.done) { this.tutor.begin(); return; }
+    // the chef gets the first word, then the guide, then the morning
+    if (!s.tutorial?.done) { this.story.intro(() => this.tutor.begin()); return; }
     if (s.phase === 'prep' && !s.catch?.seen) setTimeout(() => this.openCatch(), 350);
   }
 

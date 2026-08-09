@@ -19,36 +19,29 @@ const STEPS = [
   {
     id: 'kitchen',
     title: 'The kitchen',
-    text: 'Every dish has to be plated before anyone can order it. Open the Kitchen.',
+    text: 'Nothing sells until it is plated. Open the Kitchen.',
     at: () => '#btn-recipes',
     done: (g) => g.hud.sheetOpen === 'recipes',
   },
   {
     id: 'plate',
     title: 'Plate a dish',
-    text: 'Tap + beside a dish. The ingredients come out of your larder now, so plate what you can sell.',
+    text: 'Tap + beside a dish. It costs ingredients now, so plate what you can sell.',
     at: () => '#sheet-body .stepper button:last-child',
     done: (g) => g.state.plannedCount > 0,
   },
   {
-    id: 'flyer',
-    title: 'Print a flyer',
-    text: 'Nobody comes to a place they have not heard of. Tap the flyer ten times to print one.',
-    at: () => '#btn-flyer',
-    before: (g) => g.hud.closeSheet(),
-    done: (g) => g.state.posters > 0,
-  },
-  {
     id: 'open',
-    title: 'Open the doors',
-    text: 'That is the morning done. Open up and the harbour starts wandering in.',
+    title: 'Open up',
+    text: 'That is the morning done. Open the doors.',
     at: () => '#btn-service',
+    before: (g) => g.hud.closeSheet(),
     done: (g) => g.state.phase === 'open',
   },
   {
     id: 'seat',
     title: 'Seat a guest',
-    text: 'Tap whoever is waiting by the door to sit them at a free chair.',
+    text: 'Tap whoever is waiting to sit them down.',
     world: (g) => {
       const q = g.restaurant.guests.find((x) => x.state === 'queue');
       return q ? { x: q.pos.x, y: q.headY } : null;
@@ -58,7 +51,7 @@ const STEPS = [
   {
     id: 'order',
     title: 'Ring it in',
-    text: 'Tap the bubble over a seated guest — the one with the ! — to send the ticket to the chef.',
+    text: 'Tap the ! bubble to send the ticket to the chef.',
     world: (g) => {
       const o = g.restaurant.guests.find((x) => x.state === 'order');
       return o ? { x: o.pos.x, y: o.headY - 60 } : null;
@@ -69,7 +62,7 @@ const STEPS = [
   {
     id: 'serve',
     title: 'Run the plate',
-    text: 'When it is up on the pass, drag it onto the guest who ordered it. Tap-then-tap works too.',
+    text: 'Drag it off the pass onto whoever ordered it.',
     world: (g) => {
       const p = g.restaurant.kitchen.plates[0];
       return p ? { x: p.x, y: p.y } : null;
@@ -78,15 +71,15 @@ const STEPS = [
   },
   {
     id: 'board',
-    title: 'Work the board',
-    text: 'The flyer is the board out front now: ten more taps calls somebody else in. Only the food runs out.',
+    title: 'The board',
+    text: 'Ten taps calls somebody in. As often as you like — only the food runs out.',
     at: () => '#btn-flyer',
     done: null,          // read-and-carry-on
   },
   {
     id: 'done',
     title: "That's the shift",
-    text: 'Serve, get paid, close up, and spend it on the works. The ? in the corner has the long version.',
+    text: 'Serve, get paid, spend it. The ? has the long version.',
     at: () => '#btn-help',
     done: null,
   },

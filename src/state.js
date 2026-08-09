@@ -17,7 +17,7 @@ import {
 } from './data/progress.js';
 
 const KEY = 'bubbleworks.harbor.save.v1';
-const VERSION = 8;
+const VERSION = 9;
 export const SAVE_KEY = KEY;
 
 function fresh() {
@@ -54,9 +54,11 @@ function fresh() {
     market: null,                    // stall stock and prices — see rollMarket()
     settings: { sound: true, motion: true, tips: true },
     tutorial: { step: 0, done: false },
+    auto: false,                     // keep the menu topped up from the larder
+    story: { at: 0, seen: [] },      // how far the chef's story has got
     seenHelp: false,
     lastSeen: Date.now(),
-    stats: { served: 0, walkouts: 0, earned: 0, best: 0 },
+    stats: { served: 0, walkouts: 0, earned: 0, best: 0, bought: 0 },
   };
 }
 
@@ -96,6 +98,8 @@ function migrate(data) {
   data.market ??= null;
   data.settings = { sound: true, motion: true, tips: true, ...(data.settings ?? {}) };
   data.tutorial ??= { step: 0, done: !!data.seenHelp };
+  data.auto ??= false;
+  data.story ??= { at: 0, seen: [] };
   // the pens are gone, so their machines and the two recipes that needed them
   // would otherwise sit in the save as unbuildable tiles and unmakeable dishes
   data.machines = (data.machines ?? []).filter((m) => m.kind !== 'pen');
@@ -148,11 +152,36 @@ export class GameState {
       pottery: this.pottery, clay: this.clay, dishes: this.dishes,
       catch: this.catch,
       market: this.market, settings: this.settings, tutorial: this.tutorial,
+      auto: this.auto, story: this.story,
       furniture: this.furniture.map(({ c, r, id, style, rot }) => ({ c, r, id, style, rot })),
       machines: this.machines.map(({ c, r, kind, id, dir, level, buf }) =>
         ({ c, r, kind, id, dir, level, buf })),
     };
     try { localStorage.setItem(KEY, JSON.stringify(data)); } catch { /* storage full or blocked */ }
+  }
+
+  /**
+   * A copy of everything that would be written to disk.
+   *
+   * The main menu runs the real game on a dressed set — real guests, real
+   * money, a room nobody built — so it takes one of these first and hands it
+   * straight back when you press the button. Deep, because half of the save is
+   * objects and a shallow copy would let the set redecorate your restaurant.
+   */
+  snapshot() {
+    const out = {};
+    for (const [k, v] of Object.entries(this)) {
+      if (k === 'bus') continue;
+      out[k] = v && typeof v === 'object' ? JSON.parse(JSON.stringify(v)) : v;
+    }
+    return out;
+  }
+
+  /** Put a snapshot back and tell everybody. */
+  restore(snap) {
+    for (const [k, v] of Object.entries(snap)) this[k] = v;
+    this.bus.emit('phase', this.phase);
+    this.bus.emit('change');
   }
 
   /* ------------------------------------------------------------- currency */
@@ -295,7 +324,7 @@ export class GameState {
    * a room full of lovely furniture still sits empty if nobody put the word out.
    */
   get arrivalGap() {
-    let draw = flyerDraw(this.posters);
+    let draw = flyerDraw(this.posters) + 0.5;
     for (const f of this.furniture) draw += FURNITURE_BY_ID[f.id]?.draw ?? 0;
     if (this.hasResearch('lantern_string')) draw += 0.2;
     const base = 6.2 / (1 + this.ambience * 0.02 + draw + Math.min(1.2, this.stars * 0.0025));
@@ -647,6 +676,7 @@ export class GameState {
     const total = this.catchPrice(id) * take;
     if (!this.spend(total)) return 0;
     this.market.stock[id] = have - take;
+    this.stats.bought = (this.stats.bought ?? 0) + take;
     this.addIng(id, take);
     this.save();
     return take;
@@ -667,6 +697,35 @@ export class GameState {
     return Object.entries(this.stock)
       .filter(([, n]) => n > 0)
       .map(([id, n]) => ({ id, left: n, price: this.priceOf(id), stars: this.starsOf(id) }));
+  }
+
+  /**
+   * Plate one more of a dish, straight from the larder, mid-service.
+   *
+   * This is what the auto switch runs on. Nothing about it is free: the
+   * ingredients come out of the larder the same as they would in the morning,
+   * so the ceiling on a day is still what you have in stock — it is only the
+   * standing at the counter that goes away.
+   */
+  plateOne(id) {
+    const r = RECIPE_BY_ID[id];
+    if (!r || !this.isUnlocked(id)) return false;
+    if (!this.payIng(r.ing)) return false;
+    this.stock[id] = (this.stock[id] ?? 0) + 1;
+    this.menu[id] = (this.menu[id] ?? 0) + 1;
+    return true;
+  }
+
+  /** Top the menu back up. Returns how many went on. */
+  topUp() {
+    if (!this.auto || this.phase !== 'open') return 0;
+    let made = 0;
+    for (const id of Object.keys(this.menu)) {
+      if ((this.stock[id] ?? 0) > 0) continue;
+      if (this.plateOne(id)) made += 1;
+    }
+    if (made) this.bus.emit('change');
+    return made;
   }
 
   /** Roll the planned menu into live stock and start service. */
