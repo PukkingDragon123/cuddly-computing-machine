@@ -180,3 +180,41 @@ export const QUEST_COUNT = QUESTS.length;
 
 /** Which chapter a job belongs to, for the book's headings. */
 export const chapterOf = (id) => CHAPTERS.find((c) => c.jobs.some((j) => j.id === id));
+
+/* -------------------------------------------------------------- side jobs */
+
+/**
+ * The other track.
+ *
+ * The main line is a story and it only goes one way. These are the small
+ * standing jobs a kitchen actually has: feed this many today, do not lose
+ * anybody, sell out, buy a crate. Three are up at a time and finishing one
+ * draws another, so there is always something to be getting on with that is
+ * not "wait for fame to go up".
+ *
+ * Every one is measured from the moment you were given it — `count` is a
+ * running total off the save, and the panel subtracts what it was when the job
+ * came up. That is what lets the same job be handed out again next week.
+ */
+const S = (id, title, need, coins, fame, count) =>
+  ({ id, title, need, coins, fame, count });
+
+export const SIDE = [
+  S('s_serve', 'Serve 10 more guests', 10, 180, 10, (g) => g.state.stats.served),
+  S('s_serve2', 'Serve 25 more guests', 25, 420, 22, (g) => g.state.stats.served),
+  S('s_earn', 'Take another 500', 500, 200, 12, (g) => g.state.stats.earned),
+  S('s_earn2', 'Take another 2,000', 2000, 700, 30, (g) => g.state.stats.earned),
+  S('s_board', 'Call 5 in off the board', 5, 220, 12, (g) => g.state.stats.called ?? 0),
+  S('s_wash', 'Clear 10 tables', 10, 160, 9, (g) => g.state.stats.washed ?? 0),
+  S('s_buy', 'Buy 10 crates', 10, 190, 10, (g) => g.state.stats.bought ?? 0),
+  S('s_loved', 'Land 5 favourites', 5, 320, 18, (g) => g.state.stats.loved ?? 0),
+  S('s_vip', 'Serve 2 more VIPs', 2, 380, 20, (g) => g.state.stats.vips ?? 0),
+  S('s_days', 'Work 3 more days', 3, 260, 14, (g) => g.state.day),
+  S('s_deliver', 'Take 40 off the belts', 40, 300, 16, (g) => g.state.stats.delivered ?? 0),
+  S('s_hearts', 'Win 15 more hearts', 15, 340, 18, (g) => g.state.diaryHearts),
+  S('s_pot', 'Practise pottery 60 times', 60, 280, 15, (g) => g.state.pottery),
+  S('s_gift', 'Be given another present', 1, 420, 22, (g) => g.state.stats.gifts ?? 0),
+];
+
+export const SIDE_BY_ID = Object.fromEntries(SIDE.map((x) => [x.id, x]));
+export const SIDE_SLOTS = 3;

@@ -13,7 +13,7 @@ import {
   machineUpgradeCost, starsOf,
 } from '../data/catalog.js';
 import {
-  GUESTS, GUEST_BY_ID, MAX_FRIEND, TASTES, heartsToNext,
+  GUESTS, GUEST_BY_ID, MAX_FRIEND, TASTES, heartsToNext, nameFor,
 } from '../data/guests.js';
 import {
   FORGE_LEVEL, MAX_DISH, RESEARCH, RESEARCH_BY_ID, RESEARCH_GROUPS, SHOP,
@@ -22,7 +22,7 @@ import {
 import { DIR_NAMES } from '../world/factory.js';
 import { settingRows } from './title.js';
 import { RANKS } from '../data/fame.js';
-import { CHAPTERS, QUESTS } from '../data/quests.js';
+import { CHAPTERS, QUESTS, SIDE_BY_ID } from '../data/quests.js';
 
 /** The wood each finish is painted in, for the swatch picker. */
 const STYLE_SWATCH = { plain: '#e0c39a', cottage: '#c98d5e', antique: '#7c4a33' };
@@ -42,6 +42,7 @@ export class Panels {
     this.factoryTab = 'belt';
     this.recipeTab = 'menu';
     this.pantryTab = 'pantry';
+    this.questTab = 'line';
     this.reopen = null;   // re-runs the open panel after state changes
   }
 
@@ -1316,7 +1317,7 @@ export class Panels {
         ? this.#sprite('customers', g.id)
         : h('span.qq', null, '?')),
       h('div.entry-main', null,
-        h('div.entry-name', null, page ? g.name : '???'),
+        h('div.entry-name', null, page ? `${nameFor(g.id)} · ${g.name}` : '???'),
         h('div.entry-sub', null, page
           ? `${page.served} served`
           : 'not seen yet')),
@@ -1337,7 +1338,7 @@ export class Panels {
 
     const big = h(`div.plate${page ? '' : '.unmet'}`, null,
       face,
-      h('div.plate-name', null, page ? g.name : 'Not met yet'),
+      h('div.plate-name', null, page ? `${nameFor(g.id)} the ${g.name}` : 'Not met yet'),
       h('div.plate-hearts', null, '♥'.repeat(lv) + '·'.repeat(MAX_FRIEND - lv)),
       h('div.plate-sub', null, page
         ? (toNext === null
@@ -1747,45 +1748,93 @@ export class Panels {
    */
   openQuests(keep = false) {
     this.reopen = () => this.openQuests(true);
+    const body = this.questTab === 'side' ? this.#sideJobs() : this.#questLine();
     const s = this.state;
     const at = s.story?.at ?? 0;
-    const body = [];
-    let n = 0;
-    for (const chapter of CHAPTERS) {
-      const from = n;
-      const done = chapter.jobs.filter((_, i) => from + i < at).length;
-      body.push(h('div.section', null, chapter.name,
-        h('span.section-n', null, `${done}/${chapter.jobs.length}`)));
-      for (const job of chapter.jobs) {
-        const i = n; n += 1;
-        const got = i < at;
-        const live = i === at;
-        const prog = live ? this.game.story.progress(job) : null;
-        body.push(h(`div.card.job${got ? '.on' : ''}${live ? '.live' : ''}${!got && !live ? '.thin' : ''}`, null,
-          h('div.job-tick', null, got ? '✓' : ''),
-          h('div.card-main', null,
-            h('div.card-title', null, job.title),
-            live && job.hint ? h('div.card-sub', null, job.hint) : null,
-            live ? h('div.jobbar', null, h('i', {
-              style: { width: `${Math.round(prog.pct * 100)}%` },
-            })) : null),
-          h('div.card-side', null,
-            live && job.need > 1 ? h('span.card-sub', null, `${prog.have}/${job.need}`) : null,
-            got ? tag('done', 'tag-ok')
-              : h('span.rowline', null,
-                tag(`${money(job.coins)}`, 'tag-cost', 'sand'),
-                job.fame ? tag(`${job.fame}★`, 'tag-star') : null))));
-      }
-    }
     const spec = {
       key: 'quests',
       title: 'Jobs',
+      tabs: [{ id: 'line', label: 'The line' }, { id: 'side', label: 'Side jobs' }],
+      tab: this.questTab ?? 'line',
+      onTab: (id) => { this.questTab = id; this.openQuests(true); },
       body,
       foot: h('div.rowline', null,
         h('span.card-sub.grow', null, `${at} of ${QUESTS.length} done`),
         tag(s.rankName, 'tag-mint')),
     };
     keep ? this.hud.refreshSheet(spec) : this.hud.openSheet(spec);
+  }
+
+  /**
+   * The line itself.
+   *
+   * Drawn as a chain rather than a list: a rail runs down the left with a bead
+   * on it for every job, filled in behind you and hollow ahead. A list tells
+   * you what is left; a line tells you where you are on it.
+   */
+  #questLine() {
+    const s = this.state;
+    const at = s.story?.at ?? 0;
+    const out = [];
+    let n = 0;
+    for (const chapter of CHAPTERS) {
+      const from = n;
+      const done = chapter.jobs.filter((_, i) => from + i < at).length;
+      const shut = from > at;
+      out.push(h('div.section', null, chapter.name,
+        h('span.section-n', null, `${done}/${chapter.jobs.length}`)));
+      for (const job of chapter.jobs) {
+        const i = n; n += 1;
+        const got = i < at;
+        const live = i === at;
+        const prog = live ? this.game.story.progress(job) : null;
+        const last = i === n - 1 && job === chapter.jobs[chapter.jobs.length - 1];
+        out.push(h(`div.node${got ? '.on' : ''}${live ? '.live' : ''}${shut ? '.far' : ''}`, null,
+          h('div.node-rail', null,
+            h('span.node-bead', null, got ? '✓' : live ? '' : ''),
+            last ? null : h('span.node-line')),
+          h(`div.card.job${got ? '.on' : ''}${live ? '.live' : ''}${!got && !live ? '.thin' : ''}`, null,
+            h('div.card-main', null,
+              h('div.card-title', null, job.title),
+              live && job.hint ? h('div.card-sub', null, job.hint) : null,
+              live ? h('div.jobbar', null, h('i', {
+                style: { width: `${Math.round(prog.pct * 100)}%` },
+              })) : null),
+            h('div.card-side', null,
+              live && job.need > 1 ? h('span.card-sub', null, `${prog.have}/${job.need}`) : null,
+              got ? tag('done', 'tag-ok')
+                : h('span.rowline', null,
+                  tag(`${money(job.coins)}`, 'tag-cost', 'sand'),
+                  job.fame ? tag(`${job.fame}★`, 'tag-star') : null)))));
+      }
+    }
+    return out;
+  }
+
+  /** The side board: three standing jobs, replaced as they are finished. */
+  #sideJobs() {
+    const s = this.state;
+    s.fillSide(this.game);
+    const rows = (s.side?.jobs ?? []).map((job) => {
+      const def = SIDE_BY_ID[job.id];
+      if (!def) return null;
+      let have = 0;
+      try { have = Math.max(0, Math.min(def.need, (def.count(this.game) | 0) - job.from)); } catch { have = 0; }
+      return h('div.card.job.live', null,
+        h('div.job-tick', null, ''),
+        h('div.card-main', null,
+          h('div.card-title', null, def.title),
+          h('div.jobbar', null, h('i', { style: { width: `${Math.round((have / def.need) * 100)}%` } }))),
+        h('div.card-side', null,
+          h('span.card-sub', null, `${money(have)}/${money(def.need)}`),
+          h('span.rowline', null,
+            tag(`${money(def.coins)}`, 'tag-cost', 'sand'),
+            tag(`${def.fame}★`, 'tag-star'))));
+    }).filter(Boolean);
+    return [
+      h('div.note', null, 'Three at a time. Finish one and another comes up.'),
+      ...rows,
+    ];
   }
 
   /* ---------------------------------------------------------------- report  */

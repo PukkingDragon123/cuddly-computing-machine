@@ -53,13 +53,33 @@ async function main() {
 
   let last = performance.now();
   let acc = 0;
+  let barked = false;
+
+  /**
+   * The loop, and the one rule that matters about it: it cannot die.
+   *
+   * The next frame is booked before anything else runs, and the work is caught.
+   * Booking it last meant a single thrown frame — one undefined guest, one
+   * missing tile — stopped the animation frame chain for good and the game
+   * simply froze on screen with no error anybody would see. Now a bad frame is
+   * one dropped frame: it is reported once and the game keeps running.
+   */
   function frame(now) {
+    requestAnimationFrame(frame);
     const raw = (now - last) / 1000;
     last = now;
     acc = Math.min(acc + raw, MAX_CATCHUP);
-    while (acc >= STEP) { game.update(STEP); acc -= STEP; }
-    game.render();
-    requestAnimationFrame(frame);
+    try {
+      while (acc >= STEP) { game.update(STEP); acc -= STEP; }
+      game.render();
+    } catch (err) {
+      acc = 0;
+      console.error('frame', err);
+      if (!barked) {
+        barked = true;
+        game.hud?.toast('Something hiccuped — carrying on', 'bad');
+      }
+    }
   }
   requestAnimationFrame(frame);
 

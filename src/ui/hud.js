@@ -272,7 +272,16 @@ export class Hud {
     );
   }
 
+  /** The rank strip, when a job or a guest pushes the fame up. */
+  bumpRank() {
+    const el = this.el.rankChip;
+    el.classList.remove('bumped');
+    void el.offsetWidth;
+    el.classList.add('bumped');
+  }
+
   bumpStar() {
+    this.bumpRank();
     this.el.starChip.animate(
       [{ transform: 'scale(1) rotate(0deg)' }, { transform: 'scale(1.18) rotate(-6deg)' }, { transform: 'scale(1)' }],
       { duration: 320, easing: 'cubic-bezier(.2,1.6,.4,1)' },

@@ -48,9 +48,11 @@ press the button, and autosave is off for the duration — the demo cannot cost 
 a coin or move a chair. The logo is a toy: press it and it squashes and blows
 bubbles.
 
-The **loading screen** is drawn rather than branded: a pot on a flame with
-bubbles coming off it, built out of four CSS boxes so it needs no art to be on
-screen — which matters, because it is what you look at while the art loads.
+The **loading screen** is drawn rather than branded: **Tako**, the head chef,
+bobbing beside a pot on a flame with bubbles coming off it. His sprite is one
+small PNG loaded straight from the folder rather than through the atlas, so he is
+on screen long before anything else is — which is the whole point of a loading
+screen. The pot is four CSS boxes.
 
 Settings — sound, motion, tips, the guide, credits and starting over — is on the
 rail, in the game where the rest of the panels are. Motion off
@@ -97,6 +99,14 @@ ladder. Crossing a rung is a card across the screen, a shower of sparks and the
 chef's opinion; it never stops play, because it can land while you are holding
 three plates.
 
+## The cast
+
+The head chef is called **Tako** and he says so — the cutscene bubble carries his
+name and his job. Every species has a name too, drawn from a list by a hash of
+their id, so the Sea Bunny is **Moss** every single time she comes in and the
+diary can say *Moss the Sea Bunny*. A regular who is called something different
+on Tuesday is not a regular. They thank you by name when they pay.
+
 ## The chef
 
 There is one voice in the game and it belongs to the octopus at the pass. He has
@@ -110,8 +120,10 @@ over the guide, and each plays once.
 
 ## Jobs
 
-**Forty-seven of them**, in six chapters, and between them they name every system
-in the game — if a thing exists and nobody has ever told you to try it, it may as
+**Forty-seven of them**, in six chapters, drawn as a **line**: a rail runs down
+the left with a bead on it for every job, filled in behind you and hollow ahead,
+because a list tells you what is left and a line tells you where you are on it.
+Between them they name every system in the game — if a thing exists and nobody has ever told you to try it, it may as
 well not. Plate a menu, call somebody in off the board, clear a table, buy off
 the catch, put up decor, lay five belts, point a belt at the intake, meet six
 species, serve somebody their favourite, serve a VIP, be given a present, take
@@ -125,9 +137,16 @@ and a job that only paid money would be a detour from it — the till rings, coi
 and stars come off the ticket, and the chef says his piece a beat later. Then the
 next job slides in underneath.
 
-The rail's last button opens the whole list, chapter by chapter, ticked off as
+The rail's last button opens the whole line, chapter by chapter, ticked off as
 you go. It is also the manual: a job list that names every system beats a page of
 instructions nobody reads, which is why the How to Play panel is gone.
+
+**Side jobs** are the other tab and the other track. The line is a story and it
+only goes one way; these are the standing jobs a kitchen actually has — feed
+this many more, clear ten tables, land five favourites, take another two thousand.
+Three are up at a time and finishing one draws another, and each is measured from
+the moment it was handed out, which is what lets the same job come round again
+and still mean *ten more*.
 
 ## Playing
 

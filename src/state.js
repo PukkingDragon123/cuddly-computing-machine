@@ -16,6 +16,7 @@ import {
   flyerDraw, potteryLevel,
 } from './data/progress.js';
 import { RANKS, rankAt, rankProgress, toNextRank } from './data/fame.js';
+import { SIDE, SIDE_BY_ID, SIDE_SLOTS } from './data/quests.js';
 
 const KEY = 'bubbleworks.harbor.save.v1';
 const VERSION = 9;
@@ -57,6 +58,7 @@ function fresh() {
     tutorial: { step: 0, done: false },
     auto: false,                     // keep the menu topped up from the larder
     story: { at: 0, seen: [] },      // how far the chef's story has got
+    side: { jobs: [] },              // three standing side jobs, see rollSide()
     seenHelp: false,
     lastSeen: Date.now(),
     stats: {
@@ -113,6 +115,7 @@ function migrate(data) {
     ...(data.stats ?? {}),
   };
   data.story ??= { at: 0, seen: [] };
+  data.side ??= { jobs: [] };
   // the pens are gone, so their machines and the two recipes that needed them
   // would otherwise sit in the save as unbuildable tiles and unmakeable dishes
   data.machines = (data.machines ?? []).filter((m) => m.kind !== 'pen');
@@ -165,7 +168,7 @@ export class GameState {
       pottery: this.pottery, clay: this.clay, dishes: this.dishes,
       catch: this.catch,
       market: this.market, settings: this.settings, tutorial: this.tutorial,
-      auto: this.auto, story: this.story,
+      auto: this.auto, story: this.story, side: this.side,
       furniture: this.furniture.map(({ c, r, id, style, rot }) => ({ c, r, id, style, rot })),
       machines: this.machines.map(({ c, r, kind, id, dir, level, buf }) =>
         ({ c, r, kind, id, dir, level, buf })),
@@ -759,6 +762,37 @@ export class GameState {
     }
     if (made) this.bus.emit('change');
     return made;
+  }
+
+  /* ------------------------------------------------------------ side jobs */
+
+  /**
+   * Keep three side jobs on the go.
+   *
+   * Each one remembers what its counter read when it was handed out, so the
+   * same job can come round again and still mean "ten *more* guests" rather
+   * than "ten guests, which you passed on Tuesday".
+   */
+  fillSide(game) {
+    this.side ??= { jobs: [] };
+    const taken = new Set(this.side.jobs.map((j) => j.id));
+    let added = 0;
+    while (this.side.jobs.length < SIDE_SLOTS) {
+      const pool = SIDE.filter((x) => !taken.has(x.id));
+      if (!pool.length) break;
+      const pick = pool[Math.floor(Math.random() * pool.length)];
+      taken.add(pick.id);
+      this.side.jobs.push({ id: pick.id, from: pick.count(game) | 0 });
+      added += 1;
+    }
+    return added;
+  }
+
+  /** Take a finished side job off the board and draw another. */
+  clearSide(id, game) {
+    this.side.jobs = (this.side.jobs ?? []).filter((j) => j.id !== id);
+    this.fillSide(game);
+    this.save();
   }
 
   /** Roll the planned menu into live stock and start service. */

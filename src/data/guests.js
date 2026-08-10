@@ -94,6 +94,38 @@ export function tasteOf(recipeId) {
  * diary page eventually reveals; until you have actually served them, the page
  * shows question marks, because the whole point is finding out.
  */
+/**
+ * Names.
+ *
+ * Every guest who walks in gets one, drawn from this by a hash of their id, so
+ * the same creature is called the same thing every time you see it and the
+ * diary can say "Pip the Sea Bunny" rather than "Sea Bunny #3". It costs one
+ * array and turns a sprite into somebody.
+ */
+export const NAMES = [
+  'Pip', 'Nori', 'Bramble', 'Coco', 'Willow', 'Marlow', 'Tilly', 'Otto',
+  'Fen', 'Juniper', 'Baz', 'Clover', 'Rue', 'Sprout', 'Mabel', 'Hollis',
+  'Perry', 'Wren', 'Nib', 'Pebble', 'Dill', 'Maren', 'Tock', 'Bly',
+  'Saffy', 'Quill', 'Moss', 'Hazel', 'Bo', 'Winnow', 'Kit', 'Plum',
+  'Iggy', 'Fig', 'Cass', 'Rilla', 'Onni', 'Vesper', 'Bud', 'Loka',
+];
+
+/**
+ * The name a species goes by. Stable, so the Sea Bunny who came in on Monday is
+ * the same Moss on Friday — a regular who is called something different every
+ * visit is not a regular.
+ */
+export function nameFor(speciesId, n = 0) {
+  let hash = n * 7 + 11;
+  for (let i = 0; i < (speciesId ?? '').length; i++) {
+    hash = (hash * 31 + speciesId.charCodeAt(i)) >>> 0;
+  }
+  return NAMES[hash % NAMES.length];
+}
+
+/** The one member of staff who was here before you. */
+export const CHEF_NAME = 'Tako';
+
 export const GUESTS = [
   { id: '01_sea_bunny_nudibranch', name: 'Sea Bunny', loves: 'sweet', loathes: 'savoury' },
   { id: '02_dumbo_octopus', name: 'Dumbo Octopus', loves: 'fresh', loathes: 'rich' },

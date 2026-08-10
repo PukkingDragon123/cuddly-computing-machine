@@ -10,7 +10,7 @@ import { spring } from '../core/tween.js';
 import { CS, Customer, rollGuest } from './customer.js';
 import { TAU, clamp, money, neighbours, range, rnd, tileDist, uid } from '../core/util.js';
 import { FURNITURE_BY_ID, STYLE_BY_ID, groupFor } from '../data/catalog.js';
-import { GUEST_BY_ID, RARITY_BY_ID } from '../data/guests.js';
+import { GUEST_BY_ID, RARITY_BY_ID, nameFor } from '../data/guests.js';
 import { plateFor } from '../data/progress.js';
 import {
   blueprint, drawIcon, drawSprite, ellipse, ring, squash, sticker, text,
@@ -283,6 +283,10 @@ export class Restaurant {
     c.fussy = g.fussy;
     c.species = g.species;
     c.rarity = g.rarity;
+    // A name, so the diary and the room can talk about somebody rather than a
+    // species — and the same name every time, because a regular who is called
+    // something different on Tuesday is not a regular.
+    c.who = nameFor(g.species);
     if (c.species) this.state.noteArrival(c.species);
     c.arrive();
     this.guests.push(c);
@@ -501,6 +505,11 @@ export class Restaurant {
     }
     this.fx.coins(guest.pos.x, guest.headY + 10, 5 + Math.min(6, Math.floor(pay / 18)), 62);
     this.fx.pop(guest.pos.x, guest.headY - 24, `+${money(pay)}`, { color: '#b8481c', size: 23 });
+    if (guest.who) {
+      this.fx.pop(guest.pos.x, guest.headY - 62, `${guest.who}: thanks!`, {
+        color: '#5f3d26', size: 13, rise: 34, max: 0.9,
+      });
+    }
     if (stars > 0) {
       this.fx.stars(guest.pos.x, guest.headY - 6, 4 + stars);
       this.fx.pop(guest.pos.x + 46, guest.headY - 6, `+${stars}★`, { color: '#c8992c', size: 17, rise: 44, max: 0.9 });
@@ -534,7 +543,7 @@ export class Restaurant {
     this.fx.stars(guest.pos.x, guest.headY - 20, 10);
     this.fx.coins(guest.pos.x, guest.headY, 6, 60);
     this.game.toast(`A gift: ${gift.label}`, 'good');
-    this.game.titleCard('A present!', `${GUEST_BY_ID[guest.species]?.name ?? 'Your guest'} left ${gift.label}`);
+    this.game.titleCard('A present!', `${guest.who ?? GUEST_BY_ID[guest.species]?.name ?? 'Your guest'} left ${gift.label}`);
     this.sfx.play('star');
   }
 

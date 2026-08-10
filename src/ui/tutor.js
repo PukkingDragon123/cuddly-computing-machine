@@ -46,6 +46,8 @@ const STEPS = [
   {
     id: 'seat',
     title: 'Seat a guest',
+    // the doors closing takes the guests with them, so the step goes too
+    stale: (g) => g.state.phase !== 'open',
     text: 'Tap whoever is waiting to sit them down.',
     world: (g) => {
       const q = g.restaurant.guests.find((x) => x.state === 'queue');
@@ -56,6 +58,7 @@ const STEPS = [
   {
     id: 'order',
     title: 'Ring it in',
+    stale: (g) => g.state.phase !== 'open',
     text: 'Tap the ! bubble to send the ticket to the chef.',
     world: (g) => {
       const o = g.restaurant.guests.find((x) => x.state === 'order');
@@ -67,6 +70,7 @@ const STEPS = [
   {
     id: 'serve',
     title: 'Run the plate',
+    stale: (g) => g.state.phase !== 'open',
     text: 'Drag it off the pass onto whoever ordered it.',
     world: (g) => {
       const p = g.restaurant.kitchen.plates[0];
@@ -77,6 +81,7 @@ const STEPS = [
   {
     id: 'board',
     title: 'The board',
+    stale: (g) => g.state.phase !== 'open',
     text: 'Ten taps calls somebody in. As often as you like — only the food runs out.',
     at: () => '#btn-flyer',
     done: null,          // read-and-carry-on
@@ -113,7 +118,12 @@ export class Tutor {
     this.running = false;
     this.el.skip.onclick = () => this.stop(true);
     // a step with nothing to wait for is dismissed by pressing the bubble
-    this.el.say.onclick = () => { if (this.running && !STEPS[this.i]?.done) this.#next(); };
+    // A step with nothing to wait for is dismissed by pressing the bubble, and
+    // so is one that has been waiting too long — see the escape hatch below.
+    this.el.say.onclick = () => {
+      if (!this.running) return;
+      if (!STEPS[this.i]?.done || this.el.say.classList.contains('freed')) this.#next();
+    };
   }
 
   get step() { return this.running ? STEPS[this.i] : null; }
@@ -154,6 +164,8 @@ export class Tutor {
     this.el.title.textContent = step.title;
     this.el.text.textContent = step.text;
     this.el.say.classList.toggle('waits', !!step.done);
+    this.el.say.classList.remove('freed');
+    this.wait = 0;
     this.el.dots.textContent = `${this.i + 1} / ${STEPS.length}`;
     this.el.say.classList.remove('pop');
     void this.el.say.offsetWidth;
@@ -189,9 +201,33 @@ export class Tutor {
       this.el.say.style.transform = 'translateX(-50%)';
     }
 
-    if (step.done?.(this.game)) {
+    let hit = false;
+    let gone = false;
+    try {
+      hit = !!step.done?.(this.game);
+      gone = !!step.stale?.(this.game);
+    } catch { hit = false; }
+    if (hit) {
       this.game.sfx.play('star');
       this.#next();
+      return;
+    }
+
+    /*
+     * The escape hatch.
+     *
+     * A step that waits for something can wait forever if the something stops
+     * being possible — the doors close on you mid-shift and the guide is still
+     * pointing at a guest who went home. That used to wedge it: a waiting step
+     * ignores taps, so the dark sheet stayed up and the guide never moved on.
+     * Now the premise is checked, and anything that sits unfinished long enough
+     * can simply be tapped past.
+     */
+    if (gone) { this.#next(); return; }
+    this.wait = (this.wait ?? 0) + 1;
+    if (step.done && this.wait > 60 * 14 && !this.el.say.classList.contains('freed')) {
+      this.el.say.classList.remove('waits');
+      this.el.say.classList.add('freed');
     }
   }
 

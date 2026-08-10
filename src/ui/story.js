@@ -8,8 +8,9 @@
 
 import { $, h, show } from './dom.js';
 import { CHEF_SPRITE } from '../data/catalog.js';
+import { CHEF_NAME } from '../data/guests.js';
 import { toScreen } from '../world/iso.js';
-import { QUESTS } from '../data/quests.js';
+import { QUESTS, SIDE_BY_ID } from '../data/quests.js';
 
 /**
  * Scripted moments. `at` names what the camera should look at; `when` is
@@ -125,7 +126,7 @@ export class Story {
   }
 
   #show() {
-    this.el.who.textContent = 'Chef';
+    this.el.who.textContent = `${CHEF_NAME} · head chef`;
     this.el.text.textContent = this.beat.lines[this.line];
     this.el.say.classList.remove('pop');
     void this.el.say.offsetWidth;
@@ -208,10 +209,13 @@ export class Story {
     if (q.fame) s.addStars(q.fame);
     s.save();
     this.game.sfx.play('cash');
+    this.game.hud.bumpCoin?.();
+    this.game.hud.bumpRank?.();
 
     const cam = this.game.zone.cam;
     this.game.zone.fx.coins(cam.x, cam.y - 30, 14, 90);
     this.game.zone.fx.stars(cam.x, cam.y - 40, 10);
+    this.game.zone.fx.hearts(cam.x, cam.y - 10, 4);
 
     this.#banner(q);
     this.el.quest.classList.add('ding');
@@ -221,11 +225,11 @@ export class Story {
   }
 
   /** The reward banner: what you did, and what it just paid. */
-  #banner(q) {
+  #banner(q, kind = 'Job done') {
     const el = h('div.done', null,
       h('span.done-tick', null, '✓'),
       h('span.done-body', null,
-        h('b', null, 'Job done'),
+        h('b', null, kind),
         h('span', null, q.title)),
       h('span.done-pay', null,
         h('span.done-coin', null, h('i.ico.ico-sand'), `+${q.coins}`),
@@ -260,6 +264,21 @@ export class Story {
       if (done) this.#finish(q);
     } else show(this.el.quest, false);
     this.game.hud.syncQuestBadge?.(QUESTS.length - (s.story.at ?? 0));
+
+    // the side board: three standing jobs, topped up as they are finished
+    s.fillSide(this.game);
+    for (const job of [...(s.side?.jobs ?? [])]) {
+      const def = SIDE_BY_ID[job.id];
+      if (!def) { s.clearSide(job.id, this.game); continue; }
+      let have = 0;
+      try { have = (def.count(this.game) | 0) - job.from; } catch { have = 0; }
+      if (have < def.need) continue;
+      s.earn(def.coins);
+      if (def.fame) s.addStars(def.fame);
+      s.clearSide(job.id, this.game);
+      this.game.sfx.play('cash');
+      this.#banner({ ...def, title: def.title }, 'Side job');
+    }
 
     // never over an open panel or the guide: a cutscene that snatches the book
     // out of your hands mid-tap is a cutscene you resent
