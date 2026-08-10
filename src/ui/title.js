@@ -8,7 +8,6 @@
 // the button, so the demo cannot cost you a coin.
 
 import { $, h, show } from './dom.js';
-import { money } from '../core/util.js';
 
 /** The set. Antique finish, laid for a full house. */
 const SHOWROOM = [
@@ -31,8 +30,6 @@ export class Title {
     this.game = game;
     this.el = {
       root: $('#title'),
-      logo: $('#title-logo'),
-      stat: $('#title-stat'),
       play: $('#title-play'),
       load: $('#title-load'),
     };
@@ -50,11 +47,9 @@ export class Title {
       g.reloadSave();
     };
 
-    // the logo is a toy: press it and it squashes and blows bubbles
-    this.el.logo.onclick = () => {
-      this.el.logo.classList.remove('bump');
-      void this.el.logo.offsetWidth;
-      this.el.logo.classList.add('bump');
+    // the room is the toy now that the sign has gone: press it and it sparkles
+    this.el.root.onclick = (e) => {
+      if (e.target.closest('.title-card')) return;
       g.sfx.play('pop');
       const cam = g.zone.cam;
       g.zone.fx.sparkles(cam.x, cam.y - 40, 10, 90);
@@ -71,11 +66,6 @@ export class Title {
     g.setZone('restaurant');
     this.#dress();
 
-    const served = s.stats?.served ?? 0;
-    this.el.stat.textContent = served > 0
-      ? `Day ${this.saved.day} · ${served} served · ${money(s.stats.earned)} taken`
-      : 'Nobody has eaten here yet.';
-    this.el.play.textContent = served > 0 || this.saved.day > 1 ? 'Enter Restaurant' : 'Enter Restaurant';
     this.el.load.disabled = !g.hasSaveOnDisk();
     show(this.el.root, true);
     this.el.root.classList.remove('out');

@@ -10,6 +10,7 @@ Everything is bought with one currency: **sand dollars**.
 ![the main menu](docs/shot-title.png)
 ![restaurant](docs/shot-restaurant.png)
 ![the fame ladder](docs/shot-fame.png)
+![the job list](docs/shot-jobs.png)
 ![factory](docs/shot-factory.png)
 
 ## Running it
@@ -34,25 +35,35 @@ restaurant, and not your restaurant either, but a dressed room nobody has to hav
 built yet — antique tables, a lamp, a full house. The chef is at the pass, guests
 arrive, are seated, order, and eat, because nothing about it is faked: it is the
 game, played by something very good at it. The camera holds three composed shots
-and cuts between them on a slow count. Two buttons stand on the right, where a
-thumb is: **Enter Restaurant** and **Load Save**.
+and cuts between them on a slow count.
+
+There is no logo, no tagline and no figures on it. The room is what the game
+looks like and it does not need a caption. Two hand-drawn signs hang over it on
+their strings, crooked, where a thumb is: **Enter Restaurant** and **Load Save**.
+They drop in once and then stay still — a sign that sways forever looks lovely
+and is hard to hit.
 
 The whole save is copied before the set goes up and handed straight back when you
 press the button, and autosave is off for the duration — the demo cannot cost you
 a coin or move a chair. The logo is a toy: press it and it squashes and blows
 bubbles.
 
-Settings — sound, motion, tips, the guide, credits and starting over — is the
-last icon on the rail, in the game where the rest of the panels are. Motion off
+The **loading screen** is drawn rather than branded: a pot on a flame with
+bubbles coming off it, built out of four CSS boxes so it needs no art to be on
+screen — which matters, because it is what you look at while the art loads.
+
+Settings — sound, motion, tips, the guide, credits and starting over — is on the
+rail, in the game where the rest of the panels are. Motion off
 stops the idling, drifting and breathing parts of the interface but never the
 answer to a press: feedback is not decoration.
 
-Then the chef gets the first word, and the **guide** follows: eight steps, each
-pointing at the thing you have to press and waiting for you to actually press it.
-The spotlight is a hole in a dark sheet, and the sheet takes no pointer events at
-any point — the guide's job is to draw the eye, never to trap the finger, so
-every step is done exactly the way it will be done later. It follows things that
-move: the step that says *seat a guest* puts its light on whoever is waiting.
+Then the chef gets the first word, and the **guide** follows: nine steps, each
+pointing at the thing you have to press and waiting for you to actually press it,
+**and each one pays**. The spotlight is a hole in a dark sheet, and the sheet
+takes no pointer events at any point — the guide's job is to draw the eye, never
+to trap the finger, so every step is done exactly the way it will be done later.
+It follows things that move: the step that says *seat a guest* puts its light on
+whoever is waiting. Finishing it is worth more than skipping it.
 
 ## Fame
 
@@ -97,12 +108,26 @@ stars. The bars come in, the camera goes to the thing being talked about, and he
 says one or two short lines. They never interrupt an open panel and never talk
 over the guide, and each plays once.
 
-**Quests** are the same voice, standing still. Eighteen of them, one at a time,
-pinned under the rank strip with a number you can watch go up — from *plate 3
-dishes* through *build a machine* and *serve 100 guests* to the last rung of the
-fame ladder. They interleave with the ranks on purpose: a quest either teaches
-you a system or points you at the next rung. Finishing one pays out and gets a
-line back from the pass.
+## Jobs
+
+**Forty-seven of them**, in six chapters, and between them they name every system
+in the game — if a thing exists and nobody has ever told you to try it, it may as
+well not. Plate a menu, call somebody in off the board, clear a table, buy off
+the catch, put up decor, lay five belts, point a belt at the intake, meet six
+species, serve somebody their favourite, serve a VIP, be given a present, take
+the pottery class, forge three dishes, take a thousand in a day.
+
+One at a time on the HUD, under the rank strip: what to do, a hint on where to do
+it, a bar filling up, and **what it pays**, because a job you cannot see the
+reward for is a chore. When it fills, a banner drops into the middle of the
+screen and counts the reward out — coins and fame both, since fame is the ladder
+and a job that only paid money would be a detour from it — the till rings, coins
+and stars come off the ticket, and the chef says his piece a beat later. Then the
+next job slides in underneath.
+
+The rail's last button opens the whole list, chapter by chapter, ticked off as
+you go. It is also the manual: a job list that names every system beats a page of
+instructions nobody reads, which is why the How to Play panel is gone.
 
 ## Playing
 

@@ -22,6 +22,7 @@ import {
 import { DIR_NAMES } from '../world/factory.js';
 import { settingRows } from './title.js';
 import { RANKS } from '../data/fame.js';
+import { CHAPTERS, QUESTS } from '../data/quests.js';
 
 /** The wood each finish is painted in, for the swatch picker. */
 const STYLE_SWATCH = { plain: '#e0c39a', cottage: '#c98d5e', antique: '#7c4a33' };
@@ -1655,12 +1656,6 @@ export class Panels {
         ...settingRows(this.game),
         h('div.section', null, 'The house'),
         this.#card({
-          icon: 'help',
-          title: 'How to play',
-          sub: 'The whole job, in writing.',
-          side: this.#goBtn('Read', { onclick: () => this.openHelp() }),
-        }),
-        this.#card({
           icon: 'crew',
           title: 'Credits',
           sub: 'Made by Pukking Dragon.',
@@ -1742,36 +1737,55 @@ export class Panels {
     });
   }
 
-  openHelp() {
-    this.reopen = () => this.openHelp();
-    const step = (n, title, text) => h('div.card', null,
-      h('div.thumb', null, h('div', { style: { font: '900 1.4rem var(--font)', color: 'var(--ink)' } }, String(n))),
-      h('div.card-main', null, h('div.card-title', null, title), h('div.card-sub', null, text)));
-    this.hud.openSheet({
-      key: 'help',
-      title: 'How to Play',
-      body: [
-        h('div.note', null, 'Everything costs ', h('b', null, 'sand dollars'), '.'),
-        step(1, 'Read the morning', 'Three things cheap on the quay, one dish that pays over the odds.'),
-        step(2, 'Plate the menu', 'Kitchen → set how many of each. It costs ingredients now.'),
-        step(3, 'Open up', 'Guests wander in. Tap one to seat them.'),
-        step(4, 'Work the board', 'Ten taps calls somebody in. No limit — only the food runs out.'),
-        step(5, 'Take the order', 'Tap the ! bubble.'),
-        step(6, 'Run the plate', 'Drag it off the pass onto the right guest.'),
-        step(7, 'Get paid', 'Fast service pays more. Their table needs washing after.'),
-        step(8, 'Build the works', 'Machine, belt, Pantry Intake. Ingredients then arrive free.'),
-        h('div.section', null, 'Fame'),
-        h('div.note', null, 'Feeding people earns ', h('b', null, 'fame'),
-          '. Every rank opens new recipes, furniture, machines and crew — tap the rank strip, top left, to see the whole ladder.'),
-        h('div.section', null, 'Worth knowing'),
-        h('div.note', null, 'Every guest ', h('b', null, 'loves'), ' one flavour and hates another. Get it right for triple hearts. It all goes in the Diary.'),
-        h('div.note', null, 'A crown is a ', h('b', null, 'VIP'), ' — double pay. A violet star is ',
-          h('b', null, 'Mythical'), ' — quadruple.'),
-        h('div.note', null, 'Serving earns pottery experience. Build a kiln, take the class, forge a dish: one recipe gains a star and a price rise for good.'),
-        h('div.note', null, 'Better tables raise ', h('b', null, 'ambience'), ': quicker arrivals, bigger tips. Crew do the fiddly jobs for you.'),
-        h('div.note', null, h('b', null, 'Auto'), ' by the Open button keeps sold-out dishes going back on while the larder lasts.'),
-      ],
-    });
+  /**
+   * The job book.
+   *
+   * Every job in the game, chapter by chapter, ticked off as you go. The one on
+   * the HUD is only ever the next one — this is where you see how far along the
+   * whole thing you are, and it doubles as the manual: a job list that names
+   * every system beats a page of instructions nobody reads.
+   */
+  openQuests(keep = false) {
+    this.reopen = () => this.openQuests(true);
+    const s = this.state;
+    const at = s.story?.at ?? 0;
+    const body = [];
+    let n = 0;
+    for (const chapter of CHAPTERS) {
+      const from = n;
+      const done = chapter.jobs.filter((_, i) => from + i < at).length;
+      body.push(h('div.section', null, chapter.name,
+        h('span.section-n', null, `${done}/${chapter.jobs.length}`)));
+      for (const job of chapter.jobs) {
+        const i = n; n += 1;
+        const got = i < at;
+        const live = i === at;
+        const prog = live ? this.game.story.progress(job) : null;
+        body.push(h(`div.card.job${got ? '.on' : ''}${live ? '.live' : ''}${!got && !live ? '.thin' : ''}`, null,
+          h('div.job-tick', null, got ? '✓' : ''),
+          h('div.card-main', null,
+            h('div.card-title', null, job.title),
+            live && job.hint ? h('div.card-sub', null, job.hint) : null,
+            live ? h('div.jobbar', null, h('i', {
+              style: { width: `${Math.round(prog.pct * 100)}%` },
+            })) : null),
+          h('div.card-side', null,
+            live && job.need > 1 ? h('span.card-sub', null, `${prog.have}/${job.need}`) : null,
+            got ? tag('done', 'tag-ok')
+              : h('span.rowline', null,
+                tag(`${money(job.coins)}`, 'tag-cost', 'sand'),
+                job.fame ? tag(`${job.fame}★`, 'tag-star') : null))));
+      }
+    }
+    const spec = {
+      key: 'quests',
+      title: 'Jobs',
+      body,
+      foot: h('div.rowline', null,
+        h('span.card-sub.grow', null, `${at} of ${QUESTS.length} done`),
+        tag(s.rankName, 'tag-mint')),
+    };
+    keep ? this.hud.refreshSheet(spec) : this.hud.openSheet(spec);
   }
 
   /* ---------------------------------------------------------------- report  */
@@ -1780,6 +1794,8 @@ export class Panels {
     this.reopen = null;
     const r = this.game.restaurant;
     const s = this.state;
+    // the day's take, banked as the best-ever if it beats it
+    s.stats.best = Math.max(s.stats.best ?? 0, r.earned);
     const line = (label, value, big = false) => h(`div.report-row${big ? '.big' : ''}`, null,
       h('span', null, label), h('b', null, value));
     const netStars = r.starsToday - r.walkouts * 2;

@@ -9,7 +9,7 @@
 import { $, h, show } from './dom.js';
 import { CHEF_SPRITE } from '../data/catalog.js';
 import { toScreen } from '../world/iso.js';
-import { RANKS } from '../data/fame.js';
+import { QUESTS } from '../data/quests.js';
 
 /**
  * Scripted moments. `at` names what the camera should look at; `when` is
@@ -60,67 +60,6 @@ export const BEATS = [
   ] },
 ];
 
-/**
- * The standing job. One at a time, in order, each with a number you can watch
- * go up — a quest you cannot see the progress of is a rumour.
- */
-export const QUESTS = [
-  { id: 'plate', title: 'Plate 3 dishes', need: 3, coins: 60,
-    have: (g) => g.state.plannedCount,
-    done: "Three's a menu. Barely." },
-  { id: 'open', title: 'Open the doors', need: 1, coins: 60,
-    have: (g) => (g.state.phase === 'open' ? 1 : 0),
-    done: "Here they come." },
-  { id: 'serve', title: 'Serve 3 guests', need: 3, coins: 120,
-    have: (g) => g.state.stats.served,
-    done: "Three happy. Keep going." },
-  { id: 'market', title: 'Buy from the market', need: 1, coins: 90,
-    have: (g) => g.state.stats.bought ?? 0,
-    done: "Boats land every hour. Prices move. Watch them." },
-  { id: 'r1', title: `Reach ${RANKS[1].name}`, need: RANKS[1].at, coins: 150,
-    have: (g) => g.state.fame,
-    done: "New shelf. Go and look at what's on it." },
-  { id: 'seats', title: 'Get to 4 seats', need: 4, coins: 150,
-    have: (g) => g.restaurant.seatCount,
-    done: "More chairs, more dinners." },
-  { id: 'crew', title: 'Hire anybody', need: 1, coins: 200,
-    have: (g) => g.state.staff.length,
-    done: "You can't run a room on your own. Nobody can." },
-  { id: 'r2', title: `Reach ${RANKS[2].name}`, need: RANKS[2].at, coins: 300,
-    have: (g) => g.state.fame,
-    done: "The works are open. Go and get your hands dirty." },
-  { id: 'machine', title: 'Build a machine', need: 1, coins: 250,
-    have: (g) => g.state.machines.filter((m) => m.kind === 'producer').length,
-    done: "Now the harbour works while you sleep." },
-  { id: 'intake', title: 'Build a Pantry Intake', need: 1, coins: 300,
-    have: (g) => g.state.machines.filter((m) => m.kind === 'silo').length,
-    done: "Belt into that and the larder fills itself." },
-  { id: 'learn', title: 'Know 6 recipes', need: 6, coins: 400,
-    have: (g) => g.state.unlocked.length,
-    done: "A menu worth reading." },
-  { id: 'r3', title: `Reach ${RANKS[3].name}`, need: RANKS[3].at, coins: 500,
-    have: (g) => g.state.fame,
-    done: "Bistro. Buy the walnut. You've earned it." },
-  { id: 'hundred', title: 'Serve 100 guests', need: 100, coins: 600,
-    have: (g) => g.state.stats.served,
-    done: "A hundred. I've stopped counting. You shouldn't." },
-  { id: 'r4', title: `Reach ${RANKS[4].name}`, need: RANKS[4].at, coins: 800,
-    have: (g) => g.state.fame,
-    done: "Workshop's yours. Let a computer do the thinking." },
-  { id: 'forge', title: 'Forge a dish', need: 1, coins: 900,
-    have: (g) => Object.keys(g.state.dishes ?? {}).length,
-    done: "Better bowl, better price. Told you." },
-  { id: 'r5', title: `Reach ${RANKS[5].name}`, need: RANKS[5].at, coins: 1200,
-    have: (g) => g.state.fame,
-    done: "Somebody's favourite. Don't ruin it." },
-  { id: 'r6', title: `Reach ${RANKS[6].name}`, need: RANKS[6].at, coins: 2000,
-    have: (g) => g.state.fame,
-    done: "A landmark. People give directions by us." },
-  { id: 'r7', title: `Reach ${RANKS[7].name}`, need: RANKS[7].at, coins: 5000,
-    have: (g) => g.state.fame,
-    done: "Legend. Now cook me something." },
-];
-
 export class Story {
   constructor(game) {
     this.game = game;
@@ -132,13 +71,16 @@ export class Story {
       text: $('#say-text'),
       quest: $('#quest'),
       qTitle: $('#quest-title'),
+      qHint: $('#quest-hint'),
       qFill: $('#quest-fill'),
       qN: $('#quest-n'),
+      qPay: $('#quest-pay'),
       qTick: $('#quest-tick'),
     };
     this.playing = false;
     this.tick = 0;
     this.el.scene.onclick = () => this.#next();
+    this.el.quest.onclick = () => this.game.panels.openQuests();
     this.el.face.style.backgroundImage =
       `url("${game.assets.url('staff', CHEF_SPRITE)}")`;
   }
@@ -243,17 +185,53 @@ export class Story {
     return QUESTS[at] ?? null;
   }
 
-  /** Fold the finished job away, pay for it, and let him have the last word. */
+  /** How far along the standing job is, as a number and a fraction. */
+  progress(q) {
+    let have = 0;
+    try { have = q.have(this.game) | 0; } catch { have = 0; }
+    have = Math.max(0, Math.min(q.need, have));
+    return { have, pct: have / q.need, done: have >= q.need };
+  }
+
+  /**
+   * A job finished.
+   *
+   * This is the payoff moment of the whole loop, so it is not a line of text: a
+   * banner drops with the reward counted out on it, coins and stars come off the
+   * ticket, the till rings, and the chef says his piece a beat later. Then the
+   * next job slides in underneath.
+   */
   #finish(q) {
     const s = this.s;
     s.story.at = (s.story.at ?? 0) + 1;
     s.earn(q.coins);
+    if (q.fame) s.addStars(q.fame);
     s.save();
-    this.game.sfx.play('coin');
-    this.game.hud.toast(`${q.title} — done. +${q.coins}`, 'good');
+    this.game.sfx.play('cash');
+
+    const cam = this.game.zone.cam;
+    this.game.zone.fx.coins(cam.x, cam.y - 30, 14, 90);
+    this.game.zone.fx.stars(cam.x, cam.y - 40, 10);
+
+    this.#banner(q);
     this.el.quest.classList.add('ding');
     setTimeout(() => this.el.quest.classList.remove('ding'), 700);
-    this.game.hud.chefSays(q.done);
+    setTimeout(() => this.game.hud.chefSays(q.done), 1500);
+    this.qSig = null;
+  }
+
+  /** The reward banner: what you did, and what it just paid. */
+  #banner(q) {
+    const el = h('div.done', null,
+      h('span.done-tick', null, '✓'),
+      h('span.done-body', null,
+        h('b', null, 'Job done'),
+        h('span', null, q.title)),
+      h('span.done-pay', null,
+        h('span.done-coin', null, h('i.ico.ico-sand'), `+${q.coins}`),
+        q.fame ? h('span.done-fame', null, h('i.ico.ico-star'), `+${q.fame}`) : null));
+    document.getElementById('hud').append(el);
+    setTimeout(() => { el.classList.add('out'); setTimeout(() => el.remove(), 400); }, 2400);
   }
 
   /* ---------------------------------------------------------------- update */
@@ -268,16 +246,20 @@ export class Story {
 
     const q = this.quest;
     if (q) {
-      const have = Math.max(0, Math.min(q.need, q.have(this.game) | 0));
+      const { have, pct, done } = this.progress(q);
       show(this.el.quest, !this.playing);
       if (this.qSig !== `${q.id}:${have}`) {
         this.qSig = `${q.id}:${have}`;
         this.el.qTitle.textContent = q.title;
+        this.el.qHint.textContent = q.hint ?? '';
         this.el.qN.textContent = q.need > 1 ? `${have}/${q.need}` : '';
-        this.el.qFill.style.width = `${Math.round((have / q.need) * 100)}%`;
+        this.el.qPay.textContent = `+${q.coins}`;
+        this.el.qFill.style.width = `${Math.round(pct * 100)}%`;
+        this.el.quest.classList.toggle('near', pct >= 0.75 && !done);
       }
-      if (have >= q.need) this.#finish(q);
+      if (done) this.#finish(q);
     } else show(this.el.quest, false);
+    this.game.hud.syncQuestBadge?.(QUESTS.length - (s.story.at ?? 0));
 
     // never over an open panel or the guide: a cutscene that snatches the book
     // out of your hands mid-tap is a cutscene you resent

@@ -15,6 +15,11 @@ import { $, show } from './dom.js';
  * on their own is left out — this is the loop that is not obvious: food has to
  * be plated before it can be sold, and nobody turns up unless you call them.
  */
+/** What each finished step is worth. Small, frequent, and it adds up. */
+const STEP_PAY = 40;
+/** And a lump at the end, so finishing it is worth more than skipping it. */
+const TUTOR_BONUS = 300;
+
 const STEPS = [
   {
     id: 'kitchen',
@@ -77,10 +82,17 @@ const STEPS = [
     done: null,          // read-and-carry-on
   },
   {
+    id: 'jobs',
+    title: 'Your jobs',
+    text: 'The chef always has one on the go, top left. It pays.',
+    at: () => '#quest',
+    done: null,
+  },
+  {
     id: 'done',
     title: "That's the shift",
-    text: 'Serve, get paid, spend it. The ? has the long version.',
-    at: () => '#btn-help',
+    text: 'Serve, get paid, spend it. Everything else is on the job list.',
+    at: () => '#btn-quests',
     done: null,
   },
 ];
@@ -122,16 +134,21 @@ export class Tutor {
     const s = this.game.state;
     s.tutorial = { step: this.i, done: true };
     s.save();
-    if (skipped) this.game.hud.toast('Guide put away — the ? has it all', '');
+    if (skipped) this.game.hud.toast('Guide put away — the job list has the rest', '');
   }
 
   #next() {
     this.i += 1;
     if (this.i >= STEPS.length) {
+      this.#pay();
       this.stop();
-      this.game.celebrate('You know the job!');
+      this.game.state.earn(TUTOR_BONUS);
+      this.game.celebrate(`You know the job! +${TUTOR_BONUS}`);
       return;
     }
+    // Every step pays. A guide that only tells you things is homework; a guide
+    // that hands you a coin every time you do one is a game.
+    if (this.i > 0) this.#pay();
     const step = STEPS[this.i];
     step.before?.(this.game);
     this.el.title.textContent = step.title;
@@ -176,6 +193,16 @@ export class Tutor {
       this.game.sfx.play('star');
       this.#next();
     }
+  }
+
+  /** A coin for the step just finished, and a pop to go with it. */
+  #pay() {
+    const s = this.game.state;
+    s.earn(STEP_PAY);
+    this.game.sfx.play('coin');
+    const cam = this.game.zone.cam;
+    this.game.zone.fx.coins(cam.x, cam.y - 20, 6, 60);
+    this.game.hud.toast(`+${STEP_PAY} — nice`, 'good');
   }
 
   /** Screen-space box of whatever this step is pointing at. */

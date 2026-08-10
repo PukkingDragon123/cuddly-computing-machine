@@ -59,7 +59,13 @@ function fresh() {
     story: { at: 0, seen: [] },      // how far the chef's story has got
     seenHelp: false,
     lastSeen: Date.now(),
-    stats: { served: 0, walkouts: 0, earned: 0, best: 0, bought: 0 },
+    stats: {
+      served: 0, walkouts: 0, earned: 0, best: 0, bought: 0,
+      // the rest of the counters the job list reads. Every one of them is a
+      // thing somebody has to be told to try at least once.
+      cheap: 0, called: 0, washed: 0, delivered: 0,
+      loved: 0, vips: 0, myths: 0, gifts: 0,
+    },
   };
 }
 
@@ -100,6 +106,12 @@ function migrate(data) {
   data.settings = { sound: true, motion: true, tips: true, ...(data.settings ?? {}) };
   data.tutorial ??= { step: 0, done: !!data.seenHelp };
   data.auto ??= false;
+  data.stats = {
+    served: 0, walkouts: 0, earned: 0, best: 0, bought: 0,
+    cheap: 0, called: 0, washed: 0, delivered: 0,
+    loved: 0, vips: 0, myths: 0, gifts: 0,
+    ...(data.stats ?? {}),
+  };
   data.story ??= { at: 0, seen: [] };
   // the pens are gone, so their machines and the two recipes that needed them
   // would otherwise sit in the save as unbuildable tiles and unmakeable dishes
@@ -697,6 +709,7 @@ export class GameState {
     if (!this.spend(total)) return 0;
     this.market.stock[id] = have - take;
     this.stats.bought = (this.stats.bought ?? 0) + take;
+    if (this.catch?.cheap?.includes(id)) this.stats.cheap = (this.stats.cheap ?? 0) + take;
     this.addIng(id, take);
     this.save();
     return take;

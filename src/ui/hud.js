@@ -65,6 +65,7 @@ export class Hud {
       ['btn-pantry', 'pantry', () => g.openPantry()],
       ['btn-diary', 'diary', () => g.openDiary()],
       ['btn-menu', 'settings', () => g.openSettings()],
+      ['btn-quests', 'quests', () => g.panels.openQuests()],
     ];
     for (const [id, key, open] of this.docked) {
       const el = $(`#${id}`);
@@ -79,7 +80,6 @@ export class Hud {
       };
     }
     this.el.flyer.onclick = () => g.tapFlyer();
-    $('#btn-help').onclick = () => g.openHelp();
     this.el.sound.onclick = () => g.toggleSound();
     this.el.rankChip.onclick = () => g.panels.openFame();
     this.el.auto.onclick = () => {
@@ -185,6 +185,14 @@ export class Hud {
         h('b', null, String(n))));
     }
     show(el, rows.length > 0);
+  }
+
+  /** How many jobs are left, on the rail's Jobs button. */
+  syncQuestBadge(left) {
+    const el = $('[data-bind="quest-badge"]');
+    if (!el) return;
+    show(el, left > 0);
+    if (el.textContent !== String(left)) el.textContent = String(left);
   }
 
   /** Restart the squash so a repeat tap still reads as a tap. */

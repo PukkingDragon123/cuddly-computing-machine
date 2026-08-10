@@ -428,7 +428,6 @@ export class Game {
   openRecipes() { this.cancelPlacement(); this.panels.openRecipes(); }
   openPantry() { this.panels.openPantry(); }
   openCrew() { this.panels.openCrew(); }
-  openHelp() { this.panels.openHelp(); }
   openHub() { this.panels.openHub(); }
   openFurniture(rec) { if (this.state.phase !== 'open') this.panels.openFurniture(rec); }
   openMachine(m) { this.panels.openMachine(m); }

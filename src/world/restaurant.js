@@ -302,6 +302,7 @@ export class Restaurant {
   summonGuest(loud = true) {
     if (this.seatCount === 0 || !this.hasPass) return false;
     this.#spawn();
+    if (loud) this.state.stats.called = (this.state.stats.called ?? 0) + 1;
     const g = this.guests[this.guests.length - 1];
     if (g && loud) {
       this.fx.pop(g.pos.x, g.headY - 30, 'Heard you calling!', {
@@ -486,6 +487,9 @@ export class Restaurant {
     this.state.earn(pay);
     this.state.addStars(stars);
     this.state.stats.served += 1;
+    if (note.mood === 'loved') this.state.stats.loved = (this.state.stats.loved ?? 0) + 1;
+    if (rarity.id === 'vip') this.state.stats.vips = (this.state.stats.vips ?? 0) + 1;
+    if (rarity.id === 'mythical') this.state.stats.myths = (this.state.stats.myths ?? 0) + 1;
     this.served += 1;
     this.earned += pay;
     this.starsToday += stars;
@@ -526,6 +530,7 @@ export class Restaurant {
   #giveGift(guest, level) {
     const gift = this.state.claimGift(level);
     if (!gift) return;
+    this.state.stats.gifts = (this.state.stats.gifts ?? 0) + 1;
     this.fx.stars(guest.pos.x, guest.headY - 20, 10);
     this.fx.coins(guest.pos.x, guest.headY, 6, 60);
     this.game.toast(`A gift: ${gift.label}`, 'good');
@@ -653,6 +658,7 @@ export class Restaurant {
     for (const s of this.seats) {
       if (s.dirty <= 0) continue;
       s.dirty = Math.max(0, s.dirty - dt);
+      if (s.dirty <= 0) this.state.stats.washed = (this.state.stats.washed ?? 0) + 1;
       if (!s.soil) continue;
       s.washT += dt;
       const p = this.#soilPos(s);

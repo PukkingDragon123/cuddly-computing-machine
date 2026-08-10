@@ -33,14 +33,18 @@
         <span class="rank-bar"><i id="rank-fill"></i></span>
       </button>
       <!-- the standing job, right under the day, where it cannot be missed -->
-      <div id="quest" class="quest hidden">
+      <button id="quest" class="quest hidden" title="Jobs">
         <span class="quest-tick" id="quest-tick"></span>
         <span class="quest-body">
-          <b id="quest-title">—</b>
+          <span class="quest-top">
+            <b id="quest-title">—</b>
+            <span class="quest-n" id="quest-n"></span>
+          </span>
           <span class="quest-bar"><i id="quest-fill"></i></span>
+          <span class="quest-hint" id="quest-hint"></span>
         </span>
-        <span class="quest-n" id="quest-n"></span>
-      </div>
+        <span class="quest-pay" id="quest-pay"></span>
+      </button>
     </div>
 
     <!--
@@ -68,8 +72,9 @@
           <i class="ico ico-tools"></i>
           <span class="badge hidden" data-bind="research-badge">0</span>
         </button>
-        <button class="railbtn railbtn-sm" id="btn-help" aria-label="How to play" title="How to play">
+        <button class="railbtn" id="btn-quests" aria-label="Jobs" title="Jobs">
           <i class="ico ico-help"></i>
+          <span class="badge hidden" data-bind="quest-badge">0</span>
         </button>
       </nav>
     </div>
@@ -167,15 +172,19 @@
   -->
   <div id="title" class="title hidden">
     <div class="title-wash"></div>
+    <!--
+      No name, no tagline, no numbers. The room behind is the game's face; two
+      hand-drawn signs hang over it and that is the whole menu.
+    -->
     <div class="title-card">
-      <div class="title-logo" id="title-logo">
-        <span class="tl-1">Bubbleworks</span>
-        <span class="tl-2">Harbor</span>
-      </div>
-      <p class="title-sub">a cosy harbour restaurant</p>
-      <div class="title-stat" id="title-stat"></div>
-      <button class="pill pill-go pill-lg title-play" id="title-play">Enter Restaurant</button>
-      <button class="pill pill-sun pill-lg title-play" id="title-load">Load Save</button>
+      <button class="sign sign-go" id="title-play">
+        <span class="sign-pin"></span>
+        <span class="sign-text">Enter Restaurant</span>
+      </button>
+      <button class="sign sign-sun" id="title-load">
+        <span class="sign-pin"></span>
+        <span class="sign-text">Load Save</span>
+      </button>
       <p class="title-by">made by <b>Pukking Dragon</b></p>
     </div>
   </div>
@@ -208,11 +217,20 @@
     </div>
   </div>
 
+  <!--
+    The loading screen. Drawn, not branded: a pot on a stove, bubbles coming
+    off it, and a hand-ruled gauge. No name — you have not been let in yet.
+  -->
   <div id="boot" class="boot">
+    <div class="boot-sky"></div>
     <div class="boot-card">
-      <div class="boot-logo">
-        <span class="bl-1">Bubbleworks</span>
-        <span class="bl-2">Harbor</span>
+      <div class="boot-pot">
+        <span class="boot-bub b1"></span>
+        <span class="boot-bub b2"></span>
+        <span class="boot-bub b3"></span>
+        <span class="boot-lid"></span>
+        <span class="boot-body"></span>
+        <span class="boot-flame"></span>
       </div>
       <div class="boot-bar"><i id="boot-fill"></i></div>
       <p id="boot-msg">Filling the tanks…</p>

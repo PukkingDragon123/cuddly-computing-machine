@@ -231,6 +231,7 @@ export class Factory {
 
   #bank(silo, ing) {
     this.state.addIng(ing, 1);
+    this.state.stats.delivered = (this.state.stats.delivered ?? 0) + 1;
     this.banked += 1;
     silo.took = (silo.took ?? 0) + 1;
     const s = toScreen(silo.c, silo.r);
