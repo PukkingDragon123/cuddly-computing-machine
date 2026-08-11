@@ -282,6 +282,57 @@ def slice_plans(manifest):
               f' ({os.path.getsize(os.path.join(OUT, rel)) // 1024} KB)')
 
 
+# ------------------------------------------------------------------ kitchen ---
+
+# The loading screen's props: a pot and a spatula, drawn side by side on cream.
+# They are cut apart by their own ink rather than by a grid, because the two are
+# nowhere near the same size and a grid would give the spatula a lot of nothing.
+TOOLS = [('kitchen_tools.png', ['pot', 'spatula'])]
+TOOL_H = 420
+
+
+def slice_tools(manifest):
+    """Two objects on a cream page, keyed out and cut apart by their own ink."""
+    os.makedirs(os.path.join(OUT, 'ui'), exist_ok=True)
+    for fname, names in TOOLS:
+        img = Image.open(os.path.join(PACK, fname)).convert('RGB')
+        rgb = np.asarray(img).astype(np.int16)
+        # the page is a flat warm cream; anything that is not it is a drawing
+        page = np.median(rgb.reshape(-1, 3), axis=0)
+        ink = np.abs(rgb - page).max(axis=-1) > 26
+        ink = ndimage.binary_closing(ink, np.ones((9, 9)))
+        ink = ndimage.binary_opening(ink, np.ones((5, 5)))
+        # Dilated hard before labelling, so the little sparkle strokes drawn
+        # beside each object join it rather than becoming objects of their own —
+        # then the two biggest blobs are the two things, left to right.
+        lab, n = ndimage.label(ndimage.binary_dilation(ink, np.ones((85, 85))))
+        blobs = []
+        for i in range(1, n + 1):
+            ys, xs = np.nonzero(lab == i)
+            if len(xs) < 20000:
+                continue
+            blobs.append((len(xs), i, (int(xs.min()), int(ys.min()),
+                                       int(xs.max()) + 1, int(ys.max()) + 1)))
+        blobs.sort(key=lambda b: -b[0])
+        picked = sorted(blobs[:len(names)], key=lambda b: b[2][0])
+        for name, (_, comp, box) in zip(names, picked):
+            # masked to its own component: the two boxes overlap, so without
+            # this the spatula's crop carries a slice of the pot's handle
+            mine = ink & (lab == comp)
+            alpha = (mine * 255).astype(np.uint8)
+            # a soft edge, so the cut line is the drawn outline, not a staircase
+            soft = Image.fromarray(alpha).filter(ImageFilter.GaussianBlur(0.6))
+            whole = img.convert('RGBA')
+            whole.putalpha(soft)
+            cut = whole.crop(box)
+            k = TOOL_H / cut.height
+            cut = cut.resize((max(1, round(cut.width * k)), TOOL_H), Image.LANCZOS)
+            rel = f'ui/{name}.webp'
+            cut.save(os.path.join(OUT, rel), quality=90, method=6)
+            print(f'  {rel}: {cut.width}x{cut.height}'
+                  f' ({os.path.getsize(os.path.join(OUT, rel)) // 1024} KB)')
+
+
 def main():
     path = os.path.join(OUT, 'atlas.json')
     manifest = json.load(open(path)) if os.path.exists(path) else {}
@@ -293,6 +344,8 @@ def main():
     slice_books(manifest)
     print('slicing the drafting sheet…')
     slice_plans(manifest)
+    print('slicing the kitchen tools…')
+    slice_tools(manifest)
     with open(path, 'w') as fh:
         json.dump(manifest, fh, indent=1)
     print('groups:', {k: len(v) for k, v in manifest.items()})

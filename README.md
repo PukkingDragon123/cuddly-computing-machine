@@ -49,10 +49,15 @@ a coin or move a chair. The logo is a toy: press it and it squashes and blows
 bubbles.
 
 The **loading screen** is drawn rather than branded: **Tako**, the head chef,
-bobbing beside a pot on a flame with bubbles coming off it. His sprite is one
-small PNG loaded straight from the folder rather than through the atlas, so he is
-on screen long before anything else is — which is the whole point of a loading
-screen. The pot is four CSS boxes.
+bobbing beside a pot on a flame with bubbles coming off it. The pot and the spatula are drawn art out of the
+pack, and his sprite is one small PNG loaded straight from the folder rather than
+through the atlas, so all three are on screen long before anything else is —
+which is the whole point of a loading screen.
+
+**And you can play with it.** Tap the pot: the spatula swings, the pot shakes, an
+ingredient drops in and the count goes up. It has no bearing on anything, which
+is exactly why it can be there — a loading bar you are allowed to play with stops
+being a loading bar.
 
 Settings — sound, motion, tips, the guide, credits and starting over — is on the
 rail, in the game where the rest of the panels are. Motion off
@@ -129,6 +134,11 @@ the catch, put up decor, lay five belts, point a belt at the intake, meet six
 species, serve somebody their favourite, serve a VIP, be given a present, take
 the pottery class, forge three dishes, take a thousand in a day.
 
+Every one carries **its own picture**, borrowed from the game rather than drawn
+for the list: the job about chairs shows a chair, the one about the whale shark
+shows the whale shark, the one about the kiln shows the kiln. A quest log full of
+identical ticks tells you nothing at a glance.
+
 One at a time on the HUD, under the rank strip: what to do, a hint on where to do
 it, a bar filling up, and **what it pays**, because a job you cannot see the
 reward for is a chore. When it fills, a banner drops into the middle of the
@@ -140,6 +150,12 @@ next job slides in underneath.
 The rail's last button opens the whole line, chapter by chapter, ticked off as
 you go. It is also the manual: a job list that names every system beats a page of
 instructions nobody reads, which is why the How to Play panel is gone.
+
+**Favours** are the third tab, and the only jobs you do not go looking for. One
+guest in twenty walks in wanting *one particular dish* — a heart appears over
+their head, their name and their order go on this page, and cooking it pays over
+the odds and in hearts, because the point of somebody asking you for something is
+that doing it makes them yours. It leaves when they do, which is the tension.
 
 **Side jobs** are the other tab and the other track. The line is a story and it
 only goes one way; these are the standing jobs a kitchen actually has — feed
@@ -356,6 +372,10 @@ index. `art_pack_03` came from the companion **reimagined-sniffle** repo, and
   trimmed, scaled and written as WebP for CSS to pick up — with the margin they
   were drawn on flooded to transparency, so a cover floats instead of sitting on
   a rectangle of paper.
+- `art_pack_04/kitchen_tools.png` — a pot and a spatula on cream, for the
+  loading screen. Cut apart by their own ink rather than by a grid: they are
+  nowhere near the same size, and each crop is masked to its own blob so the
+  spatula does not carry a slice of the pot's handle.
 - `art_pack_04/blueprint_sheet.png` — a drafting sheet, kept opaque and
   rectangular because that is what a sheet of paper is. It is the placement
   ghost's paper.

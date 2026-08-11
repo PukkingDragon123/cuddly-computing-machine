@@ -76,7 +76,7 @@ export class Story {
       qFill: $('#quest-fill'),
       qN: $('#quest-n'),
       qPay: $('#quest-pay'),
-      qTick: $('#quest-tick'),
+      qArt: $('#quest-art'),
     };
     this.playing = false;
     this.tick = 0;
@@ -186,6 +186,24 @@ export class Story {
     return QUESTS[at] ?? null;
   }
 
+  /** The job's picture, from the game's own art. */
+  #art(art) {
+    const el = this.el.qArt;
+    if (!el) return;
+    if (!art) { el.style.backgroundImage = ''; el.className = 'quest-art'; return; }
+    if (art.ico) {
+      el.style.backgroundImage = '';
+      el.className = `quest-art ico ico-${art.ico}`;
+      return;
+    }
+    const sp = this.game.assets.get(art.g, art.id);
+    const n = sp?.count ?? 1;
+    el.className = 'quest-art';
+    el.style.backgroundImage = `url("${this.game.assets.url(art.g, art.id)}")`;
+    el.style.backgroundSize = n > 1 ? `${n * 100}% 100%` : 'contain';
+    el.style.backgroundPosition = n > 1 ? 'left center' : 'center';
+  }
+
   /** How far along the standing job is, as a number and a fraction. */
   progress(q) {
     let have = 0;
@@ -216,6 +234,11 @@ export class Story {
     this.game.zone.fx.coins(cam.x, cam.y - 30, 14, 90);
     this.game.zone.fx.stars(cam.x, cam.y - 40, 10);
     this.game.zone.fx.hearts(cam.x, cam.y - 10, 4);
+    // and the job's own picture, thrown up with the rest of it
+    if (q.art?.g) {
+      this.game.zone.fx.burst(this.game.assets.get(q.art.g, q.art.id), cam.x, cam.y - 10, 5,
+        { spread: 120, size: 30, up: 380 });
+    }
 
     this.#banner(q);
     this.el.quest.classList.add('ding');
@@ -255,6 +278,7 @@ export class Story {
       if (this.qSig !== `${q.id}:${have}`) {
         this.qSig = `${q.id}:${have}`;
         this.el.qTitle.textContent = q.title;
+        this.#art(q.art);
         this.el.qHint.textContent = q.hint ?? '';
         this.el.qN.textContent = q.need > 1 ? `${have}/${q.need}` : '';
         this.el.qPay.textContent = `+${q.coins}`;

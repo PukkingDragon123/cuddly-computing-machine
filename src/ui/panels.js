@@ -1748,13 +1748,19 @@ export class Panels {
    */
   openQuests(keep = false) {
     this.reopen = () => this.openQuests(true);
-    const body = this.questTab === 'side' ? this.#sideJobs() : this.#questLine();
+    const body = this.questTab === 'side' ? this.#sideJobs()
+      : this.questTab === 'favour' ? this.#favours()
+        : this.#questLine();
     const s = this.state;
     const at = s.story?.at ?? 0;
     const spec = {
       key: 'quests',
       title: 'Jobs',
-      tabs: [{ id: 'line', label: 'The line' }, { id: 'side', label: 'Side jobs' }],
+      tabs: [
+        { id: 'line', label: 'The line' },
+        { id: 'side', label: 'Side jobs' },
+        { id: 'favour', label: `Favours${(this.state.favours ?? []).length ? ` (${this.state.favours.length})` : ''}` },
+      ],
       tab: this.questTab ?? 'line',
       onTab: (id) => { this.questTab = id; this.openQuests(true); },
       body,
@@ -1763,6 +1769,28 @@ export class Panels {
         tag(s.rankName, 'tag-mint')),
     };
     keep ? this.hud.refreshSheet(spec) : this.hud.openSheet(spec);
+  }
+
+  /**
+   * A job's picture.
+   *
+   * Reused from the game rather than drawn for the list: the job about chairs
+   * shows a chair, the one about the whale shark shows the whale shark. A quest
+   * log full of generic ticks tells you nothing at a glance.
+   */
+  jobArt(art) {
+    if (!art) return h('div.job-art');
+    if (art.ico) return h('div.job-art', null, h(`i.ico.ico-${art.ico}`));
+    const url = this.assets.url(art.g, art.id);
+    const sp = this.assets.get(art.g, art.id);
+    const n = sp?.count ?? 1;
+    return h('div.job-art', null, h('i', {
+      style: {
+        backgroundImage: `url("${url}")`,
+        backgroundSize: n > 1 ? `${n * 100}% 100%` : 'contain',
+        backgroundPosition: n > 1 ? 'left center' : 'center',
+      },
+    }));
   }
 
   /**
@@ -1794,6 +1822,7 @@ export class Panels {
             h('span.node-bead', null, got ? '✓' : live ? '' : ''),
             last ? null : h('span.node-line')),
           h(`div.card.job${got ? '.on' : ''}${live ? '.live' : ''}${!got && !live ? '.thin' : ''}`, null,
+            this.jobArt(job.art),
             h('div.card-main', null,
               h('div.card-title', null, job.title),
               live && job.hint ? h('div.card-sub', null, job.hint) : null,
@@ -1811,6 +1840,33 @@ export class Panels {
     return out;
   }
 
+  /**
+   * What the room is asking for.
+   *
+   * These are the only jobs you do not go and find: one guest in twenty walks
+   * in wanting one particular dish, and while they are sitting there their name
+   * and their order are on this page. They leave when the guest does — which is
+   * the tension, and why the card says who is waiting.
+   */
+  #favours() {
+    const s = this.state;
+    const rows = (s.favours ?? []).map((f) => this.#card({
+      src: this.assets.url('customers', f.species),
+      frames: this.assets.frameCount('customers', f.species),
+      title: `${f.who} would like…`,
+      sub: RECIPE_BY_ID[f.dish]?.name ?? f.dish,
+      tags: [tag(money(f.coins), 'tag-cost', 'sand'), tag(`${f.fame}★`, 'tag-star'), tag('+3 ♥', 'tag-ok')],
+      cls: 'favour',
+    }));
+    return [
+      h('div.note', null, 'One guest in twenty asks for something. Cook it and they remember you.'),
+      ...(rows.length ? rows : [h('div.empty', null, 'Nobody is asking for anything just now.')]),
+      h('div.section', null, 'Kept'),
+      this.#card({ icon: 'heart', title: 'Favours kept', sub: 'All time.',
+        tags: [tag(String(s.stats.favours ?? 0), 'tag-mint')] }),
+    ];
+  }
+
   /** The side board: three standing jobs, replaced as they are finished. */
   #sideJobs() {
     const s = this.state;
@@ -1821,7 +1877,7 @@ export class Panels {
       let have = 0;
       try { have = Math.max(0, Math.min(def.need, (def.count(this.game) | 0) - job.from)); } catch { have = 0; }
       return h('div.card.job.live', null,
-        h('div.job-tick', null, ''),
+        this.jobArt(def.art ?? { ico: 'star' }),
         h('div.card-main', null,
           h('div.card-title', null, def.title),
           h('div.jobbar', null, h('i', { style: { width: `${Math.round((have / def.need) * 100)}%` } }))),

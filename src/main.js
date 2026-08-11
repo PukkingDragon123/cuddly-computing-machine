@@ -20,7 +20,56 @@ const LINES = [
   'Setting the tables…',
 ];
 
+/**
+ * Something to do while the art arrives.
+ *
+ * Tap the pot: the spatula swings, the pot shakes, an ingredient drops in and
+ * the count goes up. It changes nothing in the game and it is not meant to —
+ * a loading bar you are allowed to play with stops being a loading bar. It
+ * needs no atlas, because the two sprites it uses are loaded straight off disk.
+ */
+function bootGame() {
+  const pot = document.getElementById('boot-pot');
+  const drops = document.getElementById('boot-drops');
+  const combo = document.getElementById('boot-combo');
+  const stir = combo?.parentElement;
+  if (!pot || !drops) return;
+
+  const FOOD = [
+    'kelp', 'egg', 'milk', 'flour', 'butter', 'scallop', 'potato', 'clam',
+    'tomato', 'lemon', 'carrot', 'cabbage', 'strawberry', 'coconut',
+  ];
+  let stirs = 0;
+  let clearT = null;
+
+  pot.onpointerdown = () => {
+    stirs += 1;
+    pot.classList.remove('stir');
+    void pot.offsetWidth;
+    pot.classList.add('stir');
+
+    const food = FOOD[(Math.random() * FOOD.length) | 0];
+    const drop = document.createElement('span');
+    drop.className = 'boot-drop';
+    drop.style.backgroundImage = `url("assets/ingredients/${food}.png")`;
+    drop.style.left = `${28 + Math.random() * 34}%`;
+    drop.style.bottom = '5.8rem';
+    drops.append(drop);
+    setTimeout(() => drop.remove(), 1200);
+
+    stir?.classList.add('on');
+    combo.textContent = `${stirs} stir${stirs === 1 ? '' : 's'}`;
+    combo.classList.remove('pop');
+    void combo.offsetWidth;
+    combo.classList.add('pop');
+    clearTimeout(clearT);
+    clearT = setTimeout(() => stir?.classList.remove('on'), 4000);
+    sfx.play(stirs % 8 === 0 ? 'star' : 'tap');
+  };
+}
+
 async function main() {
+  bootGame();
   let line = 0;
   const assets = await loadAssets((pct) => {
     fill.style.width = `${Math.round(pct * 100)}%`;

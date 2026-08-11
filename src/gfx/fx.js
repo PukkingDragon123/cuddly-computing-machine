@@ -124,6 +124,26 @@ export class Fx {
     });
   }
 
+  /**
+   * A handful of real sprites thrown into the air.
+   *
+   * The drawn particles below — coins, hearts, stars — are shapes this file
+   * knows how to draw. This one throws the game's own art instead, which is
+   * what you want the moment the thing being celebrated *has* art: the dish you
+   * served, the ingredient that arrived, the fish that was asked for.
+   */
+  burst(sprite, x, y, count = 6, { spread = 90, size = 26, up = 320 } = {}) {
+    if (!sprite) return;
+    for (let i = 0; i < count; i++) {
+      this.#add({
+        kind: 'sprite', x, y, sprite,
+        vx: range(-spread, spread), vy: range(-up, -up * 0.6), g: GRAV * 0.8,
+        life: 0, max: range(0.7, 1.1),
+        size: range(size * 0.75, size * 1.25), rot: range(-0.4, 0.4), spin: range(-7, 7),
+      });
+    }
+  }
+
   /** One item tossed up and held a beat — a harvest you can see leaving the pen. */
   fly(sprite, x, y) {
     this.#add({

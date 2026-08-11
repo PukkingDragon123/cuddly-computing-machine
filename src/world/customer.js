@@ -258,6 +258,34 @@ export class Customer {
     ctx.restore();
   }
 
+  /**
+   * A heart over the head of somebody who asked you for something.
+   *
+   * Drawn rather than a sprite because it has to sit exactly on the head at any
+   * zoom, and it beats the rarity crown to the spot — a favour is the more
+   * urgent fact about a guest than what tier they are.
+   */
+  #favourMark(ctx) {
+    if (!this.favour?.asked || this.alpha < 0.05) return;
+    const y = this.headY - 26 + Math.sin(this.bobT * 3.4) * 3;
+    const x = this.pos.x - 20;
+    const r = 8 + Math.sin(this.bobT * 6) * 0.7;
+    ctx.save();
+    ctx.globalAlpha = this.alpha;
+    ctx.beginPath();
+    ctx.moveTo(x, y + r * 0.9);
+    ctx.bezierCurveTo(x - r * 1.5, y - r * 0.3, x - r * 0.55, y - r * 1.25, x, y - r * 0.35);
+    ctx.bezierCurveTo(x + r * 0.55, y - r * 1.25, x + r * 1.5, y - r * 0.3, x, y + r * 0.9);
+    ctx.closePath();
+    ctx.fillStyle = '#e8829f';
+    ctx.fill();
+    ctx.strokeStyle = '#5f3d26';
+    ctx.lineWidth = 2;
+    ctx.lineJoin = 'round';
+    ctx.stroke();
+    ctx.restore();
+  }
+
   /** A little crown or star above the head, so the tier survives a screenshot. */
   #rarityMark(ctx) {
     const mark = this.rarity?.mark;
@@ -344,6 +372,7 @@ export class Customer {
     // the overlay pass draws the pointer, so a bubble never covers it
     this.hi = highlight;
     this.#rarityMark(ctx);
+    this.#favourMark(ctx);
 
     // held dish, shrinking bite by bite
     if (this.state === CS.EAT && this.plate) {

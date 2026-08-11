@@ -34,7 +34,7 @@
       </button>
       <!-- the standing job, right under the day, where it cannot be missed -->
       <button id="quest" class="quest hidden" title="Jobs">
-        <span class="quest-tick" id="quest-tick"></span>
+        <span class="quest-art" id="quest-art"></span>
         <span class="quest-body">
           <span class="quest-top">
             <b id="quest-title">—</b>
@@ -221,24 +221,29 @@
     The loading screen. Drawn, not branded: a pot on a stove, bubbles coming
     off it, and a hand-ruled gauge. No name — you have not been let in yet.
   -->
+  <!--
+    The loading screen, and a game to play while you wait: Tako at the pot with
+    a spatula, and ingredients dropping in. Tap the pot to stir. It has no
+    bearing on anything, which is exactly why it can be there — a loading bar
+    you are allowed to play with stops being a loading bar.
+  -->
   <div id="boot" class="boot">
     <div class="boot-sky"></div>
     <div class="boot-card">
-      <!--
-        The chef, at the pot. His sprite is one small PNG loaded straight from
-        the folder rather than through the atlas, so he is on screen long before
-        anything else is — which is the whole point of a loading screen.
-      -->
-      <div class="boot-scene">
+      <div class="boot-scene" id="boot-scene">
+        <div class="boot-drops" id="boot-drops"></div>
         <div class="boot-chef"></div>
-        <div class="boot-pot">
-          <span class="boot-bub b1"></span>
-          <span class="boot-bub b2"></span>
-          <span class="boot-bub b3"></span>
-          <span class="boot-lid"></span>
-          <span class="boot-body"></span>
-          <span class="boot-flame"></span>
+        <div class="boot-pot" id="boot-pot">
+          <span class="boot-steam s1"></span>
+          <span class="boot-steam s2"></span>
+          <span class="boot-steam s3"></span>
+          <span class="boot-pan"></span>
+          <span class="boot-spat" id="boot-spat"></span>
         </div>
+      </div>
+      <div class="boot-stir">
+        <span id="boot-combo" class="boot-combo"></span>
+        <span class="boot-tap" id="boot-tap">tap the pot while you wait</span>
       </div>
       <div class="boot-bar"><i id="boot-fill"></i></div>
       <p id="boot-msg">Filling the tanks…</p>

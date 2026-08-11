@@ -526,6 +526,13 @@ export class Game {
     const cam = this.zone.cam;
     this.zone.fx.sparkles(cam.x, cam.y - 20, 26, 140);
     this.zone.fx.hearts(cam.x, cam.y, 5);
+    // real food thrown in the air: a promotion in a restaurant is a food fight
+    const menu = Object.keys(this.state.stock).concat(this.state.unlocked);
+    for (let i = 0; i < 4; i++) {
+      const id = menu[(Math.random() * menu.length) | 0];
+      this.zone.fx.burst(this.assets.get('food', id), cam.x + (i - 1.5) * 60, cam.y + 20, 3,
+        { spread: 130, size: 30, up: 420 });
+    }
     if (RANK_LINES[n]) setTimeout(() => this.hud.chefSays(RANK_LINES[n]), 1400);
     this.state.save();
   }

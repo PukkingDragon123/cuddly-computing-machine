@@ -11,6 +11,9 @@ import { CS, Customer, rollGuest } from './customer.js';
 import { TAU, clamp, money, neighbours, range, rnd, tileDist, uid } from '../core/util.js';
 import { FURNITURE_BY_ID, STYLE_BY_ID, groupFor } from '../data/catalog.js';
 import { GUEST_BY_ID, RARITY_BY_ID, nameFor } from '../data/guests.js';
+
+/** How often somebody walks in wanting one particular thing. */
+const FAVOUR_CHANCE = 0.05;
 import { plateFor } from '../data/progress.js';
 import {
   blueprint, drawIcon, drawSprite, ellipse, ring, squash, sticker, text,
@@ -248,6 +251,7 @@ export class Restaurant {
   stopService() {
     for (const g of this.guests) g.dead = true;
     this.guests.length = 0;
+    this.state.favours = [];   // whoever was asking has gone home
     this.kitchen.reset();
     for (const s of this.seats) { s.taken = null; this.#wipe(s); }
   }
@@ -287,6 +291,8 @@ export class Restaurant {
     // species — and the same name every time, because a regular who is called
     // something different on Tuesday is not a regular.
     c.who = nameFor(g.species);
+    // one in twenty walks in wanting something in particular
+    if (rnd() < FAVOUR_CHANCE) c.favour = { asked: false };
     if (c.species) this.state.noteArrival(c.species);
     c.arrive();
     this.guests.push(c);
@@ -424,6 +430,23 @@ export class Restaurant {
     let chosen = weighted[weighted.length - 1].d;
     for (const { d, w } of weighted) { roll -= w; if (roll <= 0) { chosen = d; break; } }
 
+    // Somebody with a favour to ask does not browse: they came in for one
+    // thing, and it is worth more than the plate is.
+    if (guest.favour) {
+      const want = dishes[(rnd() * dishes.length) | 0];
+      chosen = want;
+      guest.favour.dish = want.id;
+      guest.favour.asked = true;
+      guest.favour.coins = Math.round(want.price * 1.6) + 40;
+      guest.favour.fame = 6 + Math.round(want.price / 8);
+      this.state.noteFavour(guest);
+      this.fx.pop(guest.pos.x, guest.headY - 54, `${guest.who}: a favour?`, {
+        color: '#d0517f', size: 15, rise: 40, max: 1.1,
+      });
+      this.fx.hearts(guest.pos.x, guest.headY - 20, 3);
+      this.sfx.play('ding');
+    }
+
     guest.dish = chosen.id;
     this.state.stock[chosen.id] -= 1;
     if (this.state.stock[chosen.id] <= 0) delete this.state.stock[chosen.id];
@@ -455,6 +478,9 @@ export class Restaurant {
     guest.sq.vel -= 3.5;
     this.fx.sparkles(guest.pos.x, guest.headY + 12, 7, 20);
     this.fx.hearts(guest.pos.x, guest.headY - 6, 2);
+    // the dish itself, not a shower of abstract shapes
+    this.fx.burst(this.assets.get('food', plate.recipeId), guest.pos.x, guest.headY + 6, 4,
+      { spread: 70, size: 22, up: 240 });
     this.sfx.play('slurp');
     return true;
   }
@@ -492,6 +518,7 @@ export class Restaurant {
     this.state.addStars(stars);
     this.state.stats.served += 1;
     if (note.mood === 'loved') this.state.stats.loved = (this.state.stats.loved ?? 0) + 1;
+    if (guest.favour?.asked && guest.favour.dish === guest.dish) this.#payFavour(guest);
     if (rarity.id === 'vip') this.state.stats.vips = (this.state.stats.vips ?? 0) + 1;
     if (rarity.id === 'mythical') this.state.stats.myths = (this.state.stats.myths ?? 0) + 1;
     this.served += 1;
@@ -504,6 +531,8 @@ export class Restaurant {
       });
     }
     this.fx.coins(guest.pos.x, guest.headY + 10, 5 + Math.min(6, Math.floor(pay / 18)), 62);
+    this.fx.burst(this.assets.get('food', guest.dish), guest.pos.x, guest.headY, 3,
+      { spread: 60, size: 20, up: 260 });
     this.fx.pop(guest.pos.x, guest.headY - 24, `+${money(pay)}`, { color: '#b8481c', size: 23 });
     if (guest.who) {
       this.fx.pop(guest.pos.x, guest.headY - 62, `${guest.who}: thanks!`, {
@@ -519,6 +548,30 @@ export class Restaurant {
     this.game.bumpCoinChip();
 
     this.tweens.after(0.9, () => { if (!guest.dead) this.#leave(guest, 'happy'); });
+  }
+
+  /**
+   * A favour kept.
+   *
+   * It pays over the odds and it pays in hearts, because the whole point of
+   * somebody asking you for something is that doing it makes them yours.
+   */
+  #payFavour(guest) {
+    const f = guest.favour;
+    this.state.earn(f.coins);
+    this.state.addStars(f.fame);
+    if (guest.species) this.state.addHearts(guest.species, 3);
+    this.state.stats.favours = (this.state.stats.favours ?? 0) + 1;
+    this.state.clearFavour(guest.id);
+    this.fx.hearts(guest.pos.x, guest.headY - 10, 7);
+    this.fx.stars(guest.pos.x, guest.headY - 26, 8);
+    this.fx.burst(this.assets.get('food', f.dish), guest.pos.x, guest.headY - 6, 6,
+      { spread: 110, size: 26, up: 340 });
+    this.fx.pop(guest.pos.x, guest.headY - 78, 'Favour kept!', {
+      color: '#d0517f', size: 17, rise: 46, max: 1.2,
+    });
+    this.game.toast(`${guest.who} will remember that — +${f.coins}`, 'good');
+    this.sfx.play('star');
   }
 
   /** A little flourish that tells you how the dish landed. */
@@ -549,6 +602,7 @@ export class Restaurant {
 
   /** Patience hit zero. */
   walkOut(guest) {
+    if (guest.favour?.asked) this.state.clearFavour(guest.id);
     if (guest.state === CS.LEAVE || guest.state === CS.DONE) return;
     // the dish was never cooked, so put the serving back on the menu
     if (guest.dish && !this.kitchen.plates.some((p) => p.customerId === guest.id)) {

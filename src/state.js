@@ -58,7 +58,8 @@ function fresh() {
     tutorial: { step: 0, done: false },
     auto: false,                     // keep the menu topped up from the larder
     story: { at: 0, seen: [] },      // how far the chef's story has got
-    side: { jobs: [] },              // three standing side jobs, see rollSide()
+    side: { jobs: [] },              // three standing side jobs, see fillSide()
+    favours: [],                     // what the room is asking for right now
     seenHelp: false,
     lastSeen: Date.now(),
     stats: {
@@ -66,7 +67,7 @@ function fresh() {
       // the rest of the counters the job list reads. Every one of them is a
       // thing somebody has to be told to try at least once.
       cheap: 0, called: 0, washed: 0, delivered: 0,
-      loved: 0, vips: 0, myths: 0, gifts: 0,
+      loved: 0, vips: 0, myths: 0, gifts: 0, favours: 0,
     },
   };
 }
@@ -111,11 +112,12 @@ function migrate(data) {
   data.stats = {
     served: 0, walkouts: 0, earned: 0, best: 0, bought: 0,
     cheap: 0, called: 0, washed: 0, delivered: 0,
-    loved: 0, vips: 0, myths: 0, gifts: 0,
+    loved: 0, vips: 0, myths: 0, gifts: 0, favours: 0,
     ...(data.stats ?? {}),
   };
   data.story ??= { at: 0, seen: [] };
   data.side ??= { jobs: [] };
+  data.favours = [];   // they belong to guests who are no longer in the room
   // the pens are gone, so their machines and the two recipes that needed them
   // would otherwise sit in the save as unbuildable tiles and unmakeable dishes
   data.machines = (data.machines ?? []).filter((m) => m.kind !== 'pen');
@@ -764,6 +766,43 @@ export class GameState {
     return made;
   }
 
+  /* -------------------------------------------------------------- favours */
+
+  /**
+   * Somebody in the room has asked for something.
+   *
+   * A favour is a side job you did not go looking for: one guest in twenty
+   * walks in wanting one particular dish, and bringing it pays over the odds
+   * and in hearts. They are kept on the save only so the Jobs book can list
+   * them by name while they are sitting there — they die with the guest.
+   */
+  noteFavour(guest) {
+    this.favours ??= [];
+    if (this.favours.some((f) => f.id === guest.id)) return;
+    this.favours.push({
+      id: guest.id,
+      who: guest.who,
+      species: guest.species,
+      dish: guest.favour.dish,
+      coins: guest.favour.coins,
+      fame: guest.favour.fame,
+    });
+    this.bus.emit('change');
+  }
+
+  clearFavour(id) {
+    this.favours = (this.favours ?? []).filter((f) => f.id !== id);
+    this.bus.emit('change');
+  }
+
+  /** Hearts straight into somebody's diary page, outside of a meal. */
+  addHearts(speciesId, n) {
+    const p = this.page(speciesId);
+    p.hearts = (p.hearts ?? 0) + n;
+    p.level = levelForHearts(p.hearts);
+    this.bus.emit('change');
+  }
+
   /* ------------------------------------------------------------ side jobs */
 
   /**
@@ -822,6 +861,7 @@ export class GameState {
     this.menu = {};
     this.stock = {};
     this.flyer = { taps: 0, posters: 0 };
+    this.favours = [];   // the room emptied; nobody is asking for anything
     this.rollCatch();
     for (const [id, qty] of Object.entries(DAILY_DELIVERY)) this.addIng(id, qty);
     this.bus.emit('phase', 'prep');
