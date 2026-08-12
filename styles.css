@@ -1715,21 +1715,53 @@ html, body {
 }
 .tutor-say {
   position: absolute;
-  width: min(19rem, calc(100vw - 1.6rem));
+  width: min(20rem, calc(100vw - 1.6rem));
   pointer-events: auto;
   cursor: pointer;
-  border: var(--bw) solid var(--ink);
-  border-radius: var(--r-md);
+  border: 0.2rem solid var(--ink);
+  border-radius: var(--r-hand);
   background-color: var(--paper);
-  background-image: var(--sheen);
-  box-shadow: none;
-  padding: 0.55rem 0.7rem;
+  padding: 0.6rem 0.75rem 0.55rem 4.4rem;
   display: flex; flex-direction: column; gap: 0.2rem;
+  min-height: 4.6rem;
 }
-.tutor-say b { font-size: 0.98rem; font-weight: 900 }
+/* he leans out of the left edge of it, so the guide has a face */
+.tutor-face {
+  position: absolute; left: -0.7rem; bottom: -0.35rem;
+  width: 4.6rem; height: 5.4rem;
+  background: left bottom/300% 100% no-repeat;
+  filter: drop-shadow(0 0.12rem 0.1rem rgba(95, 61, 38, .3));
+  animation: chefLean 2.6s ease-in-out infinite;
+  pointer-events: none;
+}
+/* which side the bubble is on decides which way its tail points */
+.tutor-say::after {
+  content: "";
+  position: absolute; left: 5.4rem; bottom: -0.62rem;
+  width: 1rem; height: 1rem;
+  background: var(--paper);
+  border-right: 0.2rem solid var(--ink);
+  border-bottom: 0.2rem solid var(--ink);
+  transform: rotate(45deg);
+}
+.tutor-say.below::after { bottom: auto; top: -0.62rem; transform: rotate(225deg) }
+.tutor-say b { font-size: 1rem; font-weight: 900; color: var(--ink-deep) }
 .tutor-say span { font-size: 0.82rem; font-weight: 700; color: var(--ink-soft); line-height: 1.35 }
 .tutor-foot { display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; margin-top: 0.15rem }
-.tutor-dots { font-size: 0.72rem; font-weight: 900; color: var(--ink-faint) }
+/* one pip a step: filled behind you, lit where you are, hollow ahead */
+.tutor-dots { display: flex; gap: 0.22rem; align-items: center }
+.tutor-dots i {
+  width: 0.42rem; height: 0.42rem; border-radius: 999px;
+  background: var(--paper);
+  border: 0.11rem solid var(--ink-faint);
+}
+.tutor-dots i.on { background: var(--leaf); border-color: var(--leaf-deep) }
+.tutor-dots i.here {
+  background: var(--sun); border-color: var(--ink);
+  transform: scale(1.5);
+  animation: pipPulse 1.4s ease-in-out infinite;
+}
+@keyframes pipPulse { 50% { transform: scale(1.85) } }
 /* a step with nothing to wait for says so, and so does one that gave up waiting */
 .tutor-say.freed::after { content: "tap to skip this one" !important }
 .tutor-say:not(.waits)::after, .tutor-say.freed::after {
@@ -2190,63 +2222,120 @@ body.still .tutor-hole { animation: none }
 
 /* cutscenes ------------------------------------------------------------ */
 
-/* Bars in, camera over, chef talks, bars out. It is the oldest trick in
-   games and it still works: the moment the frame changes shape, you stop
-   playing and start listening. */
+/* Bars in, camera over, chef walks on, chef talks, bars out. It is the oldest
+   trick in games and it still works: the moment the frame changes shape you
+   stop playing and start listening. These only run when the doors are shut —
+   anything he has to say mid-service he says from the pass, see .aside. */
 .scene {
   position: absolute; inset: 0;
   z-index: 7;
   animation: fade .22s ease both;
 }
-.scene.out { animation: sceneOut .26s ease both; pointer-events: none }
+.scene.out { animation: sceneOut .3s ease both; pointer-events: none }
 @keyframes sceneOut { to { opacity: 0 } }
-.bar-top, .bar-bot {
-  position: absolute; left: 0; right: 0; height: 11%;
-  background: #3a2414;
-  animation: barIn .34s cubic-bezier(.2,.9,.3,1) both;
+
+/* the room, darkened at the edges so the middle of the frame is the subject */
+.scene-veil {
+  position: absolute; inset: 0;
+  background:
+    radial-gradient(78% 62% at 50% 44%, rgba(58, 36, 20, 0) 40%, rgba(46, 28, 15, .45) 100%);
+  animation: fade .4s ease both;
 }
-.bar-top { top: 0 }
-.bar-bot { bottom: 0 }
+
+.bar-top, .bar-bot {
+  position: absolute; left: 0; right: 0; height: 12%;
+  background: #2f1d10;
+  animation: barIn .42s cubic-bezier(.2,.9,.25,1) both;
+}
+.bar-top { top: 0; transform-origin: top; border-bottom: 0.14rem solid rgba(248, 209, 103, .5) }
+.bar-bot { bottom: 0; transform-origin: bottom; border-top: 0.14rem solid rgba(248, 209, 103, .5) }
 @keyframes barIn { from { transform: scaleY(0) } }
-.bar-top { transform-origin: top }
-.bar-bot { transform-origin: bottom }
+
+/* He walks on from the left and stands on the lower bar, full height, rather
+   than sitting in a little box inside his own speech. */
+.scene-cast {
+  position: absolute;
+  left: clamp(0.5rem, 5vw, 4rem);
+  bottom: 12%;
+  width: 13rem; height: 15rem;
+  pointer-events: none;
+  animation: castIn .46s cubic-bezier(.2,1.2,.35,1) both;
+}
+@keyframes castIn { from { opacity: 0; transform: translate(-2.5rem, 0.8rem) } }
+.say-face {
+  width: 100%; height: 100%;
+  background: left bottom/300% 100% no-repeat;
+  filter: drop-shadow(0 0.3rem 0.25rem rgba(46, 28, 15, .45));
+  transform-origin: 50% 100%;
+  animation: chefLean 2.6s ease-in-out infinite;
+}
+.say.talking ~ .scene-cast .say-face,
+.scene:has(.say.talking) .say-face { animation: chefTalk .26s ease-in-out infinite alternate }
 
 .say {
   position: absolute;
-  left: 50%; bottom: 13%;
+  left: 50%; bottom: 15%;
   transform: translateX(-50%);
-  width: min(34rem, 92%);
-  display: flex; align-items: flex-end; gap: 0.7rem;
-  padding: 0.7rem 0.9rem;
+  width: min(30rem, 88%);
+  margin-left: min(6rem, 10vw);
+  padding: 0.85rem 1.1rem 0.9rem;
   background-color: var(--paper);
-  border: var(--bw) solid var(--ink);
+  border: 0.22rem solid var(--ink);
   border-radius: var(--r-hand);
+  animation: sayIn .4s .12s cubic-bezier(.2,1.3,.35,1) both;
 }
+@keyframes sayIn { from { opacity: 0; transform: translate(-50%, 0.8rem) scale(.96) } }
 .say.pop { animation: sayPop .22s var(--spring) both }
-@keyframes sayPop { from { transform: translateX(-50%) scale(.96) } }
-/* he leans in over the edge of his own speech, the way a puppet would */
-.say-face {
-  flex: none;
-  width: 5rem; height: 5.6rem;
-  margin: -2.4rem 0 -0.7rem;
-  background: left bottom/300% 100% no-repeat;
-  filter: drop-shadow(0 0.14rem 0.1rem rgba(95, 61, 38, .3));
-  animation: chefBob 2.4s ease-in-out infinite;
-}
-@keyframes chefBob { 50% { transform: translateY(-0.18rem) rotate(-1.4deg) } }
-.say-body { flex: 1; min-width: 0; text-align: left }
+@keyframes sayPop { from { transform: translateX(-50%) scale(.975) } }
+/* the name on its own tab, hanging off the top edge */
 .say-who {
-  display: block;
-  font-size: 0.7rem; font-weight: 900; letter-spacing: .07em;
-  text-transform: uppercase; color: var(--tangerine-deep);
+  position: absolute; top: -0.95rem; left: 1rem;
+  padding: 0.1rem 0.6rem;
+  background-color: var(--sun);
+  border: 0.18rem solid var(--ink);
+  border-radius: 999px;
+  font-size: 0.66rem; font-weight: 900; letter-spacing: .08em;
+  text-transform: uppercase; color: var(--ink-deep);
 }
-.say-text { font-size: 1.02rem; font-weight: 800; line-height: 1.3; color: var(--ink-deep) }
+.say-text { font-size: 1.08rem; font-weight: 800; line-height: 1.34; color: var(--ink-deep); min-height: 2.8em }
+/* the chevron: it only nags once the line has finished arriving */
 .say-next {
-  position: absolute; right: 0.8rem; bottom: 0.4rem;
-  font-size: 0.66rem; font-weight: 900; color: var(--ink-faint);
-  animation: nudge 1.4s ease-in-out infinite;
+  position: absolute; right: 0.9rem; bottom: 0.55rem;
+  width: 0.7rem; height: 0.7rem;
+  border-right: 0.18rem solid var(--tangerine);
+  border-bottom: 0.18rem solid var(--tangerine);
+  transform: rotate(45deg);
+  animation: chev 1.1s ease-in-out infinite;
 }
-@keyframes nudge { 50% { transform: translateX(0.22rem) } }
+@keyframes chev {
+  0%, 100% { transform: rotate(45deg) translate(0, 0) }
+  50%      { transform: rotate(45deg) translate(0.16rem, 0.16rem) }
+}
+/* the tail points down-left, at him */
+.say::after {
+  content: "";
+  position: absolute; left: 1.6rem; bottom: -0.7rem;
+  width: 1.2rem; height: 1.2rem;
+  background: var(--paper);
+  border-right: 0.22rem solid var(--ink);
+  border-bottom: 0.22rem solid var(--ink);
+  transform: rotate(45deg);
+}
+
+/* On a phone there is no room to stand beside the speech, so he stands under
+   the corner of it: smaller, further down, and the bubble takes the width. */
+@media (max-width: 34rem) {
+  .scene-cast { width: 8rem; height: 9.4rem; bottom: 12.5%; left: 0.2rem }
+  .say {
+    margin-left: 4.2rem;
+    width: min(30rem, 76%);
+    bottom: 17%;
+    padding: 0.7rem 0.85rem 0.75rem;
+  }
+  .say-text { font-size: 0.95rem; min-height: 3.4em }
+  .say-who { left: 0.7rem }
+  .say::after { left: 1.1rem }
+}
 
 /* the standing job ----------------------------------------------------- */
 
@@ -2345,7 +2434,20 @@ body.still .tutor-hole { animation: none }
   text-transform: uppercase; color: var(--leaf-deep);
 }
 .done-body span { font-size: 1rem; font-weight: 900; color: var(--ink-deep) }
-.done-pay { display: flex; gap: 0.35rem }
+.done-pay { display: flex; gap: 0.35rem; flex: none }
+/* on a phone the banner runs out of room, so it stacks the reward under the
+   line instead of squeezing the words into a column one letter wide */
+@media (max-width: 34rem) {
+  .done {
+    flex-wrap: wrap;
+    width: min(20rem, 88vw);
+    gap: 0.45rem 0.6rem;
+    top: 22%;
+  }
+  .done-body { flex: 1 1 8rem; min-width: 0 }
+  .done-body span { font-size: 0.92rem }
+  .done-pay { flex: 1 0 100%; justify-content: center }
+}
 .done-coin, .done-fame {
   display: inline-flex; align-items: center; gap: 0.2rem;
   padding: 0.16rem 0.45rem;
@@ -2621,17 +2723,6 @@ body.still .node.live .node-bead, body.still .quest.near {
 /* While a line is being typed the chef bobs; when it lands he settles. The
    bubble gets a tail pointing at him, so it reads as speech rather than a
    caption. */
-.say { position: absolute }
-.say::after {
-  content: "";
-  position: absolute; left: 4.1rem; bottom: -0.66rem;
-  width: 1.1rem; height: 1.1rem;
-  background: var(--paper);
-  border-right: var(--bw) solid var(--ink);
-  border-bottom: var(--bw) solid var(--ink);
-  transform: rotate(45deg);
-}
-.say.talking .say-face { animation: chefTalk .26s ease-in-out infinite alternate }
 @keyframes chefTalk {
   from { transform: translateY(0) rotate(-1.5deg) scale(1) }
   to   { transform: translateY(-0.22rem) rotate(1.5deg) scale(1.03, .97) }
@@ -2647,3 +2738,72 @@ body.still .node.live .node-bead, body.still .quest.near {
 }
 @keyframes caret { 50% { opacity: 0 } }
 body.still .say.talking .say-face { animation: none }
+
+/* the chef, from the pass ---------------------------------------------- */
+
+/* An aside: the same voice as a cutscene, over live play. It takes nothing
+   away — no bars, no camera, the HUD stays exactly where it is — because a
+   cutscene that grabs the screen while you are holding three plates is a
+   punishment rather than a story. */
+.aside {
+  position: absolute;
+  left: 0.7rem;
+  bottom: calc(4.6rem + var(--safe-b));
+  z-index: 5;
+  display: flex; align-items: flex-end; gap: 0.55rem;
+  width: min(23rem, 74vw);
+  padding: 0.5rem 0.8rem 0.55rem 0.6rem;
+  background-color: var(--paper);
+  border: var(--bw) solid var(--ink);
+  border-radius: var(--r-hand);
+  cursor: pointer;
+  animation: asideIn .34s cubic-bezier(.2,1.4,.4,1) both;
+}
+.aside.out { animation: asideOut .3s ease both; pointer-events: none }
+@keyframes asideIn  { from { opacity: 0; transform: translateX(-1.4rem) scale(.94) } }
+@keyframes asideOut { to   { opacity: 0; transform: translateX(-1rem) scale(.96) } }
+.aside.pop { animation: asidePop .24s var(--spring) both }
+@keyframes asidePop { from { transform: scale(.96) } }
+/* he leans over the top edge of his own speech, the way a puppet would */
+.aside-face {
+  flex: none;
+  width: 3.4rem; height: 4rem;
+  margin: -1.6rem 0 -0.55rem;
+  background: left bottom/300% 100% no-repeat;
+  filter: drop-shadow(0 0.12rem 0.1rem rgba(95, 61, 38, .3));
+  animation: chefLean 2.4s ease-in-out infinite;
+}
+.aside.talking .aside-face { animation: chefTalk .26s ease-in-out infinite alternate }
+.aside-body { flex: 1; min-width: 0 }
+.aside-who {
+  display: block;
+  font-size: 0.6rem; font-weight: 900; letter-spacing: .09em;
+  text-transform: uppercase; color: var(--tangerine-deep);
+}
+.aside-text { font-size: 0.88rem; font-weight: 800; line-height: 1.28; color: var(--ink-deep) }
+.aside.talking .aside-text::after {
+  content: "▌"; color: var(--tangerine);
+  animation: caret .5s steps(1) infinite;
+}
+/* the tail, pointing down at the room */
+.aside::after {
+  content: "";
+  position: absolute; left: 2.4rem; bottom: -0.62rem;
+  width: 1rem; height: 1rem;
+  background: var(--paper);
+  border-right: var(--bw) solid var(--ink);
+  border-bottom: var(--bw) solid var(--ink);
+  transform: rotate(45deg);
+}
+body.still .aside, body.still .aside-face { animation: none }
+
+/* an empty line on the menu is a gap in the menu, not in the layout */
+.empty-line.invite {
+  cursor: pointer;
+  color: var(--ink-soft);
+  border: 0.1em dashed var(--ink-faint);
+  border-radius: 0.5em;
+  transition: background-color .14s ease;
+}
+.empty-line.invite:hover { background: rgba(248, 209, 103, .22) }
+.empty-line.invite b { color: var(--tangerine-deep) }

@@ -485,7 +485,15 @@ export class Panels {
     this.pageAt[key] = at;
 
     const page = leaves.slice(at * per, at * per + per);
-    while (wide && extra.length && page.length < half) page.push(h('div.line.empty-line'));
+    // The ruled boxes are always there, so an empty one is a gap in the menu
+    // rather than a gap in the layout. The first spare says what fills it.
+    while (wide && extra.length && page.length < half) {
+      const first = page.length === leaves.length && book === 'menu';
+      page.push(first
+        ? h('div.line.empty-line.invite', { onclick: () => { this.recipeTab = 'learn'; this.openRecipes(true); } },
+          h('span', null, 'An empty line on the menu. '), h('b', null, 'Learn a dish →'))
+        : h('div.line.empty-line'));
+    }
     const shown = wide && extra.length ? [...page, ...extra] : page;
     const el = this.#spread(book, shown, wide ? 'spread' : 'left');
 

@@ -533,7 +533,7 @@ export class Game {
       this.zone.fx.burst(this.assets.get('food', id), cam.x + (i - 1.5) * 60, cam.y + 20, 3,
         { spread: 130, size: 30, up: 420 });
     }
-    if (RANK_LINES[n]) setTimeout(() => this.hud.chefSays(RANK_LINES[n]), 1400);
+    if (RANK_LINES[n]) setTimeout(() => this.story?.aside([RANK_LINES[n]]), 1400);
     this.state.save();
   }
 

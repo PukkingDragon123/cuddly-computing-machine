@@ -77,13 +77,19 @@ export class Story {
       qN: $('#quest-n'),
       qPay: $('#quest-pay'),
       qArt: $('#quest-art'),
+      aside: $('#aside'),
+      asideWho: $('#aside-who'),
+      asideText: $('#aside-text'),
+      asideFace: $('#aside .aside-face'),
     };
     this.playing = false;
     this.tick = 0;
     this.el.scene.onclick = () => this.#next();
     this.el.quest.onclick = () => this.game.panels.openQuests();
-    this.el.face.style.backgroundImage =
-      `url("${game.assets.url('staff', CHEF_SPRITE)}")`;
+    const chef = `url("${game.assets.url('staff', CHEF_SPRITE)}")`;
+    this.el.face.style.backgroundImage = chef;
+    this.el.asideFace.style.backgroundImage = chef;
+    this.el.aside.onclick = () => this.#asideNext();
   }
 
   get s() { return this.game.state; }
@@ -111,6 +117,15 @@ export class Story {
    */
   play(beat, then = null) {
     if (this.playing || this.seen(beat.id)) { then?.(); return; }
+    // Mid-service he speaks from the pass rather than stopping the game. The
+    // full treatment — bars, camera, a dark HUD — is for the quiet moments.
+    if (this.s.phase === 'open' && !beat.force) {
+      this.s.story.seen.push(beat.id);
+      this.s.save();
+      this.aside(beat.lines);
+      then?.();
+      return;
+    }
     this.playing = true;
     this.beat = beat;
     this.line = 0;
@@ -181,6 +196,70 @@ export class Story {
     const then = this.then;
     this.then = null;
     if (then) setTimeout(then, 320);
+  }
+
+  /* ----------------------------------------------------------------- aside */
+
+  /**
+   * The chef, from the pass, over whatever you are doing.
+   *
+   * Same voice and the same typing, but it takes nothing away: no bars, no
+   * camera move, the HUD stays put and the room keeps running. Lines advance on
+   * their own after a beat, and a tap moves them along faster.
+   */
+  aside(lines) {
+    this.asideLines = [...lines];
+    this.asideAt = 0;
+    show(this.el.aside, true);
+    this.el.aside.classList.remove('out');
+    this.#asideShow();
+  }
+
+  #asideShow() {
+    const line = this.asideLines[this.asideAt];
+    if (line === undefined) { this.#asideEnd(); return; }
+    this.el.asideWho.textContent = CHEF_NAME;
+    this.el.aside.classList.remove('pop');
+    void this.el.aside.offsetWidth;
+    this.el.aside.classList.add('pop', 'talking');
+    clearInterval(this.asideTyper);
+    clearTimeout(this.asideHold);
+    this.el.asideText.textContent = '';
+    this.asideFull = line;
+    if (!this.game.state.motionOn) { this.#asideAll(); return; }
+    let i = 0;
+    this.asideTyper = setInterval(() => {
+      i += 1;
+      this.el.asideText.textContent = line.slice(0, i);
+      if (i % 3 === 0) this.game.sfx.play('blip');
+      if (i >= line.length) this.#asideAll();
+    }, 26);
+  }
+
+  #asideAll() {
+    clearInterval(this.asideTyper);
+    this.asideTyper = null;
+    this.el.asideText.textContent = this.asideFull ?? '';
+    this.el.aside.classList.remove('talking');
+    // held long enough to read, then it moves itself along
+    clearTimeout(this.asideHold);
+    this.asideHold = setTimeout(() => this.#asideNext(), 2600);
+  }
+
+  #asideNext() {
+    if (this.el.aside.classList.contains('hidden')) return;
+    if (this.asideTyper) { this.#asideAll(); return; }
+    this.asideAt += 1;
+    if (this.asideAt >= (this.asideLines?.length ?? 0)) { this.#asideEnd(); return; }
+    this.#asideShow();
+  }
+
+  #asideEnd() {
+    clearInterval(this.asideTyper);
+    clearTimeout(this.asideHold);
+    this.asideTyper = null;
+    this.el.aside.classList.add('out');
+    setTimeout(() => show(this.el.aside, false), 300);
   }
 
   /**
@@ -277,7 +356,7 @@ export class Story {
     this.#banner(q);
     this.el.quest.classList.add('ding');
     setTimeout(() => this.el.quest.classList.remove('ding'), 700);
-    setTimeout(() => this.game.hud.chefSays(q.done), 1500);
+    setTimeout(() => this.aside([q.done]), 1500);
     this.qSig = null;
   }
 

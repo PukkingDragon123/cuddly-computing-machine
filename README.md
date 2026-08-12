@@ -12,6 +12,7 @@ Everything is bought with one currency: **sand dollars**.
 ![the fame ladder](docs/shot-fame.png)
 ![the job list](docs/shot-jobs.png)
 ![the harbour market](docs/shot-market.png)
+![a cutscene](docs/shot-cutscene.png)
 ![factory](docs/shot-factory.png)
 
 ## Running it
@@ -77,6 +78,10 @@ to trap the finger, so every step is done exactly the way it will be done later.
 It follows things that move: the step that says *seat a guest* puts its light on
 whoever is waiting. Finishing it is worth more than skipping it.
 
+The guide is **him**, too — he leans out of the left edge of the bubble, the
+bubble's tail points at whatever is lit, and the steps are pips rather than
+"3 / 9", so you can see the whole guide at a glance.
+
 ## Fame
 
 The game had money and it had a menu but no spine: everything was buyable on day
@@ -140,10 +145,21 @@ every game with dialogue in it has and the one players reach for unprompted. The
 bubble has a tail, so it reads as speech.
 
 **Cutscenes** fire on their own at the moments worth marking — the first morning,
-the doors opening, the first guest fed, the first machine, the first kiln, three
-stars. The bars come in, the camera goes to the thing being talked about, and he
-says one or two short lines. They never interrupt an open panel and never talk
-over the guide, and each plays once.
+the first machine, the first kiln, three stars. The bars come in with a gold rule
+on the inner edge, the room darkens at the corners, the camera goes to the thing
+being talked about, and **he walks on**: full height, standing on the lower bar,
+with his name on a tab hanging off the speech and a chevron nudging for the next
+line. They never interrupt an open panel and never talk over the guide, and each
+plays once.
+
+**And they never run mid-service.** They used to, and it was the worst thing in
+the game: the bars came down, the HUD went to nothing, and the coins, the tally
+and the Close button all vanished while three guests sat there waiting. Anything
+he has to say once the doors are open he now says as an **aside** — the same
+voice and the same typing, from the pass, bottom-left, over live play. No bars,
+no camera, the HUD stays exactly where it is, lines move themselves along, and a
+tap hurries them. A cutscene that grabs the screen while you are holding three
+plates is a punishment rather than a story.
 
 ## Jobs
 

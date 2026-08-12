@@ -9,6 +9,7 @@
 // events at all: the point is to draw the eye, never to trap the finger.
 
 import { $, show } from './dom.js';
+import { CHEF_SPRITE } from '../data/catalog.js';
 
 /**
  * The first shift, start to finish. Anything a player could reasonably discover
@@ -112,8 +113,11 @@ export class Tutor {
       title: $('#tutor-title'),
       text: $('#tutor-text'),
       dots: $('#tutor-dots'),
+      face: $('#tutor-face'),
       skip: $('#tutor-skip'),
     };
+    this.el.face.style.backgroundImage =
+      `url("${game.assets.url('staff', CHEF_SPRITE)}")`;
     this.i = -1;
     this.running = false;
     this.el.skip.onclick = () => this.stop(true);
@@ -166,7 +170,13 @@ export class Tutor {
     this.el.say.classList.toggle('waits', !!step.done);
     this.el.say.classList.remove('freed');
     this.wait = 0;
-    this.el.dots.textContent = `${this.i + 1} / ${STEPS.length}`;
+    // pips rather than "3 / 9": you can see the whole guide at a glance
+    this.el.dots.replaceChildren(...STEPS.map((_, n) => {
+      const pip = document.createElement('i');
+      if (n < this.i) pip.className = 'on';
+      if (n === this.i) pip.className = 'here';
+      return pip;
+    }));
     this.el.say.classList.remove('pop');
     void this.el.say.offsetWidth;
     this.el.say.classList.add('pop');
