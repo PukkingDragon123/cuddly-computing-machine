@@ -54,18 +54,23 @@ def remap(rgb):
     nh = np.where((hu >= 150) & (hu < 230), 202.0, nh)
     nh = np.where((hu >= 230) & (hu < 350), 222.0, nh)
 
-    nl = np.where(l >= 0.86, l + (1 - l) * 0.50, l)
-    nl = np.where((l >= 0.70) & (l < 0.86), l + (1 - l) * 0.18, nl)
+    # Lift the pale end further and open the darks up. The book is furniture
+    # for the artwork that gets laid on it — food, ingredients, guests, all of
+    # it warm — so it wants to be a pale object with a muted cover, not a
+    # saturated one competing with what is written on it.
+    nl = np.where(l >= 0.86, l + (1 - l) * 0.55, l)
+    nl = np.where((l >= 0.70) & (l < 0.86), l + (1 - l) * 0.28, nl)
+    nl = np.where(l < 0.45, l + (0.45 - l) * 0.30, nl)
 
-    ns = np.where(l >= 0.86, np.minimum(s * 0.55, 0.62), 0.0)
-    ns = np.where((l >= 0.70) & (l < 0.86), np.minimum(s * 0.62, 0.50), ns)
-    ns = np.where((l >= 0.55) & (l < 0.70), np.minimum(s * 0.75, 0.55), ns)
-    ns = np.where(l < 0.55, np.minimum(s * 0.92, 0.60), ns)
+    ns = np.where(l >= 0.86, np.minimum(s * 0.30, 0.34), 0.0)
+    ns = np.where((l >= 0.70) & (l < 0.86), np.minimum(s * 0.34, 0.30), ns)
+    ns = np.where((l >= 0.55) & (l < 0.70), np.minimum(s * 0.42, 0.32), ns)
+    ns = np.where(l < 0.55, np.minimum(s * 0.52, 0.34), ns)
 
     # A dark warm field (the book's cover, the oak of the board) desaturates to
     # a flat grey if it is only rescaled, so the darks get a floor: dark here
-    # means navy, not slate.
-    ns = np.where((l < 0.55) & (s >= 0.10), np.maximum(ns, 0.26), ns)
+    # means slate blue, not neutral grey.
+    ns = np.where((l < 0.55) & (s >= 0.10), np.maximum(ns, 0.18), ns)
 
     # near-neutrals stay neutral so ink lines do not turn into blue smudges
     ns = np.where(s < 0.04, s, ns)

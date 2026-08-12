@@ -51,7 +51,10 @@ export function skinIcons(assets) {
     'ico-diary': 'diary', 'ico-book': 'recipes', 'ico-crate': 'market',
     'ico-help': 'help', 'ico-hammer': 'tools', 'ico-shop': 'market',
     'ico-lab': 'book',
-    'ico-tools': 'tools', 'ico-crew': 'crew', 'ico-refresh': 'refresh',
+    // Settings gets the pack's list card, not the hammer. Build and Settings
+    // both pointed at tools.png, which put the same drawing twice in a rail of
+    // six — the fastest way to make a column of icons unreadable.
+    'ico-tools': 'list', 'ico-crew': 'crew', 'ico-refresh': 'refresh',
     // fame keeps the drawn star and the kiln keeps its drawn flame: the pack has
     // neither, and the nearest thing in it (a list, a refresh arrow) says the
     // wrong word entirely

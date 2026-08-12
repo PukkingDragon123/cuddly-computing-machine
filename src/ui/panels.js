@@ -25,7 +25,15 @@ import { RANKS } from '../data/fame.js';
 import { CHAPTERS, QUESTS, SIDE_BY_ID } from '../data/quests.js';
 
 /** The wood each finish is painted in, for the swatch picker. */
-const STYLE_SWATCH = { plain: '#b7ccdb', cottage: '#6b9abc', antique: '#365479' };
+/**
+ * The three finishes, in their own wood.
+ *
+ * These are the one place in the interface that must not be blue: the control
+ * exists to show you the timber you are about to buy, and three blue dots tell
+ * you nothing about a room full of warm wood. Sampled off cabinet_f.png in each
+ * group so the dot is the finish rather than a guess at it.
+ */
+const STYLE_SWATCH = { plain: '#be8c64', cottage: '#b46e32', antique: '#8c5028' };
 
 /** Thumbnail sprite for a catalogue entry — pairs show their front view. */
 const spriteIdOf = (item) =>

@@ -22,39 +22,48 @@
    ===================================================================== */
 
 :root {
-  /* paper + panels — white, with only enough blue in it to belong */
-  --paper: #f8fcff;
-  --panel: #eaf4fc;
-  --panel-2: #d7e9f7;
-  --tan: #bedbf0;
-  --tan-deep: #8fbedf;
-  --tan-shadow: #5f95c0;
+  /*
+   * Paper first, blue second.
+   *
+   * The artwork is warm — cream cards, brown ink, wooden furniture — and a
+   * saturated blue field behind it makes every icon look pasted on. So the
+   * surfaces are essentially white, tinted only enough to read as cool, and
+   * the blue is spent where it does work: the ink, the accents, the one thing
+   * on the screen you are meant to press. A page is white; the writing on it
+   * is blue.
+   */
+  --paper: #fdfdfc;
+  --panel: #f4f7f9;
+  --panel-2: #e6edf2;
+  --tan: #d6e2ea;
+  --tan-deep: #adc4d4;
+  --tan-shadow: #7f9bb0;
 
-  /* the deep blue that used to be stained wood: header bands and rails */
-  --wood: #5ba0d0;
-  --wood-deep: #2f7aaf;
-  --wood-dark: #1d5b86;
+  /* the muted blue that used to be stained wood: header bands and rails */
+  --wood: #7aa8c6;
+  --wood-deep: #4f89ac;
+  --wood-dark: #3a6a89;
 
-  /* ink */
-  --ink: #1c445f;
-  --ink-deep: #0f2c41;
-  --ink-soft: #3d6787;
-  --ink-faint: #7ba1bd;
+  /* ink — slate rather than navy, so it sits with the brown in the artwork */
+  --ink: #33526a;
+  --ink-deep: #22394b;
+  --ink-soft: #53748c;
+  --ink-faint: #90a8ba;
 
   /* accents: one hue, four volumes */
-  --sun: #8ecdf5;          /* money */
-  --sun-deep: #1f89c9;
-  --sun-pale: #e2f2fd;
-  --tangerine: #2f82d6;    /* the thing to press */
-  --tangerine-deep: #14559f;
-  --mint: #bbdff5;         /* a count */
-  --mint-deep: #6ba8cd;
-  --coral: #5c7ea6;        /* blocked — the dull one */
-  --coral-deep: #26456a;
-  --coral-pale: #e2eaf2;
-  --leaf: #4fbdec;         /* go — the loud one */
-  --leaf-deep: #1c7fac;
-  --leaf-pale: #ddf1fc;
+  --sun: #a9d5ec;          /* money */
+  --sun-deep: #4b97c2;
+  --sun-pale: #e9f3f9;
+  --tangerine: #4d92c4;    /* the thing to press */
+  --tangerine-deep: #336d97;
+  --mint: #cbe2ee;         /* a count */
+  --mint-deep: #86aec6;
+  --coral: #7f97ab;        /* blocked — the dull one */
+  --coral-deep: #445e74;
+  --coral-pale: #e8edf1;
+  --leaf: #6fbfdd;         /* go — the loud one */
+  --leaf-deep: #3d8dae;
+  --leaf-pale: #e3f2f8;
 
   --r-lg: 1.4rem;
   --r-md: 0.95rem;
@@ -92,7 +101,7 @@
 html, body {
   height: 100%;
   overflow: hidden;
-  background: #cbe2f2;
+  background: #dfe9ef;
   font-family: var(--font);
   color: var(--ink-deep);
   overscroll-behavior: none;
@@ -205,6 +214,20 @@ html, body {
 .railbtn .ico {
   width: 3.2rem; height: 3.2rem;
   animation: railBob 3.4s ease-in-out infinite;
+}
+/*
+ * Two of the pack's icons — the tools and the market crate — are drawn as bare
+ * objects while the rest are drawn on little cream cards. In a rail of six that
+ * reads as two of them having fallen off, so those two get the card the pack
+ * did not draw for them: the same cream, the same brown line, measured off
+ * help.png so it is the pack's card rather than an approximation of it.
+ */
+.railbtn .ico-hammer,
+.railbtn .ico-crate {
+  background-color: #fdf0d7;
+  background-size: 74%;
+  border: 0.17rem solid #65452f;
+  border-radius: 1.05rem 0.5rem 0.95rem 0.55rem / 0.55rem 1rem 0.5rem 1rem;
 }
 /* how-to-play is a utility, not a destination, so it rides smaller */
 .railbtn-sm { width: 2.9rem; height: 2.9rem; opacity: .85 }
@@ -436,7 +459,10 @@ html, body {
 .pill-lg { padding: 0.62rem 1.4rem; font-size: 1.02rem; }
 .pill-sm { padding: 0.32rem 0.75rem; font-size: 0.78rem; box-shadow: none; }
 .pill-go   { background-color: var(--leaf); color: #fff; box-shadow: none; text-shadow: 0 1px 0 rgba(0, 0, 0,.28); }
-.pill-stop { background-color: var(--tangerine); color: #fff; box-shadow: none; text-shadow: 0 1px 0 rgba(0, 0, 0,.28); }
+/* stop is the dark one. Go is bright, stop is deep — with red gone that value
+   gap is the only thing keeping "close up" and "wipe the save" apart from the
+   buttons that simply carry on. */
+.pill-stop { background-color: var(--coral-deep); color: #fff; box-shadow: none; text-shadow: 0 1px 0 rgba(0, 0, 0,.28); }
 .pill-sun  { background-color: var(--sun); box-shadow: none; }
 .pill-sun.pill-sm  { box-shadow: none; }
 .pill-quiet { background-color: var(--tan); box-shadow: none; }
@@ -1926,7 +1952,7 @@ body.still .tutor-hole { animation: none }
 .boot {
   position: absolute; inset: 0;
   display: grid; place-items: center;
-  background: linear-gradient(#f2fafe 0%, #dbf0fc 30%, #c2e4f8 52%);
+  background: linear-gradient(#fbfdfe 0%, #e9f4fa 30%, #d7eaf4 52%);
   z-index: 20;
   transition: opacity .4s ease;
   overflow: hidden;
@@ -1948,7 +1974,7 @@ body.still .tutor-hole { animation: none }
 .boot-gulls i {
   position: absolute;
   width: 1.5rem; height: 0.75rem;
-  border: 0.17rem solid rgba(29, 91, 134, .5);
+  border: 0.17rem solid rgba(70, 105, 130, .45);
   border-bottom-color: transparent;
   border-left-color: transparent;
   border-radius: 999px 999px 0 0;
@@ -1966,7 +1992,7 @@ body.still .tutor-hole { animation: none }
 .boot-sea {
   position: absolute; left: 0; right: 0; bottom: 0;
   height: 46%;
-  background: linear-gradient(#7fc0e8, #4f9fd0 60%, #2f80b8);
+  background: linear-gradient(#a9d2e8, #82b6d4 60%, #6098bd);
 }
 /*
  * A band of water is a solid block with a row of bumps stood on top of it: the
@@ -1999,9 +2025,9 @@ body.still .tutor-hole { animation: none }
   animation: bootGlint 5s ease-in-out infinite alternate;
 }
 @keyframes bootGlint { to { opacity: .24 } }
-.boot-wave.w1 { top: 0;      color: #8ec9ee; animation-duration: 11s }
-.boot-wave.w2 { top: 4.2rem; color: #64abdb; animation-duration: 15s; animation-direction: reverse }
-.boot-wave.w3 { top: 9.4rem; color: #3f8fc4; animation-duration: 19s }
+.boot-wave.w1 { top: 0;      color: #bbdaec; animation-duration: 11s }
+.boot-wave.w2 { top: 4.2rem; color: #99c5de; animation-duration: 15s; animation-direction: reverse }
+.boot-wave.w3 { top: 9.4rem; color: #75a9c9; animation-duration: 19s }
 @keyframes bootRoll { to { transform: translateX(3.4rem) } }
 
 /* bubbles coming up out of the water, in front of it */
@@ -2212,7 +2238,7 @@ body.still .tutor-hole { animation: none }
   margin: -0.7rem auto 1.5rem;
   border: var(--bw) solid var(--ink);
   border-radius: 0.4rem 0.5rem 0.3rem 0.45rem;
-  background: repeating-linear-gradient(90deg, #eaf5fd 0 3.4rem, #cbe3f5 3.4rem 3.58rem);
+  background: repeating-linear-gradient(90deg, #fbfdfe 0 3.4rem, #dfe9ef 3.4rem 3.58rem);
 }
 .boot-deck::before, .boot-deck::after {
   content: "";
@@ -2221,7 +2247,7 @@ body.still .tutor-hole { animation: none }
   border: var(--bw) solid var(--ink);
   border-top: 0;
   border-radius: 0 0 0.4rem 0.35rem;
-  background: #cbe3f5;
+  background: #eaf1f5;
 }
 .boot-deck::before { left: 8% }
 .boot-deck::after  { right: 8% }

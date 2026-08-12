@@ -9,37 +9,43 @@ import { HALF_H, HALF_W, TILE_H, toScreen } from './iso.js';
 import { INK, diamond, drawSprite, ellipse, roundRectPath } from '../gfx/paint.js';
 import { TAU } from '../core/util.js';
 
-/* Blue and white, like every tiled harbour kitchen there has ever been. */
+/*
+ * Blue and white, like every tiled harbour kitchen there has ever been — but
+ * pale. The furniture and the guests are warm hand-drawn art and they have to
+ * sit on this; a strongly coloured floor turns every sprite standing on it
+ * into a sticker. So the room is nearly white, and the blue is only in the
+ * check, the skirting and the shadows.
+ */
 const PALETTE = {
   floorA: '#ffffff',
-  floorB: '#c3ddf1',
-  grout: 'rgba(44, 90, 124, 0.15)',
-  border: '#f4fafe',
-  rim: '#a3c8e2',
-  rimDark: '#74a2c4',
+  floorB: '#e2ecf3',
+  grout: 'rgba(70, 105, 130, 0.12)',
+  border: '#fafcfd',
+  rim: '#c6d8e4',
+  rimDark: '#9db4c5',
 };
 
 const CAFE = {
   ...PALETTE,
-  wallL: '#d6e8f6',
-  wallR: '#edf6fd',
-  cornice: '#f5fafe',
+  wallL: '#e6eef4',
+  wallR: '#f5f9fc',
+  cornice: '#fafcfe',
   corniceTop: '#ffffff',
-  base: '#3f7cad',
-  baseDark: '#2b5c86',
+  base: '#6d9ab8',
+  baseDark: '#4f7896',
   pipes: false,
 };
 
 const FACTORY = {
   ...PALETTE,
-  floorA: '#e7f1f9',
-  floorB: '#b6cee1',
-  wallL: '#ccdeeb',
-  wallR: '#dcebf5',
-  cornice: '#eff7fc',
-  corniceTop: '#f8fcff',
-  base: '#4f7593',
-  baseDark: '#375670',
+  floorA: '#f2f6f9',
+  floorB: '#d5e0e8',
+  wallL: '#dde5ea',
+  wallR: '#eaf0f4',
+  cornice: '#f6f9fb',
+  corniceTop: '#fcfdfe',
+  base: '#7b93a5',
+  baseDark: '#5f7688',
   pipes: true,
 };
 
