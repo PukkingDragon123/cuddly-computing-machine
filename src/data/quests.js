@@ -24,9 +24,10 @@ const rung = (n, coins, done) => Q(
 export const CHAPTERS = [
   {
     id: 'first', name: 'The first shift', jobs: [
-      Q('plate', 'Plate 3 dishes', 3, 60, 4,
+      Q('plate', 'Plate 3 lattes', 3, 60, 4,
         (g) => g.state.plannedCount,
-        "Three's a menu. Barely.", 'Kitchen → tap + beside a dish', { g: 'food', id: 'kelp_ramen' }),
+        'One dish is not a menu. It is a start.', 'Kitchen → tap + beside the latte',
+        { g: 'food', id: 'kelp_latte' }),
       Q('open', 'Open the doors', 1, 60, 4,
         (g) => (g.state.phase === 'open' ? 1 : 0),
         'Here they come.', 'The green button, bottom right', { ico: 'sound' }),
@@ -46,6 +47,9 @@ export const CHAPTERS = [
   },
   {
     id: 'shop', name: 'Buying and building', jobs: [
+      Q('second', 'Learn a second dish', 2, 140, 10,
+        (g) => g.state.unlocked.length,
+        'Two. Now they have a choice.', 'Kitchen → Learn', { g: 'food', id: 'kelp_ramen' }),
       Q('market', 'Buy from the market', 1, 90, 5,
         (g) => g.state.stats.bought ?? 0,
         'Boats land every hour. Prices move. Watch them.', 'Inventory → Harbor Market', { ico: 'crate' }),
@@ -65,7 +69,7 @@ export const CHAPTERS = [
       Q('crew', 'Hire anybody', 1, 200, 14,
         (g) => g.state.staff.length,
         "You can't run a room on your own. Nobody can.", 'Build → Crew', { g: 'staff', id: '01_oyster_host' }),
-      Q('learn', 'Know 6 recipes', 6, 300, 16,
+      Q('learn', 'Know 4 recipes', 4, 300, 16,
         (g) => g.state.unlocked.length,
         'A menu worth reading.', 'Kitchen → Learn', { ico: 'book' }),
       Q('upgrade', 'Level a recipe up', 2, 260, 16,

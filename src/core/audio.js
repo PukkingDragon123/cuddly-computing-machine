@@ -78,6 +78,8 @@ export class Sfx {
     if (this.ctx.state === 'suspended') this.ctx.resume();
     switch (name) {
       case 'tap':    return this.#tone({ freq: 620, to: 840, dur: 0.06, gain: 0.35 });
+      // one character of somebody talking: short, soft, and slightly random
+      case 'blip':   return this.#tone({ freq: 500 + Math.random() * 180, dur: 0.028, gain: 0.11, type: 'square' });
       case 'pop':    return this.#tone({ freq: 380, to: 1000, dur: 0.09, gain: 0.5 });
       case 'select': return this.#tone({ freq: NOTE.e5, to: NOTE.a5, dur: 0.08, gain: 0.45 });
       case 'coin':   return this.#arp([NOTE.a5, NOTE.e6], 0.05, 'triangle', 0.5);

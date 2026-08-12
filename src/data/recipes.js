@@ -10,10 +10,14 @@ const R = (id, name, ing, price, prep, stars, unlock, rank = 0) =>
   ({ id, name, ing, price, prep, stars, unlock, rank });
 
 export const RECIPES = [
-  // --- on the menu from day one -----------------------------------------
-  R('kelp_ramen',     'Kelp Ramen',      { kelp: 2, egg: 1 },                            22, 3.4, 1, 0),
-  R('scallop_tart',   'Scallop Tart',    { scallop: 1, flour: 1, butter: 1 },            27, 3.8, 1, 0),
+  // --- the one you open with --------------------------------------------
   R('kelp_latte',     'Kelp Latte',      { milk: 2, kelp: 1 },                           16, 2.4, 1, 0),
+
+  // --- the first two, cheap and open from the start ----------------------
+  // A menu of one is a puzzle, not a restaurant. These two are the first
+  // thing worth saving for, and both are reachable inside the first day.
+  R('kelp_ramen',     'Kelp Ramen',      { kelp: 2, egg: 1 },                            22, 3.4, 1, 90),
+  R('scallop_tart',   'Scallop Tart',    { scallop: 1, flour: 1, butter: 1 },            27, 3.8, 1, 170),
 
   // --- unlockable --------------------------------------------------------
   R('kelp_fries',     'Kelp Fries',      { potato: 2, kelp: 1 },                         19, 2.8, 1, 180, 1),

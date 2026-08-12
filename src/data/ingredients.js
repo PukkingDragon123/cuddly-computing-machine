@@ -1,22 +1,29 @@
 // Everything the pantry can hold.
 //
-// `source: 'factory'` items are grown/pressed for free by machines you build.
-// `source: 'market'` items are the premium sea catch — you buy those with sand
-// dollars, which is what keeps the currency worth earning.
+// `source` says where a thing *wants* to come from: 'factory' is grown or
+// pressed by a machine, 'refine' comes out of a refiner, 'market' is the sea
+// catch off the boats. But the harbour market sells the lot — every ingredient
+// in the game has a price, because a kitchen that cannot buy a pint of milk on
+// day one is a kitchen that cannot open.
+//
+// What keeps the works worth building is the markup: anything a machine could
+// have made for you costs roughly three times what it is worth over the counter.
+// You can always buy your way out of a corner; you just would not want to live
+// there.
 
 export const INGREDIENTS = {
   // ---- factory grown / pressed ------------------------------------------
-  rice:       { name: 'Rice',        source: 'factory', value: 3 },
-  blueberry:  { name: 'Blueberry',   source: 'factory', value: 4 },
-  lime:       { name: 'Lime',        source: 'factory', value: 4 },
-  pineapple:  { name: 'Pineapple',   source: 'factory', value: 6 },
-  onion:      { name: 'Onion',       source: 'factory', value: 3 },
-  egg:        { name: 'Egg',         source: 'factory', value: 4 },
-  milk:       { name: 'Milk',        source: 'factory', value: 5 },
+  rice:       { name: 'Rice',        source: 'factory', value: 3,  price: 9 },
+  blueberry:  { name: 'Blueberry',   source: 'factory', value: 4,  price: 12 },
+  lime:       { name: 'Lime',        source: 'factory', value: 4,  price: 12 },
+  pineapple:  { name: 'Pineapple',   source: 'factory', value: 6,  price: 18 },
+  onion:      { name: 'Onion',       source: 'factory', value: 3,  price: 9 },
+  egg:        { name: 'Egg',         source: 'factory', value: 4,  price: 11 },
+  milk:       { name: 'Milk',        source: 'factory', value: 5,  price: 13 },
   // ---- factory refined --------------------------------------------------
-  flour:      { name: 'Flour',       source: 'refine',  value: 9 },
-  butter:     { name: 'Butter',      source: 'refine',  value: 13 },
-  cheese:     { name: 'Cheese',      source: 'refine',  value: 15 },
+  flour:      { name: 'Flour',       source: 'refine',  value: 9,  price: 26 },
+  butter:     { name: 'Butter',      source: 'refine',  value: 13, price: 38 },
+  cheese:     { name: 'Cheese',      source: 'refine',  value: 15, price: 44 },
 
   // ---- harbour market ---------------------------------------------------
   kelp:         { name: 'Kelp',         source: 'market', value: 4,  price: 5 },
@@ -46,7 +53,21 @@ export const ingSprite = (id) => id;
 
 export const ingName = (id) => INGREDIENTS[id]?.name ?? id;
 
-export const MARKET_ORDER = Object.keys(INGREDIENTS).filter((k) => INGREDIENTS[k].source === 'market');
+/**
+ * The stall, in the order it is laid out: what came off the boats this morning
+ * first, then the grown goods, then the refined ones at the back where the
+ * markup lives.
+ */
+export const MARKET_SHELVES = [
+  { id: 'catch', label: 'Off the boats',
+    ids: Object.keys(INGREDIENTS).filter((k) => INGREDIENTS[k].source === 'market') },
+  { id: 'grown', label: 'Grown and pressed',
+    ids: Object.keys(INGREDIENTS).filter((k) => INGREDIENTS[k].source === 'factory') },
+  { id: 'refined', label: 'Refined — dear, unless you make it',
+    ids: Object.keys(INGREDIENTS).filter((k) => INGREDIENTS[k].source === 'refine') },
+];
+
+export const MARKET_ORDER = MARKET_SHELVES.flatMap((s) => s.ids);
 
 /** Small free delivery each morning so a bad day is never a dead end. */
-export const DAILY_DELIVERY = { kelp: 4, potato: 3, clam: 2 };
+export const DAILY_DELIVERY = { kelp: 4, milk: 3, potato: 2 };

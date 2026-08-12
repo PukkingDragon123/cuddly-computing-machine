@@ -3,7 +3,7 @@
 
 import { bar, h, ingChip, stepper, swatch, tag, thumb } from './dom.js';
 import { money } from '../core/util.js';
-import { INGREDIENTS, MARKET_ORDER, ingName } from '../data/ingredients.js';
+import { INGREDIENTS, MARKET_ORDER, MARKET_SHELVES, ingName } from '../data/ingredients.js';
 import {
   MAX_LEVEL, RECIPES, RECIPE_BY_ID, priceAt, prepAt, starsAt, upgradeCost,
 } from '../data/recipes.js';
@@ -841,33 +841,56 @@ export class Panels {
       h('div.q', null, qty));
   }
 
+  /** One of the four figures across the top of the inventory. */
+  #tally(icon, label, value, tone = '') {
+    return h(`div.tally${tone ? `.${tone}` : ''}`, null,
+      h(`i.ico.ico-${icon}`),
+      h('div.tally-v', null, value),
+      h('div.tally-l', null, label));
+  }
+
+  /**
+   * Everything you own.
+   *
+   * It opens with the four numbers people actually come here for — money, fame,
+   * clay, hearts — across the top as figures rather than buried in a grid of
+   * jars, and then the shelves underneath. The larder is split the way the
+   * market is, so "what have I got" and "what can I buy" read the same way
+   * round.
+   */
   #inventoryTab() {
     const s = this.state;
-    const out = [];
+    const out = [
+      h('div.tallies', null,
+        this.#tally('sand', 'coins', money(s.coins)),
+        this.#tally('star', 'fame', money(s.fame)),
+        this.#tally('kiln', 'clay', String(s.clay), s.clay ? '' : 'zero'),
+        this.#tally('heart', 'hearts', String(s.diaryHearts), s.diaryHearts ? '' : 'zero')),
+    ];
 
     const plated = Object.entries(s.stock).filter(([, n]) => n > 0);
     if (plated.length) {
-      out.push(h('div.section', null, 'Plated up'));
+      out.push(h('div.section', null, 'Plated up',
+        h('span.section-n', null, String(s.stockCount))));
       out.push(h('div.grid-ing', null, plated.map(([id, n]) => this.#cell(
         this.assets.url('food', id), RECIPE_BY_ID[id]?.name ?? id, `×${n}`))));
     }
 
-    const ids = Object.keys(INGREDIENTS).filter((id) => s.have(id) > 0);
-    out.push(h('div.section', null, 'The larder'));
-    out.push(ids.length
-      ? h('div.grid-ing', null, ids.map((id) => this.#cell(
-        this.assets.url('ingredients', id), ingName(id), `×${s.have(id)}`)))
-      : h('div.empty', null, 'Empty. Build a machine in the works, or buy from the market.'));
-
-    out.push(h('div.section', null, 'Odds and ends'));
-    out.push(h('div.grid-ing', null, [
-      this.#cell(null, 'Sand dollars', money(s.coins), { icon: 'sand' }),
-      this.#cell(null, 'Reputation', `${money(s.stars)}★`, { icon: 'star' }),
-      this.#cell(null, 'Flyers', `${s.posters}/${s.flyerMax}`, { icon: 'flyer', zero: s.posters === 0 }),
-      this.#cell(null, 'Clay', `×${s.clay}`, { icon: 'kiln', zero: s.clay === 0 }),
-      this.#cell(null, 'Research', `${s.research} rp`, { icon: 'lab', zero: s.research === 0 }),
-      this.#cell(null, 'Hearts', `${s.diaryHearts}`, { icon: 'heart', zero: s.diaryHearts === 0 }),
-    ]));
+    // the larder, shelf by shelf, in the market's own order
+    let any = false;
+    for (const shelf of MARKET_SHELVES) {
+      const ids = shelf.ids.filter((id) => s.have(id) > 0);
+      if (!ids.length) continue;
+      any = true;
+      out.push(h('div.section', null, shelf.label,
+        h('span.section-n', null, String(ids.reduce((a2, id) => a2 + s.have(id), 0)))));
+      out.push(h('div.grid-ing', null, ids.map((id) => this.#cell(
+        this.assets.url('ingredients', id), ingName(id), `×${s.have(id)}`))));
+    }
+    if (!any) {
+      out.push(h('div.section', null, 'The larder'));
+      out.push(h('div.empty', null, 'Bare shelves. The market sells everything.'));
+    }
 
     const forged = Object.entries(s.dishes).filter(([, t]) => t > 0);
     if (forged.length) {
@@ -876,6 +899,14 @@ export class Panels {
         this.assets.url('plates', plateFor(id, t)) || this.assets.url('food', id),
         RECIPE_BY_ID[id]?.name ?? id, '✦'.repeat(t)))));
     }
+
+    out.push(h('div.section', null, 'And the rest'));
+    out.push(h('div.grid-ing', null, [
+      this.#cell(null, 'Research', `${s.research} rp`, { icon: 'lab', zero: s.research === 0 }),
+      this.#cell(null, 'Recipes', `${s.unlocked.length}/${RECIPES.length}`, { icon: 'book' }),
+      this.#cell(null, 'Crew', String(s.staff.length), { icon: 'crew', zero: s.staff.length === 0 }),
+      this.#cell(null, 'Machines', String(s.machines.length), { icon: 'tools', zero: s.machines.length === 0 }),
+    ]));
     return out;
   }
 
@@ -914,9 +945,18 @@ export class Panels {
    * cheap and buying early are both worth doing now, where a fixed list made
    * this a vending machine.
    */
+  /**
+   * The stall.
+   *
+   * It sells everything now, laid out in three shelves: what came off the boats
+   * this morning, then the grown goods, then the refined ones at the back where
+   * the markup lives. A kitchen that cannot buy a pint of milk on day one is a
+   * kitchen that cannot open — and a machine you build is still worth building,
+   * because over the counter the same milk costs three times what it is worth.
+   */
   #marketTab() {
     const s = this.state;
-    const rows = MARKET_ORDER.map((id) => {
+    const row = (id) => {
       const price = s.catchPrice(id);
       const left = s.marketStock(id);
       const drift = s.priceDrift(id);
@@ -950,14 +990,17 @@ export class Panels {
         cls: deal ? 'sel' : '',
         locked: out,
       });
-    });
+    };
     const mins = s.marketIn;
     return [
       this.#catchStrip(),
       h('div.note', null, 'New boats land ',
         h('b', null, mins <= 1 ? 'any minute now' : `in ${mins} minutes`),
         ' — with new prices.'),
-      ...rows,
+      ...MARKET_SHELVES.flatMap((shelf) => [
+        h('div.section', null, shelf.label),
+        ...shelf.ids.map(row),
+      ]),
     ].filter(Boolean);
   }
 

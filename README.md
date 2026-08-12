@@ -11,6 +11,7 @@ Everything is bought with one currency: **sand dollars**.
 ![restaurant](docs/shot-restaurant.png)
 ![the fame ladder](docs/shot-fame.png)
 ![the job list](docs/shot-jobs.png)
+![the harbour market](docs/shot-market.png)
 ![factory](docs/shot-factory.png)
 
 ## Running it
@@ -54,10 +55,14 @@ pack, and his sprite is one small PNG loaded straight from the folder rather tha
 through the atlas, so all three are on screen long before anything else is —
 which is the whole point of a loading screen.
 
-**And you can play with it.** Tap the pot: the spatula swings, the pot shakes, an
-ingredient drops in and the count goes up. It has no bearing on anything, which
-is exactly why it can be there — a loading bar you are allowed to play with stops
-being a loading bar.
+It is a seaside: sky at the top, harbour water under it, a band of sand where
+they meet and bubbles coming up from below.
+
+**And you can play with it.** Tap the pot and he *stirs* — the hand goes round a
+small circle and the blade tips with it, which is what a hand does; a rotate on
+its own reads as a wave. The pot rocks the other way, an ingredient drops in and
+the count goes up. It has no bearing on anything, which is exactly why it can be
+there: a loading bar you are allowed to play with stops being a loading bar.
 
 Settings — sound, motion, tips, the guide, credits and starting over — is on the
 rail, in the game where the rest of the panels are. Motion off
@@ -104,6 +109,17 @@ ladder. Crossing a rung is a card across the screen, a shower of sparks and the
 chef's opinion; it never stops play, because it can land while you are holding
 three plates.
 
+## Starting from one dish
+
+You open with **Kelp Latte** and nothing else. A menu of one is a puzzle rather
+than a restaurant, which is the point: the first thing worth having is a second
+dish, and the market sells every ingredient in the game, so getting there is a
+choice about money rather than a wait for a machine. Kelp Ramen is ninety sand
+dollars and Scallop Tart a hundred and seventy — both reachable inside the first
+day if the first day goes well.
+
+Everything above that is fame's job. See the ladder above.
+
 ## The cast
 
 The head chef is called **Tako** and he says so — the cutscene bubble carries his
@@ -116,6 +132,12 @@ on Tuesday is not a regular. They thank you by name when they pay.
 
 There is one voice in the game and it belongs to the octopus at the pass. He has
 been here longer than you and he is not especially impressed yet.
+
+He talks, rather than captioning. Lines are **typed out** a character at a time
+with a blip as they come, he bobs while he is speaking and settles when he stops,
+and a tap mid-line finishes the line rather than skipping it — the affordance
+every game with dialogue in it has and the one players reach for unprompted. The
+bubble has a tail, so it reads as speech.
 
 **Cutscenes** fire on their own at the moments worth marking — the first morning,
 the doors opening, the first guest fed, the first machine, the first kiln, three
@@ -179,7 +201,7 @@ and still mean *ten more*.
 | **Payment** | Guests pay on how briskly they were served. Let a patience meter empty and they walk out, costing reputation. |
 | **Washing up** | A guest who has eaten leaves a plate behind, and that chair is out of service for five seconds while it is scrubbed. The Deep Sink halves it and a Dishwasher all but removes it. |
 | **Inventory** | Everything you own in one place: the larder, what is plated, your flyers, clay, research and forged crockery. |
-| **The market** | The other tab of the inventory. The boats land once an hour: a fresh stall, a fresh set of prices. Every crate is counted, so a stall can sell out, and every price drifts up or down by as much as a third against its usual — the card says which way and by how much, and a countdown says how long until the next delivery. Today's catch takes another 40% off three of them. |
+| **The market** | The other tab of the inventory, and it sells **everything** — the catch off the boats, the grown goods, the refined ones. A kitchen that cannot buy a pint of milk on day one is a kitchen that cannot open. What keeps the works worth building is the markup: anything a machine could have made costs about three times what it is worth over the counter. The boats land once an hour: a fresh stall, a fresh set of prices. Every crate is counted, so a stall can sell out, and every price drifts up or down by as much as a third against its usual — the card says which way and by how much, and a countdown says how long until the next delivery. Today's catch takes another 40% off three of them. |
 
 Fancier furniture finishes (Seaside Pine → Cosy Cottage → Antique) and decor raise the
 room's **ambience**, which pulls guests in faster, stretches their patience and

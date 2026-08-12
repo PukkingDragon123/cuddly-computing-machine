@@ -125,19 +125,53 @@ export class Story {
     this.game.sfx.play('select');
   }
 
+  /**
+   * A line, typed out.
+   *
+   * Somebody talking should take a moment to say it. The text comes in a
+   * character at a time with a blip every few, the chef bobs while he is
+   * speaking and settles when he stops, and a tap mid-line finishes it at once
+   * — which is the affordance every game with dialogue in it has, and the one
+   * players reach for without being told.
+   */
   #show() {
     this.el.who.textContent = `${CHEF_NAME} · head chef`;
-    this.el.text.textContent = this.beat.lines[this.line];
+    const line = this.beat.lines[this.line];
     this.el.say.classList.remove('pop');
     void this.el.say.offsetWidth;
     this.el.say.classList.add('pop');
+    this.el.say.classList.add('talking');
+
+    clearInterval(this.typer);
+    this.el.text.textContent = '';
+    this.typing = line;
+    if (!this.game.state.motionOn) { this.#sayItAll(); return; }
+    let i = 0;
+    this.typer = setInterval(() => {
+      i += 1;
+      this.el.text.textContent = line.slice(0, i);
+      if (i % 3 === 0) this.game.sfx.play('blip');
+      if (i >= line.length) this.#sayItAll();
+    }, 26);
+  }
+
+  /** Stop typing and put the whole line up. */
+  #sayItAll() {
+    clearInterval(this.typer);
+    this.typer = null;
+    if (this.typing !== null) this.el.text.textContent = this.typing;
+    this.typing = null;
+    this.el.say.classList.remove('talking');
   }
 
   #next() {
     if (!this.playing) return;
+    // mid-line, a tap finishes the line rather than skipping it
+    if (this.typer) { this.#sayItAll(); this.game.sfx.play('tap'); return; }
     this.line += 1;
     if (this.line < this.beat.lines.length) { this.#show(); this.game.sfx.play('tap'); return; }
     this.playing = false;
+    this.#sayItAll();
     document.getElementById('hud').classList.remove('scening');
     this.el.scene.classList.add('out');
     setTimeout(() => show(this.el.scene, false), 260);

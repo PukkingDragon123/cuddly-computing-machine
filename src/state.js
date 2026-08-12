@@ -25,12 +25,14 @@ export const SAVE_KEY = KEY;
 function fresh() {
   return {
     v: VERSION,
-    coins: 320,
+    coins: 260,
     stars: 0,
     day: 1,
     phase: 'prep',
-    pantry: { kelp: 8, egg: 4, milk: 6, flour: 3, butter: 2, scallop: 3, potato: 4, clam: 2 },
-    unlocked: ['kelp_ramen', 'scallop_tart', 'kelp_latte'],
+    pantry: { kelp: 10, milk: 12, potato: 4, clam: 2 },
+    // One recipe. The whole first hour is turning that into two, and the
+    // market sells everything, so it is a choice rather than a wait.
+    unlocked: ['kelp_latte'],
     levels: {},
     menu: {},
     stock: {},
