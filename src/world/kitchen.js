@@ -138,7 +138,7 @@ export class Kitchen {
     const p = this.chefPos;
     if (p) {
       this.zone.fx.sparkles(home.x, home.y - 10, 6, 14);
-      this.zone.fx.ripple(home.x, home.y + 6, 'rgba(255,255,255,0.8)', 0.4, 46);
+      this.zone.fx.ripple(home.x, home.y + 6, 'rgba(255, 255, 255,0.8)', 0.4, 46);
     }
     this.chefSq.vel -= 3;
     this.zone.sfx.play('ding');
@@ -227,7 +227,7 @@ export class Kitchen {
       // its own rather than by glowing — the halo read as a rendering fault
       if (p.selected || p.held) {
         ctx.save();
-        ctx.strokeStyle = '#f8d167'; ctx.lineWidth = 3.5;
+        ctx.strokeStyle = '#84b7db'; ctx.lineWidth = 3.5;
         ctx.setLineDash([7, 5]);
         ctx.lineDashOffset = -t * 22;
         ctx.beginPath();
@@ -250,11 +250,11 @@ export class Kitchen {
     if (active) {
       const s = this.zone.assets.get('food', active.recipeId);
       if (s) drawIcon(ctx, s, p.x, y, 34);
-      ring(ctx, p.x, y, 25, Math.min(1, active.t / active.dur), { lw: 4.5, fill: '#e4652f' });
+      ring(ctx, p.x, y, 25, Math.min(1, active.t / active.dur), { lw: 4.5, fill: '#4382d0' });
     }
     const waiting = this.tickets.length + Math.max(0, this.cooking.length - 1);
     if (waiting > 0) {
-      sticker(ctx, p.x + 22, y - 34, 30, 24, { r: 9, fill: '#f8d167', lift: 3 });
+      sticker(ctx, p.x + 22, y - 34, 30, 24, { r: 9, fill: '#84b7db', lift: 3 });
       text(ctx, `+${waiting}`, p.x + 37, y - 21, { size: 14 });
     }
   }

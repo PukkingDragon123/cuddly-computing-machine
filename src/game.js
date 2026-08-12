@@ -100,9 +100,9 @@ export class Game {
       cv.width * 0.5, cv.height * 0.22, 20,
       cv.width * 0.5, cv.height * 0.3, Math.max(cv.width, cv.height) * 0.9,
     );
-    g.addColorStop(0, '#fdf6e6');
-    g.addColorStop(0.55, '#ecdfc4');
-    g.addColorStop(1, '#d9c8a6');
+    g.addColorStop(0, '#f5f9fb');
+    g.addColorStop(0.55, '#d5e1e9');
+    g.addColorStop(1, '#becdd8');
     c.fillStyle = g;
     c.fillRect(0, 0, cv.width, cv.height);
     this.bg = { cv, w, h };
@@ -598,7 +598,7 @@ export class Game {
     ctx.setTransform(this.dpr, 0, 0, this.dpr, 0, 0);
     if (this.wipe.v > 0.002) {
       ctx.globalAlpha = this.wipe.v;
-      ctx.fillStyle = '#e6d7b8';
+      ctx.fillStyle = '#ccdae3';
       ctx.fillRect(0, 0, this.view.w, this.view.h);
       ctx.globalAlpha = 1;
     }
@@ -626,10 +626,10 @@ export class Game {
       const y = b.y * h;
       ctx.beginPath();
       ctx.arc(x, y, b.r, 0, TAU);
-      ctx.strokeStyle = 'rgba(255,255,255,0.85)';
+      ctx.strokeStyle = 'rgba(255, 255, 255,0.85)';
       ctx.lineWidth = 2;
       ctx.stroke();
-      ctx.fillStyle = 'rgba(255,255,255,0.35)';
+      ctx.fillStyle = 'rgba(255, 255, 255,0.35)';
       ctx.fill();
     }
     ctx.restore();

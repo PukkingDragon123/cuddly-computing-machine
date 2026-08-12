@@ -2,7 +2,7 @@
 
 import { TAU, clamp } from '../core/util.js';
 
-export const INK = '#3d2c1c';
+export const INK = '#1d2f3c';
 
 /* ------------------------------------------------------------ primitives */
 
@@ -19,7 +19,7 @@ export function roundRectPath(ctx, x, y, w, h, r) {
 
 /** Chunky cream panel with a hard bottom edge — the world-space sticker look. */
 export function sticker(ctx, x, y, w, h, {
-  r = 12, fill = '#f8ecd4', line = INK, lw = 3, lift = 4, shadow = '#b79a69',
+  r = 12, fill = '#eef3f7', line = INK, lw = 3, lift = 4, shadow = '#7395ad',
 } = {}) {
   if (lift > 0) {
     ctx.fillStyle = shadow;
@@ -66,9 +66,9 @@ function shadowStamp() {
   SHADOW.width = SHADOW.height = size;
   const c = SHADOW.getContext('2d');
   const g = c.createRadialGradient(size / 2, size / 2, 0, size / 2, size / 2, size / 2);
-  g.addColorStop(0, 'rgba(94,76,50,1)');
-  g.addColorStop(0.55, 'rgba(94,76,50,0.5)');
-  g.addColorStop(1, 'rgba(94,76,50,0)');
+  g.addColorStop(0, 'rgba(52, 75, 92,1)');
+  g.addColorStop(0.55, 'rgba(52, 75, 92,0.5)');
+  g.addColorStop(1, 'rgba(52, 75, 92,0)');
   c.fillStyle = g;
   c.fillRect(0, 0, size, size);
   return SHADOW;
@@ -137,8 +137,10 @@ export function blueprint(ctx, sprite, frame, x, y, {
   if (!sprite) return;
   const { sx, sy, sw, sh } = sprite.rect(frame);
   const w = sw * scale, h = sh * scale;
-  const ink = ok ? '#3f6f8f' : '#a83f1c';
-  const line = ok ? '#eaf6ff' : '#ffe6dc';
+  // "here" and "not here" cannot both be blue at the same brightness, so the
+  // usable ghost is a bright cyan on white and the blocked one is flat navy
+  const ink = ok ? '#2f9fd4' : '#20405e';
+  const line = ok ? '#f7fbfd' : '#93aec5';
 
   ctx.save();
   ctx.translate(x, y);
@@ -222,7 +224,7 @@ export function diamond(ctx, cx, cy, hw, hh) {
 
 /** Progress ring. `pct` 0..1. */
 export function ring(ctx, x, y, radius, pct, {
-  track = 'rgba(61,44,28,0.18)', fill = '#f8d167', lw = 5, line = INK,
+  track = 'rgba(29, 47, 60,0.18)', fill = '#84b7db', lw = 5, line = INK,
 } = {}) {
   ctx.save();
   ctx.lineCap = 'round';
@@ -242,7 +244,7 @@ export function ring(ctx, x, y, radius, pct, {
 export function meter(ctx, x, y, w, h, pct, fill) {
   ctx.save();
   roundRectPath(ctx, x - w / 2, y, w, h, h / 2);
-  ctx.fillStyle = '#e3d0a8'; ctx.fill();
+  ctx.fillStyle = '#c1d2df'; ctx.fill();
   ctx.strokeStyle = INK; ctx.lineWidth = 2.4; ctx.stroke();
   const iw = (w - 4) * clamp(pct, 0, 1);
   if (iw > 1) {
@@ -260,7 +262,7 @@ export function meter(ctx, x, y, w, h, pct, fill) {
 
 /** Rounded speech bubble with a little tail pointing down. */
 export function bubble(ctx, cx, bottomY, w, h, {
-  r = 13, fill = '#fdf6e6', line = INK, lw = 3, tail = 9, lift = 3,
+  r = 13, fill = '#f5f9fb', line = INK, lw = 3, tail = 9, lift = 3,
 } = {}) {
   const x = cx - w / 2, y = bottomY - h - tail;
   const draw = (oy, color, stroke) => {
@@ -278,7 +280,7 @@ export function bubble(ctx, cx, bottomY, w, h, {
     ctx.fillStyle = color; ctx.fill();
     if (stroke) { ctx.strokeStyle = line; ctx.lineWidth = lw; ctx.stroke(); }
   };
-  if (lift) draw(lift, '#b79a69', false);
+  if (lift) draw(lift, '#7395ad', false);
   draw(0, fill, true);
   return { x, y, w, h };
 }
@@ -286,7 +288,7 @@ export function bubble(ctx, cx, bottomY, w, h, {
 /* ----------------------------------------------------------------- text  */
 
 export function text(ctx, str, x, y, {
-  size = 16, weight = 900, fill = '#3d2c1c', stroke = null, lw = 4,
+  size = 16, weight = 900, fill = '#1d2f3c', stroke = null, lw = 4,
   align = 'center', baseline = 'middle', font = 'ui-rounded, "Nunito", system-ui, sans-serif',
 } = {}) {
   ctx.save();

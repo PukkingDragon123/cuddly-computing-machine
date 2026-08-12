@@ -30,7 +30,7 @@ export const CHAPTERS = [
         { g: 'food', id: 'kelp_latte' }),
       Q('open', 'Open the doors', 1, 60, 4,
         (g) => (g.state.phase === 'open' ? 1 : 0),
-        'Here they come.', 'The green button, bottom right', { ico: 'sound' }),
+        'Here they come.', 'Arrange Menu → Open Up!', { ico: 'book' }),
       Q('serve', 'Serve 3 guests', 3, 120, 8,
         (g) => g.state.stats.served,
         'Three happy. Keep going.', 'Seat, take the order, run the plate', { g: 'customers', id: '03_hermit_crab' }),

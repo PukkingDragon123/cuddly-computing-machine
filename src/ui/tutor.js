@@ -39,9 +39,11 @@ const STEPS = [
   {
     id: 'open',
     title: 'Open up',
+    // the doors open from inside the kitchen book, beside the plating you have
+    // just done, so the guide stays on the page rather than sending you out
     text: 'That is the morning done. Open the doors.',
-    at: () => '#btn-service',
-    before: (g) => g.hud.closeSheet(),
+    at: () => '#menu-open',
+    before: (g) => { if (g.hud.sheetOpen !== 'recipes') g.openRecipes(); },
     done: (g) => g.state.phase === 'open',
   },
   {

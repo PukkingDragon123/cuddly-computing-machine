@@ -17,11 +17,11 @@ export const RARITIES = [
   // the grandees each tier draws from — a rare guest is a different animal, not
   // a recoloured one, so the crown is confirming what you can already see
   { id: 'vip', label: 'VIP', weight: 13, pay: 2.1, patience: 0.85, hearts: 2, gift: 0.3,
-    aura: '#f8d167', mark: 'crown',
+    aura: '#5ec6f5', mark: 'crown',
     cast: ['23_royal_whale_shark', '24_pearl_manta_ray', '25_golden_seahorse',
       '26_giant_clam', '27_celebrity_narwhal', '28_aristocratic_octopus'] },
   { id: 'mythical', label: 'Mythical', weight: 2.5, pay: 4.2, patience: 0.7, hearts: 4, gift: 0.75,
-    aura: '#c9a2f5', mark: 'star',
+    aura: '#2f5fd0', mark: 'star',
     cast: ['29_dunkleosteus', '30_coelacanth', '31_helicoprion', '32_xiphactinus'] },
 ];
 
@@ -46,11 +46,13 @@ export function rollRarity(pull = 0, rnd = Math.random) {
 /* ----------------------------------------------------------------- taste  */
 
 /** Every dish reads as one of four flavours, worked out from what goes in it. */
+/* One hue for all four, so they separate on value: savoury is the deep one,
+   sweet the palest, fresh the brightest, rich the steely middle. */
 export const TASTES = {
-  savoury: { label: 'Savoury', color: '#c9884f' },
-  sweet: { label: 'Sweet', color: '#e79ab4' },
-  fresh: { label: 'Fresh', color: '#7fb98a' },
-  rich: { label: 'Rich', color: '#d8b45c' },
+  savoury: { label: 'Savoury', color: '#22557f' },
+  sweet: { label: 'Sweet', color: '#a9d8f4' },
+  fresh: { label: 'Fresh', color: '#4ec0e8' },
+  rich: { label: 'Rich', color: '#5a86b0' },
 };
 
 const ING_TASTE = {

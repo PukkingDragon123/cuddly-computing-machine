@@ -38,7 +38,8 @@ export class Hud {
       sheetBody: $('#sheet-body'),
       sheetFoot: $('#sheet-foot'),
       sound: $('#btn-sound'),
-      auto: $('#btn-auto'),
+      hud: $('#hud'),
+      sbDay: $('#sb-day'),
       card: $('#titlecard'),
       flyer: $('#btn-flyer'),
       rail: $('#rail'),
@@ -82,14 +83,13 @@ export class Hud {
     this.el.flyer.onclick = () => g.tapFlyer();
     this.el.sound.onclick = () => g.toggleSound();
     this.el.rankChip.onclick = () => g.panels.openFame();
-    this.el.auto.onclick = () => {
-      g.state.auto = !g.state.auto;
-      g.state.save();
-      g.sfx.play(g.state.auto ? 'select' : 'tap');
-      g.toast(g.state.auto ? 'Auto-plating on' : 'Auto-plating off', g.state.auto ? 'good' : '');
-      this.sync();
+    // One button, two jobs, because the day only ever has two: get the menu
+    // ready, then call time on it.
+    this.el.service.onclick = () => {
+      if (g.state.phase === 'open') { g.closeService('manual'); return; }
+      this.#popDock($('#btn-recipes'));
+      g.openRecipes();
     };
-    this.el.service.onclick = () => g.toggleService();
 
     $('#sheet-close').onclick = () => this.closeSheet();
     this.el.scrim.onclick = () => this.closeSheet();
@@ -120,11 +120,14 @@ export class Hud {
     const fw = `${Math.round(s.rankPct * 100)}%`;
     if (this.el.rankFill.style.width !== fw) this.el.rankFill.style.width = fw;
 
+    // the whole HUD changes clothes for a shift — see #hud.serving in the CSS
+    this.el.hud.classList.toggle('serving', open);
     show(this.el.serviceBar, open);
     if (open) {
       this.#text('served', String(r.served));
       this.#text('earned', money(r.earned));
       this.#text('stock', String(s.stockCount));
+      this.#text('sbDay', `Day ${s.day}`);
       this.#syncMenuLeft(s);
     }
 
@@ -138,11 +141,12 @@ export class Hud {
 
     this.syncDock();
 
-    this.#text('service', open ? 'Close' : 'Open!');
+    this.#text('service', open ? 'Close Up' : 'Arrange Menu');
     this.el.service.classList.toggle('pill-go', !open);
     this.el.service.classList.toggle('pill-stop', open);
-    const canOpen = planned > 0 && r.seatCount > 0 && r.hasPass;
-    this.el.service.disabled = s.phase === 'report' || (!open && !canOpen);
+    // Arranging the menu is never blocked — it is where you find out what you
+    // are missing. Only the closing-up paperwork locks the button.
+    this.el.service.disabled = s.phase === 'report';
 
     // The board out front. It is only a thing while the doors are open — a
     // button that prints a poster for tomorrow was one more morning chore, and
@@ -157,9 +161,6 @@ export class Hud {
     if (this.el.flyerFill.style.width !== w) this.el.flyerFill.style.width = w;
     // nothing plated is the only thing that stops the board working
     this.el.flyer.classList.toggle('spent', s.stockCount <= 0);
-
-    this.el.auto.classList.toggle('pill-sun', !!s.auto);
-    this.el.auto.classList.toggle('pill-quiet', !s.auto);
 
     const icon = `ico ico-${this.game.sfx.enabled ? 'sound' : 'mute'}`;
     if (this.el.sound.firstElementChild.className !== icon) {

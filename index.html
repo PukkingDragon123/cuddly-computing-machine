@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
-<meta name="theme-color" content="#f4e7cd">
+<meta name="theme-color" content="#cbe2f2">
 <title>Bubbleworks Harbor — Restaurant Tycoon</title>
 <link rel="stylesheet" href="styles.css">
 </head>
@@ -85,9 +85,13 @@
     </div>
 
     <!--
-      One bar along the bottom. Everything the game can open is a single tap
-      from here — the old layout buried half of it behind a Menu sheet, which
-      meant two taps to reach the thing you open most.
+      One bar along the bottom, and one button on it.
+
+      The morning has exactly one job — decide what is going on the menu — so
+      the bar says that and nothing else. Opening the doors is the last thing
+      you do inside the kitchen book, next to the plating you just finished,
+      rather than a separate button out here that only ever meant "am I done".
+      Once the doors are open the same slot becomes the way to shut them.
     -->
     <div id="bottombar">
       <div class="barrow">
@@ -100,18 +104,19 @@
           </span>
         </button>
         <span class="barspace"></span>
-        <!-- auto: a sold-out dish goes straight back on while the larder lasts -->
-        <button class="pill pill-sm pill-quiet" id="btn-auto" title="Keep the menu topped up">Auto</button>
         <button class="round round-sm" id="btn-sound" title="Sound"><i class="ico ico-sound"></i></button>
-        <button class="pill pill-go" id="btn-service">Open!</button>
+        <button class="pill pill-go" id="btn-service">Arrange Menu</button>
       </div>
     </div>
 
     <!--
-      The service readout, and under it what is actually left on the menu — the
-      number that decides when the day ends, so it is the one on screen.
+      Service is a different room to be in, so it looks like one: the sign over
+      the door turns round, the readout comes up under it, and the whole HUD
+      changes colour underneath (#hud.serving). Prep is white paper; a shift is
+      deep blue with the lights on.
     -->
     <div class="servicebar hidden" id="servicebar">
+      <div class="sb-sign"><b>OPEN</b><span id="sb-day">Day 1</span></div>
       <div class="sb-row">
         <span class="sb-label">Served</span>
         <b data-bind="served">0</b>
@@ -244,12 +249,29 @@
     you are allowed to play with stops being a loading bar.
   -->
   <div id="boot" class="boot">
+    <!--
+      The scene, back to front. Every layer here is drawn in CSS rather than
+      loaded, because this is the screen that is up *while* the art loads — if
+      it needed a picture to look like anything it would be a blank rectangle
+      for the first second, which is exactly the second that matters.
+    -->
+    <div class="boot-sun"></div>
+    <div class="boot-gulls"><i></i><i></i></div>
+    <div class="boot-sea">
+      <span class="boot-wave w1"></span>
+      <span class="boot-wave w2"></span>
+      <span class="boot-wave w3"></span>
+    </div>
     <div class="boot-sky"></div>
+    <!-- bunting across the top, because a harbour has bunting -->
+    <div class="boot-flags"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+
     <div class="boot-card">
       <div class="boot-scene" id="boot-scene">
         <div class="boot-drops" id="boot-drops"></div>
-        <div class="boot-chef"></div>
+        <div class="boot-chef"><span class="boot-shadow"></span></div>
         <div class="boot-pot" id="boot-pot">
+          <span class="boot-shadow"></span>
           <span class="boot-steam s1"></span>
           <span class="boot-steam s2"></span>
           <span class="boot-steam s3"></span>
@@ -258,13 +280,17 @@
           <span class="boot-hand"><span class="boot-spat" id="boot-spat"></span></span>
         </div>
       </div>
-      <div class="boot-stir">
-        <span id="boot-combo" class="boot-combo"></span>
-        <span class="boot-tap" id="boot-tap">tap the pot while you wait</span>
+      <div class="boot-deck"></div>
+      <!-- the plaque nailed to the jetty: the counter, the gauge, the word -->
+      <div class="boot-plate">
+        <div class="boot-stir">
+          <span id="boot-combo" class="boot-combo"></span>
+          <span class="boot-tap" id="boot-tap">tap the pot to stir</span>
+        </div>
+        <div class="boot-bar"><i id="boot-fill"></i><b id="boot-pct">0%</b></div>
+        <p id="boot-msg">Filling the tanks…</p>
+        <button id="boot-retry" class="pill pill-sun hidden" type="button">Reload</button>
       </div>
-      <div class="boot-bar"><i id="boot-fill"></i></div>
-      <p id="boot-msg">Filling the tanks…</p>
-      <button id="boot-retry" class="pill pill-sun hidden" type="button">Reload</button>
     </div>
   </div>
 </div>
@@ -285,7 +311,7 @@
     if (shown || window.game) return;
     shown = true;
     msg.textContent = text;
-    msg.style.color = '#b8481c';
+    msg.style.color = '#2a64aa';
     retry.classList.remove('hidden');
   }
 

@@ -25,7 +25,7 @@ import { RANKS } from '../data/fame.js';
 import { CHAPTERS, QUESTS, SIDE_BY_ID } from '../data/quests.js';
 
 /** The wood each finish is painted in, for the swatch picker. */
-const STYLE_SWATCH = { plain: '#e0c39a', cottage: '#c98d5e', antique: '#7c4a33' };
+const STYLE_SWATCH = { plain: '#b7ccdb', cottage: '#6b9abc', antique: '#365479' };
 
 /** Thumbnail sprite for a catalogue entry — pairs show their front view. */
 const spriteIdOf = (item) =>
@@ -106,7 +106,7 @@ export class Panels {
       const shut = !this.state.open(st);
       return swatch(
         st.label,
-        STYLE_SWATCH[st.id] ?? '#d9ae76',
+        STYLE_SWATCH[st.id] ?? '#82aecd',
         this.buildStyle === st.id,
         shut
           ? () => this.game.toast(`${this.state.rankNeeded(st)} unlocks this finish`, 'bad')
@@ -548,11 +548,24 @@ export class Panels {
       h('div.blurb', null,
         h('b', null, 'Cheap on the quay'),
         h('span', null, cheap || 'Nothing on offer.')),
-      h('div.blurb', null,
-        h('b', null, `${s.plannedCount} plated`),
-        h('span', null, s.plannedCount
-          ? 'Ingredients are already out of the larder.'
-          : 'Set a number beside a dish to plate it up.')),
+      // Auto-plating used to be a button on the thumb bar, where it was a
+      // standing question you had to answer before every shift. It belongs on
+      // this page, beside the plating it does for you — and it takes the third
+      // ruled box rather than adding a fourth, because the paper has three.
+      h('button.blurb.blurb-switch', {
+        class: s.auto ? 'on' : null,
+        onclick: () => {
+          s.auto = !s.auto;
+          s.save();
+          this.game.sfx.play(s.auto ? 'select' : 'tap');
+          this.openRecipes(true);
+          this.game.hud.sync();
+        },
+      },
+        h('b', null, [ 'Keep it topped up', h('i.sw', null, s.auto ? 'ON' : 'OFF') ]),
+        h('span', null, s.auto
+          ? `${s.plannedCount} plated. A dish that sells out goes back on while the larder holds.`
+          : `${s.plannedCount} plated. Sold out stays sold out until you plate more.`)),
     ];
   }
 

@@ -45,10 +45,13 @@ export const FURNITURE = [
   { id: 'armchair', kind: 'seat', set: 'furn', sprite: { f: 'armchair_f', b: 'armchair_b' },
     label: 'Armchair', cost: 120, star: 2, patience: 1.3, blurb: 'Deep and soft — guests wait far longer.', rank: 1 },
 
-  { id: 'pass_counter', kind: 'pass', set: 'fixt', sprite: 'pass_counter',
+  // `tall` marks the two pieces that draw three tiles high. Anyone standing on
+  // the tiles up-screen of them is sliced in half by the artwork, so the room
+  // keeps those tiles as staff side — see Restaurant#behind.
+  { id: 'pass_counter', kind: 'pass', set: 'fixt', sprite: 'pass_counter', tall: true,
     label: 'Kitchen Pass', cost: 220, star: 2, blurb: 'Where the chef plates finished dishes.' },
 
-  { id: 'host_desk', kind: 'decor', set: 'fixt', sprite: 'host_desk',
+  { id: 'host_desk', kind: 'decor', set: 'fixt', sprite: 'host_desk', tall: true,
     label: 'Host Desk', cost: 210, star: 3, draw: 0.12, blurb: 'A welcome out front pulls guests in faster.', rank: 2 },
   { id: 'cabinet',   kind: 'decor', set: 'furn', sprite: { f: 'cabinet_f', b: 'cabinet_b' },
     label: 'Sideboard', cost: 95, star: 2, blurb: 'Handsome by a wall.', rank: 1 },

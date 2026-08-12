@@ -10,6 +10,7 @@ const MAX_CATCHUP = 0.25;   // never simulate more than a quarter second per fra
 
 const boot = document.getElementById('boot');
 const fill = document.getElementById('boot-fill');
+const pct = document.getElementById('boot-pct');
 const msg = document.getElementById('boot-msg');
 
 const LINES = [
@@ -57,6 +58,21 @@ function bootGame() {
     drops.append(drop);
     setTimeout(() => drop.remove(), 1200);
 
+    // a handful of drops thrown over the rim, so a stir splashes
+    for (let i = 0; i < 5; i++) {
+      const sp = document.createElement('span');
+      sp.className = 'boot-splash';
+      const a = (-140 + Math.random() * 100) * (Math.PI / 180);
+      const d = 1.6 + Math.random() * 1.6;
+      sp.style.setProperty('--dx', `${Math.cos(a) * d}rem`);
+      sp.style.setProperty('--dy', `${Math.sin(a) * d}rem`);
+      sp.style.left = `${40 + Math.random() * 24}%`;
+      sp.style.bottom = '8.4rem';
+      sp.style.animationDelay = `${i * 0.03}s`;
+      drops.append(sp);
+      setTimeout(() => sp.remove(), 900);
+    }
+
     stir?.classList.add('on');
     combo.textContent = `${stirs} stir${stirs === 1 ? '' : 's'}`;
     combo.classList.remove('pop');
@@ -71,9 +87,11 @@ function bootGame() {
 async function main() {
   bootGame();
   let line = 0;
-  const assets = await loadAssets((pct) => {
-    fill.style.width = `${Math.round(pct * 100)}%`;
-    const want = Math.min(LINES.length - 1, Math.floor(pct * LINES.length));
+  const assets = await loadAssets((at) => {
+    const n = Math.round(at * 100);
+    fill.style.width = `${n}%`;
+    if (pct) pct.textContent = `${n}%`;
+    const want = Math.min(LINES.length - 1, Math.floor(at * LINES.length));
     if (want !== line) { line = want; msg.textContent = LINES[line]; }
   });
 
@@ -145,7 +163,7 @@ async function main() {
 main().catch((err) => {
   console.error(err);
   msg.textContent = `Could not open the harbour — ${err?.message ?? err}`;
-  msg.style.color = '#b8481c';
-  fill.style.background = '#e4652f';
+  msg.style.color = '#2a64aa';
+  fill.style.background = '#4382d0';
   document.getElementById('boot-retry')?.classList.remove('hidden');
 });

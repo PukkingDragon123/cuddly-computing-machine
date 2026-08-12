@@ -250,7 +250,7 @@ export class Customer {
     ctx.globalAlpha = this.alpha * pulse;
     const g = ctx.createRadialGradient(this.pos.x, this.pos.y + 2, 2, this.pos.x, this.pos.y + 2, 40);
     g.addColorStop(0, c);
-    g.addColorStop(1, 'rgba(255,255,255,0)');
+    g.addColorStop(1, 'rgba(255, 255, 255,0)');
     ctx.fillStyle = g;
     ctx.beginPath();
     ctx.ellipse(this.pos.x, this.pos.y + 2, 40, 20, 0, 0, TAU);
@@ -277,9 +277,9 @@ export class Customer {
     ctx.bezierCurveTo(x - r * 1.5, y - r * 0.3, x - r * 0.55, y - r * 1.25, x, y - r * 0.35);
     ctx.bezierCurveTo(x + r * 0.55, y - r * 1.25, x + r * 1.5, y - r * 0.3, x, y + r * 0.9);
     ctx.closePath();
-    ctx.fillStyle = '#e8829f';
+    ctx.fillStyle = '#a8b8dc';
     ctx.fill();
-    ctx.strokeStyle = '#5f3d26';
+    ctx.strokeStyle = '#28475d';
     ctx.lineWidth = 2;
     ctx.lineJoin = 'round';
     ctx.stroke();
@@ -310,7 +310,7 @@ export class Customer {
     ctx.closePath();
     ctx.fillStyle = this.rarity.aura;
     ctx.fill();
-    ctx.strokeStyle = '#5f3d26';
+    ctx.strokeStyle = '#28475d';
     ctx.lineWidth = 2;
     ctx.stroke();
     ctx.restore();
@@ -333,9 +333,9 @@ export class Customer {
     ctx.lineTo(x + 8, y - 6);
     ctx.lineTo(x, y + 6);
     ctx.closePath();
-    ctx.fillStyle = '#f8d167';
+    ctx.fillStyle = '#84b7db';
     ctx.fill();
-    ctx.strokeStyle = '#5f3d26';
+    ctx.strokeStyle = '#28475d';
     ctx.lineWidth = 2.4;
     ctx.stroke();
     ctx.restore();
@@ -395,11 +395,11 @@ export class Customer {
   #badge(ctx, x, y, glyph) {
     ctx.save();
     ctx.beginPath(); ctx.ellipse(x, y + 2.5, 13, 13, 0, 0, TAU);
-    ctx.fillStyle = '#b79a69'; ctx.fill();
+    ctx.fillStyle = '#7395ad'; ctx.fill();
     ctx.beginPath(); ctx.ellipse(x, y, 13, 13, 0, 0, TAU);
-    ctx.fillStyle = '#f8d167'; ctx.fill();
-    ctx.strokeStyle = '#5f3d26'; ctx.lineWidth = 3; ctx.stroke();
-    text(ctx, glyph, x, y + 0.5, { size: 20, fill: '#b8481c' });
+    ctx.fillStyle = '#84b7db'; ctx.fill();
+    ctx.strokeStyle = '#28475d'; ctx.lineWidth = 3; ctx.stroke();
+    text(ctx, glyph, x, y + 0.5, { size: 20, fill: '#2a64aa' });
     ctx.restore();
   }
 
@@ -407,7 +407,7 @@ export class Customer {
   drawOverlay(ctx, t) {
     if (this.state === CS.EAT || this.state === CS.DONE) {
       if (this.state === CS.DONE && this.stateT < 0.9) {
-        text(ctx, 'Yum!', this.pos.x, this.headY - 18, { size: 20, fill: '#e4652f', stroke: '#fff8e6', lw: 5 });
+        text(ctx, 'Yum!', this.pos.x, this.headY - 18, { size: 20, fill: '#4382d0', stroke: '#f5f9fc', lw: 5 });
       }
       return;
     }
@@ -422,7 +422,9 @@ export class Customer {
     ctx.translate(0, wobble);
     bubble(ctx, cx, bottom, box.w, box.h, {
       r: 16, lw: 3.4,
-      fill: this.mood === 'cross' ? '#fbe0d6' : '#fdf6e6',
+      // patience running out is not a hue change any more — the bubble goes
+      // grey-blue and dark, which reads even on a white floor
+      fill: this.mood === 'cross' ? '#b7cbdd' : '#f5f9fb',
     });
 
     // dead centre of the bubble, always. The art used to sit left of middle with
@@ -432,12 +434,12 @@ export class Customer {
     if (this.state === CS.QUEUE) {
       const chair = this.zone.assets.get('furn_plain', 'chair_f');
       if (chair) drawIcon(ctx, chair, icx, icy, 46);
-      else text(ctx, '?', icx, icy, { size: 30, fill: '#e4652f', stroke: '#fff8e6', lw: 5 });
+      else text(ctx, '?', icx, icy, { size: 30, fill: '#4382d0', stroke: '#f5f9fc', lw: 5 });
     } else {
       const s = this.dish ? this.zone.assets.get('food', this.dish) : null;
       if (s) drawIcon(ctx, s, icx, icy, 46, { alpha: this.state === CS.WAIT ? 0.6 : 1 });
       if (this.state === CS.WAIT) {
-        ring(ctx, icx, icy, 29, this.zone.cookProgress(this), { lw: 4.5, fill: '#8bbb6a' });
+        ring(ctx, icx, icy, 29, this.zone.cookProgress(this), { lw: 4.5, fill: '#74a1b1' });
       }
     }
 
@@ -447,7 +449,11 @@ export class Customer {
     if (mark) this.#badge(ctx, box.x + box.w - 3, box.y + 3, mark);
     ctx.restore();
 
-    const pcol = this.patience > 0.6 ? '#8bbb6a' : this.patience > 0.3 ? '#f8d167' : '#e4652f';
+    // Patience used to run green → amber → red. With one hue to work in it runs
+    // bright → mid → dark instead: the bar going *dim* is the warning, and a
+    // shrinking dark bar on a white floor is easier to catch across the room
+    // than a shrinking red one ever was.
+    const pcol = this.patience > 0.6 ? '#5ec6f5' : this.patience > 0.3 ? '#3d8fc4' : '#1b4269';
     meter(ctx, cx, box.y + box.h + 16 + wobble, 52, 10, this.patience, pcol);
     if (this.hi) this.#tapMark(ctx, box.y + wobble);
   }
