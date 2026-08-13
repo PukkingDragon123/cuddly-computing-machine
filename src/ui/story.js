@@ -10,7 +10,8 @@ import { $, h, show } from './dom.js';
 import { CHEF_SPRITE } from '../data/catalog.js';
 import { CHEF_NAME } from '../data/guests.js';
 import { toScreen } from '../world/iso.js';
-import { KEYS, QUESTS, SIDE_BY_ID } from '../data/quests.js';
+import { Point } from './point.js';
+import { KEYS, QUESTS, SIDE_BY_ID, SPOTS } from '../data/quests.js';
 
 /**
  * Scripted moments. `at` names what the camera should look at; `when` is
@@ -85,7 +86,25 @@ export class Story {
     this.playing = false;
     this.tick = 0;
     this.el.scene.onclick = () => this.#next();
-    this.el.quest.onclick = () => this.game.panels.openQuests();
+    /*
+     * Tapping the job asks where it is.
+     *
+     * The first tap throws the pointer at whatever this job wants you to press
+     * and says it loudly for a couple of seconds. Only a second tap opens the
+     * board — because nine times out of ten the question is "where do I go",
+     * not "show me the list I have already read".
+     */
+    this.el.quest.onclick = () => {
+      const box = this.#spotBox();
+      if (box && !this.asked) {
+        this.asked = true;
+        setTimeout(() => { this.asked = false; }, 2600);
+        this.game.hud.point?.at(box, { loud: true });
+        this.game.sfx.play('tap');
+        return;
+      }
+      this.game.panels.openQuests();
+    };
     const chef = `url("${game.assets.url('staff', CHEF_SPRITE)}")`;
     this.el.face.style.backgroundImage = chef;
     this.el.asideFace.style.backgroundImage = chef;
@@ -384,10 +403,50 @@ export class Story {
     setTimeout(() => { el.classList.add('out'); setTimeout(() => el.remove(), 400); }, 2400);
   }
 
+  /* --------------------------------------------------------------- pointing */
+
+  /** Where the standing job is on screen right now, if anywhere. */
+  #spotBox() {
+    const q = this.quest;
+    return q ? Point.box(SPOTS[q.id], this.game) : null;
+  }
+
+  /**
+   * Keep the finger on the standing job.
+   *
+   * It stands down for the guide, which does its own pointing, and for a
+   * cutscene, which owns the screen. Otherwise it follows: while a panel is
+   * shut it sits on the rail button, and the moment that panel opens it walks
+   * inward to the tab — the trail in data/quests.js is what makes that free.
+   */
+  #aim(q) {
+    const p = this.game.hud.point;
+    if (!p) return;
+    // ...and while you are reading the board, where the job is already in
+    // front of you and a finger jabbing at a rail button behind the panel is
+    // pointing at the answer to a question nobody asked
+    // The guide owns the pointer while it is up, and sets it every frame — so
+    // this stands well clear rather than hiding it, or the two would fight over
+    // the same element and whichever ran second would win.
+    if (this.game.tutor?.running) return;
+    // ...and it stands down while you are reading the board, where the job is
+    // already in front of you and a finger jabbing at a rail button behind the
+    // panel is pointing at the answer to a question nobody asked
+    if (!q || this.playing || this.game.hud.sheetOpen === 'quests') { p.hide(); return; }
+    const box = Point.box(SPOTS[q.id], this.game);
+    if (box) p.at(box); else p.hide();
+  }
+
+  #aimOff() { this.game.hud.point?.hide(); }
+
   /* ---------------------------------------------------------------- update */
 
   update(dt) {
-    if (this.game.attract) return;
+    if (this.game.attract) { this.#aimOff(); return; }
+    // The finger tracks every frame. Everything else in here is throttled to
+    // three ticks a second, which is plenty for a progress bar and nowhere near
+    // enough for a pointer sitting on a guest walking across the room.
+    this.#aim(this.quest);
     this.tick += dt;
     if (this.tick < 0.35) return;
     this.tick = 0;

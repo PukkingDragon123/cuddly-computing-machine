@@ -217,6 +217,72 @@ export const STARTER_KEYS = ['build', 'kitchen', 'jobs', 'settings'];
 export const KEY_SOURCE = Object.fromEntries(
   Object.entries(KEYS).map(([questId, k]) => [k.key, questId]));
 
+/* ------------------------------------------------------------- pointing */
+
+/**
+ * Where a job actually is, so the guide can point at it.
+ *
+ * A hint that reads "Build → Crew" is only useful once you already know which
+ * picture Build is. Each entry here is a trail of CSS selectors in the order
+ * you would walk it, and the pointer lands on the *last* one currently on
+ * screen: with the panel shut it points at the rail button, and the moment
+ * that panel opens it moves to the tab inside it. So it leads rather than
+ * describes, and it never has to be told that a panel opened.
+ *
+ * `world` instead means the thing is in the room, not in the interface —
+ * a guest waiting to be sat down, a plate on the pass, a machine on the floor.
+ * Jobs that are simply "keep going" have no entry, and get no pointer, because
+ * there is nothing to point at and a finger waving at nothing is worse than
+ * no finger at all.
+ */
+const TAB = (n) => `#sheet-tabs .tab:nth-child(${n})`;
+
+export const SPOTS = {
+  // the first shift
+  plate: ['#btn-recipes', TAB(1), '#sheet-body .stepper button:last-child'],
+  open: ['#btn-service', '#menu-open'],
+  serve: { world: (g) => g.restaurant.guests.find((x) => x.state === 'queue') ?? null },
+  board: ['#btn-flyer'],
+  wash: { world: (g) => g.restaurant.seats?.find((s) => s.dirty > 0) ?? null },
+  day2: ['#btn-service'],
+
+  // buying and building
+  second: ['#btn-recipes', TAB(2)],
+  market: ['#btn-pantry', TAB(2)],
+  cheap: ['#btn-pantry', TAB(2)],
+  seats: ['#btn-build', TAB(1)],
+  decor: ['#btn-build', TAB(1)],
+  finish: ['#btn-build', '#sheet-body .swatch:nth-child(2)'],
+  crew: ['#btn-build', TAB(2)],
+  learn: ['#btn-recipes', TAB(2)],
+  upgrade: ['#btn-recipes', TAB(3)],
+
+  // the works
+  machine: ['#zoneswitch [data-zone="factory"]', '#btn-build', TAB(1)],
+  belt: ['#zoneswitch [data-zone="factory"]', '#btn-build', TAB(2)],
+  intake: ['#zoneswitch [data-zone="factory"]', '#btn-build', TAB(3)],
+  expand: ['#btn-build', TAB(3)],
+  refine: ['#zoneswitch [data-zone="factory"]', '#btn-build', TAB(2)],
+  upmachine: { world: (g) => g.state.machines.find((m) => m.kind === 'producer') ?? null },
+
+  // regulars
+  meet: ['#btn-diary'],
+  like: ['#btn-diary'],
+
+  // trade and craft
+  lab: ['#zoneswitch [data-zone="factory"]', '#btn-build', TAB(4)],
+  research: { world: (g) => g.state.machines.find((m) => m.id === 'computer_desk') ?? null },
+  kilnup: ['#zoneswitch [data-zone="factory"]', '#btn-build', TAB(4)],
+  forge: ['#btn-plate'],
+  forge3: ['#btn-plate'],
+
+  // the long climb
+  terrace: ['#btn-build', TAB(3)],
+  crew5: ['#btn-build', TAB(2)],
+  twelve: ['#btn-build', TAB(1)],
+  all: ['#btn-recipes', TAB(2)],
+};
+
 /* -------------------------------------------------------------- side jobs */
 
 /**

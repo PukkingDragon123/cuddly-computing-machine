@@ -2079,6 +2079,106 @@ html, body {
 /* A hole in a dark sheet, and a bubble beside it. The sheet takes no pointer
    events at any point: the guide's job is to draw the eye, never to trap the
    finger, so every step can be done exactly as it will be done later. */
+/* --------------------------------------------------------- the finger  */
+
+/*
+ * What you are being told to press, said without words.
+ *
+ * A ring drawn round it in dashes that crawl, and a hand beside it that taps.
+ * Both live on this overlay rather than on the control, because a control that
+ * is itself animating is a control you cannot reliably hit — and this one has
+ * `pointer-events: none` all the way down, so the thing underneath still takes
+ * the tap that the pointer just asked for.
+ */
+.point {
+  position: fixed;
+  /* above the guide's dark sheet (z 11), which would otherwise bury it, and
+     above every panel — it cannot be tapped, so it can never be in the way */
+  z-index: 13;
+  pointer-events: none;
+  transition: left .2s ease, top .2s ease, width .2s ease, height .2s ease;
+}
+.point-ring {
+  position: absolute; inset: 0;
+  border: 0.2rem dashed var(--tangerine);
+  border-radius: var(--r, 1rem);
+  animation: pointSpin 5s linear infinite, pointBreathe 1.5s ease-in-out infinite;
+}
+/* a second, solid ring just inside it — the line gone round twice */
+.point-ring::after {
+  content: "";
+  position: absolute; inset: 0.16rem;
+  border: 0.12rem solid rgba(228, 101, 47, .38);
+  border-radius: inherit;
+}
+@keyframes pointSpin { to { stroke-dashoffset: 0; transform: rotate(1turn) } }
+@keyframes pointBreathe {
+  0%, 100% { opacity: .85; scale: 1 }
+  50%      { opacity: 1; scale: 1.05 }
+}
+
+/*
+ * The arrow, not a hand.
+ *
+ * A pointing finger is lovely at forty pixels and unreadable at twenty, and
+ * twenty is the size this thing lives at beside a rail icon. So: a stubby
+ * drawn arrow with a broad head, in the same cream and brown as everything
+ * else. It is drawn pointing up and turned to face whichever side of the
+ * target it is standing on, and it nudges along the line it points down —
+ * toward the thing, never away from it.
+ */
+.point-hand {
+  position: absolute;
+  width: 1.6rem; height: 1.8rem;
+  background: center / contain no-repeat;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 34'%3E%3Cpath d='M15 2.6 28 16.4h-7.4v12.2c0 1.6-1.2 2.8-2.8 2.8h-5.6c-1.6 0-2.8-1.2-2.8-2.8V16.4H2z' fill='%23fdf7e8' stroke='%235f3d26' stroke-width='2.6' stroke-linejoin='round'/%3E%3Cpath d='M15 8.6 22.4 16.4h-3.6' fill='none' stroke='%23e4652f' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  filter: drop-shadow(0 0.1rem 0.08rem rgba(95, 61, 38, .3));
+}
+/* target on the left of the screen: hand stands to its right, pointing left */
+.point.from-left .point-hand {
+  right: -2.3rem; top: 50%; margin-top: -0.9rem;
+  rotate: -90deg;
+  animation: pointTapX 1.15s cubic-bezier(.4, 0, .3, 1) infinite;
+  --tap: -0.5rem;
+}
+/* and the mirror of that */
+.point.from-right .point-hand {
+  left: -2.3rem; top: 50%; margin-top: -0.9rem;
+  rotate: 90deg;
+  animation: pointTapX 1.15s cubic-bezier(.4, 0, .3, 1) infinite;
+  --tap: 0.5rem;
+}
+/* pinned to the top of the screen: hand comes up from underneath */
+.point.from-below .point-hand {
+  left: 50%; margin-left: -0.8rem; top: 100%; margin-top: 0.5rem;
+  right: auto; rotate: 0deg;
+  animation: pointTapY 1.15s cubic-bezier(.4, 0, .3, 1) infinite;
+  --tap: -0.5rem;
+}
+/* the rotate is on the element, so the tap has to travel in its own frame */
+@keyframes pointTapX { 0%, 100% { translate: 0 0 } 45% { translate: 0 var(--tap) } }
+@keyframes pointTapY { 0%, 100% { translate: 0 0 } 45% { translate: 0 var(--tap) } }
+
+/* somebody asked "where?": the same thing, louder, for two seconds */
+.point.loud .point-ring { animation-duration: 5s, .55s; border-width: 0.26rem }
+.point.loud .point-hand { animation-duration: .5s }
+.point.loud .point-ring { border-color: var(--tangerine-deep) }
+.point.loud::before {
+  content: "";
+  position: absolute; inset: -0.9rem;
+  border: 0.22rem solid var(--sun);
+  border-radius: calc(var(--r, 1rem) + 0.9rem);
+  animation: pointShout .6s ease-out 3;
+}
+@keyframes pointShout {
+  0%   { opacity: .9; scale: .86 }
+  100% { opacity: 0; scale: 1.16 }
+}
+@media (prefers-reduced-motion: reduce) {
+  .point-ring, .point-hand, .point.loud::before { animation: none }
+}
+body.still .point-ring, body.still .point-hand { animation: none }
+
 .tutor { position: absolute; inset: 0; z-index: 11; pointer-events: none }
 .tutor-hole {
   position: absolute;

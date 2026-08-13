@@ -147,6 +147,7 @@ export class Tutor {
   stop(skipped = false) {
     this.running = false;
     show(this.el.root, false);
+    this.game.hud.point?.hide();
     const s = this.game.state;
     s.tutorial = { step: this.i, done: true };
     s.save();
@@ -205,8 +206,13 @@ export class Tutor {
       hole.style.borderRadius = `${box.r}px`;
       show(hole, true);
       this.#placeBubble(box);
+      // the hole says "look here"; the hand says "press this". Both, because a
+      // lit rectangle on its own is a thing you notice rather than a thing you
+      // understand you are supposed to touch.
+      this.game.hud.point?.at(box);
     } else {
       show(this.el.hole, false);
+      this.game.hud.point?.hide();
       this.el.say.style.left = '50%';
       this.el.say.style.top = 'auto';
       this.el.say.style.bottom = '18%';

@@ -231,6 +231,17 @@
   </div>
 
 
+  <!--
+    The finger. One overlay, shared by the guide and the job list, that sits on
+    whatever you are being told to press: a ring round it and a hand beside it.
+    It takes no pointer events, so the thing underneath is still pressable and
+    still a still target — see src/ui/point.js.
+  -->
+  <div id="point" class="point hidden" aria-hidden="true">
+    <span class="point-ring" id="point-ring"></span>
+    <span class="point-hand" id="point-hand"></span>
+  </div>
+
   <!-- the guide's spotlight and its speech bubble, anchored per step -->
   <div id="tutor" class="tutor hidden">
     <div class="tutor-hole" id="tutor-hole"></div>

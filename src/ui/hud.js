@@ -2,6 +2,7 @@
 // sheet shell that every panel renders into.
 
 import { $, $$, clear, h, show } from './dom.js';
+import { Point } from './point.js';
 import { clamp, money } from '../core/util.js';
 import { RESEARCH } from '../data/progress.js';
 import { RECIPE_BY_ID } from '../data/recipes.js';
@@ -51,6 +52,8 @@ export class Hud {
     };
     this.hintTimer = 0;
     this.sheetOpen = null;
+    // one finger, shared by the guide and the job list
+    this.point = new Point();
     this.#wire();
   }
 
