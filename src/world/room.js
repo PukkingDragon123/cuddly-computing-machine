@@ -17,35 +17,35 @@ import { TAU } from '../core/util.js';
  * check, the skirting and the shadows.
  */
 const PALETTE = {
-  floorA: '#ffffff',
-  floorB: '#e2ecf3',
-  grout: 'rgba(70, 105, 130, 0.12)',
-  border: '#fafcfd',
-  rim: '#c6d8e4',
-  rimDark: '#9db4c5',
+  floorA: '#f6ead4',
+  floorB: '#d6bd98',
+  grout: 'rgba(122, 96, 66, 0.15)',
+  border: '#f8eeda',
+  rim: '#cdb391',
+  rimDark: '#a98f6d',
 };
 
 const CAFE = {
   ...PALETTE,
-  wallL: '#e6eef4',
-  wallR: '#f5f9fc',
-  cornice: '#fafcfe',
-  corniceTop: '#ffffff',
-  base: '#6d9ab8',
-  baseDark: '#4f7896',
+  wallL: '#e7d9c1',
+  wallR: '#f1e5d0',
+  cornice: '#faf2e2',
+  corniceTop: '#fdf8ec',
+  base: '#a9784f',
+  baseDark: '#875c3a',
   pipes: false,
 };
 
 const FACTORY = {
   ...PALETTE,
-  floorA: '#f2f6f9',
-  floorB: '#d5e0e8',
-  wallL: '#dde5ea',
-  wallR: '#eaf0f4',
-  cornice: '#f6f9fb',
-  corniceTop: '#fcfdfe',
-  base: '#7b93a5',
-  baseDark: '#5f7688',
+  floorA: '#e9dcc2',
+  floorB: '#cdbb9c',
+  wallL: '#d9cfba',
+  wallR: '#e5dcc8',
+  cornice: '#f6eddc',
+  corniceTop: '#fbf5e8',
+  base: '#8d7b62',
+  baseDark: '#6f6049',
   pipes: true,
 };
 
@@ -198,8 +198,8 @@ export class Room {
 
     // subtle vertical shade toward the corner so the two walls separate
     const g = ctx.createLinearGradient(a.x, a.y, b.x, b.y);
-    g.addColorStop(0, 'rgba(62, 95, 118,0.12)');
-    g.addColorStop(0.45, 'rgba(62, 95, 118,0)');
+    g.addColorStop(0, 'rgba(120, 92, 60,0.12)');
+    g.addColorStop(0.45, 'rgba(120, 92, 60,0)');
     quad(a, b, up(b, fieldTop), up(a, fieldTop), g);
 
     // wood baseboard
@@ -263,7 +263,7 @@ export class Room {
   /** Two brass-collared tubes running under the factory cornice. */
   #pipes(ctx, a, b) {
     const h = WALL_H - CORNICE_H - 14;
-    const runs = [{ off: 0, color: '#6fa8d2', dark: '#4b83ae' }, { off: 17, color: '#a8c8de', dark: '#7ba1bd' }];
+    const runs = [{ off: 0, color: '#c9946a', dark: '#a5744f' }, { off: 17, color: '#b9ae95', dark: '#948a73' }];
     for (const run of runs) {
       const p1 = { x: a.x, y: a.y - h + run.off };
       const p2 = { x: b.x, y: b.y - h + run.off };
@@ -280,7 +280,7 @@ export class Room {
         ctx.save();
         ctx.translate(cx, cy);
         ctx.rotate(Math.atan2(p2.y - p1.y, p2.x - p1.x));
-        ctx.fillStyle = '#77abd1';
+        ctx.fillStyle = '#e0b268';
         roundRectPath(ctx, -5, -8, 10, 16, 3);
         ctx.fill(); ctx.strokeStyle = INK; ctx.lineWidth = 2; ctx.stroke();
         ctx.restore();
@@ -331,7 +331,7 @@ export class Room {
     // wavy edge line + hard outline
     ctx.save();
     this.#wavyPath(ctx, 0.72, 11, 74);
-    ctx.strokeStyle = 'rgba(98, 127, 148,0.35)'; ctx.lineWidth = 1.6; ctx.stroke();
+    ctx.strokeStyle = 'rgba(150, 132, 96,0.35)'; ctx.lineWidth = 1.6; ctx.stroke();
     ctx.restore();
 
     ctx.beginPath();
@@ -392,8 +392,8 @@ export class Room {
     const oa = { x: a.x + nx * depth, y: a.y + ny * depth };
     const ob = { x: b.x + nx * depth, y: b.y + ny * depth };
     const g = ctx.createLinearGradient(a.x, a.y, oa.x, oa.y);
-    g.addColorStop(0, 'rgba(64, 94, 116,0.2)');
-    g.addColorStop(1, 'rgba(64, 94, 116,0)');
+    g.addColorStop(0, 'rgba(118, 92, 62,0.2)');
+    g.addColorStop(1, 'rgba(118, 92, 62,0)');
     ctx.beginPath();
     ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y); ctx.lineTo(ob.x, ob.y); ctx.lineTo(oa.x, oa.y);
     ctx.closePath();
@@ -406,15 +406,15 @@ export class Room {
     // green means put it down, rose means you cannot, butter means this is the
     // one you have hold of
     const colors = {
-      ok:   ['rgba(147, 216, 170, 0.5)', PAL.leafDeep],
-      bad:  ['rgba(246, 166, 162, 0.55)', PAL.coralDeep],
-      pick: ['rgba(255, 217, 142, 0.55)', PAL.sunDeep],
+      ok:   ['rgba(139, 187, 106, 0.55)', PAL.leafDeep],
+      bad:  ['rgba(224, 132, 100, 0.58)', PAL.coralDeep],
+      pick: ['rgba(248, 209, 103, 0.6)', PAL.sunDeep],
     }[tone] ?? ['rgba(255, 255, 255,0.4)', '#fff'];
     ctx.save();
     diamond(ctx, x, y, HALF_W - 3, HALF_H - 2);
     ctx.fillStyle = colors[0]; ctx.fill();
     // dark backing stroke keeps the dashes legible over any floor tile
-    ctx.strokeStyle = 'rgba(29, 47, 60,0.5)'; ctx.lineWidth = 6; ctx.stroke();
+    ctx.strokeStyle = 'rgba(61, 44, 28,0.5)'; ctx.lineWidth = 6; ctx.stroke();
     ctx.strokeStyle = colors[1]; ctx.lineWidth = 3.5; ctx.setLineDash([10, 7]);
     ctx.lineDashOffset = -pulse * 16;
     ctx.stroke();
@@ -430,7 +430,7 @@ export class Room {
     const line = { ok: PAL.leafDeep, bad: PAL.coralDeep, pick: PAL.sunDeep }[tone] ?? '#fff';
     ctx.save();
     diamond(ctx, x, y, HALF_W - 3, HALF_H - 2);
-    ctx.strokeStyle = 'rgba(29, 47, 60,0.55)'; ctx.lineWidth = 6; ctx.stroke();
+    ctx.strokeStyle = 'rgba(61, 44, 28,0.55)'; ctx.lineWidth = 6; ctx.stroke();
     ctx.strokeStyle = line; ctx.lineWidth = 3.5; ctx.setLineDash([10, 7]);
     ctx.lineDashOffset = -pulse * 16;
     ctx.stroke();

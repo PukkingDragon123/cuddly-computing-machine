@@ -23,58 +23,55 @@
 
 :root {
   /*
-   * Cool paper, pastel signals.
+   * Cream paper, brown ink, and colour that means something.
    *
-   * The chrome — panels, rails, the books — is a near-white page with a cool
-   * cast, which is what the icon set is drawn on and what lets warm artwork sit
-   * on it without looking pasted. Colour is not spent on surfaces at all. It is
-   * spent on *what a thing means*, in one soft register so nothing shouts:
+   * The artwork is warm — cream icon cards, brown line, oak furniture — so the
+   * interface is the same paper it is drawn on. Every accent then earns its
+   * place by saying one thing and only that thing:
    *
-   *   sun    butter   money
-   *   leaf   mint     go, and a pot that is coming along
-   *   coral  rose     blocked, burnt, walking out
-   *   mint   aqua     a count, a quantity, a neutral number
-   *   peach           the warm accent: tips, hearts, the small good things
+   *   sun        money
+   *   leaf       go, and a pot that is coming along
+   *   coral      blocked, burnt, walking out
+   *   mint       a count, a quantity, a plain number
+   *   tangerine  the thing to press
    *
    * A cooking bar that fills green and a patience bar that slides green to red
-   * are read without reading. That is worth more than a scheme.
+   * are read without being read. That is worth more than any scheme.
    */
-  --paper: #fdfdfc;
-  --panel: #f4f7f9;
-  --panel-2: #e6edf2;
-  --tan: #d8e3ea;
-  --tan-deep: #b0c4d1;
-  --tan-shadow: #85a0b0;
 
-  /* the muted blue of the icon set: header bands, rails, the sign */
-  --wood: #8fb8d4;
-  --wood-deep: #5f92b6;
-  --wood-dark: #4a7590;
+  /* paper + panels */
+  --paper: #fdf7e8;
+  --panel: #f8ecd4;
+  --panel-2: #efdfbe;
+  --tan: #e3d0a8;
+  --tan-deep: #cbb185;
+  --tan-shadow: #ab8a5c;
 
-  /* ink — slate, so it sits with the brown line in the artwork */
-  --ink: #40586c;
-  --ink-deep: #2b3f4f;
-  --ink-soft: #5f7889;
-  --ink-faint: #9aaebb;
+  /* stained wood, for header bands and rails */
+  --wood: #d9ae76;
+  --wood-deep: #b07f4c;
+  --wood-dark: #8c6038;
 
-  /* money */
-  --sun: #ffd98e;
-  --sun-deep: #dda23a;
-  --sun-pale: #fff4dc;
-  /* the warm accent — tips, hearts, the small good things */
-  --tangerine: #f4a97f;
-  --tangerine-deep: #cf7a4d;
-  /* a count */
-  --mint: #bde3e9;
-  --mint-deep: #71b2bd;
-  /* blocked, burnt, walked out */
-  --coral: #f6a6a2;
-  --coral-deep: #cb6b67;
-  --coral-pale: #fde6e5;
-  /* go, and a pot coming along nicely */
-  --leaf: #93d8aa;
-  --leaf-deep: #4d9c6a;
-  --leaf-pale: #e3f6ea;
+  /* ink */
+  --ink: #5f3d26;
+  --ink-deep: #452c1a;
+  --ink-soft: #7d5a3c;
+  --ink-faint: #a58a68;
+
+  /* accents */
+  --sun: #f8d167;
+  --sun-deep: #d4a029;
+  --sun-pale: #fdeec0;
+  --tangerine: #e4652f;
+  --tangerine-deep: #b8481c;
+  --mint: #a9cbb2;
+  --mint-deep: #78a888;
+  --coral: #eb9b7c;
+  --coral-deep: #bd6144;
+  --coral-pale: #fbdbcd;
+  --leaf: #8bbb6a;
+  --leaf-deep: #5f8c40;
+  --leaf-pale: #ddeecc;
 
   --r-lg: 1.4rem;
   --r-md: 0.95rem;
@@ -112,7 +109,7 @@
 html, body {
   height: 100%;
   overflow: hidden;
-  background: #dfe9ef;
+  background: #e8dcc2;
   font-family: var(--font);
   color: var(--ink-deep);
   overscroll-behavior: none;
@@ -129,17 +126,17 @@ html, body {
 }
 
 :focus { outline: none }
-:focus-visible { outline: 0.18rem solid var(--sea, #2f82d6); outline-offset: 0.14rem; }
+:focus-visible { outline: 0.18rem solid var(--sea, #4a8cb0); outline-offset: 0.14rem; }
 
 /* Paper grain. One tiny tiled SVG, laid over panels at low opacity so a large
-   white field has something in it besides flat colour. */
+   cream field has something in it besides flat colour. */
 .grain::after {
   content: "";
   position: absolute; inset: 0;
   pointer-events: none;
   border-radius: inherit;
   opacity: 0.5;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='90' height='90'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3'/%3E%3CfeColorMatrix values='0 0 0 0 .09 0 0 0 0 .24 0 0 0 0 .38 0 0 0 .05 0'/%3E%3C/filter%3E%3Crect width='90' height='90' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='90' height='90'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3'/%3E%3CfeColorMatrix values='0 0 0 0 .38 0 0 0 0 .25 0 0 0 0 .13 0 0 0 .055 0'/%3E%3C/filter%3E%3Crect width='90' height='90' filter='url(%23n)'/%3E%3C/svg%3E");
 }
 
 /* ------------------------------------------------------------------ HUD  */
@@ -220,18 +217,28 @@ html, body {
   font: inherit;
   cursor: pointer;
   transition: transform .12s var(--spring), filter .16s ease;
-  filter: drop-shadow(0 0.2rem 0.14rem rgba(40, 71, 93, 0.32));
+  filter: drop-shadow(0 0.2rem 0.14rem rgba(95, 61, 38, 0.32));
 }
 .railbtn .ico {
   width: 3.2rem; height: 3.2rem;
   animation: railBob 3.4s ease-in-out infinite;
 }
 /*
- * Nothing goes behind a rail icon any more. The old pack drew two of its seven
- * as bare objects and they needed a card putting under them; pack 05 draws all
- * seven as tiles, so the same rule now paints a card around a card — which is
- * what it looked like.
+ * Three of the rail's icons are bare objects — the pack draws its tools and its
+ * market crate loose, and the Wheel's plate is drawn here rather than in the
+ * pack at all. The other four come on little cream cards. In a column of seven
+ * that reads as three of them having fallen off, so those three get the card
+ * the pack did not draw for them: the same cream, the same brown line,
+ * measured off help.png so it is the pack's card and not an approximation.
  */
+.railbtn .ico-hammer,
+.railbtn .ico-plate,
+.railbtn .ico-crate {
+  background-color: #fdf0d7;
+  background-size: 74%;
+  border: 0.17rem solid #65452f;
+  border-radius: 1.05rem 0.5rem 0.95rem 0.55rem / 0.55rem 1rem 0.5rem 1rem;
+}
 /* how-to-play is a utility, not a destination, so it rides smaller */
 .railbtn-sm { width: 2.9rem; height: 2.9rem; opacity: .85 }
 .railbtn-sm .ico { width: 2.2rem; height: 2.2rem }
@@ -248,12 +255,12 @@ html, body {
   50%      { transform: translateY(-0.26rem) rotate(-1.6deg) }
 }
 
-.railbtn:active { transform: scale(.88); filter: drop-shadow(0 0.06rem 0.1rem rgba(40, 71, 93, 0.3)) }
+.railbtn:active { transform: scale(.88); filter: drop-shadow(0 0.06rem 0.1rem rgba(95, 61, 38, 0.3)) }
 
 /* the live one: bigger, closer to the thumb, and busier. It arrives with an
    overshoot of its own, which is the answer to the press that opened it. */
 .railbtn.on {
-  filter: drop-shadow(0 0.24rem 0.18rem rgba(40, 71, 93, 0.4));
+  filter: drop-shadow(0 0.24rem 0.18rem rgba(95, 61, 38, 0.4));
   animation: railOn .36s var(--spring) forwards;
 }
 @keyframes railOn {
@@ -776,12 +783,12 @@ html, body {
   margin-bottom: 0.4rem;
   max-width: calc(100% - 1rem);
   display: flex; align-items: center; gap: 0.5rem;
-  border: var(--bw) solid #32586e;
+  border: var(--bw) solid #2f5771;
   border-radius: var(--r-md);
-  background-color: #f6f9fb;
+  background-color: #fbf5e8;
   background-image: linear-gradient(rgba(255, 255, 255,.5), rgba(255, 255, 255,0) 60%),
-    repeating-linear-gradient(0deg, rgba(66, 113, 140,.14) 0 1px, transparent 1px 8px),
-    repeating-linear-gradient(90deg, rgba(66, 113, 140,.14) 0 1px, transparent 1px 8px);
+    repeating-linear-gradient(0deg, rgba(63, 111, 143,.14) 0 1px, transparent 1px 8px),
+    repeating-linear-gradient(90deg, rgba(63, 111, 143,.14) 0 1px, transparent 1px 8px);
   box-shadow: none;
   padding: 0.34rem 0.4rem 0.34rem 0.6rem;
   font-size: 0.83rem; font-weight: 800;
@@ -790,22 +797,22 @@ html, body {
 .plan-mark {
   flex: none;
   width: 1.5rem; height: 1.5rem;
-  border: 0.16rem solid #32586e;
+  border: 0.16rem solid #2f5771;
   border-radius: 0.3rem;
   background:
-    linear-gradient(45deg, transparent 46%, #32586e 46% 54%, transparent 54%),
-    linear-gradient(-45deg, transparent 46%, #32586e 46% 54%, transparent 54%),
-    #eef3f6;
+    linear-gradient(45deg, transparent 46%, #2f5771 46% 54%, transparent 54%),
+    linear-gradient(-45deg, transparent 46%, #2f5771 46% 54%, transparent 54%),
+    #d7e8f4;
 }
 .plan-text { display: flex; flex-direction: column; line-height: 1.15; min-width: 0 }
-.plan-text b { font-size: 0.88rem; font-weight: 900; color: #214357 }
-.plan-text span { font-size: 0.72rem; font-weight: 700; color: #507b94 }
+.plan-text b { font-size: 0.88rem; font-weight: 900; color: #1f4159 }
+.plan-text span { font-size: 0.72rem; font-weight: 700; color: #4d7797 }
 
 /* which of the four sides it is facing */
 .turns { display: flex; gap: 0.2rem; flex: none }
 .turns i {
   width: 0.42rem; height: 0.42rem; border-radius: 999px;
-  background: #bfd0d9;
+  background: #a8c6da;
   box-shadow: none;
 }
 .turns i.on { background: var(--sun); box-shadow: none; transform: scale(1.35) }
@@ -887,7 +894,7 @@ html, body {
 #scrim {
   position: absolute; inset: 0;
   z-index: 5;
-  background: rgba(22, 42, 56, .34);
+  background: rgba(58, 36, 20, .34);
   backdrop-filter: blur(1.5px);
   animation: fade .2s ease both;
 }
@@ -937,7 +944,7 @@ html, body {
   font-size: 1.12rem; font-weight: 900;
   letter-spacing: .01em;
   color: #fff;
-  text-shadow: 0 0.1rem 0 rgba(30, 63, 87, .55);
+  text-shadow: 0 0.1rem 0 rgba(89, 55, 28, .55);
   overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
 }
 .sheet-head .round { background-color: var(--paper) }
@@ -1091,15 +1098,15 @@ html, body {
   height: 100%;
   border: 0.34rem solid var(--wood-deep);
   border-radius: var(--r-hand);
-  background-color: #eadfc6;
+  background-color: #d7bf98;
   background-image:
-    radial-gradient(circle at 12% 22%, rgba(150, 122, 84, .2) 0 0.08rem, transparent 0.09rem),
-    radial-gradient(circle at 63% 8%, rgba(150, 122, 84, .16) 0 0.06rem, transparent 0.07rem),
-    radial-gradient(circle at 84% 46%, rgba(150, 122, 84, .18) 0 0.09rem, transparent 0.1rem),
-    radial-gradient(circle at 33% 71%, rgba(150, 122, 84, .15) 0 0.07rem, transparent 0.08rem),
-    radial-gradient(circle at 8% 88%, rgba(150, 122, 84, .17) 0 0.05rem, transparent 0.06rem);
+    radial-gradient(circle at 12% 22%, rgba(120, 92, 56, .26) 0 0.08rem, transparent 0.09rem),
+    radial-gradient(circle at 63% 8%, rgba(120, 92, 56, .22) 0 0.06rem, transparent 0.07rem),
+    radial-gradient(circle at 84% 46%, rgba(120, 92, 56, .24) 0 0.09rem, transparent 0.1rem),
+    radial-gradient(circle at 33% 71%, rgba(120, 92, 56, .2) 0 0.07rem, transparent 0.08rem),
+    radial-gradient(circle at 8% 88%, rgba(120, 92, 56, .22) 0 0.05rem, transparent 0.06rem);
   background-size: 7rem 7rem, 5rem 5rem, 9rem 9rem, 6rem 6rem, 4rem 4rem;
-  box-shadow: inset 0 0 2.4rem rgba(120, 96, 62, .22);
+  box-shadow: inset 0 0 2.6rem rgba(102, 76, 44, .28);
   overflow: hidden;
   display: flex; flex-direction: column;
 }
@@ -1130,7 +1137,7 @@ html, body {
   display: flex; align-items: baseline; gap: 0.5rem;
   margin: 0.5rem 0 0.1rem;
   padding: 0.18rem 1.2rem;
-  background: rgba(255, 253, 244, .72);
+  background: rgba(255, 252, 240, .88);
   border-left: 0.14rem dashed rgba(120, 96, 62, .3);
   border-right: 0.14rem dashed rgba(120, 96, 62, .3);
   transform: rotate(-0.8deg);
@@ -1141,6 +1148,7 @@ html, body {
 
 .board-empty {
   align-self: center;
+  color: #6b512f;
   max-width: 22rem;
   text-align: center;
   padding: 0.5rem 0.8rem;
@@ -1164,7 +1172,7 @@ html, body {
   border: 0.13rem solid rgba(120, 96, 62, .3);
   /* torn top and bottom, straight sides — paper off a pad */
   border-radius: 0.2rem 0.35rem 0.25rem 0.3rem / 0.45rem 0.2rem 0.4rem 0.25rem;
-  box-shadow: 0.12rem 0.3rem 0.5rem rgba(96, 76, 48, .24);
+  box-shadow: 0.14rem 0.34rem 0.55rem rgba(80, 58, 32, .32);
   transform: rotate(var(--tilt, 0deg)) translateX(var(--shift, 0));
   transition: transform .14s var(--spring);
 }
@@ -1186,7 +1194,7 @@ html, body {
   margin-left: -0.39rem;
   border-radius: 999px;
   border: 0.13rem solid var(--ink);
-  box-shadow: 0 0.12rem 0 rgba(96, 76, 48, .3);
+  box-shadow: 0 0.14rem 0 rgba(80, 58, 32, .4);
 }
 .tack-a .slip-tack { background: var(--coral) }
 .tack-b .slip-tack { background: var(--mint) }
@@ -1217,20 +1225,20 @@ html, body {
 .slip-count { font-size: 0.7rem; font-weight: 900; color: var(--ink-soft); font-variant-numeric: tabular-nums }
 
 /* the one you are on: brighter paper, a wider pin, and it sits straight */
-.slip.live {
+.slip.slip-live {
   background: #fffefa;
   border-color: var(--leaf-deep);
   border-width: 0.17rem;
   --tilt: 0deg;
   --shift: 0rem;
   width: min(100%, 27.5rem);
-  box-shadow: 0.12rem 0.36rem 0.6rem rgba(96, 76, 48, .3);
+  box-shadow: 0.14rem 0.4rem 0.7rem rgba(80, 58, 32, .38);
 }
-.slip.live .slip-tack { background: var(--leaf); width: 0.95rem; height: 0.95rem; margin-left: -0.48rem }
+.slip.slip-live .slip-tack { background: var(--leaf); width: 0.95rem; height: 0.95rem; margin-left: -0.48rem }
 
 /* one already taken: gone yellow, and stamped */
-.slip.done { background: #f6f0e0; opacity: .78 }
-.slip.done .slip-title { color: var(--ink-soft) }
+.slip.slip-done { background: #f6f0e0; opacity: .78 }
+.slip.slip-done .slip-title { color: var(--ink-soft) }
 .slip-stamp {
   padding: 0.06rem 0.42rem;
   border: 0.13rem solid var(--leaf-deep);
@@ -1241,8 +1249,8 @@ html, body {
 }
 
 /* still to come: face down, so the board reads as work you have not read yet */
-.slip.open .job-art { opacity: .5 }
-.slip.open .slip-title { color: #6d5a42 }
+.slip.slip-open .job-art { opacity: .5 }
+.slip.slip-open .slip-title { color: #6d5a42 }
 
 @media (prefers-reduced-motion: reduce) {
   .slip, .board-head { transform: none }
@@ -1268,7 +1276,7 @@ html, body {
    book, the pages left blank. It paginates rather than scrolls, because a book
    that scrolls is not a book — Hud#writeInto measures each card against the
    writing area and starts a new page when the next one would run off it. */
-.spread-plain { --rw: 1200; --rh: 773; background-image: url("assets/ui/book_plain_blue.webp") }
+.spread-plain { --rw: 1200; --rh: 773; background-image: url("assets/ui/book_plain.webp") }
 
 /* the writing area of each leaf, measured off the orange rule on the drawing */
 .spread-plain .c1 { --x: 6.6%; --y: 6.4%; --w: 40.4%; --h: 83.4% }
@@ -1309,7 +1317,7 @@ html, body {
 .leaf-face {
   position: absolute; inset: 0;
   backface-visibility: hidden;
-  background-image: url("assets/ui/book_plain_blue.webp");
+  background-image: url("assets/ui/book_plain.webp");
   background-size: 200% 100%;
   background-repeat: no-repeat;
   box-shadow: none;
@@ -1321,7 +1329,7 @@ html, body {
 /* the light running off the paper as it lifts */
 .leaf-face::after {
   content: ""; position: absolute; inset: 0;
-  background: linear-gradient(100deg, rgba(255, 255, 255,.5), rgba(48, 88, 117, .16) 62%, rgba(34, 65, 88, .3));
+  background: linear-gradient(100deg, rgba(255, 255, 255,.5), rgba(120, 80, 45, .16) 62%, rgba(90, 58, 32, .3));
   opacity: 0; animation: leafSheen .46s ease-out both;
 }
 @keyframes leafFwd  { from { transform: rotateY(0) } to { transform: rotateY(-172deg) } }
@@ -1347,15 +1355,15 @@ html, body {
   margin: 0 auto;
   background-repeat: no-repeat;
   background-position: center;
-  filter: drop-shadow(0 0.5rem 0.6rem rgba(22, 42, 56, .28));
+  filter: drop-shadow(0 0.5rem 0.6rem rgba(58, 36, 20, .28));
   container-type: inline-size;
   perspective: 90rem;
 }
 /* everything inside is sized off the spread's own width, so a page reads the
    same on a phone as on a desktop */
 .spread > .slot { font-size: 3.1cqw }
-.spread-menu  { --rw: 1200; --rh: 785; background-image: url("assets/ui/book_menu_blue.webp") }
-.spread-diary { --rw: 1200; --rh: 767; background-image: url("assets/ui/book_diary_blue.webp") }
+.spread-menu  { --rw: 1200; --rh: 785; background-image: url("assets/ui/book_menu.webp") }
+.spread-diary { --rw: 1200; --rh: 767; background-image: url("assets/ui/book_diary.webp") }
 
 /* the whole spread. The ratio is the trimmed drawing's own, measured — the
    slot percentages are in the same coordinates, so they land on the ruled boxes
@@ -1421,7 +1429,7 @@ html, body {
   border-radius: 0.5em;
   transition: background-color .14s ease;
 }
-.line.on { background: rgba(132, 183, 219, .34) }
+.line.on { background: rgba(248, 209, 103, .34) }
 .line-art {
   flex: none; width: 2.2em; height: 2.2em;
   display: grid; place-items: center;
@@ -1444,7 +1452,7 @@ html, body {
 .lv { font-size: 0.68em; font-weight: 900; color: var(--ink-faint); flex: none }
 .asked {
   font-size: 0.6em; font-weight: 900; text-transform: uppercase; letter-spacing: .04em;
-  color: #336b8b; flex: none;
+  color: #2f6f8f; flex: none;
 }
 .line-bot { display: flex; align-items: center; gap: 0.3em; min-width: 0 }
 .line-sub {
@@ -1538,7 +1546,7 @@ html, body {
   cursor: pointer;
   transition: background-color .14s ease;
 }
-.entry.pick { background: rgba(79, 189, 236, .26) }
+.entry.pick { background: rgba(139, 187, 106, .28) }
 .entry.unmet { filter: grayscale(.6); color: var(--ink-faint) }
 .entry-face { flex: none; width: 2.5em; height: 2.5em; display: grid; place-items: center }
 .entry-face i {
@@ -1552,7 +1560,7 @@ html, body {
   white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
 .entry-sub { font-size: 0.68em; font-weight: 800; color: var(--ink-soft) }
-.entry-hearts { flex: none; font-size: 0.8em; color: #617dc0; letter-spacing: .05em }
+.entry-hearts { flex: none; font-size: 0.8em; color: #d0517f; letter-spacing: .05em }
 
 /* and their page on the right */
 .plate {
@@ -1567,7 +1575,7 @@ html, body {
   height: 100%; width: auto; max-width: 100%;
   background-repeat: no-repeat;
   background-position: 0 50%;
-  filter: drop-shadow(0 0.14em 0.1em rgba(40, 71, 93, .25));
+  filter: drop-shadow(0 0.14em 0.1em rgba(95, 61, 38, .25));
 }
 /* The element carries the frame's own aspect and the strip is exactly N frames
    wide across it, so 0% / 50% / 100% land on the three drawings dead on. The
@@ -1581,7 +1589,7 @@ html, body {
 @media (prefers-reduced-motion: reduce) { .plate-face i.posing { animation: none } }
 .plate-face .qq { font-size: 3em; font-weight: 900; color: var(--ink-faint) }
 .plate-name { font-size: 1.15em; font-weight: 900; line-height: 1.1 }
-.plate-hearts { font-size: 1em; color: #617dc0; letter-spacing: .08em }
+.plate-hearts { font-size: 1em; color: #d0517f; letter-spacing: .08em }
 .plate-sub { font-size: 0.74em; font-weight: 800; color: var(--ink-soft); line-height: 1.3 }
 .chip-box {
   flex: 1;
@@ -1659,7 +1667,7 @@ html, body {
   width: 3.9rem; height: 3.9rem;
   border-radius: var(--r-sm);
   background:
-    radial-gradient(70% 58% at 50% 60%, rgba(251, 253, 254, .95), rgba(251, 253, 254, 0) 72%),
+    radial-gradient(70% 58% at 50% 60%, rgba(255, 253, 244, .95), rgba(255, 253, 244, 0) 72%),
     var(--tan);
   background-repeat: no-repeat;
   box-shadow: none;
@@ -1672,7 +1680,7 @@ html, body {
 .thumb > i:not(.ico) {
   width: 100%; height: 100%;
   background: center 56%/78% auto no-repeat;
-  filter: drop-shadow(0 0.1rem 0.1rem rgba(40, 71, 93, .22));
+  filter: drop-shadow(0 0.1rem 0.1rem rgba(95, 61, 38, .22));
 }
 /* an icon rather than sprite art — sized to sit in the same well */
 .thumb.icon .ico { width: 1.9rem; height: 1.9rem; }
@@ -1822,7 +1830,7 @@ html, body {
   width: 3.5rem;
   border-radius: var(--r-sm);
   background:
-    radial-gradient(66% 46% at 50% 78%, rgba(251, 253, 254, .95), rgba(251, 253, 254, 0) 74%),
+    radial-gradient(66% 46% at 50% 78%, rgba(255, 253, 244, .95), rgba(255, 253, 244, 0) 74%),
     linear-gradient(var(--tan), var(--panel-2));
   box-shadow: none;
   display: grid; place-items: end center;
@@ -1837,19 +1845,19 @@ html, body {
      is standing still and looking at you */
   background-position: left bottom;
   background-repeat: no-repeat;
-  filter: drop-shadow(0 0.1rem 0.12rem rgba(40, 71, 93, .26));
+  filter: drop-shadow(0 0.1rem 0.12rem rgba(95, 61, 38, .26));
 }
 /* somebody already on the books: the card goes green and gets stamped */
 .card.hire.on {
-  background-color: #f1f5f7;
+  background-color: #e7f3df;
   box-shadow: none;
 }
-.card.hire.on .port { background: linear-gradient(#e9eff2, #cbdadf) }
+.card.hire.on .port { background: linear-gradient(#d8ebcc, #c8e0b8) }
 .stamp {
   position: absolute; top: -0.35rem; right: -0.3rem;
   width: 1.5rem; height: 1.5rem; border-radius: 999px;
   display: grid; place-items: center;
-  background-color: var(--mint, #76a5b6);
+  background-color: var(--mint, #86c06c);
   border: var(--bw) solid var(--ink);
   color: #fff; font-size: 0.86rem; font-weight: 900;
   box-shadow: none;
@@ -1876,7 +1884,7 @@ html, body {
   width: 4.6rem;
   border-radius: var(--r-sm);
   background:
-    radial-gradient(72% 40% at 50% 76%, rgba(251, 253, 254, .98), rgba(251, 253, 254, 0) 76%),
+    radial-gradient(72% 40% at 50% 76%, rgba(255, 253, 244, .98), rgba(255, 253, 244, 0) 76%),
     linear-gradient(var(--panel-2), var(--tan));
   box-shadow: none;
   display: grid; place-items: center;
@@ -1885,7 +1893,7 @@ html, body {
 .stage > i {
   width: 100%; height: 100%;
   background: center 62%/86% auto no-repeat;
-  filter: drop-shadow(0 0.12rem 0.12rem rgba(40, 71, 93, .24));
+  filter: drop-shadow(0 0.12rem 0.12rem rgba(95, 61, 38, .24));
 }
 /* how many are already in the room — the usual question at this point */
 .owned {
@@ -1893,7 +1901,7 @@ html, body {
   padding: 0.02rem 0.3rem;
   border-radius: 999px;
   background-color: var(--ink);
-  color: #f8fbfd; font-size: 0.62rem; font-weight: 900;
+  color: #fff9ec; font-size: 0.62rem; font-weight: 900;
 }
 .card-sub.faint { color: var(--ink-faint); font-size: 0.74rem }
 
@@ -1945,6 +1953,7 @@ html, body {
 .ico-tools { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M14.5 3.6l6 6-2.2 2.2-6-6z' fill='%23fdf7e8' stroke='%235f3d26' stroke-width='2' stroke-linejoin='round'/%3E%3Cpath d='M12 12L4.6 19.4l1.6 1.6L13.6 13.6z' fill='%23e08464' stroke='%235f3d26' stroke-width='2' stroke-linejoin='round'/%3E%3Cpath d='M6 3.6l3.4 3.4-2 2L4 5.6z' fill='%23e3d0a8' stroke='%235f3d26' stroke-width='2' stroke-linejoin='round'/%3E%3C/svg%3E") }
 .ico-crew  { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Ccircle cx='8.4' cy='9' r='3.4' fill='%23fdf7e8' stroke='%235f3d26' stroke-width='2'/%3E%3Ccircle cx='16' cy='10' r='2.8' fill='%23e3d0a8' stroke='%235f3d26' stroke-width='2'/%3E%3Cpath d='M3 20c0-3 2.4-5 5.4-5s5.4 2 5.4 5' fill='none' stroke='%235f3d26' stroke-width='2' stroke-linecap='round'/%3E%3Cpath d='M15 20c0-2.4 1.6-4 3.6-4S22 17.6 22 20' fill='none' stroke='%235f3d26' stroke-width='2' stroke-linecap='round'/%3E%3C/svg%3E") }
 .ico-refresh { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M20 12a8 8 0 11-2.6-5.9' fill='none' stroke='%235f3d26' stroke-width='2.4' stroke-linecap='round'/%3E%3Cpath d='M20 3.4V8h-4.6' fill='none' stroke='%235f3d26' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") }
+.ico-plate { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Ccircle cx='12' cy='12.6' r='6.6' fill='%23fdf7e8' stroke='%235f3d26' stroke-width='2'/%3E%3Ccircle cx='12' cy='12.6' r='3.5' fill='none' stroke='%23cbb185' stroke-width='1.5'/%3E%3Cpath d='M3.4 3.4v3.9a1.9 1.9 0 003.8 0V3.4' fill='none' stroke='%235f3d26' stroke-width='1.9' stroke-linecap='round'/%3E%3Cpath d='M5.3 7.3V20.4' stroke='%235f3d26' stroke-width='2' stroke-linecap='round'/%3E%3Cpath d='M18.8 3.4c1.7 1.2 2.1 3.8 1 5.7-.5.9-1 .8-1 0z' fill='%23e3d0a8' stroke='%235f3d26' stroke-width='1.8' stroke-linejoin='round'/%3E%3Cpath d='M18.8 9V20.4' stroke='%235f3d26' stroke-width='2' stroke-linecap='round'/%3E%3C/svg%3E") }
 .ico-belt  { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Crect x='2.4' y='8.4' width='19.2' height='7.2' rx='3.6' fill='%23e3d0a8' stroke='%235f3d26' stroke-width='2'/%3E%3Ccircle cx='7' cy='12' r='1.7' fill='%23fdf7e8' stroke='%235f3d26' stroke-width='1.6'/%3E%3Ccircle cx='17' cy='12' r='1.7' fill='%23fdf7e8' stroke='%235f3d26' stroke-width='1.6'/%3E%3C/svg%3E") }
 .ico-erase { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M9.4 19.6L3.8 14l8-8 5.6 5.6z' fill='%23e08464' stroke='%235f3d26' stroke-width='2' stroke-linejoin='round'/%3E%3Cpath d='M9.4 19.6h9.8' stroke='%235f3d26' stroke-width='2.2' stroke-linecap='round'/%3E%3C/svg%3E") }
 .ico-turn  { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M19 12a7 7 0 11-2.6-5.4' fill='none' stroke='%235f3d26' stroke-width='2.4' stroke-linecap='round'/%3E%3Cpath d='M18.6 3.2v4.2h-4.2' fill='none' stroke='%235f3d26' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") }
@@ -1977,8 +1986,8 @@ html, body {
      signs are on and lifts the rest, so the room behind reads bright — a grey
      veil over your own dining room is not an invitation to go into it. */
   background:
-    linear-gradient(90deg, rgba(20, 60, 92, 0) 46%, rgba(16, 47, 74, .62) 100%),
-    radial-gradient(110% 80% at 38% 44%, rgba(255, 255, 255, .3), rgba(148, 195, 226, .14) 62%, rgba(31, 82, 122, .28) 100%);
+    linear-gradient(90deg, rgba(74, 48, 28, 0) 46%, rgba(58, 36, 20, .6) 100%),
+    radial-gradient(110% 80% at 38% 44%, rgba(255, 250, 236, .3), rgba(226, 204, 168, .14) 62%, rgba(96, 64, 38, .26) 100%);
 }
 .title.out { animation: titleOut .3s ease both; pointer-events: none }
 @keyframes titleOut { to { opacity: 0; transform: scale(1.04) } }
@@ -1992,7 +2001,7 @@ html, body {
   padding: 1.1rem 1.4rem 1rem;
   border: var(--bw) solid var(--ink);
   border-radius: var(--r-lg);
-  background-color: rgba(246, 249, 252, .93);
+  background-color: rgba(253, 247, 232, .93);
   background-image: var(--sheen);
   box-shadow: none;
 }
@@ -2015,7 +2024,7 @@ html, body {
   letter-spacing: .01em;
   -webkit-text-stroke: .14rem var(--ink);
   paint-order: stroke fill;
-  text-shadow: 0 0.22rem 0 rgba(40, 71, 93, .45);
+  text-shadow: 0 0.22rem 0 rgba(95, 61, 38, .45);
 }
 @keyframes logoSway {
   0%, 100% { transform: rotate(-1.1deg) translateY(0) }
@@ -2073,14 +2082,14 @@ html, body {
 .tutor { position: absolute; inset: 0; z-index: 11; pointer-events: none }
 .tutor-hole {
   position: absolute;
-  box-shadow: 0 0 0 100vmax rgba(22, 42, 56, .5);
+  box-shadow: 0 0 0 100vmax rgba(58, 36, 20, .5);
   border: 0.2rem solid var(--sun);
   transition: left .18s ease, top .18s ease, width .18s ease, height .18s ease;
   animation: holePulse 1.6s ease-in-out infinite;
 }
 @keyframes holePulse {
-  0%, 100% { border-color: var(--sun); box-shadow: 0 0 0 100vmax rgba(22, 42, 56, .5)}
-  50%      { border-color: #eaf3f9; box-shadow: 0 0 0 100vmax rgba(22, 42, 56, .58)}
+  0%, 100% { border-color: var(--sun); box-shadow: 0 0 0 100vmax rgba(58, 36, 20, .5)}
+  50%      { border-color: #fff3c8; box-shadow: 0 0 0 100vmax rgba(58, 36, 20, .58)}
 }
 .tutor-say {
   position: absolute;
@@ -2099,7 +2108,7 @@ html, body {
   position: absolute; left: -0.7rem; bottom: -0.35rem;
   width: 4.6rem; height: 5.4rem;
   background: left bottom/300% 100% no-repeat;
-  filter: drop-shadow(0 0.12rem 0.1rem rgba(40, 71, 93, .3));
+  filter: drop-shadow(0 0.12rem 0.1rem rgba(95, 61, 38, .3));
   animation: chefLean 2.6s ease-in-out infinite;
   pointer-events: none;
 }
@@ -2182,7 +2191,7 @@ body.still .tutor-hole { animation: none }
 @media (prefers-reduced-motion: reduce) {
   .boot-sun, .boot-gulls i, .boot-wave, .boot-sea::after,
   .boot-flags, .boot-flags i, .boot-sky, .boot-chef, .boot-pan,
-  .boot-spat, .boot-steam, .boot-tap, .boot-plated { animation: none }
+  .boot-steam, .boot-tap, .boot-plated { animation: none }
   .boot-gulls, .boot-steam { display: none }
 }
 
@@ -2201,7 +2210,7 @@ body.still .tutor-hole { animation: none }
 .boot {
   position: absolute; inset: 0;
   display: grid; place-items: center;
-  background: linear-gradient(#fbfdfe 0%, #e9f4fa 30%, #d7eaf4 52%);
+  background: linear-gradient(#fdf9ee 0%, #fbeed3 32%, #f6e2ba 52%);
   z-index: 20;
   transition: opacity .4s ease;
   overflow: hidden;
@@ -2223,7 +2232,7 @@ body.still .tutor-hole { animation: none }
 .boot-gulls i {
   position: absolute;
   width: 1.5rem; height: 0.75rem;
-  border: 0.17rem solid rgba(70, 105, 130, .45);
+  border: 0.17rem solid rgba(93, 66, 42, .45);
   border-bottom-color: transparent;
   border-left-color: transparent;
   border-radius: 999px 999px 0 0;
@@ -2241,7 +2250,7 @@ body.still .tutor-hole { animation: none }
 .boot-sea {
   position: absolute; left: 0; right: 0; bottom: 0;
   height: 46%;
-  background: linear-gradient(#a9d2e8, #82b6d4 60%, #6098bd);
+  background: linear-gradient(#9ccfc7, #6fb0ae 58%, #4f8f94);
 }
 /*
  * A band of water is a solid block with a row of bumps stood on top of it: the
@@ -2274,9 +2283,9 @@ body.still .tutor-hole { animation: none }
   animation: bootGlint 5s ease-in-out infinite alternate;
 }
 @keyframes bootGlint { to { opacity: .24 } }
-.boot-wave.w1 { top: 0;      color: #bbdaec; animation-duration: 11s }
-.boot-wave.w2 { top: 4.2rem; color: #99c5de; animation-duration: 15s; animation-direction: reverse }
-.boot-wave.w3 { top: 9.4rem; color: #75a9c9; animation-duration: 19s }
+.boot-wave.w1 { top: 0;      color: #b3ddd4; animation-duration: 11s }
+.boot-wave.w2 { top: 4.2rem; color: #88c2bd; animation-duration: 15s; animation-direction: reverse }
+.boot-wave.w3 { top: 9.4rem; color: #63a4a5; animation-duration: 19s }
 @keyframes bootRoll { to { transform: translateX(3.4rem) } }
 
 /* bubbles coming up out of the water, in front of it */
@@ -2372,51 +2381,11 @@ body.still .tutor-hole { animation: none }
 .boot-pan {
   position: absolute; left: 0; right: 0; bottom: 0;
   height: calc(9.8 * var(--bs));
-  background: url("assets/ui/pot_blue.webp") center bottom / contain no-repeat;
+  background: url("assets/ui/pot.webp") center bottom / contain no-repeat;
   animation: potBob 2.2s ease-in-out infinite;
   transform-origin: 50% 100%;
 }
-/*
- * The spatula, and it really stirs.
- *
- * A rotate on its own reads as a wave, not a stir — a stir goes round. So the
- * handle is dragged round a small circle by the wrapper while the blade tips
- * with it, which is what a hand does. One tap is one full turn.
- */
-.boot-hand {
-  position: absolute; right: calc(2.4 * var(--bs)); bottom: calc(5.4 * var(--bs));
-  width: 0; height: 0;
-}
-.boot-spat {
-  position: absolute; left: calc(-2.5 * var(--bs)); bottom: calc(-0.6 * var(--bs));
-  width: calc(5 * var(--bs)); height: calc(6.4 * var(--bs));
-  background: url("assets/ui/spatula_blue.webp") center / contain no-repeat;
-  transform-origin: 50% 88%;
-  transform: rotate(12deg);
-  animation: spatIdle 3.4s ease-in-out infinite;
-}
-@keyframes spatIdle {
-  0%, 100% { transform: rotate(9deg) }
-  50%      { transform: rotate(16deg) }
-}
-/* one tap, one turn of the wrist */
-.boot-pot.stir .boot-hand { animation: stirRound .52s cubic-bezier(.35,0,.3,1) }
-.boot-pot.stir .boot-spat { animation: stirTip .52s cubic-bezier(.35,0,.3,1) }
-@keyframes stirRound {
-  0%   { transform: translate(0, 0) }
-  25%  { transform: translate(-1.5rem, -0.35rem) }
-  50%  { transform: translate(0, -0.7rem) }
-  75%  { transform: translate(1.5rem, -0.35rem) }
-  100% { transform: translate(0, 0) }
-}
-@keyframes stirTip {
-  0%   { transform: rotate(12deg) }
-  25%  { transform: rotate(-22deg) }
-  50%  { transform: rotate(4deg) }
-  75%  { transform: rotate(30deg) }
-  100% { transform: rotate(12deg) }
-}
-/* and the pot rocks the other way, because something is going round in it */
+/* a tap rocks the pot: something has just gone in it */
 .boot-pot.stir .boot-pan { animation: potStirred .52s cubic-bezier(.35,0,.3,1) }
 @keyframes potStirred {
   0%, 100% { transform: rotate(0) }
@@ -2431,7 +2400,7 @@ body.still .tutor-hole { animation: none }
   width: 0.9rem; height: 0.9rem;
   border-radius: 999px;
   background: rgba(255, 255, 255, .9);
-  border: 0.16rem solid rgba(40, 71, 93, .35);
+  border: 0.16rem solid rgba(95, 61, 38, .35);
   animation: bootSteam 2.1s ease-in infinite;
 }
 .boot-steam.s1 { left: calc(4.2 * var(--bs)) }
@@ -2443,19 +2412,29 @@ body.still .tutor-hole { animation: none }
   100% { opacity: 0; transform: translateY(-3.2rem) scale(1.2) }
 }
 
-/* the ingredients falling in — real sprites, dropped by the boot script */
+/*
+ * The ingredients going in — real sprites, dropped by the boot script.
+ *
+ * Everything in here is positioned off the pot's rim rather than off the
+ * scene, so a carrot falls to the rim and disappears into the pot instead of
+ * landing next to it and fading out. `--off` scatters them across the mouth so
+ * they do not all go in down the same line.
+ */
 .boot-drops { position: absolute; inset: 0; pointer-events: none }
 .boot-drop {
   position: absolute;
-  width: 3rem; height: 3rem;
+  left: 50%; bottom: calc(8.6 * var(--bs));
+  width: 2.7rem; height: 2.7rem;
+  margin-left: -1.35rem;
   background: center / contain no-repeat;
-  animation: dropIn 1.15s cubic-bezier(.4,.05,.7,1) forwards;
+  animation: dropIn .82s cubic-bezier(.42,.02,.68,1) forwards;
 }
 @keyframes dropIn {
-  0%   { opacity: 0; transform: translateY(-5rem) rotate(-40deg) scale(.7) }
-  20%  { opacity: 1 }
-  85%  { opacity: 1; transform: translateY(0) rotate(20deg) scale(1) }
-  100% { opacity: 0; transform: translateY(0.6rem) rotate(30deg) scale(.6) }
+  0%   { opacity: 0; transform: translate(var(--off, 0), -7rem) rotate(var(--spin, -30deg)) scale(.8) }
+  18%  { opacity: 1 }
+  /* it reaches the rim, then goes under it: shrink and fade at the lip */
+  72%  { opacity: 1; transform: translate(var(--off, 0), 0) rotate(0deg) scale(1) }
+  100% { opacity: 0; transform: translate(var(--off, 0), 1.1rem) rotate(6deg) scale(.42) }
 }
 
 /* the stir counter, which is the entire game */
@@ -2487,7 +2466,7 @@ body.still .tutor-hole { animation: none }
   margin: -0.7rem auto 1.5rem;
   border: var(--bw) solid var(--ink);
   border-radius: 0.4rem 0.5rem 0.3rem 0.45rem;
-  background: repeating-linear-gradient(90deg, #fbfdfe 0 3.4rem, #dfe9ef 3.4rem 3.58rem);
+  background: repeating-linear-gradient(90deg, #fdf7e8 0 3.4rem, #e3d0a8 3.4rem 3.58rem);
 }
 .boot-deck::before, .boot-deck::after {
   content: "";
@@ -2496,7 +2475,7 @@ body.still .tutor-hole { animation: none }
   border: var(--bw) solid var(--ink);
   border-top: 0;
   border-radius: 0 0 0.4rem 0.35rem;
-  background: #eaf1f5;
+  background: #f4e7cd;
 }
 .boot-deck::before { left: 8% }
 .boot-deck::after  { right: 8% }
@@ -2511,16 +2490,42 @@ body.still .tutor-hole { animation: none }
   background: rgba(255, 255, 255, .93);
 }
 
+/*
+ * The gauge, drawn rather than moulded.
+ *
+ * Three tricks, all cheap: the pill has four mismatched radii so the corners
+ * do not agree with each other, the whole thing sits a fraction off level, and
+ * a second lighter outline is offset behind it — the line somebody went round
+ * twice because the first pass was not quite right. The fill is hatched on the
+ * diagonal like a marker laid down in strokes rather than a poured colour.
+ */
 .boot-bar {
   position: relative;
-  width: 100%; height: 1.5rem;
+  width: 100%; height: 1.6rem;
   border: 0.22rem solid var(--ink);
-  border-radius: 999px;
-  background: var(--panel-2); overflow: hidden; margin: 0 auto;
+  border-radius: 0.86rem 1.1rem 0.8rem 1.14rem / 1.12rem 0.82rem 1.16rem 0.86rem;
+  background: var(--panel-2);
+  overflow: hidden;
+  margin: 0 auto;
+  transform: rotate(-0.45deg);
+}
+/* the second pass of the pen, just off the first */
+.boot-bar::after {
+  content: "";
+  position: absolute; inset: -0.42rem -0.3rem -0.28rem -0.36rem;
+  border: 0.13rem solid rgba(95, 61, 38, .3);
+  border-radius: inherit;
+  transform: rotate(0.9deg);
+  pointer-events: none;
 }
 .boot-bar i {
   display: block; height: 100%; width: 0;
-  background: linear-gradient(var(--sun), var(--sun-deep));
+  background-color: var(--sun);
+  background-image:
+    repeating-linear-gradient(66deg,
+      rgba(255, 255, 255, .34) 0 0.26rem,
+      rgba(255, 255, 255, 0) 0.26rem 0.62rem);
+  border-radius: inherit;
   transition: width .25s ease;
 }
 /* the number rides on the tube, not beside it, so the gauge stays one object */
@@ -2530,6 +2535,10 @@ body.still .tutor-hole { animation: none }
   font-size: 0.76rem; font-weight: 900;
   color: var(--ink-deep);
   font-variant-numeric: tabular-nums;
+}
+@media (prefers-reduced-motion: reduce) {
+  .boot-bar { transform: none }
+  .boot-bar::after { transform: none }
 }
 #boot-msg { margin-top: .6rem; font-weight: 900; font-size: .92rem; color: var(--ink-soft) }
 
@@ -2558,7 +2567,7 @@ body.still .tutor-hole { animation: none }
   margin-left: calc(-4.7 * var(--bs));
   border-radius: 999px;
   background:
-    conic-gradient(from -90deg, var(--leaf) calc(var(--at) * 360deg), rgba(70, 105, 130, .13) 0);
+    conic-gradient(from -90deg, var(--leaf) calc(var(--at) * 360deg), rgba(93, 66, 42, .16) 0);
   /* a ring, not a pie: the middle is punched out */
   mask: radial-gradient(circle, transparent 0 66%, #000 67%);
   -webkit-mask: radial-gradient(circle, transparent 0 66%, #000 67%);
@@ -2567,8 +2576,11 @@ body.still .tutor-hole { animation: none }
 }
 
 /* the finished dish, flung up out of the pot */
+/* the plated dish comes out over the front of the pot, not behind it — the
+   drops layer sits under the pan on purpose, so this one lifts back out */
 .boot-served {
-  position: absolute;
+  position: absolute; z-index: 5;
+  left: 50%; bottom: calc(8.8 * var(--bs));
   width: 4.4rem; height: 4.4rem;
   margin-left: -2.2rem;
   background: center / contain no-repeat;
@@ -2584,7 +2596,9 @@ body.still .tutor-hole { animation: none }
 
 /* and the little burst that comes up with it */
 .boot-spark {
-  position: absolute;
+  position: absolute; z-index: 5;
+  left: 50%; bottom: calc(9.4 * var(--bs));
+  margin-left: calc(-0.21rem + var(--off, 0rem));
   width: 0.42rem; height: 0.42rem;
   border-radius: 999px;
   background: var(--sun);
@@ -2630,9 +2644,11 @@ body.still .tutor-hole { animation: none }
   to   { opacity: 1; transform: none }
 }
 
-/* the splash a stir throws over the rim */
+/* the splash something going in throws over the rim */
 .boot-splash {
-  position: absolute;
+  position: absolute; z-index: 5;
+  left: 50%; bottom: calc(8.9 * var(--bs));
+  margin-left: calc(-0.28rem + var(--off, 0rem));
   width: 0.55rem; height: 0.55rem;
   border-radius: 999px;
   background: #fff;
@@ -2714,7 +2730,7 @@ body.still .tutor-hole { animation: none }
 
 /* the tab track is a ruled line under the tabs, not a trough */
 .sheet-tabs {
-  background: rgba(251, 253, 254, .55);
+  background: rgba(255, 253, 244, .55);
   border-width: 0.13rem;
   border-style: dashed;
 }
@@ -2752,11 +2768,11 @@ body.still .tutor-hole { animation: none }
 .leaf-back { transform-origin: right center }
 /* the fold: a soft crease down the edge the page is turning about */
 .leaf-face::after {
-  background: linear-gradient(90deg, rgba(51, 90, 117, .28), rgba(255, 255, 255, .16) 22%, rgba(255, 255, 255,0) 60%);
+  background: linear-gradient(90deg, rgba(120, 84, 48, .28), rgba(255, 255, 255, .16) 22%, rgba(255, 255, 255,0) 60%);
   animation: none; opacity: 1;
 }
 .leaf-back .leaf-face::after {
-  background: linear-gradient(270deg, rgba(51, 90, 117, .28), rgba(255, 255, 255, .16) 22%, rgba(255, 255, 255,0) 60%);
+  background: linear-gradient(270deg, rgba(120, 84, 48, .28), rgba(255, 255, 255, .16) 22%, rgba(255, 255, 255,0) 60%);
 }
 
 /* the panel's own arrival: it slides, it does not tip towards you */
@@ -2805,7 +2821,7 @@ body.still .tutor-hole { animation: none }
   max-width: min(18rem, 76vw);
   text-align: center;
 }
-.title-by { text-align: center; text-shadow: 0 0.08rem 0 rgba(22, 42, 56, .35); color: #f3f8fc }
+.title-by { text-align: center; text-shadow: 0 0.08rem 0 rgba(58, 36, 20, .35); color: #fff5e0 }
 .title-by b { color: #fff }
 
 /* A sign hung on a nail: painted board, ink outline, hanging a little crooked
@@ -2882,8 +2898,8 @@ body.still .tutor-hole { animation: none }
   .title-card { max-width: min(20rem, 88vw) }
   .title-wash {
     background:
-      linear-gradient(rgba(20, 60, 92, 0) 46%, rgba(16, 47, 74, .66) 100%),
-      radial-gradient(110% 66% at 50% 32%, rgba(255, 255, 255, .3), rgba(31, 82, 122, .22) 100%);
+      linear-gradient(rgba(74, 48, 28, 0) 46%, rgba(58, 36, 20, .64) 100%),
+      radial-gradient(110% 66% at 50% 32%, rgba(255, 250, 236, .3), rgba(96, 64, 38, .2) 100%);
   }
 }
 
@@ -2905,17 +2921,17 @@ body.still .tutor-hole { animation: none }
 .scene-veil {
   position: absolute; inset: 0;
   background:
-    radial-gradient(78% 62% at 50% 44%, rgba(22, 42, 56, 0) 40%, rgba(16, 33, 45, .45) 100%);
+    radial-gradient(78% 62% at 50% 44%, rgba(58, 36, 20, 0) 40%, rgba(46, 28, 15, .45) 100%);
   animation: fade .4s ease both;
 }
 
 .bar-top, .bar-bot {
   position: absolute; left: 0; right: 0; height: 12%;
-  background: #11222e;
+  background: #2f1d10;
   animation: barIn .42s cubic-bezier(.2,.9,.25,1) both;
 }
-.bar-top { top: 0; transform-origin: top; border-bottom: 0.14rem solid rgba(132, 183, 219, .5) }
-.bar-bot { bottom: 0; transform-origin: bottom; border-top: 0.14rem solid rgba(132, 183, 219, .5) }
+.bar-top { top: 0; transform-origin: top; border-bottom: 0.14rem solid rgba(248, 209, 103, .5) }
+.bar-bot { bottom: 0; transform-origin: bottom; border-top: 0.14rem solid rgba(248, 209, 103, .5) }
 @keyframes barIn { from { transform: scaleY(0) } }
 
 /* He walks on from the left and stands on the lower bar, full height, rather
@@ -2932,7 +2948,7 @@ body.still .tutor-hole { animation: none }
 .say-face {
   width: 100%; height: 100%;
   background: left bottom/300% 100% no-repeat;
-  filter: drop-shadow(0 0.3rem 0.25rem rgba(16, 33, 45, .45));
+  filter: drop-shadow(0 0.3rem 0.25rem rgba(46, 28, 15, .45));
   transform-origin: 50% 100%;
   animation: chefLean 2.6s ease-in-out infinite;
 }
@@ -3258,7 +3274,7 @@ body.still .tutor-hole { animation: none }
 .job-art > i.ico { width: 1.4rem; height: 1.4rem }
 .card.job.on .job-art { background: var(--leaf-pale); border-color: var(--leaf-deep) }
 .card.job.live .job-art { border-color: var(--ink); background: var(--paper) }
-.card.favour { background-color: #f8f9fc }
+.card.favour { background-color: #fdeef2 }
 
 .job-tick {
   flex: none; width: 1.5rem; height: 1.5rem;
@@ -3266,7 +3282,7 @@ body.still .tutor-hole { animation: none }
   border: 0.14rem solid var(--ink-faint); border-radius: 0.45rem;
   font-size: 0.85rem; font-weight: 900; color: var(--leaf-deep);
 }
-.card.job.on { background-color: #f5f8f9 }
+.card.job.on { background-color: #eef6e8 }
 .card.job.on .job-tick { background: var(--leaf-pale); border-color: var(--leaf-deep) }
 .card.job.live { background-color: var(--sun-pale) }
 .card.job.live .job-tick { border-color: var(--ink); background: var(--paper) }
@@ -3437,7 +3453,7 @@ body.still .say.talking .say-face { animation: none }
   width: 3.4rem; height: 4rem;
   margin: -1.6rem 0 -0.55rem;
   background: left bottom/300% 100% no-repeat;
-  filter: drop-shadow(0 0.12rem 0.1rem rgba(40, 71, 93, .3));
+  filter: drop-shadow(0 0.12rem 0.1rem rgba(95, 61, 38, .3));
   animation: chefLean 2.4s ease-in-out infinite;
 }
 .aside.talking .aside-face { animation: chefTalk .26s ease-in-out infinite alternate }
@@ -3472,5 +3488,5 @@ body.still .aside, body.still .aside-face { animation: none }
   border-radius: 0.5em;
   transition: background-color .14s ease;
 }
-.empty-line.invite:hover { background: rgba(132, 183, 219, .22) }
+.empty-line.invite:hover { background: rgba(248, 209, 103, .22) }
 .empty-line.invite b { color: var(--tangerine-deep) }

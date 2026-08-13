@@ -236,7 +236,7 @@ export class Factory {
     silo.took = (silo.took ?? 0) + 1;
     const s = toScreen(silo.c, silo.r);
     this.fx.sparkles(s.x, s.y - 40, 4, 14);
-    this.fx.pop(s.x, s.y - 66, `+1`, { color: '#376677', stroke: '#f5f9fc', size: 15, rise: 34, max: 0.6 });
+    this.fx.pop(s.x, s.y - 66, `+1`, { color: '#4d7a34', stroke: '#fff8e6', size: 15, rise: 34, max: 0.6 });
     silo.sq = silo.sq ?? { value: 1, vel: 0 };
     silo.sq.vel -= 2.2;
     if (this.game.zone === this) this.sfx.play('belt');
@@ -330,14 +330,14 @@ export class Factory {
     const n = m.def.out ?? 1;
     if (m.def.kind === 'promo') {
       if (!this.state.addPoster()) return;
-      this.fx.pop(s.x, s.y - 60, 'Poster!', { color: '#4382d0', size: 15, rise: 30, max: 0.8 });
+      this.fx.pop(s.x, s.y - 60, 'Poster!', { color: '#e4652f', size: 15, rise: 30, max: 0.8 });
     } else if (m.def.kind === 'clay') {
       this.state.addClay(n);
-      this.fx.pop(s.x, s.y - 60, `+${n} clay`, { color: '#4a6e87', size: 15, rise: 30, max: 0.8 });
+      this.fx.pop(s.x, s.y - 60, `+${n} clay`, { color: '#8a6647', size: 15, rise: 30, max: 0.8 });
       this.fx.puff(s.x, s.y - 30, 3, 10);
     } else {
       this.state.addResearch(n);
-      this.fx.pop(s.x, s.y - 60, `+${n} rp`, { color: '#4e8aac', size: 15, rise: 30, max: 0.8 });
+      this.fx.pop(s.x, s.y - 60, `+${n} rp`, { color: '#4a8cb0', size: 15, rise: 30, max: 0.8 });
     }
     m.sq = m.sq ?? { value: 1, vel: 0 };
     m.sq.vel -= 2;
@@ -531,12 +531,12 @@ export class Factory {
 
     // front skirt gives the slab its thickness; +c is the camera-facing edge
     const fl = P(-0.5, H), fr = P(0.5, H);
-    fill([fl, fr, { x: fr.x, y: fr.y + BELT_RISE }, { x: fl.x, y: fl.y + BELT_RISE }], '#2e4552');
-    fill([P(-0.5, -H), P(0.5, -H), fr, fl], '#3c5868');
+    fill([fl, fr, { x: fr.x, y: fr.y + BELT_RISE }, { x: fl.x, y: fl.y + BELT_RISE }], '#2c5450');
+    fill([P(-0.5, -H), P(0.5, -H), fr, fl], '#3a6a65');
 
     // running surface: inset across the belt only, full length along it
     const inset = H * 0.64;
-    fill([P(-0.5, -inset), P(0.5, -inset), P(0.5, inset), P(-0.5, inset)], '#618295');
+    fill([P(-0.5, -inset), P(0.5, -inset), P(0.5, inset), P(-0.5, inset)], '#5f978f');
 
     // scrolling arrows, stretched well along the run so they read as chevrons
     // and not right angles under the isometric skew
@@ -548,7 +548,7 @@ export class Factory {
     ctx.clip();
     const period = 0.6;
     const scroll = (this.game.time * BELT_SPEED * this.state.factorySpeed) % period;
-    ctx.strokeStyle = 'rgba(249, 251, 251,0.82)';
+    ctx.strokeStyle = 'rgba(240, 250, 242,0.82)';
     ctx.lineWidth = 4.5;
     for (let a = -0.5 - period + scroll; a < 0.5 + period; a += period) {
       const spread = inset * 0.72;
@@ -568,7 +568,7 @@ export class Factory {
       line(P(a, -H), e);
       line(e, { x: e.x, y: e.y + BELT_RISE });
       const roller = a < 0 ? -0.45 : 0.45;
-      fill([P(roller - 0.05, -H), P(roller + 0.05, -H), P(roller + 0.05, H), P(roller - 0.05, H)], '#77abd1');
+      fill([P(roller - 0.05, -H), P(roller + 0.05, -H), P(roller + 0.05, H), P(roller - 0.05, H)], '#e0b268');
       line(P(roller - 0.05, -H), P(roller - 0.05, H));
       line(P(roller + 0.05, -H), P(roller + 0.05, H));
     }
@@ -630,7 +630,7 @@ export class Factory {
           const { sx, sy } = squash(sq);
           drawSprite(ctx, sprite, 0, s.x + jitter, s.y + HALF_H * 0.42 + hum, {
             scale: MACHINE_SCALE, scaleX: sx, scaleY: sy,
-            glow: isSel ? '#84b7db' : null, glowWidth: 3.5,
+            glow: isSel ? '#f8d167' : null, glowWidth: 3.5,
           });
         },
       });
@@ -644,8 +644,8 @@ export class Factory {
         if (!m.blocked) continue;
         const s = toScreen(m.c, m.r);
         const bob = Math.sin(t * 7) * 2;
-        sticker(ctx, s.x - 12, s.y - 52 + bob, 24, 22, { r: 8, fill: '#e6edf5', lift: 3 });
-        text(ctx, '!', s.x, s.y - 41 + bob, { size: 15, fill: '#2a64aa' });
+        sticker(ctx, s.x - 12, s.y - 52 + bob, 24, 22, { r: 8, fill: '#f6cfc2', lift: 3 });
+        text(ctx, '!', s.x, s.y - 41 + bob, { size: 15, fill: '#b8481c' });
         continue;
       }
       const s = toScreen(m.c, m.r);
@@ -656,8 +656,8 @@ export class Factory {
         const named = this.selection === m;
         const label = named ? `Pantry ${m.took ?? 0}` : `↓ ${m.took ?? 0}`;
         const w = named ? 92 : 46;
-        sticker(ctx, s.x - w / 2, s.y - 152, w, 25, { r: 9, fill: '#eef3f7', lift: 3 });
-        text(ctx, label, s.x, s.y - 139, { size: 13, fill: '#32546c' });
+        sticker(ctx, s.x - w / 2, s.y - 152, w, 25, { r: 9, fill: '#f8ecd4', lift: 3 });
+        text(ctx, label, s.x, s.y - 139, { size: 13, fill: '#6e4a30' });
         continue;
       }
       if (!m.def) continue;
@@ -675,22 +675,22 @@ export class Factory {
       for (let i = 0; i < m.level; i++) {
         ctx.beginPath();
         ctx.arc(s.x - (m.level - 1) * 5 + i * 10, y + 32, 3.2, 0, Math.PI * 2);
-        ctx.fillStyle = '#84b7db'; ctx.fill();
+        ctx.fillStyle = '#f8d167'; ctx.fill();
         ctx.strokeStyle = INK; ctx.lineWidth = 1.6; ctx.stroke();
       }
 
       if (m.def.kind === 'processor') {
         const need = m.def.inQty;
         const inSprite = this.assets.get('ingredients', m.def.inId);
-        sticker(ctx, s.x + 24, y - 12, 46, 24, { r: 9, fill: '#eef3f7', lift: 3 });
+        sticker(ctx, s.x + 24, y - 12, 46, 24, { r: 9, fill: '#f8ecd4', lift: 3 });
         if (inSprite) drawIcon(ctx, inSprite, s.x + 36, y, 18);
-        text(ctx, `${m.buf}/${need}`, s.x + 54, y, { size: 12, fill: '#32546c' });
+        text(ctx, `${m.buf}/${need}`, s.x + 54, y, { size: 12, fill: '#6e4a30' });
       }
 
       if (m.blocked) {
         const bob = Math.sin(t * 7) * 2;
-        sticker(ctx, s.x - 40, y - 42 + bob, 80, 26, { r: 9, fill: '#e6edf5', lift: 3 });
-        text(ctx, 'Backed up', s.x, y - 28 + bob, { size: 12.5, fill: '#2a64aa' });
+        sticker(ctx, s.x - 40, y - 42 + bob, 80, 26, { r: 9, fill: '#f6cfc2', lift: 3 });
+        text(ctx, 'Backed up', s.x, y - 28 + bob, { size: 12.5, fill: '#b8481c' });
       }
     }
   }
@@ -709,7 +709,7 @@ export class Factory {
       ctx.save(); ctx.globalAlpha = 0.75;
       this.#belt(ctx, { c: g.c, r: g.r, dir: g.dir, items: [], blocked: false });
       ctx.restore();
-      this.#arrow(ctx, s, g.dir, '#42788c');
+      this.#arrow(ctx, s, g.dir, '#5f8f3f');
       return;
     }
     const sprite = g.kind === 'silo'

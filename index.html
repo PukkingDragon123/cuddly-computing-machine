@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
-<meta name="theme-color" content="#dfe9ef">
+<meta name="theme-color" content="#e8dcc2">
 <title>Bubbleworks Harbor — Restaurant Tycoon</title>
 <link rel="stylesheet" href="styles.css">
 </head>
@@ -278,10 +278,16 @@
       <!-- what he has plated so far goes up here, newest on the right -->
       <div class="boot-shelf" id="boot-shelf"></div>
       <div class="boot-scene" id="boot-scene">
-        <div class="boot-drops" id="boot-drops"></div>
         <div class="boot-chef"><span class="boot-shadow"></span></div>
         <div class="boot-pot" id="boot-pot">
           <span class="boot-shadow"></span>
+          <!--
+            Everything the hob throws about lives inside the pot's own box, so
+            an ingredient falls to the rim and goes in rather than landing
+            somewhere near it. Behind the pan, so a dropped thing disappears
+            into the pot instead of sitting on the front of it.
+          -->
+          <div class="boot-drops" id="boot-drops"></div>
           <span class="boot-steam s1"></span>
           <span class="boot-steam s2"></span>
           <span class="boot-steam s3"></span>
@@ -292,8 +298,6 @@
             game's own cooking readout, not a second idea about cooking.
           -->
           <span class="boot-ring" id="boot-ring"></span>
-          <!-- the hand goes round; the blade tips with it. That is a stir. -->
-          <span class="boot-hand"><span class="boot-spat" id="boot-spat"></span></span>
         </div>
       </div>
       <div class="boot-deck"></div>
@@ -327,7 +331,7 @@
     if (shown || window.game) return;
     shown = true;
     msg.textContent = text;
-    msg.style.color = '#2a64aa';
+    msg.style.color = '#b8481c';
     retry.classList.remove('hidden');
   }
 

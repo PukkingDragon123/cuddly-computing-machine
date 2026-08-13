@@ -2,7 +2,7 @@
 
 import { TAU, clamp } from '../core/util.js';
 
-export const INK = '#2b3f4f';
+export const INK = '#3d2c1c';
 
 /**
  * The same five words the stylesheet uses, for things drawn on the canvas.
@@ -11,26 +11,26 @@ export const INK = '#2b3f4f';
  * green ring on the floor and a green pill in a panel end up saying different
  * things. These are the CSS custom properties written out in JS, because the
  * canvas cannot read them: sun is money, leaf is coming along nicely, coral is
- * blocked or burnt, mint is a plain quantity, peach is a small warm reward.
+ * blocked or burnt, mint is a plain quantity, tangerine is the thing to press.
  *
  * `PAL.ramp(t)` is the one that earns its keep — patience, freshness, anything
- * running out. Full is green, half is butter, empty is rose, and you read it
+ * running out. Full is green, half is amber, empty is red, and you read it
  * across the room without reading it.
  */
 export const PAL = {
-  sun: '#ffd98e', sunDeep: '#dda23a',
-  leaf: '#93d8aa', leafDeep: '#4d9c6a', leafPale: '#e3f6ea',
-  coral: '#f6a6a2', coralDeep: '#cb6b67', coralPale: '#fde6e5',
-  mint: '#bde3e9', mintDeep: '#71b2bd',
-  peach: '#f4a97f', peachDeep: '#cf7a4d',
-  paper: '#fdfdfc', panel: '#f4f7f9',
-  ink: INK, inkSoft: '#5f7889', inkFaint: '#9aaebb',
+  sun: '#f8d167', sunDeep: '#d4a029',
+  leaf: '#8bbb6a', leafDeep: '#5f8c40', leafPale: '#ddeecc',
+  coral: '#eb9b7c', coralDeep: '#bd6144', coralPale: '#fbdbcd',
+  mint: '#a9cbb2', mintDeep: '#78a888',
+  peach: '#e4652f', peachDeep: '#b8481c',
+  paper: '#fdf7e8', panel: '#f8ecd4',
+  ink: INK, inkSoft: '#7d5a3c', inkFaint: '#a58a68',
 
   /** 1 = green and fine, 0 = red and out of time. */
   ramp(t) {
-    if (t > 0.55) return '#93d8aa';
-    if (t > 0.28) return '#ffd08a';
-    return '#f28e89';
+    if (t > 0.55) return '#8bbb6a';
+    if (t > 0.28) return '#f0b545';
+    return '#e0664a';
   },
 };
 
@@ -49,7 +49,7 @@ export function roundRectPath(ctx, x, y, w, h, r) {
 
 /** Chunky cream panel with a hard bottom edge — the world-space sticker look. */
 export function sticker(ctx, x, y, w, h, {
-  r = 12, fill = '#eef3f7', line = INK, lw = 3, lift = 4, shadow = '#7395ad',
+  r = 12, fill = '#f8ecd4', line = INK, lw = 3, lift = 4, shadow = '#b79a69',
 } = {}) {
   if (lift > 0) {
     ctx.fillStyle = shadow;
@@ -96,9 +96,9 @@ function shadowStamp() {
   SHADOW.width = SHADOW.height = size;
   const c = SHADOW.getContext('2d');
   const g = c.createRadialGradient(size / 2, size / 2, 0, size / 2, size / 2, size / 2);
-  g.addColorStop(0, 'rgba(52, 75, 92,1)');
-  g.addColorStop(0.55, 'rgba(52, 75, 92,0.5)');
-  g.addColorStop(1, 'rgba(52, 75, 92,0)');
+  g.addColorStop(0, 'rgba(94, 76, 50,1)');
+  g.addColorStop(0.55, 'rgba(94, 76, 50,0.5)');
+  g.addColorStop(1, 'rgba(94, 76, 50,0)');
   c.fillStyle = g;
   c.fillRect(0, 0, size, size);
   return SHADOW;
@@ -168,7 +168,7 @@ export function blueprint(ctx, sprite, frame, x, y, {
   const { sx, sy, sw, sh } = sprite.rect(frame);
   const w = sw * scale, h = sh * scale;
   const ink = ok ? PAL.leafDeep : PAL.coralDeep;
-  const line = ok ? '#f2fbf5' : '#fdeceb';
+  const line = ok ? '#eef8e4' : '#ffe6dc';
 
   ctx.save();
   ctx.translate(x, y);
@@ -252,7 +252,7 @@ export function diamond(ctx, cx, cy, hw, hh) {
 
 /** Progress ring. `pct` 0..1. */
 export function ring(ctx, x, y, radius, pct, {
-  track = 'rgba(29, 47, 60,0.18)', fill = '#84b7db', lw = 5, line = INK,
+  track = 'rgba(61, 44, 28,0.18)', fill = '#f8d167', lw = 5, line = INK,
 } = {}) {
   ctx.save();
   ctx.lineCap = 'round';
@@ -272,7 +272,7 @@ export function ring(ctx, x, y, radius, pct, {
 export function meter(ctx, x, y, w, h, pct, fill) {
   ctx.save();
   roundRectPath(ctx, x - w / 2, y, w, h, h / 2);
-  ctx.fillStyle = '#c1d2df'; ctx.fill();
+  ctx.fillStyle = '#e3d0a8'; ctx.fill();
   ctx.strokeStyle = INK; ctx.lineWidth = 2.4; ctx.stroke();
   const iw = (w - 4) * clamp(pct, 0, 1);
   if (iw > 1) {
@@ -290,7 +290,7 @@ export function meter(ctx, x, y, w, h, pct, fill) {
 
 /** Rounded speech bubble with a little tail pointing down. */
 export function bubble(ctx, cx, bottomY, w, h, {
-  r = 13, fill = '#f5f9fb', line = INK, lw = 3, tail = 9, lift = 3,
+  r = 13, fill = '#fdf6e6', line = INK, lw = 3, tail = 9, lift = 3,
 } = {}) {
   const x = cx - w / 2, y = bottomY - h - tail;
   const draw = (oy, color, stroke) => {
@@ -308,7 +308,7 @@ export function bubble(ctx, cx, bottomY, w, h, {
     ctx.fillStyle = color; ctx.fill();
     if (stroke) { ctx.strokeStyle = line; ctx.lineWidth = lw; ctx.stroke(); }
   };
-  if (lift) draw(lift, '#7395ad', false);
+  if (lift) draw(lift, '#b79a69', false);
   draw(0, fill, true);
   return { x, y, w, h };
 }
@@ -316,7 +316,7 @@ export function bubble(ctx, cx, bottomY, w, h, {
 /* ----------------------------------------------------------------- text  */
 
 export function text(ctx, str, x, y, {
-  size = 16, weight = 900, fill = '#1d2f3c', stroke = null, lw = 4,
+  size = 16, weight = 900, fill = '#3d2c1c', stroke = null, lw = 4,
   align = 'center', baseline = 'middle', font = 'ui-rounded, "Nunito", system-ui, sans-serif',
 } = {}) {
   ctx.save();

@@ -114,7 +114,7 @@ export class Panels {
       const shut = !this.state.open(st);
       return swatch(
         st.label,
-        STYLE_SWATCH[st.id] ?? '#82aecd',
+        STYLE_SWATCH[st.id] ?? '#d9ae76',
         this.buildStyle === st.id,
         shut
           ? () => this.game.toast(`${this.state.rankNeeded(st)} unlocks this finish`, 'bad')
@@ -1857,7 +1857,10 @@ export class Panels {
   #slip({ art, title, sub, pct = null, count = null, coins, fame, state = 'open', extra = null }, i = 0) {
     const tilt = [-2.4, 1.8, -1.1, 2.7, -3, 1.3, -1.9, 2.2][i % 8];
     const tack = ['tack-a', 'tack-b', 'tack-c'][i % 3];
-    return h(`div.slip.${state}.${tack}`, { style: { '--tilt': `${tilt}deg` } },
+    // `slip-done` rather than `done`: the reward banner owns `.done` globally
+    // and it is `position: absolute`, which stacked every finished job on the
+    // same spot. State classes on a shared component get their own prefix.
+    return h(`div.slip.slip-${state}.${tack}`, { style: { '--tilt': `${tilt}deg` } },
       h('span.slip-tack'),
       art ? this.jobArt(art) : null,
       h('div.slip-main', null,

@@ -67,51 +67,54 @@ function bootGame() {
   let dish = pick(BOOT_DISH);
   let stopped = false;
 
-  /** A splash of pot over the rim. */
+  /**
+   * A splash over the rim. Coordinates are the pot's own, so this lands on the
+   * pot wherever the pot happens to be on screen.
+   */
   const splash = (n = 5) => {
     for (let i = 0; i < n; i++) {
       const a = (-142 + Math.random() * 104) * (Math.PI / 180);
-      const d = 1.6 + Math.random() * 1.8;
-      const sp = el('boot-splash', {
-        left: `${40 + Math.random() * 24}%`,
-        bottom: '8.4rem',
-        animationDelay: `${i * 0.03}s`,
-      });
+      const d = 1.4 + Math.random() * 1.6;
+      const sp = el('boot-splash', { animationDelay: `${i * 0.03}s` });
       sp.style.setProperty('--dx', `${Math.cos(a) * d}rem`);
       sp.style.setProperty('--dy', `${Math.sin(a) * d}rem`);
+      sp.style.setProperty('--off', `${-1.6 + Math.random() * 3.2}rem`);
       drops.append(sp);
       gone(sp, 900);
     }
   };
 
-  /** One ingredient thrown in from the side. */
+  /**
+   * One ingredient, in.
+   *
+   * It falls from above the rim to the rim and vanishes there — which is the
+   * whole point, and what it did not do before: it used to drop somewhere
+   * beside the pot and fade, so nothing ever went *into* anything. It lands
+   * with a splash, on a timer matched to the fall.
+   */
   const feed = () => {
     const d = el('boot-drop', {
       backgroundImage: `url("assets/ingredients/${pick(BOOT_ING)}.png")`,
-      left: `${30 + Math.random() * 30}%`,
-      bottom: '5.8rem',
     });
+    d.style.setProperty('--off', `${-1.3 + Math.random() * 2.6}rem`);
+    d.style.setProperty('--spin', `${-40 + Math.random() * 80}deg`);
     drops.append(d);
-    gone(d, 1200);
+    gone(d, 900);
+    setTimeout(() => splash(3), 560);
   };
 
   /** The ticket lands: the dish flies up out of the pot and onto the shelf. */
   const serve = () => {
     const up = el('boot-served', {
       backgroundImage: `url("assets/food/${dish}.png")`,
-      left: '46%',
-      bottom: '9rem',
     });
     drops.append(up);
     gone(up, 1000);
     for (let i = 0; i < 10; i++) {
       const a = (Math.random() * 360) * (Math.PI / 180);
       const r = 2 + Math.random() * 2.4;
-      const sp = el('boot-spark', {
-        left: `${44 + Math.random() * 10}%`,
-        bottom: '9.6rem',
-        animationDelay: `${i * 0.02}s`,
-      });
+      const sp = el('boot-spark', { animationDelay: `${i * 0.02}s` });
+      sp.style.setProperty('--off', `${-1.8 + Math.random() * 3.6}rem`);
       sp.style.setProperty('--dx', `${Math.cos(a) * r}rem`);
       sp.style.setProperty('--dy', `${Math.sin(a) * r - 1}rem`);
       drops.append(sp);
@@ -156,13 +159,13 @@ function bootGame() {
   };
   setTimeout(tick, 400);
 
-  // ...and a stir is worth six seconds of standing there watching it
+  // ...and a tap on the pot is worth six seconds of standing there watching it
   pot.onpointerdown = () => {
     pot.classList.remove('stir');
     void pot.offsetWidth;
     pot.classList.add('stir');
     feed();
-    splash();
+    splash(6);
     advance(0.075);
     sfx.play('tap');
   };
@@ -250,7 +253,7 @@ async function main() {
 main().catch((err) => {
   console.error(err);
   msg.textContent = `Could not open the harbour — ${err?.message ?? err}`;
-  msg.style.color = '#2a64aa';
-  fill.style.background = '#4382d0';
+  msg.style.color = '#b8481c';
+  fill.style.background = '#e4652f';
   document.getElementById('boot-retry')?.classList.remove('hidden');
 });

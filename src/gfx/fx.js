@@ -35,7 +35,7 @@ export class Fx {
         vx: range(-30, 30), vy: range(-120, -70), g: -30,
         life: 0, max: range(0.85, 1.25), size: range(7, 11),
         wob: range(0, TAU), rot: range(-0.3, 0.3), spin: range(-1, 1),
-        color: ['#a7b9e0', '#becbe9', '#7e99d9'][(rnd() * 3) | 0],
+        color: ['#ef7f9c', '#f4a0b4', '#e86f8e'][(rnd() * 3) | 0],
       });
     }
   }
@@ -47,7 +47,7 @@ export class Fx {
         kind: 'star', x, y,
         vx: Math.cos(a) * range(90, 190), vy: Math.sin(a) * range(60, 130) - 110,
         g: 520, life: 0, max: range(0.6, 0.95), size: range(7, 12),
-        rot: range(0, TAU), spin: range(-13, 13), color: '#84b7db',
+        rot: range(0, TAU), spin: range(-13, 13), color: '#f8d167',
       });
     }
   }
@@ -58,12 +58,12 @@ export class Fx {
         kind: 'spark', x: x + range(-spread, spread), y: y + range(-spread, spread),
         vx: range(-18, 18), vy: range(-52, -18), g: 40,
         life: 0, max: range(0.35, 0.65), size: range(3.5, 7),
-        color: ['#f0f6fb', '#84b7db', '#ffffff'][(rnd() * 3) | 0],
+        color: ['#fff6d8', '#f8d167', '#ffffff'][(rnd() * 3) | 0],
       });
     }
   }
 
-  crumbs(x, y, count = 5, color = '#6a99bb') {
+  crumbs(x, y, count = 5, color = '#c98f5c') {
     for (let i = 0; i < count; i++) {
       this.#add({
         kind: 'crumb', x, y,
@@ -80,7 +80,7 @@ export class Fx {
         kind: 'puff', x: x + range(-10, 10), y: y + range(-3, 3),
         vx: range(-45, 45), vy: range(-26, -6), g: -14,
         life: 0, max: range(0.34, 0.6), size: size * range(0.7, 1.25),
-        color: 'rgba(248, 251, 253,0.9)',
+        color: 'rgba(255, 250, 236,0.9)',
       });
     }
   }
@@ -111,7 +111,7 @@ export class Fx {
   }
 
   /** Floating label — the "+24" that pops off a paying customer. */
-  pop(x, y, label, { color = '#1d2f3c', stroke = '#f5f9fc', size = 21, rise = 62, max = 1.0 } = {}) {
+  pop(x, y, label, { color = '#3d2c1c', stroke = '#fff8e6', size = 21, rise = 62, max = 1.0 } = {}) {
     this.#add({ kind: 'text', x, y, vx: 0, vy: 0, g: 0, life: 0, max, label, color, stroke, size, rise });
   }
 
@@ -185,15 +185,15 @@ export class Fx {
           // sand dollar: flat disc that flips as it spins
           const squash = Math.abs(Math.cos(o.rot));
           ctx.translate(o.x, o.y);
-          ellipse(ctx, 0, 2.5, o.size * squash * 0.9, o.size * 0.9, 'rgba(40, 68, 88,0.25)');
-          ellipse(ctx, 0, 0, o.size * squash, o.size, '#84b7db');
-          ctx.strokeStyle = '#1d2f3c'; ctx.lineWidth = 2;
+          ellipse(ctx, 0, 2.5, o.size * squash * 0.9, o.size * 0.9, 'rgba(90, 67, 38,0.25)');
+          ellipse(ctx, 0, 0, o.size * squash, o.size, '#f8d167');
+          ctx.strokeStyle = '#3d2c1c'; ctx.lineWidth = 2;
           ctx.beginPath(); ctx.ellipse(0, 0, Math.max(0.2, o.size * squash), o.size, 0, 0, TAU); ctx.stroke();
           if (squash > 0.35) {
             ctx.save(); ctx.scale(squash, 1);
             starPath(ctx, 0, 0, o.size * 0.56, o.size * 0.24);
-            ctx.fillStyle = '#ecf4f9'; ctx.fill();
-            ctx.strokeStyle = '#4092cd'; ctx.lineWidth = 1.2; ctx.stroke();
+            ctx.fillStyle = '#fff3cd'; ctx.fill();
+            ctx.strokeStyle = '#d3a53a'; ctx.lineWidth = 1.2; ctx.stroke();
             ctx.restore();
           }
           break;
@@ -204,14 +204,14 @@ export class Fx {
           ctx.rotate(o.rot);
           heartPath(ctx, 0, 0, s);
           ctx.fillStyle = o.color; ctx.fill();
-          ctx.strokeStyle = '#1d2f3c'; ctx.lineWidth = 2; ctx.stroke();
+          ctx.strokeStyle = '#3d2c1c'; ctx.lineWidth = 2; ctx.stroke();
           break;
         }
         case 'star': {
           ctx.translate(o.x, o.y); ctx.rotate(o.rot);
           starPath(ctx, 0, 0, o.size, o.size * 0.45);
           ctx.fillStyle = o.color; ctx.fill();
-          ctx.strokeStyle = '#1d2f3c'; ctx.lineWidth = 2; ctx.stroke();
+          ctx.strokeStyle = '#3d2c1c'; ctx.lineWidth = 2; ctx.stroke();
           break;
         }
         case 'spark': {
@@ -247,7 +247,7 @@ export class Fx {
           ctx.globalAlpha *= 0.85;
           ctx.beginPath();
           ctx.ellipse(bx, o.y, s, s, 0, 0, TAU);
-          ctx.fillStyle = 'rgba(248, 251, 253,0.62)';
+          ctx.fillStyle = 'rgba(255, 250, 236,0.62)';
           ctx.fill();
           ctx.strokeStyle = 'rgba(255, 255, 255,0.95)';
           ctx.lineWidth = 1.4;

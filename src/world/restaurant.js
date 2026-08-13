@@ -226,7 +226,7 @@ export class Restaurant {
 
     const s = toScreen(g.c, g.r);
     this.fx.puff(s.x, s.y + 6, 6, 14);
-    this.fx.ripple(s.x, s.y, 'rgba(241, 247, 251,0.9)', 0.4, 90);
+    this.fx.ripple(s.x, s.y, 'rgba(255, 248, 220,0.9)', 0.4, 90);
     this.fx.kick(3.5);
     this.sfx.play('place');
     this.state.save();
@@ -262,7 +262,7 @@ export class Restaurant {
     this.rebuild();
     const s = toScreen(rec.c, rec.r);
     this.fx.stars(s.x, s.y - 40, 8);
-    this.fx.ripple(s.x, s.y, 'rgba(132, 183, 219,0.9)', 0.5, 110);
+    this.fx.ripple(s.x, s.y, 'rgba(248, 209, 103,0.9)', 0.5, 110);
     this.sfx.play('star');
     this.state.save();
     return true;
@@ -346,7 +346,7 @@ export class Restaurant {
     const g = this.guests[this.guests.length - 1];
     if (g && loud) {
       this.fx.pop(g.pos.x, g.headY - 30, 'Heard you calling!', {
-        color: '#4382d0', size: 15, rise: 38, max: 0.9,
+        color: '#e4652f', size: 15, rise: 38, max: 0.9,
       });
       this.fx.sparkles(g.pos.x, g.pos.y - 20, 8, 22);
     }
@@ -406,7 +406,7 @@ export class Restaurant {
     guest.setState(CS.WALK);
     this.sfx.play('select');
     const s = toScreen(target.c, target.r);
-    this.fx.ripple(s.x, s.y, 'rgba(116, 161, 177,0.9)', 0.45, 86);
+    this.fx.ripple(s.x, s.y, 'rgba(139, 187, 106,0.9)', 0.45, 86);
     return null;
   }
 
@@ -471,7 +471,7 @@ export class Restaurant {
       guest.favour.fame = 6 + Math.round(want.price / 8);
       this.state.noteFavour(guest);
       this.fx.pop(guest.pos.x, guest.headY - 54, `${guest.who}: a favour?`, {
-        color: '#617dc0', size: 15, rise: 40, max: 1.1,
+        color: '#d0517f', size: 15, rise: 40, max: 1.1,
       });
       this.fx.hearts(guest.pos.x, guest.headY - 20, 3);
       this.sfx.play('ding');
@@ -492,7 +492,7 @@ export class Restaurant {
     const dur = this.state.prepOf(guest.dish) * this.state.orderSpeed;
     this.kitchen.addTicket(guest, guest.dish, dur);
     this.sfx.play('order');
-    this.fx.pop(guest.pos.x, guest.headY - 20, 'Order!', { color: '#4382d0', size: 17, rise: 34, max: 0.7 });
+    this.fx.pop(guest.pos.x, guest.headY - 20, 'Order!', { color: '#e4652f', size: 17, rise: 34, max: 0.7 });
     return true;
   }
 
@@ -557,21 +557,21 @@ export class Restaurant {
 
     if (asked > 1) {
       this.fx.pop(guest.pos.x + 40, guest.headY - 46, 'Catch of the day!', {
-        color: '#4e8aac', size: 14, rise: 40, max: 1,
+        color: '#4a8cb0', size: 14, rise: 40, max: 1,
       });
     }
     this.fx.coins(guest.pos.x, guest.headY + 10, 5 + Math.min(6, Math.floor(pay / 18)), 62);
     this.fx.burst(this.assets.get('food', guest.dish), guest.pos.x, guest.headY, 3,
       { spread: 60, size: 20, up: 260 });
-    this.fx.pop(guest.pos.x, guest.headY - 24, `+${money(pay)}`, { color: '#2a64aa', size: 23 });
+    this.fx.pop(guest.pos.x, guest.headY - 24, `+${money(pay)}`, { color: '#b8481c', size: 23 });
     if (guest.who) {
       this.fx.pop(guest.pos.x, guest.headY - 62, `${guest.who}: thanks!`, {
-        color: '#28475d', size: 13, rise: 34, max: 0.9,
+        color: '#5f3d26', size: 13, rise: 34, max: 0.9,
       });
     }
     if (stars > 0) {
       this.fx.stars(guest.pos.x, guest.headY - 6, 4 + stars);
-      this.fx.pop(guest.pos.x + 46, guest.headY - 6, `+${stars}★`, { color: '#3286c2', size: 17, rise: 44, max: 0.9 });
+      this.fx.pop(guest.pos.x + 46, guest.headY - 6, `+${stars}★`, { color: '#c8992c', size: 17, rise: 44, max: 0.9 });
     }
     this.fx.hearts(guest.pos.x, guest.headY - 10, 3);
     this.sfx.play('cash');
@@ -598,7 +598,7 @@ export class Restaurant {
     this.fx.burst(this.assets.get('food', f.dish), guest.pos.x, guest.headY - 6, 6,
       { spread: 110, size: 26, up: 340 });
     this.fx.pop(guest.pos.x, guest.headY - 78, 'Favour kept!', {
-      color: '#617dc0', size: 17, rise: 46, max: 1.2,
+      color: '#d0517f', size: 17, rise: 46, max: 1.2,
     });
     this.game.toast(`${guest.who} will remember that — +${f.coins}`, 'good');
     this.sfx.play('star');
@@ -609,11 +609,11 @@ export class Restaurant {
     if (note.mood === 'loved') {
       this.fx.hearts(guest.pos.x, guest.headY - 6, 4);
       this.fx.pop(guest.pos.x - 40, guest.headY - 40, 'Favourite!', {
-        color: '#617dc0', size: 15, rise: 40, max: 1,
+        color: '#d0517f', size: 15, rise: 40, max: 1,
       });
     } else if (note.mood === 'hated') {
       this.fx.pop(guest.pos.x - 30, guest.headY - 40, 'Not for them…', {
-        color: '#4a6e87', size: 14, rise: 34, max: 0.9,
+        color: '#8a6647', size: 14, rise: 34, max: 0.9,
       });
     }
   }
@@ -642,7 +642,7 @@ export class Restaurant {
     this.state.addStars(-2);
     this.state.stats.walkouts += 1;
     this.walkouts += 1;
-    this.fx.pop(guest.pos.x, guest.headY - 20, '−2★', { color: '#2a64aa', stroke: '#f5f9fc', size: 19 });
+    this.fx.pop(guest.pos.x, guest.headY - 20, '−2★', { color: '#b8481c', stroke: '#fff8e6', size: 19 });
     this.fx.puff(guest.pos.x, guest.pos.y, 5, 12);
     this.sfx.play('sad');
     this.#leave(guest, 'cross');
@@ -763,7 +763,7 @@ export class Restaurant {
         this.fx.sparkles(p.x, p.y - 4, 7, 18);
         this.fx.ripple(p.x, p.y + 8, 'rgba(255, 255, 255,0.9)', 0.4, 56);
         this.fx.pop(p.x, p.y - 14, 'Clean!', {
-          color: '#437689', size: 14, rise: 34, max: 0.8,
+          color: '#5f8c40', size: 14, rise: 34, max: 0.8,
         });
         this.sfx.play('pop');
         this.#wipe(s);
@@ -794,9 +794,9 @@ export class Restaurant {
 
     // a cream badge behind it, so the crockery reads against floor or plaster
     ctx.save();
-    ellipse(ctx, p.x, y + 3, 20, 20, '#7395ad');
-    ellipse(ctx, p.x, y, 20, 20, '#f6f9fc');
-    ctx.strokeStyle = '#28475d'; ctx.lineWidth = 3;
+    ellipse(ctx, p.x, y + 3, 20, 20, '#b79a69');
+    ellipse(ctx, p.x, y, 20, 20, '#fdf7e8');
+    ctx.strokeStyle = '#5f3d26'; ctx.lineWidth = 3;
     ctx.beginPath(); ctx.ellipse(p.x, y, 20, 20, 0, 0, TAU); ctx.stroke();
     ctx.restore();
 
@@ -805,8 +805,8 @@ export class Restaurant {
     } else {
       // no crockery in the pack for this dish — a saucer stands in
       ctx.save();
-      ellipse(ctx, p.x, y + 4, 13, 6.5, '#eff3f6');
-      ctx.strokeStyle = '#28475d'; ctx.lineWidth = 2.2;
+      ellipse(ctx, p.x, y + 4, 13, 6.5, '#f4ecd8');
+      ctx.strokeStyle = '#5f3d26'; ctx.lineWidth = 2.2;
       ctx.beginPath(); ctx.ellipse(p.x, y + 4, 13, 6.5, 0, 0, TAU); ctx.stroke();
       ctx.restore();
     }
@@ -816,7 +816,7 @@ export class Restaurant {
     ctx.save();
     ctx.translate(p.x + sweep, y - 5 + Math.abs(Math.cos(t * 7)) * 3);
     ctx.rotate(wob);
-    sticker(ctx, -8, -5, 16, 10, { r: 4.5, fill: '#82b6db', lw: 2.2, lift: 2 });
+    sticker(ctx, -8, -5, 16, 10, { r: 4.5, fill: '#f2c26b', lw: 2.2, lift: 2 });
     ctx.restore();
 
     ring(ctx, p.x, y, 25, done, { lw: 4, fill: PAL.mintDeep, track: 'rgba(64, 88, 108, 0.2)' });
@@ -856,7 +856,7 @@ export class Restaurant {
     if (guest && this.deliver(plate, guest)) return;
     plate.sq.vel -= 4;
     this.sfx.play('no');
-    this.fx.pop(plate.homeX, plate.homeY - 40, 'Not theirs!', { color: '#2a64aa', size: 15, rise: 30, max: 0.7 });
+    this.fx.pop(plate.homeX, plate.homeY - 40, 'Not theirs!', { color: '#b8481c', size: 15, rise: 30, max: 0.7 });
   }
 
   /**
@@ -1042,7 +1042,7 @@ export class Restaurant {
     if (!this.guests.some((g) => g.state === CS.QUEUE)) return;
     for (const s of this.seats) {
       if (s.table && !s.taken && s.dirty <= 0) {
-        Room.glowTile(ctx, s.c, s.r, 'rgba(116, 161, 177,0.35)', t);
+        Room.glowTile(ctx, s.c, s.r, 'rgba(139, 187, 106,0.35)', t);
       }
     }
   }
@@ -1063,8 +1063,8 @@ export class Restaurant {
         if (s.table) continue;
         const p = toScreen(s.c, s.r);
         const bob = Math.sin(t * 5 + s.c) * 2;
-        sticker(ctx, p.x - 15, p.y - 154 + bob, 30, 26, { r: 9, fill: '#eff3f9', lift: 3 });
-        text(ctx, '?', p.x, p.y - 140 + bob, { size: 17, fill: '#2a64aa' });
+        sticker(ctx, p.x - 15, p.y - 154 + bob, 30, 26, { r: 9, fill: '#fbe0d6', lift: 3 });
+        text(ctx, '?', p.x, p.y - 140 + bob, { size: 17, fill: '#b8481c' });
       }
     }
     for (const s of this.seats) {

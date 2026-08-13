@@ -279,9 +279,9 @@ export class Customer {
     ctx.bezierCurveTo(x - r * 1.5, y - r * 0.3, x - r * 0.55, y - r * 1.25, x, y - r * 0.35);
     ctx.bezierCurveTo(x + r * 0.55, y - r * 1.25, x + r * 1.5, y - r * 0.3, x, y + r * 0.9);
     ctx.closePath();
-    ctx.fillStyle = '#a8b8dc';
+    ctx.fillStyle = '#e8829f';
     ctx.fill();
-    ctx.strokeStyle = '#28475d';
+    ctx.strokeStyle = '#5f3d26';
     ctx.lineWidth = 2;
     ctx.lineJoin = 'round';
     ctx.stroke();
@@ -312,7 +312,7 @@ export class Customer {
     ctx.closePath();
     ctx.fillStyle = this.rarity.aura;
     ctx.fill();
-    ctx.strokeStyle = '#28475d';
+    ctx.strokeStyle = '#5f3d26';
     ctx.lineWidth = 2;
     ctx.stroke();
     ctx.restore();
@@ -335,9 +335,9 @@ export class Customer {
     ctx.lineTo(x + 8, y - 6);
     ctx.lineTo(x, y + 6);
     ctx.closePath();
-    ctx.fillStyle = '#84b7db';
+    ctx.fillStyle = '#f8d167';
     ctx.fill();
-    ctx.strokeStyle = '#28475d';
+    ctx.strokeStyle = '#5f3d26';
     ctx.lineWidth = 2.4;
     ctx.stroke();
     ctx.restore();
@@ -397,11 +397,11 @@ export class Customer {
   #badge(ctx, x, y, glyph) {
     ctx.save();
     ctx.beginPath(); ctx.ellipse(x, y + 2.5, 13, 13, 0, 0, TAU);
-    ctx.fillStyle = '#7395ad'; ctx.fill();
+    ctx.fillStyle = '#b79a69'; ctx.fill();
     ctx.beginPath(); ctx.ellipse(x, y, 13, 13, 0, 0, TAU);
-    ctx.fillStyle = '#84b7db'; ctx.fill();
-    ctx.strokeStyle = '#28475d'; ctx.lineWidth = 3; ctx.stroke();
-    text(ctx, glyph, x, y + 0.5, { size: 20, fill: '#2a64aa' });
+    ctx.fillStyle = '#f8d167'; ctx.fill();
+    ctx.strokeStyle = '#5f3d26'; ctx.lineWidth = 3; ctx.stroke();
+    text(ctx, glyph, x, y + 0.5, { size: 20, fill: '#b8481c' });
     ctx.restore();
   }
 
@@ -409,7 +409,7 @@ export class Customer {
   drawOverlay(ctx, t) {
     if (this.state === CS.EAT || this.state === CS.DONE) {
       if (this.state === CS.DONE && this.stateT < 0.9) {
-        text(ctx, 'Yum!', this.pos.x, this.headY - 18, { size: 20, fill: '#4382d0', stroke: '#f5f9fc', lw: 5 });
+        text(ctx, 'Yum!', this.pos.x, this.headY - 18, { size: 20, fill: '#e4652f', stroke: '#fff8e6', lw: 5 });
       }
       return;
     }
@@ -425,7 +425,7 @@ export class Customer {
     bubble(ctx, cx, bottom, box.w, box.h, {
       r: 16, lw: 3.4,
       // and the bubble itself blushes when they are cross
-      fill: this.mood === 'cross' ? PAL.coralPale ?? '#fde6e5' : '#fbfdfe',
+      fill: this.mood === 'cross' ? PAL.coralPale : '#fdf6e6',
     });
 
     // dead centre of the bubble, always. The art used to sit left of middle with
@@ -435,7 +435,7 @@ export class Customer {
     if (this.state === CS.QUEUE) {
       const chair = this.zone.assets.get('furn_plain', 'chair_f');
       if (chair) drawIcon(ctx, chair, icx, icy, 46);
-      else text(ctx, '?', icx, icy, { size: 30, fill: '#4382d0', stroke: '#f5f9fc', lw: 5 });
+      else text(ctx, '?', icx, icy, { size: 30, fill: '#e4652f', stroke: '#fff8e6', lw: 5 });
     } else {
       const s = this.dish ? this.zone.assets.get('food', this.dish) : null;
       if (s) drawIcon(ctx, s, icx, icy, 46, { alpha: this.state === CS.WAIT ? 0.6 : 1 });

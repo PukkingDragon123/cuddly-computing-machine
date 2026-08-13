@@ -9,6 +9,12 @@ The edges are glossy and fade into the field rather than ending on a line, so
 alpha is a ramp over that distance instead of a threshold. A hard cut leaves a
 sawn-off rim on artwork drawn this way; the ramp keeps the gloss.
 
+Not currently wired in: the interface went back to the warm pack, which is what
+the whole palette is coloured to match. The sheet, the slicer and the names are
+kept so the blue set is one command away if it is ever wanted — running this
+writes the seven tiles into assets/ui, and skinIcons in src/ui/dom.js is the
+one place that decides which set the rail uses.
+
 Run from the repo root:  python3 tools/slice_pack05.py
 """
 

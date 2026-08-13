@@ -47,20 +47,18 @@ function add(el, kids) {
  * fallback for anything the pack does not cover.
  */
 export function skinIcons(assets) {
-  // The seven tiles of pack 05, one per rail button and no drawing used twice.
-  // The guest diary takes the creature tile rather than a notebook — it is a
-  // book about *them*, and three faces say that faster than a cover does.
-  // Anything the pack has no tile for keeps its drawn SVG: half a set of the
-  // pack's glossy tiles mixed with the pack's older warm cards was the thing
-  // that read as a mismatch, so nothing warm is skinned on any more.
+  // The cream cards from the original pack — the ones the whole interface is
+  // coloured to match. The Wheel keeps its drawn plate: the pack has no tile
+  // for it, and the drawn icons are in the same flat cream-and-brown as the
+  // cards, so it belongs in the column rather than standing out of it.
   const swap = {
-    'ico-hammer': 'tools',
-    'ico-book': 'recipes',
-    'ico-crate': 'market', 'ico-shop': 'market',
-    'ico-diary': 'crew', 'ico-crew': 'crew',
-    'ico-tools': 'list',
-    'ico-help': 'help',
-    'ico-plate': 'plate',
+    'ico-diary': 'diary', 'ico-book': 'recipes', 'ico-crate': 'market',
+    'ico-help': 'help', 'ico-hammer': 'tools', 'ico-shop': 'market',
+    'ico-lab': 'book',
+    // Settings gets the pack's list card, not the hammer. Build and Settings
+    // both pointed at tools.png, which put the same drawing twice in a rail of
+    // seven — the fastest way to make a column of icons unreadable.
+    'ico-tools': 'list', 'ico-crew': 'crew', 'ico-refresh': 'refresh',
   };
   const rules = [];
   for (const [cls, id] of Object.entries(swap)) {

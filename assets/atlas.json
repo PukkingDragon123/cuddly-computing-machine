@@ -1968,27 +1968,27 @@
   },
   {
    "id": "market",
-   "src": "ui/market.webp",
-   "w": 345,
-   "h": 371
+   "src": "ui/market.png",
+   "w": 85,
+   "h": 100
   },
   {
    "id": "crew",
-   "src": "ui/crew.webp",
-   "w": 353,
-   "h": 370
+   "src": "ui/crew.png",
+   "w": 98,
+   "h": 100
   },
   {
    "id": "tools",
-   "src": "ui/tools.webp",
-   "w": 346,
-   "h": 373
+   "src": "ui/tools.png",
+   "w": 104,
+   "h": 100
   },
   {
    "id": "help",
-   "src": "ui/help.webp",
-   "w": 323,
-   "h": 341
+   "src": "ui/help.png",
+   "w": 94,
+   "h": 100
   },
   {
    "id": "refresh",
@@ -1998,21 +1998,15 @@
   },
   {
    "id": "list",
-   "src": "ui/list.webp",
-   "w": 344,
-   "h": 347
+   "src": "ui/list.png",
+   "w": 98,
+   "h": 100
   },
   {
    "id": "recipes",
-   "src": "ui/recipes.webp",
-   "w": 355,
-   "h": 373
-  },
-  {
-   "id": "plate",
-   "src": "ui/plate.webp",
-   "w": 375,
-   "h": 347
+   "src": "ui/recipes.png",
+   "w": 119,
+   "h": 100
   }
  ],
  "cards": [

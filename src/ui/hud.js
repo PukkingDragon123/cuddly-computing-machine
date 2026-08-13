@@ -461,9 +461,16 @@ export class Hud {
     } else if (book === 'board') {
       // the notice board: not paginated, because a board is one surface you
       // scroll your eye down rather than a thing with leaves
-      this.el.sheetBody.append(
-        h('div.board', null,
-          h('div.board-notes', null, ...[].concat(spec.body ?? []).filter(Boolean))));
+      const notes = h('div.board-notes', null, ...[].concat(spec.body ?? []).filter(Boolean));
+      this.el.sheetBody.append(h('div.board', null, notes));
+      // ...and it opens at the job you are on. Forty-eight slips deep, a board
+      // that always opens at the top is a board you have to scroll past your
+      // own history to read.
+      requestAnimationFrame(() => {
+        const live = notes.querySelector('.slip-live');
+        if (!live) return;
+        notes.scrollTop = Math.max(0, live.offsetTop - notes.clientHeight * 0.32);
+      });
     } else {
       this.el.sheetBody.append(...[].concat(spec.body ?? []));
     }
