@@ -22,7 +22,7 @@ import {
 import { DIR_NAMES } from '../world/factory.js';
 import { settingRows } from './title.js';
 import { RANKS } from '../data/fame.js';
-import { CHAPTERS, QUESTS, SIDE_BY_ID } from '../data/quests.js';
+import { CHAPTERS, KEYS, QUESTS, SIDE_BY_ID } from '../data/quests.js';
 
 /** The wood each finish is painted in, for the swatch picker. */
 /**
@@ -1811,12 +1811,14 @@ export class Panels {
   }
 
   /**
-   * The job book.
+   * The board by the harbour door.
    *
-   * Every job in the game, chapter by chapter, ticked off as you go. The one on
-   * the HUD is only ever the next one — this is where you see how far along the
-   * whole thing you are, and it doubles as the manual: a job list that names
-   * every system beats a page of instructions nobody reads.
+   * Every job in the game, chapter by chapter, ticked off as you go — but on a
+   * pinboard rather than in a book, because that is what this actually is: work
+   * going spare, written on scraps and stuck up where anybody can take it. The
+   * one on the HUD is only ever the next slip off the board; this is where you
+   * see the whole wall of them, and it doubles as the manual, since a list of
+   * jobs that names every system beats a page of instructions nobody reads.
    */
   openQuests(keep = false) {
     this.reopen = () => this.openQuests(true);
@@ -1827,7 +1829,8 @@ export class Panels {
     const at = s.story?.at ?? 0;
     const spec = {
       key: 'quests',
-      title: 'Jobs',
+      title: 'The Job Board',
+      book: 'board',
       tabs: [
         { id: 'line', label: 'The line' },
         { id: 'side', label: 'Side jobs' },
@@ -1837,10 +1840,41 @@ export class Panels {
       onTab: (id) => { this.questTab = id; this.openQuests(true); },
       body,
       foot: h('div.rowline', null,
-        h('span.card-sub.grow', null, `${at} of ${QUESTS.length} done`),
+        h('span.card-sub.grow', null, `${at} of ${QUESTS.length} taken`),
         tag(s.rankName, 'tag-mint')),
     };
     keep ? this.hud.refreshSheet(spec) : this.hud.openSheet(spec);
+  }
+
+  /**
+   * One slip on the board.
+   *
+   * The tilt is picked off the slip's own position rather than at random, so a
+   * note does not jump to a new angle every time the panel is redrawn — a wall
+   * of paper that reshuffles itself while you look at it is worse than a wall
+   * of paper that is straight.
+   */
+  #slip({ art, title, sub, pct = null, count = null, coins, fame, state = 'open', extra = null }, i = 0) {
+    const tilt = [-2.4, 1.8, -1.1, 2.7, -3, 1.3, -1.9, 2.2][i % 8];
+    const tack = ['tack-a', 'tack-b', 'tack-c'][i % 3];
+    return h(`div.slip.${state}.${tack}`, { style: { '--tilt': `${tilt}deg` } },
+      h('span.slip-tack'),
+      art ? this.jobArt(art) : null,
+      h('div.slip-main', null,
+        h('b.slip-title', null, title),
+        sub ? h('span.slip-sub', null, sub) : null,
+        pct !== null ? h('span.slip-bar', null, h('i', {
+          style: { width: `${Math.round(pct * 100)}%` },
+        })) : null,
+        extra),
+      h('div.slip-side', null,
+        count ? h('span.slip-count', null, count) : null,
+        state === 'done'
+          ? h('span.slip-stamp', null, 'TAKEN')
+          : h('span.slip-pay', null,
+            h('span.rowline', null,
+              tag(`${money(coins)}`, 'tag-cost', 'sand'),
+              fame ? tag(`${fame}★`, 'tag-star') : null))));
   }
 
   /**
@@ -1880,33 +1914,28 @@ export class Panels {
     for (const chapter of CHAPTERS) {
       const from = n;
       const done = chapter.jobs.filter((_, i) => from + i < at).length;
-      const shut = from > at;
-      out.push(h('div.section', null, chapter.name,
-        h('span.section-n', null, `${done}/${chapter.jobs.length}`)));
+      out.push(h('div.board-head', null,
+        h('b', null, chapter.name),
+        h('span', null, `${done}/${chapter.jobs.length}`)));
       for (const job of chapter.jobs) {
         const i = n; n += 1;
         const got = i < at;
         const live = i === at;
         const prog = live ? this.game.story.progress(job) : null;
-        const last = i === n - 1 && job === chapter.jobs[chapter.jobs.length - 1];
-        out.push(h(`div.node${got ? '.on' : ''}${live ? '.live' : ''}${shut ? '.far' : ''}`, null,
-          h('div.node-rail', null,
-            h('span.node-bead', null, got ? '✓' : live ? '' : ''),
-            last ? null : h('span.node-line')),
-          h(`div.card.job${got ? '.on' : ''}${live ? '.live' : ''}${!got && !live ? '.thin' : ''}`, null,
-            this.jobArt(job.art),
-            h('div.card-main', null,
-              h('div.card-title', null, job.title),
-              live && job.hint ? h('div.card-sub', null, job.hint) : null,
-              live ? h('div.jobbar', null, h('i', {
-                style: { width: `${Math.round(prog.pct * 100)}%` },
-              })) : null),
-            h('div.card-side', null,
-              live && job.need > 1 ? h('span.card-sub', null, `${prog.have}/${job.need}`) : null,
-              got ? tag('done', 'tag-ok')
-                : h('span.rowline', null,
-                  tag(`${money(job.coins)}`, 'tag-cost', 'sand'),
-                  job.fame ? tag(`${job.fame}★`, 'tag-star') : null)))));
+        const key = KEYS[job.id];
+        out.push(this.#slip({
+          art: job.art,
+          title: job.title,
+          sub: live ? (job.hint ?? null) : null,
+          pct: live ? prog.pct : null,
+          count: live && job.need > 1 ? `${prog.have}/${job.need}` : null,
+          coins: job.coins,
+          fame: job.fame,
+          state: got ? 'done' : live ? 'live' : 'open',
+          // a job that hands over a key says so on the slip, so the reason to
+          // do this one rather than any other one is on the paper
+          extra: key && !got ? h('span.slip-key', null, `opens ${key.label}`) : null,
+        }, i));
       }
     }
     return out;
@@ -1922,20 +1951,23 @@ export class Panels {
    */
   #favours() {
     const s = this.state;
-    const rows = (s.favours ?? []).map((f) => this.#card({
-      src: this.assets.url('customers', f.species),
-      frames: this.assets.frameCount('customers', f.species),
+    const rows = (s.favours ?? []).map((f, i) => this.#slip({
+      art: { g: 'customers', id: f.species },
       title: `${f.who} would like…`,
       sub: RECIPE_BY_ID[f.dish]?.name ?? f.dish,
-      tags: [tag(money(f.coins), 'tag-cost', 'sand'), tag(`${f.fame}★`, 'tag-star'), tag('+3 ♥', 'tag-ok')],
-      cls: 'favour',
-    }));
+      coins: f.coins,
+      fame: f.fame,
+      state: 'live',
+      extra: h('span.slip-key', null, 'and three hearts'),
+    }, i));
     return [
-      h('div.note', null, 'One guest in twenty asks for something. Cook it and they remember you.'),
-      ...(rows.length ? rows : [h('div.empty', null, 'Nobody is asking for anything just now.')]),
-      h('div.section', null, 'Kept'),
-      this.#card({ icon: 'heart', title: 'Favours kept', sub: 'All time.',
-        tags: [tag(String(s.stats.favours ?? 0), 'tag-mint')] }),
+      h('div.board-head', null, h('b', null, 'Asked for'),
+        h('span', null, String(rows.length))),
+      ...(rows.length ? rows
+        : [h('div.board-empty', null, 'Nobody is asking for anything just now.')]),
+      h('div.board-head', null, h('b', null, 'Kept'),
+        h('span', null, String(s.stats.favours ?? 0))),
+      h('div.board-empty', null, 'One guest in twenty asks for something. Cook it and they remember you.'),
     ];
   }
 
@@ -1943,25 +1975,26 @@ export class Panels {
   #sideJobs() {
     const s = this.state;
     s.fillSide(this.game);
-    const rows = (s.side?.jobs ?? []).map((job) => {
+    const rows = (s.side?.jobs ?? []).map((job, i) => {
       const def = SIDE_BY_ID[job.id];
       if (!def) return null;
       let have = 0;
       try { have = Math.max(0, Math.min(def.need, (def.count(this.game) | 0) - job.from)); } catch { have = 0; }
-      return h('div.card.job.live', null,
-        this.jobArt(def.art ?? { ico: 'star' }),
-        h('div.card-main', null,
-          h('div.card-title', null, def.title),
-          h('div.jobbar', null, h('i', { style: { width: `${Math.round((have / def.need) * 100)}%` } }))),
-        h('div.card-side', null,
-          h('span.card-sub', null, `${money(have)}/${money(def.need)}`),
-          h('span.rowline', null,
-            tag(`${money(def.coins)}`, 'tag-cost', 'sand'),
-            tag(`${def.fame}★`, 'tag-star'))));
+      return this.#slip({
+        art: def.art ?? { ico: 'star' },
+        title: def.title,
+        pct: have / def.need,
+        count: `${money(have)}/${money(def.need)}`,
+        coins: def.coins,
+        fame: def.fame,
+        state: 'live',
+      }, i);
     }).filter(Boolean);
     return [
-      h('div.note', null, 'Three at a time. Finish one and another comes up.'),
+      h('div.board-head', null, h('b', null, 'Going spare'),
+        h('span', null, String(rows.length))),
       ...rows,
+      h('div.board-empty', null, 'Three at a time. Finish one and another goes up.'),
     ];
   }
 

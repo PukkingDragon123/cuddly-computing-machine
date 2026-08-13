@@ -23,47 +23,58 @@
 
 :root {
   /*
-   * Paper first, blue second.
+   * Cool paper, pastel signals.
    *
-   * The artwork is warm — cream cards, brown ink, wooden furniture — and a
-   * saturated blue field behind it makes every icon look pasted on. So the
-   * surfaces are essentially white, tinted only enough to read as cool, and
-   * the blue is spent where it does work: the ink, the accents, the one thing
-   * on the screen you are meant to press. A page is white; the writing on it
-   * is blue.
+   * The chrome — panels, rails, the books — is a near-white page with a cool
+   * cast, which is what the icon set is drawn on and what lets warm artwork sit
+   * on it without looking pasted. Colour is not spent on surfaces at all. It is
+   * spent on *what a thing means*, in one soft register so nothing shouts:
+   *
+   *   sun    butter   money
+   *   leaf   mint     go, and a pot that is coming along
+   *   coral  rose     blocked, burnt, walking out
+   *   mint   aqua     a count, a quantity, a neutral number
+   *   peach           the warm accent: tips, hearts, the small good things
+   *
+   * A cooking bar that fills green and a patience bar that slides green to red
+   * are read without reading. That is worth more than a scheme.
    */
   --paper: #fdfdfc;
   --panel: #f4f7f9;
   --panel-2: #e6edf2;
-  --tan: #d6e2ea;
-  --tan-deep: #adc4d4;
-  --tan-shadow: #7f9bb0;
+  --tan: #d8e3ea;
+  --tan-deep: #b0c4d1;
+  --tan-shadow: #85a0b0;
 
-  /* the muted blue that used to be stained wood: header bands and rails */
-  --wood: #7aa8c6;
-  --wood-deep: #4f89ac;
-  --wood-dark: #3a6a89;
+  /* the muted blue of the icon set: header bands, rails, the sign */
+  --wood: #8fb8d4;
+  --wood-deep: #5f92b6;
+  --wood-dark: #4a7590;
 
-  /* ink — slate rather than navy, so it sits with the brown in the artwork */
-  --ink: #33526a;
-  --ink-deep: #22394b;
-  --ink-soft: #53748c;
-  --ink-faint: #90a8ba;
+  /* ink — slate, so it sits with the brown line in the artwork */
+  --ink: #40586c;
+  --ink-deep: #2b3f4f;
+  --ink-soft: #5f7889;
+  --ink-faint: #9aaebb;
 
-  /* accents: one hue, four volumes */
-  --sun: #a9d5ec;          /* money */
-  --sun-deep: #4b97c2;
-  --sun-pale: #e9f3f9;
-  --tangerine: #4d92c4;    /* the thing to press */
-  --tangerine-deep: #336d97;
-  --mint: #cbe2ee;         /* a count */
-  --mint-deep: #86aec6;
-  --coral: #7f97ab;        /* blocked — the dull one */
-  --coral-deep: #445e74;
-  --coral-pale: #e8edf1;
-  --leaf: #6fbfdd;         /* go — the loud one */
-  --leaf-deep: #3d8dae;
-  --leaf-pale: #e3f2f8;
+  /* money */
+  --sun: #ffd98e;
+  --sun-deep: #dda23a;
+  --sun-pale: #fff4dc;
+  /* the warm accent — tips, hearts, the small good things */
+  --tangerine: #f4a97f;
+  --tangerine-deep: #cf7a4d;
+  /* a count */
+  --mint: #bde3e9;
+  --mint-deep: #71b2bd;
+  /* blocked, burnt, walked out */
+  --coral: #f6a6a2;
+  --coral-deep: #cb6b67;
+  --coral-pale: #fde6e5;
+  /* go, and a pot coming along nicely */
+  --leaf: #93d8aa;
+  --leaf-deep: #4d9c6a;
+  --leaf-pale: #e3f6ea;
 
   --r-lg: 1.4rem;
   --r-md: 0.95rem;
@@ -216,19 +227,11 @@ html, body {
   animation: railBob 3.4s ease-in-out infinite;
 }
 /*
- * Two of the pack's icons — the tools and the market crate — are drawn as bare
- * objects while the rest are drawn on little cream cards. In a rail of six that
- * reads as two of them having fallen off, so those two get the card the pack
- * did not draw for them: the same cream, the same brown line, measured off
- * help.png so it is the pack's card rather than an approximation of it.
+ * Nothing goes behind a rail icon any more. The old pack drew two of its seven
+ * as bare objects and they needed a card putting under them; pack 05 draws all
+ * seven as tiles, so the same rule now paints a card around a card — which is
+ * what it looked like.
  */
-.railbtn .ico-hammer,
-.railbtn .ico-crate {
-  background-color: #fdf0d7;
-  background-size: 74%;
-  border: 0.17rem solid #65452f;
-  border-radius: 1.05rem 0.5rem 0.95rem 0.55rem / 0.55rem 1rem 0.5rem 1rem;
-}
 /* how-to-play is a utility, not a destination, so it rides smaller */
 .railbtn-sm { width: 2.9rem; height: 2.9rem; opacity: .85 }
 .railbtn-sm .ico { width: 2.2rem; height: 2.2rem }
@@ -284,6 +287,76 @@ html, body {
 .railbtn:nth-child(4) { animation-delay: .26s }
 .railbtn:nth-child(5) { animation-delay: .33s }
 .railbtn:nth-child(6) { animation-delay: .4s }
+.railbtn:nth-child(7) { animation-delay: .47s }
+
+/* a button you have just earned ---------------------------------------- */
+
+/*
+ * It arrives, and it says so for a couple of seconds.
+ *
+ * The ring is on ::after and the bounce is on the icon inside — never on the
+ * button's own box, which has to stay a still target you can hit while all
+ * this is going on.
+ */
+.railbtn.arriving::after {
+  content: "";
+  position: absolute; inset: -0.4rem;
+  border: 0.2rem solid var(--sun-deep);
+  border-radius: 1.4rem;
+  animation: keyRing 1.1s ease-out 2;
+  pointer-events: none;
+}
+@keyframes keyRing {
+  0%   { transform: scale(.7); opacity: 0 }
+  40%  { opacity: .9 }
+  100% { transform: scale(1.25); opacity: 0 }
+}
+.railbtn.arriving .ico { animation: keyDrop .7s var(--spring) both }
+@keyframes keyDrop {
+  0%   { transform: translateX(3rem) scale(.5) rotate(20deg); opacity: 0 }
+  60%  { transform: translateX(-0.3rem) scale(1.18) rotate(-5deg); opacity: 1 }
+  100% { transform: none; opacity: 1 }
+}
+
+/* the card that says what it is, pinned beside it */
+.newkey {
+  position: fixed;
+  z-index: 12;
+  transform: translateY(-50%);
+  display: flex; flex-direction: column; gap: 0.1rem;
+  padding: 0.5rem 0.85rem;
+  border: var(--bw) solid var(--ink);
+  border-radius: var(--r-hand);
+  background-color: var(--paper);
+  text-align: right;
+  max-width: 13rem;
+  animation: keyCard .42s var(--spring) both;
+  pointer-events: none;
+}
+.newkey b { font-size: 0.95rem; font-weight: 900; color: var(--ink-deep) }
+.newkey span { font-size: 0.74rem; font-weight: 800; color: var(--ink-soft); line-height: 1.25 }
+.newkey::before {
+  content: "NEW";
+  position: absolute; left: -0.5rem; top: -0.6rem;
+  padding: 0.06rem 0.44rem;
+  border: 0.13rem solid var(--ink);
+  border-radius: 999px;
+  background: var(--sun);
+  color: var(--ink-deep);
+  font-size: 0.6rem; font-weight: 900; letter-spacing: .08em;
+  transform: rotate(-7deg);
+}
+.newkey.out { animation: keyCardOut .3s ease both }
+@keyframes keyCard {
+  from { opacity: 0; transform: translateY(-50%) translateX(1.6rem) scale(.9) }
+  to   { opacity: 1; transform: translateY(-50%) }
+}
+@keyframes keyCardOut {
+  to { opacity: 0; transform: translateY(-50%) translateX(1rem) scale(.95) }
+}
+@media (prefers-reduced-motion: reduce) {
+  .railbtn.arriving::after, .railbtn.arriving .ico, .newkey { animation: none }
+}
 
 .railbtn .badge { top: 0.1rem; right: 0.1rem }
 
@@ -1002,6 +1075,182 @@ html, body {
      page after they do */
   min-height: 3rem;
 }
+/* -------------------------------------------------------- the job board  */
+
+/*
+ * Work going spare, written on scraps and stuck up by the door.
+ *
+ * The whole thing is drawn rather than loaded: cork is a speckled tan field,
+ * the frame is four painted battens, and every job is a torn paper slip with a
+ * pin through it. The slips lean, but by an angle taken from their own place on
+ * the board rather than at random, so the wall does not reshuffle itself every
+ * time the panel is redrawn.
+ */
+.sheet.book-board .sheet-body { padding: 0 0.5rem; display: block; overflow: hidden }
+.board {
+  height: 100%;
+  border: 0.34rem solid var(--wood-deep);
+  border-radius: var(--r-hand);
+  background-color: #eadfc6;
+  background-image:
+    radial-gradient(circle at 12% 22%, rgba(150, 122, 84, .2) 0 0.08rem, transparent 0.09rem),
+    radial-gradient(circle at 63% 8%, rgba(150, 122, 84, .16) 0 0.06rem, transparent 0.07rem),
+    radial-gradient(circle at 84% 46%, rgba(150, 122, 84, .18) 0 0.09rem, transparent 0.1rem),
+    radial-gradient(circle at 33% 71%, rgba(150, 122, 84, .15) 0 0.07rem, transparent 0.08rem),
+    radial-gradient(circle at 8% 88%, rgba(150, 122, 84, .17) 0 0.05rem, transparent 0.06rem);
+  background-size: 7rem 7rem, 5rem 5rem, 9rem 9rem, 6rem 6rem, 4rem 4rem;
+  box-shadow: inset 0 0 2.4rem rgba(120, 96, 62, .22);
+  overflow: hidden;
+  display: flex; flex-direction: column;
+}
+/* four screws, one in each corner of the frame */
+.board::before, .board::after {
+  content: "";
+  position: absolute;
+  width: 0.5rem; height: 0.5rem;
+  border-radius: 999px;
+  background: var(--tan-shadow);
+  border: 0.1rem solid var(--ink);
+}
+.board::before { top: 0.5rem; left: 0.6rem }
+.board::after  { top: 0.5rem; right: 0.6rem }
+
+.board-notes {
+  flex: 1; min-height: 0;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  padding: 0.9rem 0.85rem 1.6rem;
+  display: flex; flex-direction: column; align-items: center; gap: 0.85rem;
+}
+.board-notes > * { flex: none }
+
+/* a chapter: a strip of masking tape with the name written on it */
+.board-head {
+  align-self: center;
+  display: flex; align-items: baseline; gap: 0.5rem;
+  margin: 0.5rem 0 0.1rem;
+  padding: 0.18rem 1.2rem;
+  background: rgba(255, 253, 244, .72);
+  border-left: 0.14rem dashed rgba(120, 96, 62, .3);
+  border-right: 0.14rem dashed rgba(120, 96, 62, .3);
+  transform: rotate(-0.8deg);
+}
+.board-head:first-child { margin-top: 0 }
+.board-head b { font-size: 0.84rem; font-weight: 900; color: var(--ink-deep); letter-spacing: .02em }
+.board-head span { font-size: 0.72rem; font-weight: 800; color: var(--ink-soft) }
+
+.board-empty {
+  align-self: center;
+  max-width: 22rem;
+  text-align: center;
+  padding: 0.5rem 0.8rem;
+  font-size: 0.76rem; font-weight: 800; color: #7a6448;
+}
+
+/* one slip ------------------------------------------------------------- */
+
+/*
+ * A slip is a scrap, so it is scrap-sized: narrower than the board, nudged off
+ * centre a different way each time, and leaning. Full-width rows in a neat
+ * column would be a list with a cork wallpaper behind it, which is not the
+ * same thing at all.
+ */
+.slip {
+  position: relative;
+  width: min(100%, 26rem);
+  display: flex; align-items: center; gap: 0.55rem;
+  padding: 0.55rem 0.7rem 0.55rem 0.6rem;
+  background: #fffdf4;
+  border: 0.13rem solid rgba(120, 96, 62, .3);
+  /* torn top and bottom, straight sides — paper off a pad */
+  border-radius: 0.2rem 0.35rem 0.25rem 0.3rem / 0.45rem 0.2rem 0.4rem 0.25rem;
+  box-shadow: 0.12rem 0.3rem 0.5rem rgba(96, 76, 48, .24);
+  transform: rotate(var(--tilt, 0deg)) translateX(var(--shift, 0));
+  transition: transform .14s var(--spring);
+}
+.slip:nth-of-type(3n+1) { --shift: -1.1rem }
+.slip:nth-of-type(3n+2) { --shift: 0.9rem }
+.slip:nth-of-type(3n)   { --shift: -0.3rem }
+/* the margin rule down the left, the way a pad has one */
+.slip::before {
+  content: "";
+  position: absolute; left: 0.42rem; top: 0.3rem; bottom: 0.3rem;
+  width: 0.07rem;
+  background: rgba(198, 118, 108, .3);
+}
+.slip:active { transform: rotate(var(--tilt, 0deg)) translateX(var(--shift, 0)) scale(.985) }
+.slip:hover { z-index: 2 }
+.slip-tack {
+  position: absolute; top: -0.42rem; left: 50%;
+  width: 0.78rem; height: 0.78rem;
+  margin-left: -0.39rem;
+  border-radius: 999px;
+  border: 0.13rem solid var(--ink);
+  box-shadow: 0 0.12rem 0 rgba(96, 76, 48, .3);
+}
+.tack-a .slip-tack { background: var(--coral) }
+.tack-b .slip-tack { background: var(--mint) }
+.tack-c .slip-tack { background: var(--sun) }
+
+.slip .job-art { flex: none }
+.slip-main { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 0.14rem }
+.slip-title { font-size: 0.88rem; font-weight: 900; color: var(--ink-deep); line-height: 1.15 }
+.slip-sub { font-size: 0.72rem; font-weight: 800; color: #7a6448; line-height: 1.25 }
+.slip-key {
+  align-self: flex-start;
+  margin-top: 0.12rem;
+  padding: 0.04rem 0.42rem;
+  border: 0.11rem solid var(--sun-deep);
+  border-radius: 999px;
+  background: var(--sun-pale);
+  font-size: 0.62rem; font-weight: 900; color: var(--sun-deep);
+  letter-spacing: .02em;
+}
+.slip-bar {
+  display: block; height: 0.42rem; margin-top: 0.16rem;
+  border-radius: 999px;
+  background: rgba(120, 96, 62, .16);
+  overflow: hidden;
+}
+.slip-bar i { display: block; height: 100%; background: var(--leaf); border-radius: 999px }
+.slip-side { flex: none; display: flex; flex-direction: column; align-items: flex-end; gap: 0.16rem }
+.slip-count { font-size: 0.7rem; font-weight: 900; color: var(--ink-soft); font-variant-numeric: tabular-nums }
+
+/* the one you are on: brighter paper, a wider pin, and it sits straight */
+.slip.live {
+  background: #fffefa;
+  border-color: var(--leaf-deep);
+  border-width: 0.17rem;
+  --tilt: 0deg;
+  --shift: 0rem;
+  width: min(100%, 27.5rem);
+  box-shadow: 0.12rem 0.36rem 0.6rem rgba(96, 76, 48, .3);
+}
+.slip.live .slip-tack { background: var(--leaf); width: 0.95rem; height: 0.95rem; margin-left: -0.48rem }
+
+/* one already taken: gone yellow, and stamped */
+.slip.done { background: #f6f0e0; opacity: .78 }
+.slip.done .slip-title { color: var(--ink-soft) }
+.slip-stamp {
+  padding: 0.06rem 0.42rem;
+  border: 0.13rem solid var(--leaf-deep);
+  border-radius: 0.2rem;
+  color: var(--leaf-deep);
+  font-size: 0.62rem; font-weight: 900; letter-spacing: .12em;
+  transform: rotate(-8deg);
+}
+
+/* still to come: face down, so the board reads as work you have not read yet */
+.slip.open .job-art { opacity: .5 }
+.slip.open .slip-title { color: #6d5a42 }
+
+@media (prefers-reduced-motion: reduce) {
+  .slip, .board-head { transform: none }
+}
+@media (max-width: 34rem) {
+  .slip { width: 100%; --shift: 0rem }
+}
+
 .sheet.book .sheet-foot > .rowline {
   flex: 0 1 auto;
   border: var(--bw) solid var(--ink);
@@ -1933,7 +2182,7 @@ body.still .tutor-hole { animation: none }
 @media (prefers-reduced-motion: reduce) {
   .boot-sun, .boot-gulls i, .boot-wave, .boot-sea::after,
   .boot-flags, .boot-flags i, .boot-sky, .boot-chef, .boot-pan,
-  .boot-spat, .boot-steam, .boot-tap { animation: none }
+  .boot-spat, .boot-steam, .boot-tap, .boot-plated { animation: none }
   .boot-gulls, .boot-steam { display: none }
 }
 
@@ -2301,6 +2550,86 @@ body.still .tutor-hole { animation: none }
   pointer-events: none;
 }
 
+/* the cooking ring, exactly what the pass draws over a dish that is on */
+.boot-ring {
+  --at: 0;
+  position: absolute; left: 50%; bottom: calc(2.1 * var(--bs));
+  width: calc(9.4 * var(--bs)); height: calc(9.4 * var(--bs));
+  margin-left: calc(-4.7 * var(--bs));
+  border-radius: 999px;
+  background:
+    conic-gradient(from -90deg, var(--leaf) calc(var(--at) * 360deg), rgba(70, 105, 130, .13) 0);
+  /* a ring, not a pie: the middle is punched out */
+  mask: radial-gradient(circle, transparent 0 66%, #000 67%);
+  -webkit-mask: radial-gradient(circle, transparent 0 66%, #000 67%);
+  pointer-events: none;
+  transition: background .18s linear;
+}
+
+/* the finished dish, flung up out of the pot */
+.boot-served {
+  position: absolute;
+  width: 4.4rem; height: 4.4rem;
+  margin-left: -2.2rem;
+  background: center / contain no-repeat;
+  animation: bootServe 1s cubic-bezier(.18,.9,.4,1) forwards;
+  pointer-events: none;
+}
+@keyframes bootServe {
+  0%   { opacity: 0; transform: translateY(1rem) scale(.4) rotate(-25deg) }
+  25%  { opacity: 1 }
+  60%  { transform: translateY(-4.2rem) scale(1.15) rotate(8deg) }
+  100% { opacity: 0; transform: translateY(-6.4rem) scale(.9) rotate(14deg) }
+}
+
+/* and the little burst that comes up with it */
+.boot-spark {
+  position: absolute;
+  width: 0.42rem; height: 0.42rem;
+  border-radius: 999px;
+  background: var(--sun);
+  border: 0.1rem solid var(--sun-deep);
+  animation: bootSpark .8s ease-out forwards;
+  pointer-events: none;
+}
+@keyframes bootSpark {
+  0%   { opacity: 1; transform: translate(0, 0) scale(.4) }
+  100% { opacity: 0; transform: translate(var(--dx), var(--dy)) scale(1.15) }
+}
+
+/* the shelf above the hob, where the plated ones go */
+/* a real plank, so the plated dishes are standing on something */
+.boot-shelf {
+  position: relative;
+  display: flex; align-items: flex-end; justify-content: center;
+  gap: 0.5rem;
+  min-height: 4rem;
+  width: 15rem; max-width: 80vw;
+  margin: 0 auto 0.9rem;
+  padding: 0 0.7rem 0.55rem;
+  border-bottom: 0.42rem solid var(--wood-deep);
+  border-radius: 0 0 0.3rem 0.34rem;
+}
+/* two brackets under it */
+.boot-shelf::before, .boot-shelf::after {
+  content: "";
+  position: absolute; top: 100%;
+  width: 0.55rem; height: 0.85rem;
+  background: var(--wood-dark);
+  border-radius: 0 0 0.3rem 0.3rem;
+}
+.boot-shelf::before { left: 2.2rem }
+.boot-shelf::after  { right: 2.2rem }
+.boot-plated {
+  width: 2.9rem; height: 2.9rem;
+  background: center / contain no-repeat;
+  animation: bootPlated .5s var(--spring) both;
+}
+@keyframes bootPlated {
+  from { opacity: 0; transform: translateY(-1.6rem) scale(.5) rotate(-14deg) }
+  to   { opacity: 1; transform: none }
+}
+
 /* the splash a stir throws over the rim */
 .boot-splash {
   position: absolute;
@@ -2519,6 +2848,23 @@ body.still .tutor-hole { animation: none }
 .sign-go { background-color: var(--leaf) }
 .sign-go .sign-text { color: #fff; text-shadow: 0 0.08rem 0 rgba(0, 0, 0,.28) }
 .sign-sun { background-color: var(--sun) }
+/*
+ * Painted slats. Two soft bands across the board and a lighter strip along the
+ * top edge: enough that it reads as a piece of wood somebody lettered by hand,
+ * without becoming a texture. `background-color` is set per sign above, so this
+ * has to be `background-image` only or it would blank it.
+ */
+.sign::after {
+  content: "";
+  position: absolute; inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  background-image:
+    linear-gradient(rgba(255, 255, 255, .3) 0 22%, rgba(255, 255, 255, 0) 24%),
+    repeating-linear-gradient(
+      rgba(0, 0, 0, 0) 0 1.05rem,
+      rgba(120, 96, 62, .07) 1.05rem 1.12rem);
+}
 /* the nail it hangs off */
 .sign-pin {
   position: absolute; top: -1.35rem; left: 50%;

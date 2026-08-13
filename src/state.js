@@ -16,10 +16,12 @@ import {
   flyerDraw, potteryLevel,
 } from './data/progress.js';
 import { RANKS, rankAt, rankProgress, toNextRank } from './data/fame.js';
-import { SIDE, SIDE_BY_ID, SIDE_SLOTS } from './data/quests.js';
+import {
+  KEYS, QUESTS, SIDE, SIDE_BY_ID, SIDE_SLOTS, STARTER_KEYS,
+} from './data/quests.js';
 
 const KEY = 'bubbleworks.harbor.save.v1';
-const VERSION = 9;
+const VERSION = 10;
 export const SAVE_KEY = KEY;
 
 function fresh() {
@@ -60,6 +62,7 @@ function fresh() {
     tutorial: { step: 0, done: false },
     auto: false,                     // keep the menu topped up from the larder
     story: { at: 0, seen: [] },      // how far the chef's story has got
+    keys: [...STARTER_KEYS],         // which parts of the game are open — see data/quests.js
     side: { jobs: [] },              // three standing side jobs, see fillSide()
     favours: [],                     // what the room is asking for right now
     seenHelp: false,
@@ -118,6 +121,23 @@ function migrate(data) {
     ...(data.stats ?? {}),
   };
   data.story ??= { at: 0, seen: [] };
+  // Keys were added in v10. An older save has already earned whatever its job
+  // list says it has, so hand those over rather than taking buttons away from
+  // somebody who has been using them for a week.
+  if (!Array.isArray(data.keys)) {
+    data.keys = [...STARTER_KEYS];
+    const at = data.story.at ?? 0;
+    for (const [questId, k] of Object.entries(KEYS)) {
+      const i = QUESTS.findIndex((q) => q.id === questId);
+      if (i >= 0 && at > i) data.keys.push(k.key);
+    }
+    // and anything the save is plainly already using, whatever the job list says
+    if ((data.machines ?? []).length) data.keys.push('factory');
+    if (Object.keys(data.diary ?? {}).length) data.keys.push('diary');
+    if ((data.stats?.bought ?? 0) > 0) data.keys.push('market');
+    if (Object.keys(data.dishes ?? {}).length || data.pottery > 0) data.keys.push('plates');
+    data.keys = [...new Set(data.keys)];
+  }
   data.side ??= { jobs: [] };
   data.favours = [];   // they belong to guests who are no longer in the room
   // the pens are gone, so their machines and the two recipes that needed them
@@ -172,7 +192,7 @@ export class GameState {
       pottery: this.pottery, clay: this.clay, dishes: this.dishes,
       catch: this.catch,
       market: this.market, settings: this.settings, tutorial: this.tutorial,
-      auto: this.auto, story: this.story, side: this.side,
+      auto: this.auto, story: this.story, side: this.side, keys: this.keys,
       furniture: this.furniture.map(({ c, r, id, style, rot }) => ({ c, r, id, style, rot })),
       machines: this.machines.map(({ c, r, kind, id, dir, level, buf }) =>
         ({ c, r, kind, id, dir, level, buf })),
@@ -202,6 +222,27 @@ export class GameState {
     for (const [k, v] of Object.entries(snap)) this[k] = v;
     this.bus.emit('phase', this.phase);
     this.bus.emit('change');
+  }
+
+  /* ----------------------------------------------------------------- keys */
+
+  /**
+   * Is this part of the game open yet?
+   *
+   * Unknown keys read as open, deliberately: a feature that forgot to declare
+   * itself should be reachable, not silently missing. Only the four in
+   * data/quests.js are ever actually shut.
+   */
+  hasKey(key) { return !key || (this.keys ?? []).includes(key); }
+
+  /** Hand one over. Returns false if they already had it. */
+  grantKey(key) {
+    this.keys ??= [];
+    if (this.keys.includes(key)) return false;
+    this.keys.push(key);
+    this.save();
+    this.bus.emit('change');
+    return true;
   }
 
   /* ------------------------------------------------------------- currency */

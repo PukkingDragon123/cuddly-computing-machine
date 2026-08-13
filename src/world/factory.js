@@ -14,7 +14,7 @@ import {
   machineInterval, machineUpgradeCost,
 } from '../data/catalog.js';
 import {
-  INK, blueprint, contactShadow, drawIcon, drawSprite, ring, squash, sticker, text,
+  INK, PAL, blueprint, contactShadow, drawIcon, drawSprite, ring, squash, sticker, text,
 } from '../gfx/paint.js';
 
 export const MACHINE_SCALE = 0.72;
@@ -669,8 +669,7 @@ export class Factory {
       const y = s.y - 142;
       const out = this.assets.get('ingredients', m.def.out);
       if (out) drawIcon(ctx, out, s.x, y, 30);
-      // running is the bright ring, jammed is the flat dark one
-      ring(ctx, s.x, y, 22, pct, { lw: 4, fill: m.blocked ? '#22405f' : '#4fbdec' });
+      ring(ctx, s.x, y, 22, pct, { lw: 4, fill: m.blocked ? PAL.coralDeep : PAL.leaf });
 
       // level pips
       for (let i = 0; i < m.level; i++) {
@@ -723,7 +722,7 @@ export class Factory {
       ok: g.ok,
     });
     Room.outlineTile(ctx, g.c, g.r, g.ok ? 'ok' : 'bad', t);
-    if (g.kind !== 'silo') this.#arrow(ctx, s, g.dir, g.ok ? '#2f9fd4' : '#20405e');
+    if (g.kind !== 'silo') this.#arrow(ctx, s, g.dir, g.ok ? PAL.leafDeep : PAL.coralDeep);
   }
 
   /** Output-direction arrow on the tile a machine feeds. */

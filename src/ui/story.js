@@ -10,7 +10,7 @@ import { $, h, show } from './dom.js';
 import { CHEF_SPRITE } from '../data/catalog.js';
 import { CHEF_NAME } from '../data/guests.js';
 import { toScreen } from '../world/iso.js';
-import { QUESTS, SIDE_BY_ID } from '../data/quests.js';
+import { KEYS, QUESTS, SIDE_BY_ID } from '../data/quests.js';
 
 /**
  * Scripted moments. `at` names what the camera should look at; `when` is
@@ -357,6 +357,16 @@ export class Story {
     this.el.quest.classList.add('ding');
     setTimeout(() => this.el.quest.classList.remove('ding'), 700);
     setTimeout(() => this.aside([q.done]), 1500);
+
+    // some jobs hand over a key. It lands after the banner has had its moment,
+    // so the two rewards are read one at a time rather than on top of each other
+    const key = KEYS[q.id];
+    if (key && s.grantKey(key.key)) {
+      setTimeout(() => {
+        this.game.sfx.play('star');
+        this.game.hud.revealKey(key);
+      }, 900);
+    }
     this.qSig = null;
   }
 

@@ -52,34 +52,42 @@
       already rests — a phone game's shortcut column. Every label lives in the
       panel it opens, so the rail stays a column of pictures and the room keeps
       the screen.
+
+      It starts short. Four of these are behind a job (data-need, see
+      data/quests.js) and drop into the column the moment you earn them, which
+      is why a new game opens on three buttons rather than seven.
     -->
     <div class="corner top-right">
       <nav class="rail" id="rail">
-        <button class="railbtn" id="btn-build" aria-label="Build" title="Build">
+        <button class="railbtn" id="btn-build" data-need="build" aria-label="Build" title="Build">
           <i class="ico ico-hammer"></i>
         </button>
-        <button class="railbtn" id="btn-recipes" aria-label="Kitchen" title="Kitchen">
+        <button class="railbtn" id="btn-recipes" data-need="kitchen" aria-label="Kitchen" title="Kitchen">
           <i class="ico ico-book"></i>
           <span class="badge hidden" data-bind="menu-badge">0</span>
         </button>
-        <button class="railbtn" id="btn-pantry" aria-label="Inventory" title="Inventory">
+        <button class="railbtn" id="btn-pantry" data-need="market" aria-label="Inventory" title="Inventory">
           <i class="ico ico-crate"></i>
         </button>
-        <button class="railbtn" id="btn-diary" aria-label="Guest Diary" title="Guest Diary">
+        <button class="railbtn" id="btn-diary" data-need="diary" aria-label="Guest Diary" title="Guest Diary">
           <i class="ico ico-diary"></i>
         </button>
-        <button class="railbtn" id="btn-menu" aria-label="Settings" title="Settings">
-          <i class="ico ico-tools"></i>
-          <span class="badge hidden" data-bind="research-badge">0</span>
+        <button class="railbtn" id="btn-plate" data-need="plates" aria-label="The Wheel" title="The Wheel">
+          <i class="ico ico-plate"></i>
         </button>
-        <button class="railbtn" id="btn-quests" aria-label="Jobs" title="Jobs">
+        <button class="railbtn" id="btn-quests" data-need="jobs" aria-label="Jobs" title="Jobs">
           <i class="ico ico-help"></i>
           <span class="badge hidden" data-bind="quest-badge">0</span>
+        </button>
+        <button class="railbtn" id="btn-menu" data-need="settings" aria-label="Settings" title="Settings">
+          <i class="ico ico-tools"></i>
+          <span class="badge hidden" data-bind="research-badge">0</span>
         </button>
       </nav>
     </div>
 
-    <div class="zoneswitch" id="zoneswitch">
+    <!-- also behind a job: there is no works until the harbour gives you one -->
+    <div class="zoneswitch hidden" id="zoneswitch">
       <button data-zone="restaurant" class="on">Restaurant</button>
       <button data-zone="factory">Factory</button>
     </div>
@@ -267,6 +275,8 @@
     <div class="boot-flags"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
 
     <div class="boot-card">
+      <!-- what he has plated so far goes up here, newest on the right -->
+      <div class="boot-shelf" id="boot-shelf"></div>
       <div class="boot-scene" id="boot-scene">
         <div class="boot-drops" id="boot-drops"></div>
         <div class="boot-chef"><span class="boot-shadow"></span></div>
@@ -276,6 +286,12 @@
           <span class="boot-steam s2"></span>
           <span class="boot-steam s3"></span>
           <span class="boot-pan"></span>
+          <!--
+            The same ring the kitchen draws over the pass while a dish is on:
+            one conic sweep, driven by --at from the boot script. It is the
+            game's own cooking readout, not a second idea about cooking.
+          -->
+          <span class="boot-ring" id="boot-ring"></span>
           <!-- the hand goes round; the blade tips with it. That is a stir. -->
           <span class="boot-hand"><span class="boot-spat" id="boot-spat"></span></span>
         </div>
@@ -285,7 +301,7 @@
       <div class="boot-plate">
         <div class="boot-stir">
           <span id="boot-combo" class="boot-combo"></span>
-          <span class="boot-tap" id="boot-tap">tap the pot to stir</span>
+          <span class="boot-tap" id="boot-tap">tap the pot — a stir cooks it faster</span>
         </div>
         <div class="boot-bar"><i id="boot-fill"></i><b id="boot-pct">0%</b></div>
         <p id="boot-msg">Filling the tanks…</p>

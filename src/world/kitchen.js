@@ -4,7 +4,9 @@
 import { HALF_H, toScreen } from './iso.js';
 import { rnd, uid } from '../core/util.js';
 import { makeSpring, spring } from '../core/tween.js';
-import { contactShadow, drawIcon, drawSprite, ring, squash, sticker, text } from '../gfx/paint.js';
+import {
+  PAL, contactShadow, drawIcon, drawSprite, ring, squash, sticker, text,
+} from '../gfx/paint.js';
 import { CHEF_SPRITE } from '../data/catalog.js';
 import { plateFor } from '../data/progress.js';
 
@@ -250,7 +252,7 @@ export class Kitchen {
     if (active) {
       const s = this.zone.assets.get('food', active.recipeId);
       if (s) drawIcon(ctx, s, p.x, y, 34);
-      ring(ctx, p.x, y, 25, Math.min(1, active.t / active.dur), { lw: 4.5, fill: '#4382d0' });
+      ring(ctx, p.x, y, 25, Math.min(1, active.t / active.dur), { lw: 4.5, fill: PAL.leaf });
     }
     const waiting = this.tickets.length + Math.max(0, this.cooking.length - 1);
     if (waiting > 0) {

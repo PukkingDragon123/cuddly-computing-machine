@@ -22,70 +22,156 @@ const LINES = [
 ];
 
 /**
- * Something to do while the art arrives.
+ * Something to do while the art arrives — and it is the game's own cooking.
  *
- * Tap the pot: the spatula swings, the pot shakes, an ingredient drops in and
- * the count goes up. It changes nothing in the game and it is not meant to —
- * a loading bar you are allowed to play with stops being a loading bar. It
- * needs no atlas, because the two sprites it uses are loaded straight off disk.
+ * Tako works a real ticket: ingredients go in one at a time, the ring round the
+ * pot fills the way it does over the pass in the kitchen, and when it closes a
+ * finished dish pops out and goes up on the shelf. Then he starts the next one.
+ * Tapping the pot stirs it, and a stir actually cooks — it drives the ring on,
+ * so playing with the loading screen makes the loading screen do something.
+ *
+ * Everything it uses is a file the game loads anyway: `assets/ingredients/*`
+ * and `assets/food/*` are read straight off disk with no atlas, so this runs
+ * before a single line of the game exists.
  */
+const BOOT_ING = [
+  'kelp', 'egg', 'milk', 'flour', 'butter', 'scallop', 'potato', 'clam',
+  'tomato', 'lemon', 'carrot', 'cabbage', 'strawberry', 'coconut', 'nori',
+  'rice', 'cheese', 'onion', 'oyster', 'crab',
+];
+const BOOT_DISH = [
+  'kelp_latte', 'kelp_ramen', 'scallop_tart', 'miso_chowder', 'sea_roll',
+  'lobster_roll', 'clam_congee', 'shrimp_toast', 'pearl_boba', 'oyster_plate',
+];
+
 function bootGame() {
   const pot = document.getElementById('boot-pot');
   const drops = document.getElementById('boot-drops');
   const combo = document.getElementById('boot-combo');
   const stir = combo?.parentElement;
+  const ring = document.getElementById('boot-ring');
+  const shelf = document.getElementById('boot-shelf');
   if (!pot || !drops) return;
 
-  const FOOD = [
-    'kelp', 'egg', 'milk', 'flour', 'butter', 'scallop', 'potato', 'clam',
-    'tomato', 'lemon', 'carrot', 'cabbage', 'strawberry', 'coconut',
-  ];
-  let stirs = 0;
-  let clearT = null;
+  const el = (cls, style) => {
+    const e = document.createElement('span');
+    e.className = cls;
+    Object.assign(e.style, style);
+    return e;
+  };
+  const gone = (e, ms) => setTimeout(() => e.remove(), ms);
+  const pick = (a) => a[(Math.random() * a.length) | 0];
 
+  let cooked = 0;
+  let progress = 0;          // 0..1 through the dish on the hob
+  let dish = pick(BOOT_DISH);
+  let stopped = false;
+
+  /** A splash of pot over the rim. */
+  const splash = (n = 5) => {
+    for (let i = 0; i < n; i++) {
+      const a = (-142 + Math.random() * 104) * (Math.PI / 180);
+      const d = 1.6 + Math.random() * 1.8;
+      const sp = el('boot-splash', {
+        left: `${40 + Math.random() * 24}%`,
+        bottom: '8.4rem',
+        animationDelay: `${i * 0.03}s`,
+      });
+      sp.style.setProperty('--dx', `${Math.cos(a) * d}rem`);
+      sp.style.setProperty('--dy', `${Math.sin(a) * d}rem`);
+      drops.append(sp);
+      gone(sp, 900);
+    }
+  };
+
+  /** One ingredient thrown in from the side. */
+  const feed = () => {
+    const d = el('boot-drop', {
+      backgroundImage: `url("assets/ingredients/${pick(BOOT_ING)}.png")`,
+      left: `${30 + Math.random() * 30}%`,
+      bottom: '5.8rem',
+    });
+    drops.append(d);
+    gone(d, 1200);
+  };
+
+  /** The ticket lands: the dish flies up out of the pot and onto the shelf. */
+  const serve = () => {
+    const up = el('boot-served', {
+      backgroundImage: `url("assets/food/${dish}.png")`,
+      left: '46%',
+      bottom: '9rem',
+    });
+    drops.append(up);
+    gone(up, 1000);
+    for (let i = 0; i < 10; i++) {
+      const a = (Math.random() * 360) * (Math.PI / 180);
+      const r = 2 + Math.random() * 2.4;
+      const sp = el('boot-spark', {
+        left: `${44 + Math.random() * 10}%`,
+        bottom: '9.6rem',
+        animationDelay: `${i * 0.02}s`,
+      });
+      sp.style.setProperty('--dx', `${Math.cos(a) * r}rem`);
+      sp.style.setProperty('--dy', `${Math.sin(a) * r - 1}rem`);
+      drops.append(sp);
+      gone(sp, 800);
+    }
+    // and it goes up on the shelf, oldest sliding off the end
+    if (shelf) {
+      const plated = el('boot-plated', {
+        backgroundImage: `url("assets/food/${dish}.png")`,
+      });
+      shelf.append(plated);
+      while (shelf.children.length > 6) shelf.firstElementChild.remove();
+    }
+    cooked += 1;
+    if (combo) {
+      stir?.classList.add('on');
+      combo.textContent = `${cooked} plated`;
+      combo.classList.remove('pop');
+      void combo.offsetWidth;
+      combo.classList.add('pop');
+    }
+    sfx.play('star');
+    dish = pick(BOOT_DISH);
+    progress = 0;
+  };
+
+  /** Push the ticket along and repaint the ring. */
+  const advance = (by) => {
+    progress += by;
+    if (ring) ring.style.setProperty('--at', String(Math.min(1, progress)));
+    if (progress >= 1) serve();
+  };
+
+  // the hob runs on its own — a loading screen you never touch still cooks
+  let feedT = 0;
+  const tick = () => {
+    if (stopped) return;
+    advance(0.028);
+    feedT += 1;
+    if (feedT % 7 === 0) feed();
+    setTimeout(tick, 190);
+  };
+  setTimeout(tick, 400);
+
+  // ...and a stir is worth six seconds of standing there watching it
   pot.onpointerdown = () => {
-    stirs += 1;
     pot.classList.remove('stir');
     void pot.offsetWidth;
     pot.classList.add('stir');
-
-    const food = FOOD[(Math.random() * FOOD.length) | 0];
-    const drop = document.createElement('span');
-    drop.className = 'boot-drop';
-    drop.style.backgroundImage = `url("assets/ingredients/${food}.png")`;
-    drop.style.left = `${28 + Math.random() * 34}%`;
-    drop.style.bottom = '5.8rem';
-    drops.append(drop);
-    setTimeout(() => drop.remove(), 1200);
-
-    // a handful of drops thrown over the rim, so a stir splashes
-    for (let i = 0; i < 5; i++) {
-      const sp = document.createElement('span');
-      sp.className = 'boot-splash';
-      const a = (-140 + Math.random() * 100) * (Math.PI / 180);
-      const d = 1.6 + Math.random() * 1.6;
-      sp.style.setProperty('--dx', `${Math.cos(a) * d}rem`);
-      sp.style.setProperty('--dy', `${Math.sin(a) * d}rem`);
-      sp.style.left = `${40 + Math.random() * 24}%`;
-      sp.style.bottom = '8.4rem';
-      sp.style.animationDelay = `${i * 0.03}s`;
-      drops.append(sp);
-      setTimeout(() => sp.remove(), 900);
-    }
-
-    stir?.classList.add('on');
-    combo.textContent = `${stirs} stir${stirs === 1 ? '' : 's'}`;
-    combo.classList.remove('pop');
-    void combo.offsetWidth;
-    combo.classList.add('pop');
-    clearTimeout(clearT);
-    clearT = setTimeout(() => stir?.classList.remove('on'), 4000);
-    sfx.play(stirs % 8 === 0 ? 'star' : 'tap');
+    feed();
+    splash();
+    advance(0.075);
+    sfx.play('tap');
   };
+
+  return () => { stopped = true; };
 }
 
 async function main() {
-  bootGame();
+  const stopBoot = bootGame();
   let line = 0;
   const assets = await loadAssets((at) => {
     const n = Math.round(at * 100);
@@ -112,6 +198,7 @@ async function main() {
   window.addEventListener('keydown', arm);
 
   msg.textContent = 'Ready!';
+  stopBoot?.();
   boot.classList.add('gone');
   setTimeout(() => boot.remove(), 450);
 

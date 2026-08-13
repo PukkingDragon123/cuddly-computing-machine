@@ -188,6 +188,35 @@ export const QUEST_COUNT = QUESTS.length;
 /** Which chapter a job belongs to, for the book's headings. */
 export const chapterOf = (id) => CHAPTERS.find((c) => c.jobs.some((j) => j.id === id));
 
+/* ------------------------------------------------------------------- keys */
+
+/**
+ * Jobs that hand you a key.
+ *
+ * A new game used to open on six buttons, a zone switch and four books, which
+ * is a lot of furniture to be handed by somebody you have just met. Now the
+ * screen starts with the three things the first shift actually needs and the
+ * rest arrive as you earn them — each one announced, so a new button is a
+ * reward rather than something that was always there and you had not noticed.
+ *
+ * The pairings are all "the job teaches you the thing": the doors open, so you
+ * need a larder; you have served people, so there is a diary worth keeping;
+ * the works open at Quayside Stall; you build the kiln, so you get the wheel.
+ */
+export const KEYS = {
+  open: { key: 'market', label: 'The Larder', blurb: 'Buy in, and see what you have.' },
+  serve: { key: 'diary', label: 'The Guest Diary', blurb: 'Who came in, and what they love.' },
+  r2: { key: 'factory', label: 'The Works', blurb: 'The room out the back is yours.' },
+  kilnup: { key: 'plates', label: 'The Wheel', blurb: 'Throw and fire your own serving dishes.' },
+};
+
+/** Everything a brand-new save can already reach. */
+export const STARTER_KEYS = ['build', 'kitchen', 'jobs', 'settings'];
+
+/** Key -> the job that hands it over, for the locked-button message. */
+export const KEY_SOURCE = Object.fromEntries(
+  Object.entries(KEYS).map(([questId, k]) => [k.key, questId]));
+
 /* -------------------------------------------------------------- side jobs */
 
 /**

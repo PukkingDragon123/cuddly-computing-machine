@@ -2,7 +2,37 @@
 
 import { TAU, clamp } from '../core/util.js';
 
-export const INK = '#1d2f3c';
+export const INK = '#2b3f4f';
+
+/**
+ * The same five words the stylesheet uses, for things drawn on the canvas.
+ *
+ * The room and the interface have to agree about what a colour means, or a
+ * green ring on the floor and a green pill in a panel end up saying different
+ * things. These are the CSS custom properties written out in JS, because the
+ * canvas cannot read them: sun is money, leaf is coming along nicely, coral is
+ * blocked or burnt, mint is a plain quantity, peach is a small warm reward.
+ *
+ * `PAL.ramp(t)` is the one that earns its keep — patience, freshness, anything
+ * running out. Full is green, half is butter, empty is rose, and you read it
+ * across the room without reading it.
+ */
+export const PAL = {
+  sun: '#ffd98e', sunDeep: '#dda23a',
+  leaf: '#93d8aa', leafDeep: '#4d9c6a', leafPale: '#e3f6ea',
+  coral: '#f6a6a2', coralDeep: '#cb6b67', coralPale: '#fde6e5',
+  mint: '#bde3e9', mintDeep: '#71b2bd',
+  peach: '#f4a97f', peachDeep: '#cf7a4d',
+  paper: '#fdfdfc', panel: '#f4f7f9',
+  ink: INK, inkSoft: '#5f7889', inkFaint: '#9aaebb',
+
+  /** 1 = green and fine, 0 = red and out of time. */
+  ramp(t) {
+    if (t > 0.55) return '#93d8aa';
+    if (t > 0.28) return '#ffd08a';
+    return '#f28e89';
+  },
+};
 
 /* ------------------------------------------------------------ primitives */
 
@@ -137,10 +167,8 @@ export function blueprint(ctx, sprite, frame, x, y, {
   if (!sprite) return;
   const { sx, sy, sw, sh } = sprite.rect(frame);
   const w = sw * scale, h = sh * scale;
-  // "here" and "not here" cannot both be blue at the same brightness, so the
-  // usable ghost is a bright cyan on white and the blocked one is flat navy
-  const ink = ok ? '#2f9fd4' : '#20405e';
-  const line = ok ? '#f7fbfd' : '#93aec5';
+  const ink = ok ? PAL.leafDeep : PAL.coralDeep;
+  const line = ok ? '#f2fbf5' : '#fdeceb';
 
   ctx.save();
   ctx.translate(x, y);

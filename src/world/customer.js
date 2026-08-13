@@ -6,7 +6,9 @@ import { TAU, clamp, findPath, range, rnd } from '../core/util.js';
 import { Ease, makeSpring, spring } from '../core/tween.js';
 import { COMMON_CAST, RARITY_BY_ID, rollRarity } from '../data/guests.js';
 import { plateFor } from '../data/progress.js';
-import { bubble, contactShadow, drawIcon, drawSprite, meter, ring, squash, text } from '../gfx/paint.js';
+import {
+  PAL, bubble, contactShadow, drawIcon, drawSprite, meter, ring, squash, text,
+} from '../gfx/paint.js';
 
 export const CHAR_SCALE = 0.72;
 
@@ -422,9 +424,8 @@ export class Customer {
     ctx.translate(0, wobble);
     bubble(ctx, cx, bottom, box.w, box.h, {
       r: 16, lw: 3.4,
-      // patience running out is not a hue change any more — the bubble goes
-      // grey-blue and dark, which reads even on a white floor
-      fill: this.mood === 'cross' ? '#b7cbdd' : '#f5f9fb',
+      // and the bubble itself blushes when they are cross
+      fill: this.mood === 'cross' ? PAL.coralPale ?? '#fde6e5' : '#fbfdfe',
     });
 
     // dead centre of the bubble, always. The art used to sit left of middle with
@@ -439,7 +440,7 @@ export class Customer {
       const s = this.dish ? this.zone.assets.get('food', this.dish) : null;
       if (s) drawIcon(ctx, s, icx, icy, 46, { alpha: this.state === CS.WAIT ? 0.6 : 1 });
       if (this.state === CS.WAIT) {
-        ring(ctx, icx, icy, 29, this.zone.cookProgress(this), { lw: 4.5, fill: '#74a1b1' });
+        ring(ctx, icx, icy, 29, this.zone.cookProgress(this), { lw: 4.5, fill: PAL.leafDeep });
       }
     }
 
@@ -449,11 +450,9 @@ export class Customer {
     if (mark) this.#badge(ctx, box.x + box.w - 3, box.y + 3, mark);
     ctx.restore();
 
-    // Patience used to run green → amber → red. With one hue to work in it runs
-    // bright → mid → dark instead: the bar going *dim* is the warning, and a
-    // shrinking dark bar on a white floor is easier to catch across the room
-    // than a shrinking red one ever was.
-    const pcol = this.patience > 0.6 ? '#5ec6f5' : this.patience > 0.3 ? '#3d8fc4' : '#1b4269';
+    // Green while they are happy, butter when they are getting on, rose when
+    // they are about to walk. One glance, no reading.
+    const pcol = PAL.ramp(this.patience);
     meter(ctx, cx, box.y + box.h + 16 + wobble, 52, 10, this.patience, pcol);
     if (this.hi) this.#tapMark(ctx, box.y + wobble);
   }

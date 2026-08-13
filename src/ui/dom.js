@@ -47,17 +47,20 @@ function add(el, kids) {
  * fallback for anything the pack does not cover.
  */
 export function skinIcons(assets) {
+  // The seven tiles of pack 05, one per rail button and no drawing used twice.
+  // The guest diary takes the creature tile rather than a notebook — it is a
+  // book about *them*, and three faces say that faster than a cover does.
+  // Anything the pack has no tile for keeps its drawn SVG: half a set of the
+  // pack's glossy tiles mixed with the pack's older warm cards was the thing
+  // that read as a mismatch, so nothing warm is skinned on any more.
   const swap = {
-    'ico-diary': 'diary', 'ico-book': 'recipes', 'ico-crate': 'market',
-    'ico-help': 'help', 'ico-hammer': 'tools', 'ico-shop': 'market',
-    'ico-lab': 'book',
-    // Settings gets the pack's list card, not the hammer. Build and Settings
-    // both pointed at tools.png, which put the same drawing twice in a rail of
-    // six — the fastest way to make a column of icons unreadable.
-    'ico-tools': 'list', 'ico-crew': 'crew', 'ico-refresh': 'refresh',
-    // fame keeps the drawn star and the kiln keeps its drawn flame: the pack has
-    // neither, and the nearest thing in it (a list, a refresh arrow) says the
-    // wrong word entirely
+    'ico-hammer': 'tools',
+    'ico-book': 'recipes',
+    'ico-crate': 'market', 'ico-shop': 'market',
+    'ico-diary': 'crew', 'ico-crew': 'crew',
+    'ico-tools': 'list',
+    'ico-help': 'help',
+    'ico-plate': 'plate',
   };
   const rules = [];
   for (const [cls, id] of Object.entries(swap)) {

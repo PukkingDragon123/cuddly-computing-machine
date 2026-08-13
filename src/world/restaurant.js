@@ -16,7 +16,7 @@ import { GUEST_BY_ID, RARITY_BY_ID, nameFor } from '../data/guests.js';
 const FAVOUR_CHANCE = 0.05;
 import { plateFor } from '../data/progress.js';
 import {
-  blueprint, drawIcon, drawSprite, ellipse, ring, squash, sticker, text,
+  PAL, blueprint, drawIcon, drawSprite, ellipse, ring, squash, sticker, text,
 } from '../gfx/paint.js';
 
 export { FURN_SCALE };
@@ -819,7 +819,7 @@ export class Restaurant {
     sticker(ctx, -8, -5, 16, 10, { r: 4.5, fill: '#82b6db', lw: 2.2, lift: 2 });
     ctx.restore();
 
-    ring(ctx, p.x, y, 25, done, { lw: 4, fill: '#b0ccdd', track: 'rgba(40, 71, 93,0.2)' });
+    ring(ctx, p.x, y, 25, done, { lw: 4, fill: PAL.mintDeep, track: 'rgba(64, 88, 108, 0.2)' });
   }
 
   /* ------------------------------------------------------------------ taps */

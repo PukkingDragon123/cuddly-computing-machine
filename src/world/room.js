@@ -6,7 +6,7 @@
 // sheets — which means they change wood along with the furniture.
 
 import { HALF_H, HALF_W, TILE_H, toScreen } from './iso.js';
-import { INK, diamond, drawSprite, ellipse, roundRectPath } from '../gfx/paint.js';
+import { INK, PAL, diamond, drawSprite, ellipse, roundRectPath } from '../gfx/paint.js';
 import { TAU } from '../core/util.js';
 
 /*
@@ -403,12 +403,12 @@ export class Room {
   /** Highlight a build tile. `tone`: 'ok' | 'bad' | 'pick'. */
   static markTile(ctx, c, r, tone = 'ok', pulse = 0) {
     const { x, y } = toScreen(c, r);
-    // one hue, so 'go' and 'no' separate on brightness: ok is the vivid one,
-    // bad is the flat dark one you would never mistake for an invitation
+    // green means put it down, rose means you cannot, butter means this is the
+    // one you have hold of
     const colors = {
-      ok:   ['rgba(79, 189, 236, 0.5)', '#1c7fac'],
-      bad:  ['rgba(58, 82, 110, 0.55)', '#22405f'],
-      pick: ['rgba(142, 205, 245, 0.55)', '#1f89c9'],
+      ok:   ['rgba(147, 216, 170, 0.5)', PAL.leafDeep],
+      bad:  ['rgba(246, 166, 162, 0.55)', PAL.coralDeep],
+      pick: ['rgba(255, 217, 142, 0.55)', PAL.sunDeep],
     }[tone] ?? ['rgba(255, 255, 255,0.4)', '#fff'];
     ctx.save();
     diamond(ctx, x, y, HALF_W - 3, HALF_H - 2);
@@ -427,7 +427,7 @@ export class Room {
    */
   static outlineTile(ctx, c, r, tone = 'ok', pulse = 0) {
     const { x, y } = toScreen(c, r);
-    const line = { ok: '#1c7fac', bad: '#22405f', pick: '#1f89c9' }[tone] ?? '#fff';
+    const line = { ok: PAL.leafDeep, bad: PAL.coralDeep, pick: PAL.sunDeep }[tone] ?? '#fff';
     ctx.save();
     diamond(ctx, x, y, HALF_W - 3, HALF_H - 2);
     ctx.strokeStyle = 'rgba(29, 47, 60,0.55)'; ctx.lineWidth = 6; ctx.stroke();

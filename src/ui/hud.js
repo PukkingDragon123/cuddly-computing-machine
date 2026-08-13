@@ -65,13 +65,14 @@ export class Hud {
       ['btn-recipes', 'recipes', () => g.openRecipes()],
       ['btn-pantry', 'pantry', () => g.openPantry()],
       ['btn-diary', 'diary', () => g.openDiary()],
-      ['btn-menu', 'settings', () => g.openSettings()],
+      ['btn-plate', 'pottery', () => g.openPottery()],
       ['btn-quests', 'quests', () => g.panels.openQuests()],
+      ['btn-menu', 'settings', () => g.openSettings()],
     ];
     for (const [id, key, open] of this.docked) {
       const el = $(`#${id}`);
       if (!el) continue;
-      el.dataset.key = key;
+      el.dataset.panel = key;
       el.onclick = () => {
         // tapping the panel that is already up closes it, so the dock works as
         // a toggle rather than a one-way trip
@@ -205,9 +206,45 @@ export class Hud {
 
   /** Light up whichever rail button matches the open panel. */
   syncDock() {
+    const s = this.game.state;
     for (const [id, key] of this.docked ?? []) {
-      $(`#${id}`)?.classList.toggle('on', this.sheetOpen === key);
+      const el = $(`#${id}`);
+      if (!el) continue;
+      el.classList.toggle('on', this.sheetOpen === key);
+      // a button you have not earned is not there at all — a greyed-out row of
+      // things you cannot press is a worse first screen than a short one
+      show(el, s.hasKey(el.dataset.need));
     }
+    show($('#zoneswitch'), s.hasKey('factory'));
+  }
+
+  /**
+   * A new button arrives.
+   *
+   * It drops into the rail with its name on a card beside it and stays lit for
+   * a beat, because a control that simply appears while you are looking
+   * somewhere else may as well have always been there.
+   */
+  revealKey({ key, label, blurb }) {
+    const el = $(`.railbtn[data-need="${key}"]`) ?? $('#zoneswitch');
+    this.sync();
+    if (!el) return;
+    el.classList.remove('arriving');
+    void el.offsetWidth;
+    el.classList.add('arriving');
+    setTimeout(() => el.classList.remove('arriving'), 2600);
+
+    const card = h('div.newkey', null,
+      h('b', null, label),
+      h('span', null, blurb));
+    const host = $('#hud');
+    host.append(card);
+    // pin it beside the button it is talking about
+    const r = el.getBoundingClientRect();
+    card.style.top = `${r.top + r.height / 2}px`;
+    card.style.right = `${window.innerWidth - r.left + 8}px`;
+    setTimeout(() => { card.classList.add('out'); }, 2600);
+    setTimeout(() => card.remove(), 3100);
   }
 
   #text(key, value) {
@@ -388,6 +425,7 @@ export class Hud {
     sheet.classList.toggle('book-menu', book === 'menu');
     sheet.classList.toggle('book-diary', book === 'diary');
     sheet.classList.toggle('book-page', book === 'page');
+    sheet.classList.toggle('book-board', book === 'board');
     if (wasOpen !== this.sheetOpen) this.openBook();
 
     const first = sheet.classList.contains('hidden');
@@ -420,6 +458,12 @@ export class Hud {
     if (book === 'page') {
       leaves = this.#writeInto(this.el.sheetBody, [].concat(spec.body ?? []));
       if (leaves.pages > 1) this.el.sheetFoot.append(this.#pageArrows(leaves));
+    } else if (book === 'board') {
+      // the notice board: not paginated, because a board is one surface you
+      // scroll your eye down rather than a thing with leaves
+      this.el.sheetBody.append(
+        h('div.board', null,
+          h('div.board-notes', null, ...[].concat(spec.body ?? []).filter(Boolean))));
     } else {
       this.el.sheetBody.append(...[].concat(spec.body ?? []));
     }
