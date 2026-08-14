@@ -36,10 +36,12 @@ export class Point {
     const e = this.el;
     if (!this.on) { show(e, true); this.on = true; }
 
-    const x = box.x - PAD;
-    const y = box.y - PAD;
+    // ...and kept on screen, so a ring round something up against an edge is a
+    // ring rather than three quarters of one
     const w = box.w + PAD * 2;
     const h = box.h + PAD * 2;
+    const x = Math.min(Math.max(box.x - PAD, 2), Math.max(2, window.innerWidth - w - 2));
+    const y = Math.min(Math.max(box.y - PAD, 2), Math.max(2, window.innerHeight - h - 2));
     e.style.left = `${Math.round(x)}px`;
     e.style.top = `${Math.round(y)}px`;
     e.style.width = `${Math.round(w)}px`;

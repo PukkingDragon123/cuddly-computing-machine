@@ -26,9 +26,9 @@ const LINES = [
  *
  * Tako works a real ticket: ingredients go in one at a time, the ring round the
  * pot fills the way it does over the pass in the kitchen, and when it closes a
- * finished dish pops out and goes up on the shelf. Then he starts the next one.
- * Tapping the pot stirs it, and a stir actually cooks — it drives the ring on,
- * so playing with the loading screen makes the loading screen do something.
+ * finished dish pops out of it. Then he starts the next one. Tapping the pot
+ * stirs it, and a stir actually cooks — it drives the ring on, so playing with
+ * the loading screen makes the loading screen do something.
  *
  * Everything it uses is a file the game loads anyway: `assets/ingredients/*`
  * and `assets/food/*` are read straight off disk with no atlas, so this runs
@@ -50,7 +50,6 @@ function bootGame() {
   const combo = document.getElementById('boot-combo');
   const stir = combo?.parentElement;
   const ring = document.getElementById('boot-ring');
-  const shelf = document.getElementById('boot-shelf');
   if (!pot || !drops) return;
 
   const el = (cls, style) => {
@@ -103,14 +102,14 @@ function bootGame() {
     setTimeout(() => splash(3), 560);
   };
 
-  /** The ticket lands: the dish flies up out of the pot and onto the shelf. */
+  /** The ticket lands: the dish flies up out of the pot. */
   const serve = () => {
     const up = el('boot-served', {
       backgroundImage: `url("assets/food/${dish}.png")`,
     });
     drops.append(up);
     gone(up, 1000);
-    for (let i = 0; i < 10; i++) {
+    for (let i = 0; i < 7; i++) {
       const a = (Math.random() * 360) * (Math.PI / 180);
       const r = 2 + Math.random() * 2.4;
       const sp = el('boot-spark', { animationDelay: `${i * 0.02}s` });
@@ -119,14 +118,6 @@ function bootGame() {
       sp.style.setProperty('--dy', `${Math.sin(a) * r - 1}rem`);
       drops.append(sp);
       gone(sp, 800);
-    }
-    // and it goes up on the shelf, oldest sliding off the end
-    if (shelf) {
-      const plated = el('boot-plated', {
-        backgroundImage: `url("assets/food/${dish}.png")`,
-      });
-      shelf.append(plated);
-      while (shelf.children.length > 6) shelf.firstElementChild.remove();
     }
     cooked += 1;
     if (combo) {

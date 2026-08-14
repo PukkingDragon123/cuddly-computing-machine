@@ -21,9 +21,23 @@ const STEP_PAY = 40;
 /** And a lump at the end, so finishing it is worth more than skipping it. */
 const TUTOR_BONUS = 300;
 
+/*
+ * `lock` fences the screen off to just the lit target.
+ *
+ * The opening minute is the one that decides whether anybody plays the rest of
+ * it, and a player who wanders into the build menu on step two and cannot find
+ * their way back has already lost. So the first pass through the loop — plate,
+ * open, seat, order, serve — only lets you press the thing being pointed at.
+ * The steps after that are read-and-carry-on, and by then the place is yours.
+ *
+ * Nothing can trap you here: a step that has waited too long frees itself (see
+ * the escape hatch in update) and the fence comes down with it, and Skip is
+ * live the entire time.
+ */
 const STEPS = [
   {
     id: 'kitchen',
+    lock: true,
     title: 'The kitchen',
     text: 'Nothing sells until it is plated. Open the Kitchen.',
     at: () => '#btn-recipes',
@@ -31,13 +45,19 @@ const STEPS = [
   },
   {
     id: 'plate',
+    lock: true,
     title: 'Plate a dish',
-    text: 'Tap + beside a dish. It costs ingredients now, so plate what you can sell.',
+    // Three, to match the job on the HUD. One was enough to satisfy the step,
+    // which meant the guide moved on and fenced the + off while the job was
+    // still asking for two more — the two things telling you different stories
+    // about the same button.
+    text: 'Tap + beside the latte three times. Plating costs ingredients, so plate what you can sell.',
     at: () => '#sheet-body .stepper button:last-child',
-    done: (g) => g.state.plannedCount > 0,
+    done: (g) => g.state.plannedCount >= 3,
   },
   {
     id: 'open',
+    lock: true,
     title: 'Open up',
     // the doors open from inside the kitchen book, beside the plating you have
     // just done, so the guide stays on the page rather than sending you out
@@ -48,6 +68,7 @@ const STEPS = [
   },
   {
     id: 'seat',
+    lock: true,
     title: 'Seat a guest',
     // the doors closing takes the guests with them, so the step goes too
     stale: (g) => g.state.phase !== 'open',
@@ -60,6 +81,7 @@ const STEPS = [
   },
   {
     id: 'order',
+    lock: true,
     title: 'Ring it in',
     stale: (g) => g.state.phase !== 'open',
     text: 'Tap the ! bubble to send the ticket to the chef.',
@@ -72,6 +94,7 @@ const STEPS = [
   },
   {
     id: 'serve',
+    lock: true,
     title: 'Run the plate',
     stale: (g) => g.state.phase !== 'open',
     text: 'Drag it off the pass onto whoever ordered it.',
@@ -111,6 +134,7 @@ export class Tutor {
     this.el = {
       root: $('#tutor'),
       hole: $('#tutor-hole'),
+      blocks: [...document.querySelectorAll('.tutor-block')],
       say: $('#tutor-say'),
       title: $('#tutor-title'),
       text: $('#tutor-text'),
@@ -123,6 +147,9 @@ export class Tutor {
     this.i = -1;
     this.running = false;
     this.el.skip.onclick = () => this.stop(true);
+    // press anywhere that is fenced off and the guide says so rather than
+    // simply eating the tap, which would read as the game having frozen
+    for (const b of this.el.blocks) b.onclick = () => this.#nudge();
     // a step with nothing to wait for is dismissed by pressing the bubble
     // A step with nothing to wait for is dismissed by pressing the bubble, and
     // so is one that has been waiting too long — see the escape hatch below.
@@ -147,6 +174,7 @@ export class Tutor {
   stop(skipped = false) {
     this.running = false;
     show(this.el.root, false);
+    this.el.root.classList.remove('locked');
     this.game.hud.point?.hide();
     const s = this.game.state;
     s.tutorial = { step: this.i, done: true };
@@ -167,6 +195,10 @@ export class Tutor {
     // that hands you a coin every time you do one is a game.
     if (this.i > 0) this.#pay();
     const step = STEPS[this.i];
+    // the moment the fence comes down for good is worth marking
+    if (STEPS[this.i - 1]?.lock && !step.lock) {
+      this.game.hud.toast('The place is yours — have a poke about', 'good');
+    }
     step.before?.(this.game);
     this.el.title.textContent = step.title;
     this.el.text.textContent = step.text;
@@ -210,9 +242,11 @@ export class Tutor {
       // lit rectangle on its own is a thing you notice rather than a thing you
       // understand you are supposed to touch.
       this.game.hud.point?.at(box);
+      this.#fence(box);
     } else {
       show(this.el.hole, false);
       this.game.hud.point?.hide();
+      this.#fence(null);
       this.el.say.style.left = '50%';
       this.el.say.style.top = 'auto';
       this.el.say.style.bottom = '18%';
@@ -247,6 +281,46 @@ export class Tutor {
       this.el.say.classList.remove('waits');
       this.el.say.classList.add('freed');
     }
+  }
+
+  /**
+   * You pressed the part of the screen that is closed just now.
+   *
+   * A blocked tap that does nothing at all is indistinguishable from a bug, so
+   * this answers: the bubble jumps, the pointer shouts, and the guide says the
+   * one thing that is open. Rate-limited, because holding a finger down on the
+   * fence should not machine-gun the sound.
+   */
+  #nudge() {
+    const now = performance.now();
+    if (now - (this.nudgedAt ?? 0) < 700) return;
+    this.nudgedAt = now;
+    this.game.sfx.play('no');
+    this.el.say.classList.remove('pop');
+    void this.el.say.offsetWidth;
+    this.el.say.classList.add('pop');
+    const box = this.#targetBox(STEPS[this.i]);
+    if (box) this.game.hud.point?.at(box, { loud: true });
+  }
+
+  /** Put the fence round the lit target, or take it down. */
+  #fence(box) {
+    const on = !!box && !!STEPS[this.i]?.lock && !this.el.say.classList.contains('freed');
+    this.el.root.classList.toggle('locked', on);
+    if (!on) return;
+    const vw = window.innerWidth;
+    const vh = window.innerHeight;
+    const put = (el, x, y, w, h) => {
+      el.style.left = `${Math.max(0, x)}px`;
+      el.style.top = `${Math.max(0, y)}px`;
+      el.style.width = `${Math.max(0, w)}px`;
+      el.style.height = `${Math.max(0, h)}px`;
+    };
+    const [top, bottom, left, right] = this.el.blocks;
+    put(top, 0, 0, vw, box.y);
+    put(bottom, 0, box.y + box.h, vw, vh - (box.y + box.h));
+    put(left, 0, box.y, box.x, box.h);
+    put(right, box.x + box.w, box.y, vw - (box.x + box.w), box.h);
   }
 
   /** A coin for the step just finished, and a pop to go with it. */

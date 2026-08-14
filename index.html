@@ -242,9 +242,21 @@
     <span class="point-hand" id="point-hand"></span>
   </div>
 
-  <!-- the guide's spotlight and its speech bubble, anchored per step -->
+  <!--
+    The guide's spotlight and its speech bubble, anchored per step.
+
+    The four blockers are the hand on your shoulder for the opening steps: they
+    fence off everything except the lit target, so the first minute cannot go
+    wrong. A hole in one full-screen sheet is not something CSS can do, so it is
+    four rectangles round the gap instead. They go before the bubble in the
+    document, because Skip has to stay pressable through all of it.
+  -->
   <div id="tutor" class="tutor hidden">
     <div class="tutor-hole" id="tutor-hole"></div>
+    <div class="tutor-block" data-side="top"></div>
+    <div class="tutor-block" data-side="bottom"></div>
+    <div class="tutor-block" data-side="left"></div>
+    <div class="tutor-block" data-side="right"></div>
     <div class="tutor-say" id="tutor-say">
       <!-- the guide is the chef, not an anonymous voice -->
       <div class="tutor-face" id="tutor-face"></div>
@@ -269,25 +281,16 @@
   -->
   <div id="boot" class="boot">
     <!--
-      The scene, back to front. Every layer here is drawn in CSS rather than
-      loaded, because this is the screen that is up *while* the art loads — if
-      it needed a picture to look like anything it would be a blank rectangle
-      for the first second, which is exactly the second that matters.
+      Four things: a sky, a sea, the chef at his pot, and the gauge.
+      It used to have gulls, bunting, three bands of water, sun-glitter and a
+      shelf of finished dishes as well, and the sum of all that was busier than
+      anything else in the game — a screen you are meant to glance at should
+      not be the most detailed thing you ever look at. Everything left is drawn
+      in CSS, because this is the screen that is up *while* the art loads.
     -->
-    <div class="boot-sun"></div>
-    <div class="boot-gulls"><i></i><i></i></div>
-    <div class="boot-sea">
-      <span class="boot-wave w1"></span>
-      <span class="boot-wave w2"></span>
-      <span class="boot-wave w3"></span>
-    </div>
-    <div class="boot-sky"></div>
-    <!-- bunting across the top, because a harbour has bunting -->
-    <div class="boot-flags"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+    <div class="boot-sea"></div>
 
     <div class="boot-card">
-      <!-- what he has plated so far goes up here, newest on the right -->
-      <div class="boot-shelf" id="boot-shelf"></div>
       <div class="boot-scene" id="boot-scene">
         <div class="boot-chef"><span class="boot-shadow"></span></div>
         <div class="boot-pot" id="boot-pot">
@@ -301,7 +304,6 @@
           <div class="boot-drops" id="boot-drops"></div>
           <span class="boot-steam s1"></span>
           <span class="boot-steam s2"></span>
-          <span class="boot-steam s3"></span>
           <span class="boot-pan"></span>
           <!--
             The same ring the kitchen draws over the pass while a dish is on:
@@ -311,12 +313,10 @@
           <span class="boot-ring" id="boot-ring"></span>
         </div>
       </div>
-      <div class="boot-deck"></div>
-      <!-- the plaque nailed to the jetty: the counter, the gauge, the word -->
       <div class="boot-plate">
         <div class="boot-stir">
           <span id="boot-combo" class="boot-combo"></span>
-          <span class="boot-tap" id="boot-tap">tap the pot — a stir cooks it faster</span>
+          <span class="boot-tap" id="boot-tap">tap the pot to stir</span>
         </div>
         <div class="boot-bar"><i id="boot-fill"></i><b id="boot-pct">0%</b></div>
         <p id="boot-msg">Filling the tanks…</p>

@@ -99,7 +99,11 @@
   --safe-t: env(safe-area-inset-top, 0px);
   --safe-b: env(safe-area-inset-bottom, 0px);
 
-  font-size: clamp(13px, min(1.7vh, 2.9vw), 19px);
+  /* The whole interface is sized off this one number. It was tuned for a
+     desktop screen you lean toward; the game is played on a phone at arm's
+     length, where every label was a squint. Everything in rem came up with
+     it. */
+  font-size: clamp(15px, min(2.05vh, 3.5vw), 23px);
   --font: ui-rounded, "SF Pro Rounded", "Nunito", "Quicksand", "Segoe UI Rounded",
           "Varela Round", system-ui, -apple-system, "Helvetica Neue", sans-serif;
 }
@@ -1361,7 +1365,7 @@ html, body {
 }
 /* everything inside is sized off the spread's own width, so a page reads the
    same on a phone as on a desktop */
-.spread > .slot { font-size: 3.1cqw }
+.spread > .slot { font-size: 3.5cqw }
 .spread-menu  { --rw: 1200; --rh: 785; background-image: url("assets/ui/book_menu.webp") }
 .spread-diary { --rw: 1200; --rh: 767; background-image: url("assets/ui/book_diary.webp") }
 
@@ -1382,7 +1386,7 @@ html, body {
 .spread.pg-left  { background-position: left center;  --dx: 0% }
 .spread.pg-right { background-position: right center; --dx: -100% }
 @container (min-width: 40rem) {
-  .spread > .slot { font-size: 1.06rem }
+  .spread > .slot { font-size: 1.1rem }
 }
 
 /* Boxes ruled on the paper, measured off the drawing itself. --x/--w are in
@@ -2102,7 +2106,10 @@ html, body {
   position: absolute; inset: 0;
   border: 0.2rem dashed var(--tangerine);
   border-radius: var(--r, 1rem);
-  animation: pointSpin 5s linear infinite, pointBreathe 1.5s ease-in-out infinite;
+  /* Breathing only. It used to rotate as well, which is fine on a circle and
+     absurd on the wide short box of a tab — a spinning oval sweeping across
+     the panel behind it. */
+  animation: pointBreathe 1.5s ease-in-out infinite;
 }
 /* a second, solid ring just inside it — the line gone round twice */
 .point-ring::after {
@@ -2111,7 +2118,6 @@ html, body {
   border: 0.12rem solid rgba(228, 101, 47, .38);
   border-radius: inherit;
 }
-@keyframes pointSpin { to { stroke-dashoffset: 0; transform: rotate(1turn) } }
 @keyframes pointBreathe {
   0%, 100% { opacity: .85; scale: 1 }
   50%      { opacity: 1; scale: 1.05 }
@@ -2160,7 +2166,7 @@ html, body {
 @keyframes pointTapY { 0%, 100% { translate: 0 0 } 45% { translate: 0 var(--tap) } }
 
 /* somebody asked "where?": the same thing, louder, for two seconds */
-.point.loud .point-ring { animation-duration: 5s, .55s; border-width: 0.26rem }
+.point.loud .point-ring { animation-duration: .55s; border-width: 0.26rem }
 .point.loud .point-hand { animation-duration: .5s }
 .point.loud .point-ring { border-color: var(--tangerine-deep) }
 .point.loud::before {
@@ -2179,7 +2185,17 @@ html, body {
 }
 body.still .point-ring, body.still .point-hand { animation: none }
 
+/*
+ * The guide. The sheet itself never takes a tap — the point is to draw the eye,
+ * not to trap the finger — except where the fence is up, which is four boxes
+ * round the lit target rather than the sheet as a whole.
+ */
 .tutor { position: absolute; inset: 0; z-index: 11; pointer-events: none }
+.tutor-block { position: absolute; display: none }
+.tutor.locked .tutor-block { display: block; pointer-events: auto; cursor: not-allowed }
+/* Skip and the bubble stay live through the fence, always. A guide you cannot
+   put away is not a guide, it is a hostage situation. */
+.tutor-say { z-index: 2 }
 .tutor-hole {
   position: absolute;
   box-shadow: 0 0 0 100vmax rgba(58, 36, 20, .5);
@@ -2193,7 +2209,7 @@ body.still .point-ring, body.still .point-hand { animation: none }
 }
 .tutor-say {
   position: absolute;
-  width: min(20rem, calc(100vw - 1.6rem));
+  width: min(22rem, calc(100vw - 1.6rem));
   pointer-events: auto;
   cursor: pointer;
   border: 0.2rem solid var(--ink);
@@ -2223,8 +2239,8 @@ body.still .point-ring, body.still .point-hand { animation: none }
   transform: rotate(45deg);
 }
 .tutor-say.below::after { bottom: auto; top: -0.62rem; transform: rotate(225deg) }
-.tutor-say b { font-size: 1rem; font-weight: 900; color: var(--ink-deep) }
-.tutor-say span { font-size: 0.82rem; font-weight: 700; color: var(--ink-soft); line-height: 1.35 }
+.tutor-say b { font-size: 1.15rem; font-weight: 900; color: var(--ink-deep) }
+.tutor-say span { font-size: 0.98rem; font-weight: 700; color: var(--ink-soft); line-height: 1.38 }
 .tutor-foot { display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; margin-top: 0.15rem }
 /* one pip a step: filled behind you, lit where you are, hollow ahead */
 .tutor-dots { display: flex; gap: 0.22rem; align-items: center }
@@ -2289,10 +2305,8 @@ body.still .tutor-hole { animation: none }
 /* The harbour on the loading screen idles in five places at once. None of it
    is feedback, so all of it stops. */
 @media (prefers-reduced-motion: reduce) {
-  .boot-sun, .boot-gulls i, .boot-wave, .boot-sea::after,
-  .boot-flags, .boot-flags i, .boot-sky, .boot-chef, .boot-pan,
-  .boot-steam, .boot-tap, .boot-plated { animation: none }
-  .boot-gulls, .boot-steam { display: none }
+  .boot-sea::before, .boot-chef, .boot-pan, .boot-steam, .boot-tap { animation: none }
+  .boot-steam { display: none }
 }
 
 /* --------------------------------------------------------------- boot  */
@@ -2317,116 +2331,28 @@ body.still .tutor-hole { animation: none }
 }
 .boot.gone { opacity: 0; pointer-events: none }
 
-/* the sun, low and hazy, with a ring of glare round it */
-.boot-sun {
-  position: absolute; top: 8%; right: 12%;
-  width: 8rem; height: 8rem;
-  border-radius: 999px;
-  background: radial-gradient(circle, #fff 0 42%, rgba(255, 255, 255, .55) 44% 62%, rgba(255, 255, 255, 0) 70%);
-  animation: bootSun 6s ease-in-out infinite alternate;
-}
-@keyframes bootSun { to { transform: scale(1.07) } }
-
-/* two gulls, each a pair of strokes, drifting the long way across */
-.boot-gulls { position: absolute; inset: 0; pointer-events: none }
-.boot-gulls i {
-  position: absolute;
-  width: 1.5rem; height: 0.75rem;
-  border: 0.17rem solid rgba(93, 66, 42, .45);
-  border-bottom-color: transparent;
-  border-left-color: transparent;
-  border-radius: 999px 999px 0 0;
-  transform: rotate(-14deg);
-  animation: bootGull 19s linear infinite;
-}
-.boot-gulls i:nth-child(1) { top: 15%; animation-duration: 22s }
-.boot-gulls i:nth-child(2) { top: 21%; scale: .72; animation-delay: -9s }
-@keyframes bootGull {
-  from { left: -8% } to { left: 108% }
-}
-
-/* the water: three scalloped bands, each running at its own speed, which is
-   the whole of the parallax and is enough */
+/*
+ * The sea: one band, one scalloped edge, no parallax.
+ *
+ * There were three bands rolling at three speeds, a column of sun-glitter, a
+ * flight of gulls and a line of bunting. Any one of them is a nice detail; all
+ * of them at once on a screen that is up for two seconds is noise. One horizon
+ * with a wave along it says harbour perfectly well.
+ */
 .boot-sea {
   position: absolute; left: 0; right: 0; bottom: 0;
-  height: 46%;
-  background: linear-gradient(#9ccfc7, #6fb0ae 58%, #4f8f94);
+  height: 26%;
+  background: linear-gradient(#9ccfc7, #7bb8b4 60%, #63a2a4);
 }
-/*
- * A band of water is a solid block with a row of bumps stood on top of it: the
- * ::before tiles half a circle across, which is a scallop, which is how water
- * is drawn when it is drawn rather than simulated. Each band runs at its own
- * speed and that is the whole of the parallax.
- */
-.boot-wave {
-  position: absolute; left: -30%; right: -30%;
-  height: 3.4rem;
-  background: currentColor;
-  animation: bootRoll 9s linear infinite;
-}
-.boot-wave::before {
+.boot-sea::before {
   content: "";
-  position: absolute; left: 0; right: 0; bottom: 100%;
-  height: 1.7rem;
-  background: radial-gradient(circle at 1.7rem 1.7rem, currentColor 1.66rem, transparent 1.7rem)
-              repeat-x 0 0 / 3.4rem 1.7rem;
+  position: absolute; left: -2%; right: -2%; bottom: 100%;
+  height: 1.5rem;
+  background: radial-gradient(circle at 1.5rem 1.5rem, #9ccfc7 1.46rem, transparent 1.5rem)
+              repeat-x 0 0 / 3rem 1.5rem;
+  animation: bootRoll 14s linear infinite;
 }
-/* the sun's glitter, a column of broken light under it */
-.boot-sea::after {
-  content: "";
-  position: absolute; right: 8%; top: 0; bottom: 0;
-  width: 9rem;
-  opacity: .5;
-  background:
-    repeating-linear-gradient(rgba(255, 255, 255, .55) 0 0.28rem, transparent 0.28rem 1.6rem);
-  mask-image: radial-gradient(56% 46% at 50% 8%, #000, transparent 78%);
-  animation: bootGlint 5s ease-in-out infinite alternate;
-}
-@keyframes bootGlint { to { opacity: .24 } }
-.boot-wave.w1 { top: 0;      color: #b3ddd4; animation-duration: 11s }
-.boot-wave.w2 { top: 4.2rem; color: #88c2bd; animation-duration: 15s; animation-direction: reverse }
-.boot-wave.w3 { top: 9.4rem; color: #63a4a5; animation-duration: 19s }
-@keyframes bootRoll { to { transform: translateX(3.4rem) } }
-
-/* bubbles coming up out of the water, in front of it */
-.boot-sky {
-  position: absolute; inset: 0;
-  pointer-events: none;
-  background-image:
-    radial-gradient(circle at 18% 92%, rgba(255, 255, 255,.7) 0 0.5rem, transparent 0.56rem),
-    radial-gradient(circle at 74% 96%, rgba(255, 255, 255,.6) 0 0.7rem, transparent 0.77rem),
-    radial-gradient(circle at 40% 99%, rgba(255, 255, 255,.55) 0 0.4rem, transparent 0.46rem),
-    radial-gradient(circle at 88% 88%, rgba(255, 255, 255,.6) 0 0.35rem, transparent 0.41rem),
-    radial-gradient(circle at 58% 86%, rgba(255, 255, 255,.45) 0 0.28rem, transparent 0.33rem);
-  animation: bootRise 11s linear infinite;
-}
-@keyframes bootRise { to { transform: translateY(-46vh) } }
-
-/* bunting, strung corner to corner and swinging on its own line */
-.boot-flags {
-  position: absolute; top: 1.1rem; left: -6%; right: -6%;
-  height: 3.4rem;
-  display: flex; justify-content: space-between; align-items: flex-start;
-  padding: 0 4%;
-  border-top: 0.22rem solid var(--ink);
-  border-radius: 0 0 60% 60% / 0 0 2.2rem 2.2rem;
-  transform-origin: 50% 0;
-  animation: bootSway 5s ease-in-out infinite alternate;
-}
-.boot-flags i {
-  width: 1.5rem; height: 1.9rem;
-  clip-path: polygon(0 0, 100% 0, 50% 100%);
-  background: var(--wood-deep);
-  transform-origin: 50% 0;
-  animation: bootFlap 2.6s ease-in-out infinite alternate;
-}
-.boot-flags i:nth-child(odd)  { background: #fff; height: 1.6rem }
-.boot-flags i:nth-child(3n)   { background: var(--sun); animation-delay: -.7s }
-.boot-flags i:nth-child(2)    { animation-delay: -.3s }
-.boot-flags i:nth-child(5)    { animation-delay: -1.1s }
-.boot-flags i:nth-child(7)    { animation-delay: -1.7s }
-@keyframes bootSway { to { transform: rotate(.7deg) } }
-@keyframes bootFlap { to { transform: rotate(4deg) scaleY(.94) } }
+@keyframes bootRoll { to { transform: translateX(3rem) } }
 
 .boot-card {
   position: relative;
@@ -2434,9 +2360,8 @@ body.still .tutor-hole { animation: none }
   padding: 1.6rem 0.7rem 1.4rem;
   max-width: 100vw;
   z-index: 2;
-  /* the jetty sits on the waterline, and the waterline is not the middle of
-     the screen — the sea wants the lower third to itself */
-  margin-bottom: 7rem;
+  /* the pair of them stand on the waterline, so the card rides just above it */
+  margin-bottom: 2.2rem;
 }
 
 /* The pot. Drawn in CSS out of four boxes so it needs no art to be on screen —
@@ -2558,28 +2483,6 @@ body.still .tutor-hole { animation: none }
 .boot-combo.pop { animation: comboPop .3s cubic-bezier(.2,1.7,.4,1) }
 @keyframes comboPop { 40% { transform: scale(1.3) rotate(-5deg) } }
 
-/* the jetty the pair of them are standing on, with two posts under it */
-.boot-deck {
-  position: relative;
-  width: 30rem; max-width: 94vw;
-  height: 2rem;
-  margin: -0.7rem auto 1.5rem;
-  border: var(--bw) solid var(--ink);
-  border-radius: 0.4rem 0.5rem 0.3rem 0.45rem;
-  background: repeating-linear-gradient(90deg, #fdf7e8 0 3.4rem, #e3d0a8 3.4rem 3.58rem);
-}
-.boot-deck::before, .boot-deck::after {
-  content: "";
-  position: absolute; top: 100%;
-  width: 1.1rem; height: 2.6rem;
-  border: var(--bw) solid var(--ink);
-  border-top: 0;
-  border-radius: 0 0 0.4rem 0.35rem;
-  background: #f4e7cd;
-}
-.boot-deck::before { left: 8% }
-.boot-deck::after  { right: 8% }
-
 /* the plaque nailed to it, with everything you actually read on it */
 .boot-plate {
   width: 24rem; max-width: 90vw;
@@ -2645,8 +2548,7 @@ body.still .tutor-hole { animation: none }
 /* on a phone the whole tableau comes down a third, in one number */
 @media (max-width: 34rem) {
   .boot-scene { --bs: 0.66rem }
-  .boot-deck, .boot-plate { width: 20rem }
-  .boot-sun { width: 6rem; height: 6rem }
+  .boot-plate { width: 20rem }
 }
 
 /* a soft ellipse under anything standing on the deck */
@@ -2709,39 +2611,6 @@ body.still .tutor-hole { animation: none }
 @keyframes bootSpark {
   0%   { opacity: 1; transform: translate(0, 0) scale(.4) }
   100% { opacity: 0; transform: translate(var(--dx), var(--dy)) scale(1.15) }
-}
-
-/* the shelf above the hob, where the plated ones go */
-/* a real plank, so the plated dishes are standing on something */
-.boot-shelf {
-  position: relative;
-  display: flex; align-items: flex-end; justify-content: center;
-  gap: 0.5rem;
-  min-height: 4rem;
-  width: 15rem; max-width: 80vw;
-  margin: 0 auto 0.9rem;
-  padding: 0 0.7rem 0.55rem;
-  border-bottom: 0.42rem solid var(--wood-deep);
-  border-radius: 0 0 0.3rem 0.34rem;
-}
-/* two brackets under it */
-.boot-shelf::before, .boot-shelf::after {
-  content: "";
-  position: absolute; top: 100%;
-  width: 0.55rem; height: 0.85rem;
-  background: var(--wood-dark);
-  border-radius: 0 0 0.3rem 0.3rem;
-}
-.boot-shelf::before { left: 2.2rem }
-.boot-shelf::after  { right: 2.2rem }
-.boot-plated {
-  width: 2.9rem; height: 2.9rem;
-  background: center / contain no-repeat;
-  animation: bootPlated .5s var(--spring) both;
-}
-@keyframes bootPlated {
-  from { opacity: 0; transform: translateY(-1.6rem) scale(.5) rotate(-14deg) }
-  to   { opacity: 1; transform: none }
 }
 
 /* the splash something going in throws over the rim */
@@ -3126,9 +2995,9 @@ body.still .tutor-hole { animation: none }
    A job you cannot see the reward for is a chore. */
 .quest {
   display: flex; align-items: center; gap: 0.5rem;
-  width: min(17rem, 62vw);
+  width: min(21rem, 74vw);
   margin-top: 0.1rem;
-  padding: 0.36rem 0.5rem 0.4rem 0.4rem;
+  padding: 0.44rem 0.6rem 0.48rem 0.46rem;
   background-color: var(--paper);
   border: var(--bw) solid var(--ink);
   border-radius: var(--r-hand-2);
@@ -3149,34 +3018,39 @@ body.still .tutor-hole { animation: none }
 }
 /* the job's own picture, from the game's art */
 .quest-art {
-  flex: none; width: 2.1rem; height: 2.1rem;
+  flex: none; width: 2.6rem; height: 2.6rem;
   border: 0.14rem solid var(--ink-faint); border-radius: 0.5rem;
   background: var(--panel-2) center / contain no-repeat;
   display: grid; place-items: center;
 }
-.quest-art.ico { background-size: 1.3rem; background-color: var(--panel-2) }
+.quest-art.ico { background-size: 1.6rem; background-color: var(--panel-2) }
 .quest-body { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 0.16rem }
 .quest-top { display: flex; align-items: baseline; gap: 0.35rem }
 .quest-top b {
   flex: 1; min-width: 0;
-  font-size: 0.8rem; font-weight: 900; line-height: 1.1;
+  font-size: 0.95rem; font-weight: 900; line-height: 1.14;
   overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
 }
+/* the line that says what to actually do. It used to be the smallest type in
+   the game and cut off with an ellipsis halfway through the instruction, which
+   is a remarkable way to treat the one sentence that matters. */
 .quest-hint {
-  font-size: 0.62rem; font-weight: 800; color: var(--ink-faint);
-  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  font-size: 0.78rem; font-weight: 800; color: var(--ink-soft);
+  line-height: 1.22;
+  display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2;
+  overflow: hidden;
 }
 .quest-bar {
-  display: block; height: 0.32rem; border-radius: 999px;
+  display: block; height: 0.4rem; border-radius: 999px;
   background: var(--panel-2); overflow: hidden;
   border: 0.08rem solid var(--ink-faint);
 }
 .quest-bar > i { display: block; height: 100%; background: var(--leaf); border-radius: 999px; transition: width .35s ease }
-.quest-n { flex: none; font-size: 0.68rem; font-weight: 900; color: var(--ink-soft); font-variant-numeric: tabular-nums }
+.quest-n { flex: none; font-size: 0.8rem; font-weight: 900; color: var(--ink-soft); font-variant-numeric: tabular-nums }
 .quest-pay {
   flex: none;
-  font-size: 0.72rem; font-weight: 900; color: var(--tangerine-deep);
-  padding: 0.1rem 0.36rem;
+  font-size: 0.84rem; font-weight: 900; color: var(--tangerine-deep);
+  padding: 0.12rem 0.44rem;
   border: 0.12rem solid var(--sun-deep);
   border-radius: 999px;
   background: var(--sun-pale);
