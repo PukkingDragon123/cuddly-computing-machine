@@ -22,17 +22,19 @@ const LINES = [
 ];
 
 /**
- * Something to do while the art arrives — and it is the game's own cooking.
+ * A shift in miniature, on a loop, while the art arrives.
  *
- * Tako works a real ticket: ingredients go in one at a time, the ring round the
- * pot fills the way it does over the pass in the kitchen, and when it closes a
- * finished dish pops out of it. Then he starts the next one. Tapping the pot
- * stirs it, and a stir actually cooks — it drives the ring on, so playing with
- * the loading screen makes the loading screen do something.
+ * Four beats: Tako cooks a dish, somebody walks in for it, he hands it over,
+ * they eat it and go. Then the next one. Every figure is the game's own three
+ * frame sprite strip stepped with background-position — idle / walk / work for
+ * the chef, idle / walk / eat for the guest — so this is the real cast doing
+ * the real loop rather than a picture of it.
  *
- * Everything it uses is a file the game loads anyway: `assets/ingredients/*`
- * and `assets/food/*` are read straight off disk with no atlas, so this runs
- * before a single line of the game exists.
+ * Tapping cooks faster, which is the only thing you can do here and the reason
+ * a loading bar you are allowed to play with stops being a loading bar.
+ *
+ * Everything it touches is a file read straight off disk with no atlas, so it
+ * runs before a single line of the game exists.
  */
 const BOOT_ING = [
   'kelp', 'egg', 'milk', 'flour', 'butter', 'scallop', 'potato', 'clam',
@@ -43,14 +45,29 @@ const BOOT_DISH = [
   'kelp_latte', 'kelp_ramen', 'scallop_tart', 'miso_chowder', 'sea_roll',
   'lobster_roll', 'clam_congee', 'shrimp_toast', 'pearl_boba', 'oyster_plate',
 ];
+/** [id, frame width] — every guest strip is 176 tall, so width sets the shape. */
+const BOOT_GUEST = [
+  ['01_sea_bunny_nudibranch', 118],
+  ['02_dumbo_octopus', 172],
+  ['03_hermit_crab', 197],
+  ['05_sea_otter', 135],
+  ['08_moon_jellyfish', 163],
+  ['09_seahorse', 123],
+  ['13_green_sea_turtle', 152],
+];
 
 function bootGame() {
-  const pot = document.getElementById('boot-pot');
+  const stage = document.getElementById('boot-stage');
+  const chef = document.getElementById('boot-chef');
+  const guest = document.getElementById('boot-guest');
+  const dish = document.getElementById('boot-dish');
+  const food = document.getElementById('boot-food');
   const drops = document.getElementById('boot-drops');
+  const bubble = document.getElementById('boot-bubble');
   const combo = document.getElementById('boot-combo');
   const stir = combo?.parentElement;
   const ring = document.getElementById('boot-ring');
-  if (!pot || !drops) return;
+  if (!stage || !chef || !guest) return;
 
   const el = (cls, style) => {
     const e = document.createElement('span');
@@ -61,103 +78,147 @@ function bootGame() {
   const gone = (e, ms) => setTimeout(() => e.remove(), ms);
   const pick = (a) => a[(Math.random() * a.length) | 0];
 
-  let cooked = 0;
-  let progress = 0;          // 0..1 through the dish on the hob
-  let dish = pick(BOOT_DISH);
-  let stopped = false;
+  chef.style.backgroundImage = 'url("assets/staff/04_octopus_head_chef.png")';
 
-  /**
-   * A splash over the rim. Coordinates are the pot's own, so this lands on the
-   * pot wherever the pot happens to be on screen.
-   */
-  const splash = (n = 5) => {
+  let served = 0;
+  let cooked = 0;            // 0..1 through the dish on the go
+  let beat = 'cook';         // cook | arrive | serve | eat | leave
+  let stopped = false;
+  let recipe = pick(BOOT_DISH);
+
+  /* ------------------------------------------------------------- the props */
+
+  /** A splash over the rim of whatever he is working in. */
+  const splash = (n = 4) => {
     for (let i = 0; i < n; i++) {
       const a = (-142 + Math.random() * 104) * (Math.PI / 180);
-      const d = 1.4 + Math.random() * 1.6;
+      const d = 1.2 + Math.random() * 1.4;
       const sp = el('boot-splash', { animationDelay: `${i * 0.03}s` });
       sp.style.setProperty('--dx', `${Math.cos(a) * d}rem`);
       sp.style.setProperty('--dy', `${Math.sin(a) * d}rem`);
-      sp.style.setProperty('--off', `${-1.6 + Math.random() * 3.2}rem`);
+      sp.style.setProperty('--off', `${-1.1 + Math.random() * 2.2}rem`);
       drops.append(sp);
       gone(sp, 900);
     }
   };
 
-  /**
-   * One ingredient, in.
-   *
-   * It falls from above the rim to the rim and vanishes there — which is the
-   * whole point, and what it did not do before: it used to drop somewhere
-   * beside the pot and fade, so nothing ever went *into* anything. It lands
-   * with a splash, on a timer matched to the fall.
-   */
+  /** One ingredient, in: it falls to the dish and disappears into it. */
   const feed = () => {
+    if (beat !== 'cook') return;
     const d = el('boot-drop', {
       backgroundImage: `url("assets/ingredients/${pick(BOOT_ING)}.png")`,
     });
-    d.style.setProperty('--off', `${-1.3 + Math.random() * 2.6}rem`);
+    d.style.setProperty('--off', `${-0.9 + Math.random() * 1.8}rem`);
     d.style.setProperty('--spin', `${-40 + Math.random() * 80}deg`);
     drops.append(d);
     gone(d, 900);
-    setTimeout(() => splash(3), 560);
+    setTimeout(() => splash(3), 520);
   };
 
-  /** The ticket lands: the dish flies up out of the pot. */
-  const serve = () => {
-    const up = el('boot-served', {
-      backgroundImage: `url("assets/food/${dish}.png")`,
-    });
-    drops.append(up);
-    gone(up, 1000);
-    for (let i = 0; i < 7; i++) {
-      const a = (Math.random() * 360) * (Math.PI / 180);
-      const r = 2 + Math.random() * 2.4;
+  const sparkle = (host, n = 7) => {
+    for (let i = 0; i < n; i++) {
+      const a = Math.random() * Math.PI * 2;
+      const r = 1.6 + Math.random() * 2;
       const sp = el('boot-spark', { animationDelay: `${i * 0.02}s` });
-      sp.style.setProperty('--off', `${-1.8 + Math.random() * 3.6}rem`);
+      sp.style.setProperty('--off', `${-1.4 + Math.random() * 2.8}rem`);
       sp.style.setProperty('--dx', `${Math.cos(a) * r}rem`);
-      sp.style.setProperty('--dy', `${Math.sin(a) * r - 1}rem`);
-      drops.append(sp);
+      sp.style.setProperty('--dy', `${Math.sin(a) * r - 0.8}rem`);
+      host.append(sp);
       gone(sp, 800);
     }
-    cooked += 1;
-    if (combo) {
-      stir?.classList.add('on');
-      combo.textContent = `${cooked} plated`;
-      combo.classList.remove('pop');
-      void combo.offsetWidth;
-      combo.classList.add('pop');
+  };
+
+  const heart = (n = 3) => {
+    for (let i = 0; i < n; i++) {
+      const hh = el('boot-heart', { animationDelay: `${i * 0.12}s` });
+      hh.style.setProperty('--off', `${-0.9 + Math.random() * 1.8}rem`);
+      guest.append(hh);
+      gone(hh, 1200);
     }
+  };
+
+  /* ------------------------------------------------------------- the beats */
+
+  const setBeat = (b) => {
+    beat = b;
+    stage.dataset.beat = b;
+  };
+
+  /** He is cooking. The ring fills; ingredients go in. */
+  const startCook = () => {
+    recipe = pick(BOOT_DISH);
+    cooked = 0;
+    food.style.backgroundImage = `url("assets/food/${recipe}.png")`;
+    ring.style.setProperty('--at', '0');
+    setBeat('cook');
+  };
+
+  /** Somebody walks in for it. */
+  const startArrive = () => {
+    const [id, fw] = pick(BOOT_GUEST);
+    guest.style.backgroundImage = `url("assets/customers/${id}.png")`;
+    guest.style.setProperty('--w', `${(fw / 176) * 7.8}rem`);
+    setBeat('arrive');
+    setTimeout(() => {
+      if (stopped) return;
+      bubble.style.backgroundImage = `url("assets/food/${recipe}.png")`;
+      bubble.classList.add('up');
+    }, 900);
+    setTimeout(() => { if (!stopped) startServe(); }, 1500);
+  };
+
+  /** The hand-over: the dish flies across and they tuck in. */
+  const startServe = () => {
+    setBeat('serve');
+    bubble.classList.remove('up');
+    sparkle(dish);
     sfx.play('star');
-    dish = pick(BOOT_DISH);
-    progress = 0;
+    setTimeout(() => {
+      if (stopped) return;
+      setBeat('eat');
+      heart(3);
+      served += 1;
+      if (combo) {
+        stir?.classList.add('on');
+        combo.textContent = `${served} served`;
+        combo.classList.remove('pop');
+        void combo.offsetWidth;
+        combo.classList.add('pop');
+      }
+    }, 620);
+    setTimeout(() => { if (!stopped) setBeat('leave'); }, 2400);
+    setTimeout(() => { if (!stopped) startCook(); }, 3400);
   };
 
   /** Push the ticket along and repaint the ring. */
   const advance = (by) => {
-    progress += by;
-    if (ring) ring.style.setProperty('--at', String(Math.min(1, progress)));
-    if (progress >= 1) serve();
+    if (beat !== 'cook') return;
+    cooked = Math.min(1, cooked + by);
+    ring.style.setProperty('--at', String(cooked));
+    if (cooked >= 1) startArrive();
   };
 
   // the hob runs on its own — a loading screen you never touch still cooks
-  let feedT = 0;
+  let n = 0;
   const tick = () => {
     if (stopped) return;
-    advance(0.028);
-    feedT += 1;
-    if (feedT % 7 === 0) feed();
+    advance(0.03);
+    n += 1;
+    if (n % 6 === 0) feed();
     setTimeout(tick, 190);
   };
+  startCook();
   setTimeout(tick, 400);
 
-  // ...and a tap on the pot is worth six seconds of standing there watching it
-  pot.onpointerdown = () => {
-    pot.classList.remove('stir');
-    void pot.offsetWidth;
-    pot.classList.add('stir');
+  // ...and a tap is worth six seconds of standing there watching him
+  stage.onpointerdown = () => {
+    if (beat !== 'cook') return;
+    chef.classList.remove('quick');
+    void chef.offsetWidth;
+    chef.classList.add('quick');
     feed();
-    splash(6);
-    advance(0.075);
+    splash(5);
+    advance(0.08);
     sfx.play('tap');
   };
 

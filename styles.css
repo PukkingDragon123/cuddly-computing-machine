@@ -2302,170 +2302,273 @@ body.still #btn-service.pill-go:not([disabled])::after,
 body.still .plate-face i.posing,
 body.still .tutor-hole { animation: none }
 
-/* The harbour on the loading screen idles in five places at once. None of it
-   is feedback, so all of it stops. */
-@media (prefers-reduced-motion: reduce) {
-  .boot-sea::before, .boot-chef, .boot-pan, .boot-steam, .boot-tap { animation: none }
-  .boot-steam { display: none }
-}
-
 /* --------------------------------------------------------------- boot  */
 
 /*
- * The harbour, at the hour the kitchen opens.
+ * A shift in miniature, on a loop.
  *
- * This is the one screen with nothing behind it, so it is a scene rather than a
- * background: sun, gulls, three rolling bands of water, bunting over the top,
- * and the chef out on the jetty with his pot. Every layer of it is drawn in
- * CSS on purpose — the loading screen is what is up *while* the artwork loads,
- * so anything it needed to fetch would be a blank rectangle for exactly the
- * second that matters.
+ * The cast are the game's own three-frame strips, stepped with
+ * background-position rather than tweened: 0% is idle, 50% is walk, 100% is
+ * work for the chef and eat for a guest. `data-beat` on the stage is the whole
+ * state machine — cook, arrive, serve, eat, leave — and every rule below keys
+ * off it, so the script only ever sets one attribute and the sheet decides what
+ * that looks like.
  */
 .boot {
   position: absolute; inset: 0;
   display: grid; place-items: center;
-  background: linear-gradient(#fdf9ee 0%, #fbeed3 32%, #f6e2ba 52%);
+  background: linear-gradient(#fdf9ee 0%, #fbeed3 46%, #f6e2ba 100%);
   z-index: 20;
   transition: opacity .4s ease;
   overflow: hidden;
 }
 .boot.gone { opacity: 0; pointer-events: none }
 
-/*
- * The sea: one band, one scalloped edge, no parallax.
- *
- * There were three bands rolling at three speeds, a column of sun-glitter, a
- * flight of gulls and a line of bunting. Any one of them is a nice detail; all
- * of them at once on a screen that is up for two seconds is noise. One horizon
- * with a wave along it says harbour perfectly well.
- */
-.boot-sea {
-  position: absolute; left: 0; right: 0; bottom: 0;
-  height: 26%;
-  background: linear-gradient(#9ccfc7, #7bb8b4 60%, #63a2a4);
-}
-.boot-sea::before {
-  content: "";
-  position: absolute; left: -2%; right: -2%; bottom: 100%;
-  height: 1.5rem;
-  background: radial-gradient(circle at 1.5rem 1.5rem, #9ccfc7 1.46rem, transparent 1.5rem)
-              repeat-x 0 0 / 3rem 1.5rem;
-  animation: bootRoll 14s linear infinite;
-}
-@keyframes bootRoll { to { transform: translateX(3rem) } }
-
 .boot-card {
   position: relative;
   text-align: center;
-  padding: 1.6rem 0.7rem 1.4rem;
+  padding: 1.4rem 0.7rem 1.2rem;
   max-width: 100vw;
   z-index: 2;
-  /* the pair of them stand on the waterline, so the card rides just above it */
-  margin-bottom: 2.2rem;
 }
 
-/* The pot. Drawn in CSS out of four boxes so it needs no art to be on screen —
-   which matters, because it is what you look at while the art loads. */
-/* the chef and his pot, side by side */
-/*
- * Everything in the scene is sized off one number, --bs, so a phone shrinks
- * the whole tableau by changing it once rather than by re-tuning nine offsets
- * that all have to stay in register with the pot's rim.
- */
-.boot-scene {
-  --bs: 1rem;
+/* the little stage the two of them work on */
+.boot-stage {
   position: relative;
-  display: flex; align-items: flex-end; justify-content: center;
-  gap: 0.4rem;
-  margin-bottom: 0.9rem;
+  width: 26rem; max-width: 94vw;
+  height: 14rem;
+  margin: 0 auto 1.1rem;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+/* the floor they are standing on: one soft line, no scenery */
+.boot-floor {
+  position: absolute; left: 6%; right: 6%; bottom: 0.6rem;
+  height: 0.42rem;
+  border-radius: 999px;
+  background: rgba(122, 96, 66, .18);
+}
+
+/* the cast ------------------------------------------------------------- */
+
+.boot-chef, .boot-guest {
+  position: absolute; bottom: 0.9rem;
+  background: left center / 300% 100% no-repeat;
 }
 .boot-chef {
-  position: relative;
-  width: calc(13 * var(--bs)); height: calc(15 * var(--bs));
-  /* the idle frame of the three-frame strip */
-  background: url("assets/staff/04_octopus_head_chef.png") left bottom / 300% 100% no-repeat;
-  animation: chefStir 1.1s ease-in-out infinite;
-  transform-origin: 50% 100%;
+  left: 3.2rem;
+  width: 6.8rem; height: 8.1rem;
+  /* frame 2 of 3 is `work`, and he alternates it with idle so he is stirring
+     rather than holding a pose */
+  animation: chefCook .5s steps(1) infinite;
 }
-@keyframes chefStir {
-  0%, 100% { transform: rotate(-3deg) translateY(0) }
-  50%      { transform: rotate(3deg) translateY(-0.28rem) }
+@keyframes chefCook {
+  0%, 49%   { background-position: 100% center }
+  50%, 100% { background-position: 0% center }
 }
-
-/* The pot is the drawn one out of the pack, and the spatula is drawn too. It
-   turns on a tap rather than on a timer, so the loading screen answers you. */
-/* The tap target itself never moves — everything that bobs is inside it. A
-   control whose box is always in motion is one you cannot reliably hit. */
-.boot-pot {
-  position: relative;
-  width: calc(15 * var(--bs)); height: calc(12.6 * var(--bs));
-  cursor: pointer;
-  transform-origin: 50% 100%;
-}
-@keyframes potBob { 50% { transform: translateY(-0.3rem) rotate(-1.2deg) } }
-.boot-pan {
-  position: absolute; left: 0; right: 0; bottom: 0;
-  height: calc(9.8 * var(--bs));
-  background: url("assets/ui/pot.webp") center bottom / contain no-repeat;
-  animation: potBob 2.2s ease-in-out infinite;
-  transform-origin: 50% 100%;
-}
-/* a tap rocks the pot: something has just gone in it */
-.boot-pot.stir .boot-pan { animation: potStirred .52s cubic-bezier(.35,0,.3,1) }
-@keyframes potStirred {
-  0%, 100% { transform: rotate(0) }
-  25%      { transform: rotate(2.2deg) translateY(0.06rem) }
-  75%      { transform: rotate(-2.2deg) translateY(0.06rem) }
+/* a tap makes him get on with it */
+.boot-chef.quick { animation-duration: .22s }
+/* nobody to cook for: he stands and watches them eat */
+.boot-stage[data-beat="eat"] .boot-chef,
+.boot-stage[data-beat="leave"] .boot-chef { animation: chefIdle 2.4s ease-in-out infinite }
+@keyframes chefIdle {
+  0%, 100% { background-position: 0% center; transform: translateY(0) }
+  50%      { background-position: 0% center; transform: translateY(-0.16rem) }
 }
 
-/* steam, drawn as three soft plumes rather than as particles. It rises from
-   the rim, so it sits above the pot rather than inside it. */
-.boot-steam {
-  position: absolute; bottom: calc(9.4 * var(--bs)); z-index: 2;
-  width: 0.9rem; height: 0.9rem;
+.boot-guest {
+  right: 3.2rem;
+  width: var(--w, 6.6rem); height: 7.8rem;
+  opacity: 0;
+  /* off to the right until they are called for */
+  transform: translateX(9rem);
+}
+/* walking in: two frames, and they slide to their spot */
+.boot-stage[data-beat="arrive"] .boot-guest {
+  opacity: 1;
+  animation: guestWalk .3s steps(1) infinite, guestIn 1.5s cubic-bezier(.3,.7,.4,1) forwards;
+}
+@keyframes guestWalk {
+  0%, 49%   { background-position: 0% center }
+  50%, 100% { background-position: 50% center }
+}
+@keyframes guestIn { to { transform: translateX(0) } }
+/* stood at the pass, waiting */
+.boot-stage[data-beat="serve"] .boot-guest {
+  opacity: 1; transform: translateX(0);
+  background-position: 0% center;
+}
+/* tucking in: the eat frame, alternated, with a chew wobble */
+.boot-stage[data-beat="eat"] .boot-guest {
+  opacity: 1; transform: translateX(0);
+  animation: guestEat .34s steps(1) infinite;
+}
+@keyframes guestEat {
+  0%, 49%   { background-position: 100% center }
+  50%, 100% { background-position: 0% center }
+}
+/* off home again */
+.boot-stage[data-beat="leave"] .boot-guest {
+  opacity: 1;
+  animation: guestWalk .3s steps(1) infinite, guestOut 1s ease-in forwards;
+}
+@keyframes guestOut { to { transform: translateX(9rem); opacity: 0 } }
+
+/* a soft ellipse under anything standing on the floor */
+.boot-shadow {
+  position: absolute; left: 50%; bottom: -0.3rem;
+  width: 66%; height: 0.9rem;
+  transform: translateX(-50%);
   border-radius: 999px;
-  background: rgba(255, 255, 255, .9);
-  border: 0.16rem solid rgba(95, 61, 38, .35);
+  background: radial-gradient(closest-side, rgba(95, 61, 38, .26), transparent);
+  pointer-events: none;
+}
+
+/* what he is cooking --------------------------------------------------- */
+
+/* the dish on the go, in front of him, with the ring round it */
+.boot-dish {
+  position: absolute; left: 10.4rem; bottom: 4.8rem;
+  width: 4.4rem; height: 4.4rem;
+  transition: opacity .2s ease;
+}
+.boot-food {
+  position: absolute; inset: 0.55rem;
+  background: center / contain no-repeat;
+}
+/* the hand-over: it flies across to whoever is waiting for it */
+.boot-stage[data-beat="serve"] .boot-dish { animation: dishOver .62s cubic-bezier(.3,.9,.4,1) forwards }
+@keyframes dishOver {
+  0%   { transform: translate(0, 0) scale(1) }
+  55%  { transform: translate(3.4rem, -1.9rem) scale(1.12) }
+  100% { transform: translate(7rem, -0.4rem) scale(.9); opacity: 0 }
+}
+.boot-stage[data-beat="eat"] .boot-dish,
+.boot-stage[data-beat="leave"] .boot-dish { opacity: 0 }
+
+/* the cooking ring, exactly what the pass draws over a dish that is on */
+.boot-ring {
+  --at: 0;
+  position: absolute; inset: -0.5rem;
+  border-radius: 999px;
+  background:
+    conic-gradient(from -90deg, var(--leaf) calc(var(--at) * 360deg), rgba(122, 96, 66, .16) 0);
+  /* closest-side, so the percentages are off the box's own half-width. With
+     the default farthest-corner the whole ring fell outside the element and
+     nothing was drawn at all. */
+  mask: radial-gradient(closest-side circle, transparent 0 78%, #000 80%);
+  -webkit-mask: radial-gradient(closest-side circle, transparent 0 78%, #000 80%);
+  pointer-events: none;
+}
+.boot-stage[data-beat="eat"] .boot-ring,
+.boot-stage[data-beat="leave"] .boot-ring { opacity: 0 }
+
+/* steam, two soft plumes off the top of it */
+.boot-steam {
+  position: absolute; bottom: 3.4rem; z-index: 2;
+  width: 0.72rem; height: 0.72rem;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, .92);
+  border: 0.14rem solid rgba(95, 61, 38, .3);
   animation: bootSteam 2.1s ease-in infinite;
 }
-.boot-steam.s1 { left: calc(4.2 * var(--bs)) }
-.boot-steam.s2 { left: calc(6.5 * var(--bs)); width: 1.25rem; height: 1.25rem; animation-delay: .6s }
-.boot-steam.s3 { left: calc(8.8 * var(--bs)); width: 0.7rem; height: 0.7rem; animation-delay: 1.2s }
+.boot-steam.s1 { left: 1rem }
+.boot-steam.s2 { left: 2.4rem; width: 1rem; height: 1rem; animation-delay: .7s }
+.boot-stage[data-beat="eat"] .boot-steam,
+.boot-stage[data-beat="leave"] .boot-steam { display: none }
 @keyframes bootSteam {
-  0%   { opacity: 0; transform: translateY(0.5rem) scale(.4) }
+  0%   { opacity: 0; transform: translateY(0.4rem) scale(.4) }
   25%  { opacity: .95 }
-  100% { opacity: 0; transform: translateY(-3.2rem) scale(1.2) }
+  100% { opacity: 0; transform: translateY(-2.6rem) scale(1.2) }
 }
 
-/*
- * The ingredients going in — real sprites, dropped by the boot script.
- *
- * Everything in here is positioned off the pot's rim rather than off the
- * scene, so a carrot falls to the rim and disappears into the pot instead of
- * landing next to it and fading out. `--off` scatters them across the mouth so
- * they do not all go in down the same line.
- */
+/* what they came in asking for, over their head */
+.boot-bubble {
+  position: absolute; right: 4.4rem; bottom: 7.6rem;
+  width: 3rem; height: 3rem;
+  padding: 0.4rem;
+  border: 0.16rem solid var(--ink);
+  border-radius: var(--r-hand-2);
+  background: var(--paper) center / 1.9rem no-repeat;
+  opacity: 0; transform: scale(.5);
+  pointer-events: none;
+}
+.boot-bubble.up { animation: bubbleUp .34s var(--spring) forwards }
+@keyframes bubbleUp { to { opacity: 1; transform: scale(1) } }
+
+/* the bits and pieces ---------------------------------------------------- */
+
+/* ingredients going in: they fall to the dish and disappear into it */
 .boot-drops { position: absolute; inset: 0; pointer-events: none }
 .boot-drop {
   position: absolute;
-  left: 50%; bottom: calc(8.6 * var(--bs));
-  width: 2.7rem; height: 2.7rem;
-  margin-left: -1.35rem;
+  left: 50%; bottom: 0.6rem;
+  width: 2.2rem; height: 2.2rem;
+  margin-left: -1.1rem;
   background: center / contain no-repeat;
-  animation: dropIn .82s cubic-bezier(.42,.02,.68,1) forwards;
+  animation: dropIn .8s cubic-bezier(.42,.02,.68,1) forwards;
 }
 @keyframes dropIn {
-  0%   { opacity: 0; transform: translate(var(--off, 0), -7rem) rotate(var(--spin, -30deg)) scale(.8) }
+  0%   { opacity: 0; transform: translate(var(--off, 0), -5.5rem) rotate(var(--spin, -30deg)) scale(.8) }
   18%  { opacity: 1 }
-  /* it reaches the rim, then goes under it: shrink and fade at the lip */
   72%  { opacity: 1; transform: translate(var(--off, 0), 0) rotate(0deg) scale(1) }
-  100% { opacity: 0; transform: translate(var(--off, 0), 1.1rem) rotate(6deg) scale(.42) }
+  100% { opacity: 0; transform: translate(var(--off, 0), 0.8rem) rotate(6deg) scale(.42) }
 }
 
-/* the stir counter, which is the entire game */
+.boot-splash {
+  position: absolute; z-index: 3;
+  left: 50%; bottom: 1.4rem;
+  margin-left: calc(-0.24rem + var(--off, 0rem));
+  width: 0.48rem; height: 0.48rem;
+  border-radius: 999px;
+  background: #fff;
+  border: 0.11rem solid rgba(95, 61, 38, .34);
+  animation: bootSplash .62s ease-out forwards;
+  pointer-events: none;
+}
+@keyframes bootSplash {
+  0%   { opacity: 1; transform: translate(0, 0) scale(.5) }
+  100% { opacity: 0; transform: translate(var(--dx), var(--dy)) scale(1.1) }
+}
+
+.boot-spark {
+  position: absolute; z-index: 5;
+  left: 50%; bottom: 2rem;
+  margin-left: calc(-0.2rem + var(--off, 0rem));
+  width: 0.4rem; height: 0.4rem;
+  border-radius: 999px;
+  background: var(--sun);
+  border: 0.1rem solid var(--sun-deep);
+  animation: bootSpark .8s ease-out forwards;
+  pointer-events: none;
+}
+@keyframes bootSpark {
+  0%   { opacity: 1; transform: translate(0, 0) scale(.4) }
+  100% { opacity: 0; transform: translate(var(--dx), var(--dy)) scale(1.15) }
+}
+
+/* and the hearts, because being fed is the point of the whole game */
+.boot-heart {
+  position: absolute; z-index: 5;
+  left: 50%; bottom: 5.4rem;
+  margin-left: calc(-0.65rem + var(--off, 0rem));
+  width: 1.3rem; height: 1.3rem;
+  background: center / contain no-repeat;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M12 20.2C6.8 16.6 3.6 14 3.6 10.2A4.3 4.3 0 0112 8.1a4.3 4.3 0 018.4 2.1c0 3.8-3.2 6.4-8.4 10z' fill='%23e4652f' stroke='%235f3d26' stroke-width='2' stroke-linejoin='round'/%3E%3C/svg%3E");
+  animation: bootHeart 1.2s ease-out forwards;
+  pointer-events: none;
+}
+@keyframes bootHeart {
+  0%   { opacity: 0; transform: translateY(0) scale(.4) }
+  20%  { opacity: 1; transform: translateY(-0.5rem) scale(1.1) }
+  100% { opacity: 0; transform: translateY(-3rem) scale(.9) }
+}
+
+/* the readout ------------------------------------------------------------ */
+
 .boot-stir { height: 1.6rem; display: grid; place-items: center; margin-bottom: 0.45rem }
 .boot-tap {
-  font-size: 0.78rem; font-weight: 900; color: var(--ink-faint);
+  font-size: 0.86rem; font-weight: 900; color: var(--ink-faint);
   animation: tapNudge 1.8s ease-in-out infinite;
 }
 @keyframes tapNudge { 50% { transform: translateY(-0.14rem) } }
@@ -2476,31 +2579,28 @@ body.still .tutor-hole { animation: none }
   border-radius: 999px;
   background: var(--tangerine);
   color: #fff;
-  font-size: 0.82rem; font-weight: 900;
+  font-size: 0.88rem; font-weight: 900;
 }
 .boot-stir.on .boot-tap { display: none }
 .boot-stir.on .boot-combo { display: block }
 .boot-combo.pop { animation: comboPop .3s cubic-bezier(.2,1.7,.4,1) }
 @keyframes comboPop { 40% { transform: scale(1.3) rotate(-5deg) } }
 
-/* the plaque nailed to it, with everything you actually read on it */
+/* the plaque with everything you actually read on it */
 .boot-plate {
-  width: 24rem; max-width: 90vw;
+  width: 24rem; max-width: 92vw;
   margin: 0 auto;
   padding: 0.85rem 1.1rem 0.95rem;
   border: var(--bw) solid var(--ink);
   border-radius: var(--r-hand);
-  background: rgba(255, 255, 255, .93);
+  background: rgba(255, 253, 244, .93);
 }
 
 /*
- * The gauge, drawn rather than moulded.
- *
- * Three tricks, all cheap: the pill has four mismatched radii so the corners
- * do not agree with each other, the whole thing sits a fraction off level, and
- * a second lighter outline is offset behind it — the line somebody went round
- * twice because the first pass was not quite right. The fill is hatched on the
- * diagonal like a marker laid down in strokes rather than a poured colour.
+ * The gauge, drawn rather than moulded: four mismatched corner radii, a
+ * fraction off level, a second lighter outline offset behind it — the line
+ * somebody went round twice — and a fill hatched on the diagonal like a marker
+ * laid down in strokes.
  */
 .boot-bar {
   position: relative;
@@ -2512,7 +2612,6 @@ body.still .tutor-hole { animation: none }
   margin: 0 auto;
   transform: rotate(-0.45deg);
 }
-/* the second pass of the pen, just off the first */
 .boot-bar::after {
   content: "";
   position: absolute; inset: -0.42rem -0.3rem -0.28rem -0.36rem;
@@ -2531,103 +2630,32 @@ body.still .tutor-hole { animation: none }
   border-radius: inherit;
   transition: width .25s ease;
 }
-/* the number rides on the tube, not beside it, so the gauge stays one object */
 .boot-bar b {
   position: absolute; inset: 0;
   display: grid; place-items: center;
-  font-size: 0.76rem; font-weight: 900;
+  font-size: 0.8rem; font-weight: 900;
   color: var(--ink-deep);
   font-variant-numeric: tabular-nums;
 }
+#boot-msg { margin-top: .6rem; font-weight: 900; font-size: .96rem; color: var(--ink-soft) }
+
+/* motion off: the cast hold their idle frame and nothing drifts */
 @media (prefers-reduced-motion: reduce) {
-  .boot-bar { transform: none }
-  .boot-bar::after { transform: none }
+  .boot-chef, .boot-guest, .boot-steam, .boot-tap, .boot-bar, .boot-bar::after {
+    animation: none; transform: none;
+  }
+  .boot-steam { display: none }
+  .boot-guest { opacity: 1 }
 }
-#boot-msg { margin-top: .6rem; font-weight: 900; font-size: .92rem; color: var(--ink-soft) }
 
-/* on a phone the whole tableau comes down a third, in one number */
+/* on a phone the whole tableau comes down a third */
 @media (max-width: 34rem) {
-  .boot-scene { --bs: 0.66rem }
+  .boot-stage { height: 11rem }
+  .boot-chef { left: 1.4rem; width: 5.1rem; height: 6.1rem }
+  .boot-guest { right: 1.4rem; height: 5.9rem }
+  .boot-dish { left: 7.2rem; bottom: 3.8rem; width: 3.6rem; height: 3.6rem }
+  .boot-bubble { right: 2.4rem; bottom: 6.4rem; width: 2.6rem; height: 2.6rem }
   .boot-plate { width: 20rem }
-}
-
-/* a soft ellipse under anything standing on the deck */
-.boot-shadow {
-  position: absolute; left: 50%; bottom: -0.1rem;
-  width: 66%; height: 1rem;
-  transform: translateX(-50%);
-  border-radius: 999px;
-  background: radial-gradient(closest-side, rgba(29, 68, 95, .3), transparent);
-  pointer-events: none;
-}
-
-/* the cooking ring, exactly what the pass draws over a dish that is on */
-.boot-ring {
-  --at: 0;
-  position: absolute; left: 50%; bottom: calc(2.1 * var(--bs));
-  width: calc(9.4 * var(--bs)); height: calc(9.4 * var(--bs));
-  margin-left: calc(-4.7 * var(--bs));
-  border-radius: 999px;
-  background:
-    conic-gradient(from -90deg, var(--leaf) calc(var(--at) * 360deg), rgba(93, 66, 42, .16) 0);
-  /* a ring, not a pie: the middle is punched out */
-  mask: radial-gradient(circle, transparent 0 66%, #000 67%);
-  -webkit-mask: radial-gradient(circle, transparent 0 66%, #000 67%);
-  pointer-events: none;
-  transition: background .18s linear;
-}
-
-/* the finished dish, flung up out of the pot */
-/* the plated dish comes out over the front of the pot, not behind it — the
-   drops layer sits under the pan on purpose, so this one lifts back out */
-.boot-served {
-  position: absolute; z-index: 5;
-  left: 50%; bottom: calc(8.8 * var(--bs));
-  width: 4.4rem; height: 4.4rem;
-  margin-left: -2.2rem;
-  background: center / contain no-repeat;
-  animation: bootServe 1s cubic-bezier(.18,.9,.4,1) forwards;
-  pointer-events: none;
-}
-@keyframes bootServe {
-  0%   { opacity: 0; transform: translateY(1rem) scale(.4) rotate(-25deg) }
-  25%  { opacity: 1 }
-  60%  { transform: translateY(-4.2rem) scale(1.15) rotate(8deg) }
-  100% { opacity: 0; transform: translateY(-6.4rem) scale(.9) rotate(14deg) }
-}
-
-/* and the little burst that comes up with it */
-.boot-spark {
-  position: absolute; z-index: 5;
-  left: 50%; bottom: calc(9.4 * var(--bs));
-  margin-left: calc(-0.21rem + var(--off, 0rem));
-  width: 0.42rem; height: 0.42rem;
-  border-radius: 999px;
-  background: var(--sun);
-  border: 0.1rem solid var(--sun-deep);
-  animation: bootSpark .8s ease-out forwards;
-  pointer-events: none;
-}
-@keyframes bootSpark {
-  0%   { opacity: 1; transform: translate(0, 0) scale(.4) }
-  100% { opacity: 0; transform: translate(var(--dx), var(--dy)) scale(1.15) }
-}
-
-/* the splash something going in throws over the rim */
-.boot-splash {
-  position: absolute; z-index: 5;
-  left: 50%; bottom: calc(8.9 * var(--bs));
-  margin-left: calc(-0.28rem + var(--off, 0rem));
-  width: 0.55rem; height: 0.55rem;
-  border-radius: 999px;
-  background: #fff;
-  border: 0.12rem solid rgba(29, 91, 134, .45);
-  animation: bootSplash .62s ease-out forwards;
-  pointer-events: none;
-}
-@keyframes bootSplash {
-  0%   { opacity: 1; transform: translate(0, 0) scale(.5) }
-  100% { opacity: 0; transform: translate(var(--dx), var(--dy)) scale(1.1) }
 }
 
 .hidden { display: none !important }

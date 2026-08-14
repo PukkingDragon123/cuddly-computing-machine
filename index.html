@@ -281,30 +281,25 @@
   -->
   <div id="boot" class="boot">
     <!--
-      Four things: a sky, a sea, the chef at his pot, and the gauge.
-      It used to have gulls, bunting, three bands of water, sun-glitter and a
-      shelf of finished dishes as well, and the sum of all that was busier than
-      anything else in the game — a screen you are meant to glance at should
-      not be the most detailed thing you ever look at. Everything left is drawn
-      in CSS, because this is the screen that is up *while* the art loads.
+      A shift in miniature, played on a loop while the art loads.
+      Tako cooks, somebody walks in, he hands the dish over, they eat it and
+      go, and he starts the next one. Every figure is the game's own sprite
+      strip — idle / walk / work for the chef, idle / walk / eat for the guest —
+      stepped with background-position, so what you watch here is what you are
+      about to play, not a picture of it. The rest is drawn in CSS, because
+      this is the screen that is up *while* the pictures arrive.
     -->
-    <div class="boot-sea"></div>
-
     <div class="boot-card">
-      <div class="boot-scene" id="boot-scene">
-        <div class="boot-chef"><span class="boot-shadow"></span></div>
-        <div class="boot-pot" id="boot-pot">
-          <span class="boot-shadow"></span>
-          <!--
-            Everything the hob throws about lives inside the pot's own box, so
-            an ingredient falls to the rim and goes in rather than landing
-            somewhere near it. Behind the pan, so a dropped thing disappears
-            into the pot instead of sitting on the front of it.
-          -->
+      <div class="boot-stage" id="boot-stage">
+        <div class="boot-floor"></div>
+
+        <!-- the chef, and the dish coming along in front of him -->
+        <div class="boot-chef" id="boot-chef"><span class="boot-shadow"></span></div>
+        <div class="boot-dish" id="boot-dish">
           <div class="boot-drops" id="boot-drops"></div>
           <span class="boot-steam s1"></span>
           <span class="boot-steam s2"></span>
-          <span class="boot-pan"></span>
+          <span class="boot-food" id="boot-food"></span>
           <!--
             The same ring the kitchen draws over the pass while a dish is on:
             one conic sweep, driven by --at from the boot script. It is the
@@ -312,11 +307,16 @@
           -->
           <span class="boot-ring" id="boot-ring"></span>
         </div>
+
+        <!-- whoever came in for it -->
+        <div class="boot-guest" id="boot-guest"><span class="boot-shadow"></span></div>
+        <span class="boot-bubble" id="boot-bubble"></span>
       </div>
+
       <div class="boot-plate">
         <div class="boot-stir">
           <span id="boot-combo" class="boot-combo"></span>
-          <span class="boot-tap" id="boot-tap">tap the pot to stir</span>
+          <span class="boot-tap" id="boot-tap">tap to help him cook</span>
         </div>
         <div class="boot-bar"><i id="boot-fill"></i><b id="boot-pct">0%</b></div>
         <p id="boot-msg">Filling the tanks…</p>
