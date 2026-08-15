@@ -389,18 +389,33 @@ export class Story {
     this.qSig = null;
   }
 
-  /** The reward banner: what you did, and what it just paid. */
+  /**
+   * The reward, and you watch it open.
+   *
+   * It arrives shut — a little sealed packet with a wax stamp on it — sits for
+   * a beat, then springs open and the pay drops out of it one piece at a time.
+   * It used to simply appear with the numbers already on it, which is a receipt
+   * rather than a reward: the whole pleasure of being paid is the half second
+   * before you know how much.
+   */
   #banner(q, kind = 'Job done') {
-    const el = h('div.done', null,
-      h('span.done-tick', null, '✓'),
-      h('span.done-body', null,
+    const el = h('div.payout.shut', null,
+      h('span.payout-seal', null, '★'),
+      h('span.payout-tick', null, '✓'),
+      h('span.payout-body', null,
         h('b', null, kind),
         h('span', null, q.title)),
-      h('span.done-pay', null,
-        h('span.done-coin', null, h('i.ico.ico-sand'), `+${q.coins}`),
-        q.fame ? h('span.done-fame', null, h('i.ico.ico-star'), `+${q.fame}`) : null));
+      h('span.payout-pay', null,
+        h('span.payout-coin', null, h('i.ico.ico-sand'), `+${q.coins}`),
+        q.fame ? h('span.payout-fame', null, h('i.ico.ico-star'), `+${q.fame}`) : null));
     document.getElementById('hud').append(el);
-    setTimeout(() => { el.classList.add('out'); setTimeout(() => el.remove(), 400); }, 2400);
+    // the beat before it opens is the whole trick, so it is a real wait
+    setTimeout(() => {
+      el.classList.remove('shut');
+      el.classList.add('open');
+      this.game.sfx.play('star');
+    }, 420);
+    setTimeout(() => { el.classList.add('out'); setTimeout(() => el.remove(), 400); }, 2900);
   }
 
   /* --------------------------------------------------------------- pointing */

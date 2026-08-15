@@ -6,6 +6,7 @@ import { Room } from './room.js';
 import { ROT_COUNT, artFor, mirrorAt, rotOf, rotationToward } from './orient.js';
 import { Fx } from '../gfx/fx.js';
 import { Kitchen } from './kitchen.js';
+import { Crew } from './crew.js';
 import { spring } from '../core/tween.js';
 import { CS, Customer, rollGuest } from './customer.js';
 import { TAU, clamp, money, neighbours, range, rnd, tileDist, uid } from '../core/util.js';
@@ -53,6 +54,7 @@ export class Restaurant {
     this.seats = [];             // { c, r, f, table, taken, dirty }
     this.passes = [];
     this.kitchen = new Kitchen(this);
+    this.crew = new Crew(this);
     this.guests = [];
 
     this.ghost = null;           // { id, style, rot, c, r, ok }
@@ -689,6 +691,7 @@ export class Restaurant {
     this.#washUp(dt);
 
     this.kitchen.update(dt);
+    this.crew.update(dt);
 
     for (let i = this.guests.length - 1; i >= 0; i--) {
       const g = this.guests[i];
@@ -990,6 +993,9 @@ export class Restaurant {
       if (ct) list.push({ d: depthOf(ct.c, ct.r, 10), fn: () => this.kitchen.drawChef(ctx) });
       list.push({ d: depthOf(p0.c, p0.r, 60), fn: () => this.kitchen.drawPlates(ctx, t) });
     }
+
+    // the people you hired, walking the room they work in
+    this.crew.collect(ctx, list);
 
     for (const g of this.guests) {
       if (g.dead && g.alpha <= 0.01) continue;

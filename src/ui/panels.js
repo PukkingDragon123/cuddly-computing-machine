@@ -1477,52 +1477,105 @@ export class Panels {
 
   /* ------------------------------------------------------------- research  */
 
+  /**
+   * The research board, as a tree you can see the shape of.
+   *
+   * It was a list of twelve cards, which hid the only interesting thing about
+   * research: half of it is behind the other half. Now each group is drawn as
+   * the chains it actually is — a hexagon per upgrade, a link between one and
+   * the thing it follows — so a locked node is obviously locked *by* something
+   * standing right beside it, and what you are saving for is a shape rather
+   * than a paragraph.
+   *
+   * The chains come out of the data. A root is anything with no `needs`, and a
+   * chain is that root plus whatever follows it, so adding a node to
+   * progress.js draws itself without a layout to keep in step.
+   */
   openResearch() {
     this.reopen = () => this.openResearch();
     const s = this.state;
-    const body = [
-      h('div.note', null, 'The ', h('b', null, 'Harbour Computer'),
-        ' banks a point every quiet minute. Tap it on the factory floor any time',
-        ' to open this board.'),
-    ];
+    const body = [];
+
     if (!s.hasWorks('lab')) {
       body.push(this.#card({
         src: this.assets.url('machines', 'computer_desk'),
         title: 'You have no computer',
-        sub: 'Build a Harbour Computer in the works, under Workshop, and it starts'
-          + ' banking points on its own.',
+        sub: 'Build a Harbour Computer in the works, under Workshop. It banks a'
+          + ' point every quiet minute, on its own.',
         tags: [this.#cost(1200)],
       }));
     }
-    const nodeIcon = { flyer: 'flyer', works: 'hammer', trade: 'sand' };
+
+    const icons = { flyer: 'flyer', works: 'hammer', trade: 'sand' };
     for (const grp of RESEARCH_GROUPS) {
-      body.push(h('div.section', null, grp.label));
-      for (const node of RESEARCH.filter((n) => n.group === grp.id)) {
-        const done = s.hasResearch(node.id);
-        const locked = node.needs && !s.hasResearch(node.needs);
-        body.push(this.#card({
-          icon: nodeIcon[grp.id] ?? 'lab',
-          title: node.label,
-          sub: locked ? `Follows ${RESEARCH_BY_ID[node.needs].label}.` : node.blurb,
-          tags: [done ? tag('Done', 'tag-ok')
-            : tag(`${node.cost} rp`, s.research >= node.cost ? 'tag-cost' : 'tag-need')],
-          locked: done || locked,
-          onclick: done || locked ? null : () => {
-            if (!s.buyResearch(node.id)) { this.game.toast('Not enough research', 'bad'); return; }
-            this.game.toast(`Researched ${node.label}`, 'good');
-            this.openResearch();
-          },
-        }));
+      const mine = RESEARCH.filter((n) => n.group === grp.id);
+      if (!mine.length) continue;
+      const done = mine.filter((n) => s.hasResearch(n.id)).length;
+      body.push(h('div.section', null, grp.label,
+        h('span.section-n', null, `${done}/${mine.length}`)));
+
+      for (const root of mine.filter((n) => !n.needs)) {
+        const chain = [root];
+        for (;;) {
+          const next = mine.find((n) => n.needs === chain[chain.length - 1].id);
+          if (!next) break;
+          chain.push(next);
+        }
+        const row = h('div.hexrow');
+        chain.forEach((node, i) => {
+          if (i) row.append(h('span.hexlink', {
+            class: s.hasResearch(chain[i - 1].id) ? 'lit' : null,
+          }));
+          row.append(this.#hex(node, icons[grp.id] ?? 'lab'));
+        });
+        body.push(row);
       }
     }
+
     this.hud.openSheet({
       key: 'research',
-      title: 'Research Board',
+      title: 'Research',
       body,
       foot: h('div.rowline', null,
-        h('span.card-sub.grow', null, 'Points banked'),
+        h('span.card-sub.grow', null, 'Banked by the computer'),
         tag(`${s.research} rp`, 'tag-mint')),
     });
+  }
+
+  /** One upgrade, as a hexagon you can press. */
+  #hex(node, icon) {
+    const s = this.state;
+    const done = s.hasResearch(node.id);
+    const shut = !!node.needs && !s.hasResearch(node.needs);
+    const afford = s.research >= node.cost;
+    // prefixed, so a state class on one component can never be a component
+    // somewhere else — see the note on .payout in the stylesheet
+    const cls = done ? 'hex-done' : shut ? 'hex-shut' : afford ? 'hex-ready' : 'hex-dear';
+
+    return h(`button.hex.${cls}`, {
+      type: 'button',
+      title: shut ? `Follows ${RESEARCH_BY_ID[node.needs].label}` : node.blurb,
+      onclick: () => {
+        if (done) return;
+        if (shut) {
+          this.game.toast(`${RESEARCH_BY_ID[node.needs].label} first`, 'bad');
+          return;
+        }
+        if (!s.buyResearch(node.id)) {
+          this.game.toast(`${node.cost - s.research} more points needed`, 'bad');
+          return;
+        }
+        this.game.sfx.play('star');
+        this.game.celebrate?.(`${node.label}!`);
+        this.openResearch();
+      },
+    },
+      h('span.hex-cell', null,
+        h('span.hex-face', null,
+          h(`i.ico.ico-${icon}`),
+          h('b', null, done ? '✓' : `${node.cost}`))),
+      h('span.hex-name', null, node.label),
+      h('span.hex-sub', null, shut ? `after ${RESEARCH_BY_ID[node.needs].label}` : node.blurb));
   }
 
   /* -------------------------------------------------------------- pottery  */

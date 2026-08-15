@@ -1086,6 +1086,90 @@ html, body {
      page after they do */
   min-height: 3rem;
 }
+/* ------------------------------------------------------- the research tree */
+
+/*
+ * Twelve upgrades, drawn as the chains they actually are.
+ *
+ * A hexagon cannot take a border, so each one is two clipped shapes stacked:
+ * an ink hex with a paper hex inset inside it. The link between two of them
+ * lights up once the left-hand one is paid for, which is the whole point —
+ * a locked upgrade is locked *by* the thing standing next to it, and you can
+ * see which.
+ */
+.hexrow {
+  display: flex; align-items: flex-start; justify-content: center;
+  gap: 0.1rem;
+  margin: 0.3rem 0 0.5rem;
+  flex-wrap: nowrap;
+}
+.hex {
+  flex: 0 1 7.6rem;
+  min-width: 0;
+  display: flex; flex-direction: column; align-items: center; gap: 0.12rem;
+  padding: 0; border: 0; background: none; font: inherit;
+  cursor: pointer;
+  text-align: center;
+}
+.hex-cell {
+  position: relative;
+  width: 4.1rem; height: 4.6rem;
+  display: grid; place-items: center;
+  background: var(--ink);
+  clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+  transition: transform .12s var(--spring);
+}
+.hex-face {
+  position: absolute; inset: 0.17rem;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 0.04rem;
+  background: var(--panel);
+  clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+}
+.hex-face .ico { width: 1.5rem; height: 1.5rem }
+.hex-face b {
+  font-size: 0.72rem; font-weight: 900; color: var(--ink-soft);
+  font-variant-numeric: tabular-nums;
+}
+.hex-name {
+  font-size: 0.72rem; font-weight: 900; color: var(--ink-deep); line-height: 1.1;
+}
+.hex-sub {
+  font-size: 0.6rem; font-weight: 800; color: var(--ink-faint); line-height: 1.2;
+  display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2;
+  overflow: hidden;
+}
+.hex:active .hex-cell { transform: scale(.93) }
+
+/* paid for */
+.hex.hex-done .hex-face { background: var(--leaf-pale) }
+.hex.hex-done .hex-face b { color: var(--leaf-deep); font-size: 0.95rem }
+/* you can afford it right now, so it says so */
+.hex.hex-ready .hex-face { background: var(--sun-pale) }
+.hex.hex-ready .hex-cell { background: var(--sun-deep) }
+.hex.hex-ready .hex-face b { color: var(--sun-deep) }
+/* it is open, but you have not banked enough yet */
+.hex.hex-dear .hex-face b { color: var(--coral-deep) }
+/* something else has to come first */
+.hex.hex-shut { opacity: .55 }
+.hex.hex-shut .hex-face { background: var(--panel-2) }
+
+/* the link, lit once the thing on its left is bought */
+.hexlink {
+  flex: 0 0 1.1rem;
+  height: 0.28rem;
+  margin-top: 2.15rem;
+  border-radius: 999px;
+  background: var(--tan-deep);
+}
+.hexlink.lit { background: var(--leaf) }
+
+@media (max-width: 34rem) {
+  .hex { flex-basis: 6.2rem }
+  .hex-cell { width: 3.5rem; height: 3.9rem }
+  .hexlink { flex-basis: 0.7rem; margin-top: 1.8rem }
+}
+
 /* -------------------------------------------------------- the job board  */
 
 /*
@@ -3088,7 +3172,11 @@ body.still .tutor-hole { animation: none }
 
 /* Big, central, and it counts the reward out. This is the moment the loop
    pays you back, so it gets the middle of the screen for two seconds. */
-.done {
+/* the reward banner. Named `payout` rather than `done`, because `done` is a
+   state word half the interface wants — it has quietly swallowed the job board
+   slips and the research hexes once each, and both times it was invisible
+   until something was stacked on top of something else. */
+.payout {
   position: absolute;
   left: 50%; top: 26%;
   transform: translateX(-50%);
@@ -3101,10 +3189,67 @@ body.still .tutor-hole { animation: none }
   z-index: 6;
   animation: doneIn .5s cubic-bezier(.15,1.5,.4,1) both;
 }
-.done.out { animation: doneOut .4s ease both }
+.payout.out { animation: doneOut .4s ease both }
+
+/* --- shut, then open ---------------------------------------------------- */
+
+/*
+ * It lands as a sealed packet and springs open a beat later. Everything inside
+ * is laid out the whole time; `shut` simply crushes the box to the seal's size
+ * and hides the contents, so opening is one width transition rather than a
+ * second element to keep in step with the first.
+ */
+.payout-seal {
+  position: absolute; left: 50%; top: 50%;
+  width: 2.4rem; height: 2.4rem;
+  margin: -1.2rem 0 0 -1.2rem;
+  display: grid; place-items: center;
+  border-radius: 999px;
+  background: var(--coral);
+  border: 0.16rem solid var(--ink);
+  color: #fff; font-size: 1.1rem; font-weight: 900;
+  transform: rotate(-8deg);
+}
+.payout.shut {
+  width: 3.4rem;
+  min-width: 0;
+  padding: 0.6rem;
+  overflow: hidden;
+}
+.payout.shut > :not(.payout-seal) { opacity: 0 }
+.payout.open { animation: payoutPop .42s cubic-bezier(.2,1.7,.4,1) both }
+/* the seal breaks off and drops away */
+.payout.open .payout-seal { animation: sealOff .42s ease-in forwards }
+@keyframes sealOff {
+  0%   { opacity: 1; transform: rotate(-8deg) scale(1) }
+  100% { opacity: 0; transform: rotate(38deg) scale(.5) translateY(1.4rem) }
+}
+@keyframes payoutPop {
+  0%   { transform: translateX(-50%) scale(.55) }
+  60%  { transform: translateX(-50%) scale(1.06) }
+  100% { transform: translateX(-50%) scale(1) }
+}
+/* and the pay drops out of it, a piece at a time */
+.payout.open .payout-coin { animation: payDrop .38s var(--spring) .1s both }
+.payout.open .payout-fame { animation: payDrop .38s var(--spring) .26s both }
+.payout.open .payout-tick { animation: tickStamp .34s var(--spring) .04s both }
+@keyframes payDrop {
+  from { opacity: 0; transform: translateY(-0.9rem) scale(.6) }
+  to   { opacity: 1; transform: none }
+}
+@keyframes tickStamp {
+  from { opacity: 0; transform: scale(2.2) rotate(-16deg) }
+  to   { opacity: 1; transform: none }
+}
+@media (prefers-reduced-motion: reduce) {
+  .payout.open, .payout.open .payout-seal, .payout.open .payout-coin,
+  .payout.open .payout-fame, .payout.open .payout-tick { animation: none }
+  .payout-seal { display: none }
+}
+
 @keyframes doneIn { from { opacity: 0; transform: translate(-50%, -1.4rem) scale(.8) rotate(-3deg) } }
 @keyframes doneOut { to { opacity: 0; transform: translate(-50%, -0.9rem) scale(.94) } }
-.done-tick {
+.payout-tick {
   flex: none; width: 2.2rem; height: 2.2rem;
   display: grid; place-items: center;
   border: 0.16rem solid var(--ink); border-radius: 0.7rem;
@@ -3113,35 +3258,39 @@ body.still .tutor-hole { animation: none }
   animation: tickPop .5s .1s var(--spring) both;
 }
 @keyframes tickPop { from { transform: scale(0) rotate(-40deg) } }
-.done-body { display: flex; flex-direction: column; gap: 0.1rem }
-.done-body b {
+.payout-body { display: flex; flex-direction: column; gap: 0.1rem }
+.payout-body b {
   font-size: 0.66rem; font-weight: 900; letter-spacing: .1em;
   text-transform: uppercase; color: var(--leaf-deep);
 }
-.done-body span { font-size: 1rem; font-weight: 900; color: var(--ink-deep) }
-.done-pay { display: flex; gap: 0.35rem; flex: none }
+.payout-body span { font-size: 1rem; font-weight: 900; color: var(--ink-deep) }
+.payout-pay { display: flex; gap: 0.35rem; flex: none }
 /* on a phone the banner runs out of room, so it stacks the reward under the
    line instead of squeezing the words into a column one letter wide */
 @media (max-width: 34rem) {
-  .done {
+  /* the reward banner. Named `payout` rather than `done`, because `done` is a
+   state word half the interface wants — it has quietly swallowed the job board
+   slips and the research hexes once each, and both times it was invisible
+   until something was stacked on top of something else. */
+.payout {
     flex-wrap: wrap;
     width: min(20rem, 88vw);
     gap: 0.45rem 0.6rem;
     top: 22%;
   }
-  .done-body { flex: 1 1 8rem; min-width: 0 }
-  .done-body span { font-size: 0.92rem }
-  .done-pay { flex: 1 0 100%; justify-content: center }
+  .payout-body { flex: 1 1 8rem; min-width: 0 }
+  .payout-body span { font-size: 0.92rem }
+  .payout-pay { flex: 1 0 100%; justify-content: center }
 }
-.done-coin, .done-fame {
+.payout-coin, .payout-fame {
   display: inline-flex; align-items: center; gap: 0.2rem;
   padding: 0.16rem 0.45rem;
   border: 0.14rem solid var(--ink); border-radius: 999px;
   font-size: 0.8rem; font-weight: 900;
   animation: payPop .45s .22s var(--spring) both;
 }
-.done-coin { background: var(--sun-pale) }
-.done-fame { background: var(--leaf-pale); animation-delay: .3s }
+.payout-coin { background: var(--sun-pale) }
+.payout-fame { background: var(--leaf-pale); animation-delay: .3s }
 @keyframes payPop { from { opacity: 0; transform: scale(.4) translateY(0.4rem) } }
 
 /* a line from the pass, in the toast stack */
