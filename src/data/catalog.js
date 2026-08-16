@@ -67,6 +67,7 @@ export const SHELVES = [
   { id: 'kitchen', label: 'Kitchen', note: 'The working side of the room. You need a pass before you can open.' },
   { id: 'decor', label: 'Decor', note: 'Standing pieces. Every one adds ambience, and ambience is your rating.' },
   { id: 'trinket', label: 'Trinkets', note: 'Small things that sit on a table, a shelf or the counter.' },
+  { id: 'plants', label: 'Plants', note: 'Greenery, in a pot. Some for a table, some for a corner of the floor.' },
   { id: 'light', label: 'Lights & Walls', note: 'Hung overhead or on a back wall. They take no floor at all.' },
 ];
 
@@ -93,6 +94,8 @@ const D = (id, label, cost, star, opts = {}) => ({
 });
 
 const FLOOR = { mount: 'floor', shelf: 'decor' };
+const POT = { shelf: 'plants' };
+const POT_FLOOR = { mount: 'floor', shelf: 'plants' };
 const HANG = { mount: 'ceiling', shelf: 'light' };
 const WALL = { mount: 'wall', shelf: 'light' };
 
@@ -106,10 +109,10 @@ export const DECOR_SET = [
   D('model_boat', 'Model Skiff', 95, 2, { blurb: 'Sails set, going nowhere.' }),
   D('bottle_ship', 'Ship in a Bottle', 140, 3, { blurb: 'Somebody had a very long winter.', rank: 1 }),
   D('ships_wheel', "Ship's Wheel", 150, 3, { ...FLOOR, blurb: 'Salvage, mounted and polished.', rank: 1 }),
-  D('reed_vase', 'Reed Vase', 60, 1, { blurb: 'Dry reeds in a chipped jar.' }),
-  D('bonsai', 'Bonsai', 110, 2, { blurb: 'Clipped within an inch of its life.' }),
-  D('cactus', 'Little Cactus', 55, 1, { blurb: 'Survives being forgotten.' }),
-  D('wave_vase', 'Wave Vase', 65, 1, { blurb: 'Glazed with a rolling sea.' }),
+  D('reed_vase', 'Reed Vase', 60, 1, { ...POT, blurb: 'Dry reeds in a chipped jar.' }),
+  D('bonsai', 'Bonsai', 110, 2, { ...POT, blurb: 'Clipped within an inch of its life.' }),
+  D('cactus', 'Little Cactus', 55, 1, { ...POT, blurb: 'Survives being forgotten.' }),
+  D('wave_vase', 'Wave Vase', 65, 1, { ...POT, blurb: 'Glazed with a rolling sea.' }),
   D('lantern', 'Brass Lantern', 80, 2, { blurb: 'Warm light on the table.' }),
   D('candles', 'Candle Tray', 75, 2, { patienceRoom: 1.04, blurb: 'Candlelight. People linger.' }),
   D('seascape', 'Framed Seascape', 100, 2, { blurb: 'The view, on a day it was calm.' }),
@@ -119,10 +122,10 @@ export const DECOR_SET = [
   D('pearl_shell', 'Pearl Shell', 130, 3, { blurb: 'One pearl, kept where it can be seen.', rank: 1 }),
   D('shell_basin', 'Shell Fountain', 145, 3, { patienceRoom: 1.06, blurb: 'Running water. Nobody minds waiting.', rank: 2 }),
   D('fish_bowl', 'Coral Bowl', 150, 3, { blurb: 'A reef the size of a dinner plate.', rank: 2 }),
-  D('coral_bowl', 'Coral Planter', 85, 2, { blurb: 'Orange coral in a starfish pot.' }),
-  D('coral_fan', 'Coral Fan', 100, 2, { blurb: 'Pink and enormous and delicate.' }),
-  D('snake_plant', 'Snake Plant', 70, 1, { blurb: 'Unkillable, which is the appeal.' }),
-  D('blossom', 'Flowering Pot', 90, 2, { blurb: 'Pink flowers, replaced weekly.' }),
+  D('coral_bowl', 'Coral Planter', 85, 2, { ...POT, blurb: 'Orange coral in a starfish pot.' }),
+  D('coral_fan', 'Coral Fan', 100, 2, { ...POT, blurb: 'Pink and enormous and delicate.' }),
+  D('snake_plant', 'Snake Plant', 70, 1, { ...POT, blurb: 'Unkillable, which is the appeal.' }),
+  D('blossom', 'Flowering Pot', 90, 2, { ...POT, blurb: 'Pink flowers, replaced weekly.' }),
 
   // --- trophies. Big, silly, and the regulars love them
   D('dolphin', 'Dolphin Trophy', 160, 3, { tipRoom: 1.04, blurb: 'On a plinth, mid-leap.', rank: 2 }),
@@ -131,8 +134,8 @@ export const DECOR_SET = [
   D('walrus', 'Walrus Trophy', 165, 3, { tipRoom: 1.04, blurb: 'Scarf and all.', rank: 2 }),
 
   // --- floor pieces
-  D('monstera', 'Monstera', 120, 2, { ...FLOOR, blurb: 'Big leaves, big corner.' }),
-  D('palm', 'Potted Palm', 135, 2, { ...FLOOR, blurb: 'Instant holiday.' }),
+  D('monstera', 'Monstera', 120, 2, { ...POT_FLOOR, blurb: 'Big leaves, big corner.' }),
+  D('palm', 'Potted Palm', 135, 2, { ...POT_FLOOR, blurb: 'Instant holiday.' }),
   D('chest', 'Sea Chest', 180, 3, { ...FLOOR, blurb: 'Locked. Nobody has the key.', rank: 1 }),
   D('telescope', 'Brass Telescope', 220, 3, { ...FLOOR, draw: 0.06, blurb: 'Pointed at the harbour mouth. Draws people in.', rank: 2 }),
   D('gramophone', 'Gramophone', 200, 3, { ...FLOOR, tipRoom: 1.05, blurb: 'Music in the room. Tips go up.', rank: 2 }),

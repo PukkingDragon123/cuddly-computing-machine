@@ -337,11 +337,29 @@ export class Panels {
     // sell wood and nowhere near the deco set, which is drawn once
     const woody = items.some((f) => f.set !== 'deco');
     return [
-      h('div.note', null, shelf.note),
+      this.#shutNote(items) ?? h('div.note', null, shelf.note),
       woody ? this.#styleRow() : null,
       ...this.#pieceRows(items),
       items.length ? null : h('div.empty', null, 'Nothing on this shelf yet.'),
     ].filter(Boolean);
+  }
+
+  /**
+   * A page where nothing at all is on the shelf yet says so, in one line, at
+   * the top.
+   *
+   * Six greyed-out cards each carrying their own little rank tag reads as "this
+   * is broken" rather than as "come back later" — the answer is the same for
+   * every card on the page, so it is said once and up front.
+   */
+  #shutNote(items) {
+    if (!items.length || items.some((i) => this.state.open(i))) return null;
+    const soonest = items.reduce((a, b) => ((a.rank ?? 0) <= (b.rank ?? 0) ? a : b));
+    return h('div.note.note-shut', null,
+      h('i.ico.ico-lock'),
+      h('span', null,
+        'Nothing here yet. This page opens at ',
+        h('b', null, RANKS[soonest.rank ?? 0]?.name ?? 'a higher rank'), '.'));
   }
 
   /**
@@ -412,7 +430,7 @@ export class Panels {
     } else if (this.factoryTab === 'pottery') {
       const s = this.state;
       body = [
-        h('div.note', null, 'The pottery works. Build the ', h('b', null, 'kiln'),
+        this.#shutNote(POTTERY) ?? h('div.note', null, 'The pottery works. Build the ', h('b', null, 'kiln'),
           ' and tap it to take a turn at the class — a forged dish is the only',
           ' permanent rise a single recipe can get.'),
         ...POTTERY.map((m) => {
@@ -434,7 +452,7 @@ export class Panels {
       ];
     } else if (this.factoryTab === 'workshop') {
       body = [
-        h('div.note', null, 'No belt needed. Drop them anywhere; they tick away on their own.'),
+        this.#shutNote(WORKSHOP) ?? h('div.note', null, 'No belt needed. Drop them anywhere; they tick away on their own.'),
         ...WORKSHOP.map((m) => this.#gated(m, {
           src: this.assets.url('machines', m.sprite),
           title: m.label,
@@ -456,11 +474,12 @@ export class Panels {
       ];
     } else {
       const kind = this.factoryTab;
+      const kit = MACHINES.filter((m) => m.kind === kind);
       body = [
-        kind === 'processor'
+        this.#shutNote(kit) ?? (kind === 'processor'
           ? h('div.note', null, 'Cheap goods in, valuable ones out. Belt in, belt onward.')
-          : h('div.note', null, 'One ingredient, over and over. Point it at a belt with ', h('b', null, 'Turn'), '.'),
-        ...MACHINES.filter((m) => m.kind === kind).map((m) => this.#gated(m, {
+          : h('div.note', null, 'One ingredient, over and over. Point it at a belt with ', h('b', null, 'Turn'), '.')),
+        ...kit.map((m) => this.#gated(m, {
           src: this.assets.url('machines', m.sprite),
           title: m.label,
           sub: m.kind === 'processor'
