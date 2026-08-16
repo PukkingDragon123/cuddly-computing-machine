@@ -8,9 +8,9 @@ import {
   MAX_LEVEL, RECIPES, RECIPE_BY_ID, priceAt, prepAt, starsAt, upgradeCost,
 } from '../data/recipes.js';
 import {
-  BELT, CREW_ROOMS, FURNITURE, MACHINES, MACHINE_MAX_LEVEL, POTTERY, SILO, STAFF,
-  STYLES, STYLE_BY_ID, WORKSHOP, costOf, groupFor, machineInterval,
-  machineUpgradeCost, starsOf,
+  BELT, CREW_ROOMS, FURNITURE, MACHINES, MACHINE_MAX_LEVEL, POTTERY, SHELVES,
+  SILO, STAFF, STYLES, STYLE_BY_ID, WORKSHOP, costOf, groupFor, machineInterval,
+  machineUpgradeCost, mountOf, starsOf,
 } from '../data/catalog.js';
 import {
   GUESTS, GUEST_BY_ID, MAX_FRIEND, TASTES, heartsToNext, nameFor,
@@ -46,7 +46,7 @@ export class Panels {
     this.state = game.state;
     this.assets = game.assets;
     this.buildStyle = 'plain';
-    this.buildTab = 'room';
+    this.buildTab = 'seating';
     this.factoryTab = 'belt';
     this.recipeTab = 'menu';
     this.pantryTab = 'pantry';
@@ -141,32 +141,52 @@ export class Panels {
     return out;
   }
 
+  /** What a piece is *for*, in two words, off whatever perk it carries. */
+  static perkOf(item) {
+    if (item.kind === 'seat') return 'seats one';
+    if (item.kind === 'table') return 'takes chairs';
+    if (item.kind === 'pass') return 'plates food';
+    if (item.patience || item.patienceRoom) return 'they wait longer';
+    if (item.tip || item.tipRoom) return 'better tips';
+    if (item.draw) return 'draws guests in';
+    if (item.order) return 'faster orders';
+    return null;
+  }
+
+  /** Where it goes, in the catalogue's own words. */
+  static WHERE = {
+    ceiling: 'hangs overhead',
+    wall: 'on a back wall',
+    top: 'on a table or shelf',
+  };
+
   /**
-   * One piece in the catalogue: the drawing, in the finish you picked, with
-   * what it costs under it. The same chair in pine and in walnut are different
-   * things to buy, so you see which one you are buying.
+   * One plate in the catalogue.
+   *
+   * A shop window and a price list at once: the drawing large and in the finish
+   * you picked — the same chair in pine and in walnut are different things to
+   * buy — then the name, then a line saying what it does or where it goes, then
+   * the price. Everything a mail-order page has had since mail-order pages.
    */
   #pieceCard(item) {
     const cost = costOf(item, this.buildStyle);
     const stars = starsOf(item, this.buildStyle);
     const shut = !this.state.open(item);
     const owned = this.state.furniture.filter((f) => f.id === item.id).length;
-    const perk = item.kind === 'seat' ? 'seats one'
-      : item.kind === 'table' ? 'takes chairs'
-        : item.patience || item.patienceRoom ? 'patience'
-          : item.tip || item.tipRoom ? 'tips'
-            : item.draw ? 'draws guests'
-              : item.order ? 'faster orders' : null;
+    const mount = mountOf(item);
+    const note = Panels.perkOf(item) ?? Panels.WHERE[mount] ?? null;
+    const style = { backgroundImage: `url("${this.assets.url(groupFor(item, this.buildStyle), spriteIdOf(item))}")` };
     return h(`div.card.piece${shut ? '.shut' : '.tap'}${!shut && this.state.coins < cost ? '.thin' : ''}`,
       shut ? null : { onclick: () => this.game.startPlacing(item.id, this.buildStyle) },
-      h('div.stage', null, h('i', {
-        style: { backgroundImage: `url("${this.assets.url(groupFor(item, this.buildStyle), spriteIdOf(item))}")` },
-      }), owned ? h('span.owned', null, `×${owned}`) : null),
+      h('div.stage', null,
+        h('i', { style }),
+        stars > 0 && !shut ? h('span.piece-star', null, `${stars}★`) : null,
+        owned ? h('span.owned', null, `×${owned}`) : null),
       h('div.piece-name', null, item.label),
-      perk && !shut ? h('div.piece-perk', null, perk) : null,
-      h('div.rowline.mid', null, shut
-        ? tag(this.state.rankNeeded(item), 'tag-need')
-        : [this.#cost(cost), stars > 0 ? tag(`${stars}★`, 'tag-star') : null].filter(Boolean)));
+      h('div.piece-perk', null, shut ? this.state.rankNeeded(item) : note ?? '\u00a0'),
+      h('div.piece-price', null, shut
+        ? h('i.ico.ico-lock')
+        : this.#cost(cost)));
   }
 
   /* ------------------------------------------------------------------ fame  */
@@ -211,33 +231,31 @@ export class Panels {
 
   /* ----------------------------------------------------------------- build  */
 
+  /**
+   * The furniture catalogue.
+   *
+   * It reads like one now — a shelf per page, each piece a plate with its
+   * picture, its name, what it does and what it costs. It used to be a single
+   * scrolling list with headings, which was fine when the room sold eighteen
+   * things and unusable now it sells sixty: nobody scrolls past a wall of
+   * chairs to find a candlestick. The shelves come off the catalogue data
+   * itself (SHELVES in data/catalog.js) so adding a piece never means editing
+   * this function.
+   */
   openBuild(keep = false) {
     this.reopen = () => this.openBuild(true);
     if (this.game.zone === this.game.factory) return this.#openFactoryBuild(keep);
 
-    // One catalogue, not three. Splitting it into Seating / Kitchen / Decor gave
-    // the first tab four things in it and a page and a half of blank paper —
-    // the whole room's worth fits in one list with headings down it.
-    const shelves = [
-      ['Tables and chairs', ['table', 'seat']],
-      ['The kitchen', ['pass']],
-      ['Decoration', ['decor']],
-    ];
-
+    const shelf = SHELVES.find((sh) => sh.id === this.buildTab);
     const body = this.buildTab === 'expand' ? this.#expandTab()
-      : this.buildTab === 'crew' ? this.#crewRows() : [
-      this.#styleRow(),
-      ...shelves.flatMap(([label, kinds]) => {
-        const items = FURNITURE.filter((f) => kinds.includes(f.kind));
-        return items.length ? [h('div.section', null, label), ...this.#pieceRows(items)] : [];
-      }),
-    ];
+      : this.buildTab === 'crew' ? this.#crewRows()
+        : this.#shelfPage(shelf ?? SHELVES[0]);
 
     const spec = {
       key: 'build',
-      title: 'Build the Dining Room',
+      title: 'The Catalogue',
       tabs: [
-        { id: 'room', label: 'Furnish' },
+        ...SHELVES.map((sh) => ({ id: sh.id, label: sh.label })),
         { id: 'crew', label: 'Crew' },
         { id: 'expand', label: 'Expand' },
       ],
@@ -249,6 +267,20 @@ export class Panels {
         tag(`${this.game.restaurant.seatCount} seats`, 'tag-mint')),
     };
     keep ? this.hud.refreshSheet(spec) : this.hud.openSheet(spec);
+  }
+
+  /** One page of the catalogue: what this shelf is, then the pieces on it. */
+  #shelfPage(shelf) {
+    const items = FURNITURE.filter((f) => (f.shelf ?? 'decor') === shelf.id);
+    // the finish only prices the wood, so the swatches belong on the pages that
+    // sell wood and nowhere near the deco set, which is drawn once
+    const woody = items.some((f) => f.set !== 'deco');
+    return [
+      h('div.note', null, shelf.note),
+      woody ? this.#styleRow() : null,
+      ...this.#pieceRows(items),
+      items.length ? null : h('div.empty', null, 'Nothing on this shelf yet.'),
+    ].filter(Boolean);
   }
 
   /**
@@ -1593,7 +1625,7 @@ export class Panels {
     if (!s.hasKiln) {
       this.hud.openSheet({
         key: 'pottery',
-        title: 'Pottery Class',
+        title: 'The Pottery',
         body: [
           this.#card({
             src: this.assets.url('machines', 'bisque_kiln'),
@@ -1622,63 +1654,105 @@ export class Panels {
     const lv = s.potteryLv;
     const next = potteryNext(s.pottery);
     const open = lv >= FORGE_LEVEL;
+    const pct = next === null ? 1 : s.pottery / next;
 
-    const body = [
-      h('div.card', null,
-        h('div.thumb', null, h('div', {
-          style: { font: '900 1.5rem var(--font)', color: 'var(--ink)' },
-        }, String(lv))),
-        h('div.card-main', null,
-          h('div.card-title', null, `Pottery Class · level ${lv}`),
-          h('div.card-sub', null, next === null
-            ? 'You have learned everything the class can teach.'
-            : `${next - s.pottery} more guests served to reach level ${lv + 1}.`),
-          bar(next === null ? 1 : s.pottery / next)),
-        h('div.card-side', null, tag(`${s.clay} clay`, 'tag-mint'))),
-    ];
+    const body = [this.#kilnHead(lv, next, pct, open)];
 
     if (!open) {
       body.push(h('div.note', null, 'Every guest you serve is a little more practice. At ',
         h('b', null, `level ${FORGE_LEVEL}`),
-        ' the kiln opens and you can forge serving dishes, which raise a recipe\'s stars and price for good.'));
+        " the kiln opens and you can forge serving dishes, which raise a recipe's stars and price for good."));
+      body.push(this.#kilnLadder(lv));
     } else {
-      body.push(h('div.note', null, 'Pick a dish to forge a new serving plate for. It costs sand dollars and clay, then you take a turn at the wheel — ',
+      body.push(h('div.note', null, 'Pick a dish to throw a new plate for. It costs sand dollars and clay, then you take a turn at the wheel — ',
         h('b', null, 'stop the needle in the band'), '.',
-        s.hasWheel ? ' Your wheel takes a round off.' : ' A Potter\'s Wheel in the works would take a round off.'));
-      for (const r of RECIPES.filter((x) => s.isUnlocked(x.id))) {
-        const tier = s.dishTier(r.id);
-        const maxed = tier >= MAX_DISH;
-        const cost = forgeCost(tier);
-        const canPay = s.coins >= cost.coins && s.clay >= cost.clay;
-        const plate = plateFor(r.id, Math.min(MAX_DISH, tier + 1));
-        body.push(this.#card({
-          src: this.assets.url('plates', plate) || this.assets.url('food', r.id),
-          title: `${r.name}${tier ? `  ${'✦'.repeat(tier)}` : ''}`,
-          sub: maxed
-            ? 'The finest plate in the harbour.'
-            : `Tier ${tier} → ${tier + 1}: +1★ and +14% price.`,
-          tags: maxed ? [tag('MAX', 'tag-star')] : [
-            this.#cost(cost.coins),
-            tag(`${cost.clay} clay`, s.clay >= cost.clay ? 'tag-ok' : 'tag-need'),
-          ],
-          locked: maxed,
-          onclick: maxed ? null : () => {
-            if (!canPay) { this.game.toast('Not enough for that yet', 'bad'); return; }
-            this.#forge(r, tier, cost);
-          },
-        }));
-      }
+        s.hasWheel ? ' Your wheel takes a round off.' : " A Potter's Wheel in the works would take a round off."));
+      const rows = RECIPES.filter((x) => s.isUnlocked(x.id)).map((r) => this.#forgeCard(r));
+      body.push(...rows);
+      if (!rows.length) body.push(h('div.empty', null, 'Learn a recipe first — there is nothing to make a plate for.'));
     }
 
     this.hud.openSheet({
       key: 'pottery',
-      title: 'Pottery Class',
+      title: 'The Pottery',
       body,
       foot: h('div.rowline', null,
         h('span.card-sub.grow', null, s.hasGlaze
           ? 'The glaze kiln is adding 15% to every forged dish.'
           : 'A Glaze Kiln in the works would add 15% to forged dishes.'),
         tag(`${s.clay} clay`, 'tag-mint')),
+    });
+  }
+
+  /**
+   * The header of the pottery page: the kiln itself, the level fired into a
+   * clay medallion, and the climb to the next one.
+   *
+   * This used to be a plain card with the number in a thumbnail box, which read
+   * as a list item rather than as a workshop. The class is the one part of the
+   * game you level up by working rather than by paying, so it gets the page
+   * furniture that says so.
+   */
+  #kilnHead(lv, next, pct, open) {
+    const s = this.state;
+    return h('div.kiln', null,
+      h('div.kiln-top', null,
+        h('div.kiln-art', {
+          style: { backgroundImage: `url("${this.assets.url('machines', 'bisque_kiln')}")` },
+        }),
+        h('div.kiln-medal', null, h('b', null, String(lv)), h('span', null, 'level')),
+        h('div.kiln-main', null,
+          h('div.kiln-title', null, 'Pottery Class'),
+          h('div.kiln-sub', null, next === null
+            ? 'You have learned everything the class can teach.'
+            : `${next - s.pottery} more guests served to reach level ${lv + 1}.`),
+          h('div.kiln-bar', null, h('i', { style: { width: `${Math.round(pct * 100)}%` } })))),
+      h('div.kiln-stock', null,
+        this.#kilnStat('kiln', `${s.clay}`, 'clay'),
+        this.#kilnStat('plate', `${Object.keys(s.dishes ?? {}).length}`, 'forged'),
+        this.#kilnStat('star', open ? 'Open' : `Lv ${FORGE_LEVEL}`, open ? 'wheel' : 'to open')));
+  }
+
+  #kilnStat(ico, value, label) {
+    return h('div.kiln-stat', null,
+      h(`i.ico.ico-${ico}`),
+      h('b', null, value),
+      h('span', null, label));
+  }
+
+  /** The rungs of the class, so the climb is a thing you can see the end of. */
+  #kilnLadder(lv) {
+    return h('div.kiln-rungs', null,
+      ...Array.from({ length: FORGE_LEVEL }, (_, i) => h(
+        `span.kiln-rung${i < lv ? '.on' : ''}${i + 1 === FORGE_LEVEL ? '.last' : ''}`,
+        null, String(i + 1))));
+  }
+
+  /** One recipe on the forge list, with the plate it would come out on. */
+  #forgeCard(r) {
+    const s = this.state;
+    const tier = s.dishTier(r.id);
+    const maxed = tier >= MAX_DISH;
+    const cost = forgeCost(tier);
+    const canPay = s.coins >= cost.coins && s.clay >= cost.clay;
+    const plate = plateFor(r.id, Math.min(MAX_DISH, tier + 1));
+    return this.#card({
+      src: this.assets.url('plates', plate) || this.assets.url('food', r.id),
+      title: r.name,
+      sub: maxed
+        ? 'The finest plate in the harbour.'
+        : `Tier ${tier} → ${tier + 1}: +1★ and +14% price.`,
+      side: h('span.pips', null, ...Array.from({ length: MAX_DISH }, (_, i) => h(
+        `i.pip${i < tier ? '.on' : ''}`))),
+      tags: maxed ? [tag('MAX', 'tag-star')] : [
+        this.#cost(cost.coins),
+        tag(`${cost.clay} clay`, s.clay >= cost.clay ? 'tag-ok' : 'tag-need'),
+      ],
+      locked: maxed,
+      onclick: maxed ? null : () => {
+        if (!canPay) { this.game.toast('Not enough for that yet', 'bad'); return; }
+        this.#forge(r, tier, cost);
+      },
     });
   }
 

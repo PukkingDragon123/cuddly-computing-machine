@@ -1,7 +1,7 @@
 // Ties it all together: the loop, the two zones, the camera, input routing and
 // the day cycle.
 
-import { Camera } from './world/iso.js';
+import { Camera, toScreen } from './world/iso.js';
 import { Restaurant } from './world/restaurant.js';
 import { Factory } from './world/factory.js';
 import { Tweens } from './core/tween.js';
@@ -48,6 +48,7 @@ export class Game {
     this.zone = this.restaurant;
 
     this.dragPlate = null;
+    this.dragGhost = false;
     this.painting = false;
     this.pressAt = null;
     this.moved = false;
@@ -175,34 +176,92 @@ export class Game {
   startPlacing(id, style) {
     this.restaurant.beginPlace(id, style);
     this.hud.closeSheet();
-    const item = FURNITURE_BY_ID[id];
-    this.hud.showPlaceBar('Tap the floor to set it down', {
-      title: item?.label ?? 'Piece',
-      turn: this.restaurant.ghost?.rot ?? 0,
-    });
+    this.#parkGhost(this.restaurant);
+    this.#syncPlaceBar();
   }
 
   startFactoryPlacing(kind, id) {
     this.factory.beginPlace(kind, id);
     this.hud.closeSheet();
-    this.hud.showPlaceBar(
-      kind === 'belt' ? 'Drag across the floor to draw a line' : 'Tap a tile to set it down',
-      { title: MACHINE_BY_ID[id]?.label ?? (kind === 'belt' ? 'Conveyor' : 'Machine'),
-        turn: this.factory.ghost?.dir ?? 0 },
-    );
+    if (kind !== 'belt') this.#parkGhost(this.factory);
+    this.#syncPlaceBar();
   }
 
   startFactoryErase() {
     this.factory.beginErase();
     this.hud.closeSheet();
     this.hud.showPlaceBar('Drag over things to remove them',
-      { rotate: false, title: 'Remove Tool' });
+      { rotate: false, title: 'Remove Tool', confirm: null });
+  }
+
+  /**
+   * Hand the piece over already standing somewhere it would go.
+   *
+   * The panel shuts on a room, and a piece hovering over a tile it cannot have
+   * would open on a refusal — so the search spirals out from the middle of the
+   * floor and stops at the first tile that will take it. For a trinket that is
+   * the nearest table; for a wall piece, the nearest wall.
+   */
+  #parkGhost(zone) {
+    const g = zone.ghost;
+    if (!g) return;
+    const cc = (zone.cols - 1) / 2, cr = (zone.rows - 1) / 2;
+    let best = null, bestD = Infinity;
+    for (let c = 0; c < zone.cols; c++) {
+      for (let r = 0; r < zone.rows; r++) {
+        if (!zone.canPlace(c, r, g.item)) continue;
+        const d = (c - cc) ** 2 + (r - cr) ** 2;
+        if (d < bestD) { bestD = d; best = { c, r }; }
+      }
+    }
+    const at = best ?? { c: Math.round(cc), r: Math.round(cr) };
+    zone.moveGhost(toScreen(at.c, at.r));
   }
 
   rotatePlacement() {
     this.zone.rotateGhost?.();
-    this.sfx.play('tap');
+    this.sfx.play('whoosh');
+    const g = this.zone.ghost;
+    // a puff on the tile it stands on, so the turn is felt in the room and not
+    // only in the strip along the bottom
+    if (g && g.c !== null && g.c !== undefined) {
+      const p = toScreen(g.c, g.r);
+      this.zone.fx?.puff(p.x, p.y + 4, 5, 13);
+    }
     this.#syncPlaceBar();
+  }
+
+  /**
+   * Put the thing on the cursor down for good.
+   *
+   * This is the whole of the change: a tap on the floor carries the piece to
+   * that tile and *this* is what buys it. Everything a shop does — take the
+   * money, thump it into place, keep the tool live for the next one — happens
+   * here rather than on whichever tile you happened to touch first.
+   */
+  confirmPlacement() {
+    const zone = this.zone;
+    const g = zone.ghost;
+    if (!g) return;
+    if (!g.ok) {
+      this.sfx.play('no');
+      this.hud.hint(zone.placeHint?.(g.item) ?? "That won't go there", 2.0);
+      this.hud.shakePlaceBar();
+      return;
+    }
+    const spent = zone.commitPlace?.();
+    if (!spent) {
+      this.sfx.play('no');
+      this.hud.toast('Not enough sand dollars', 'bad');
+      this.hud.shakePlaceBar();
+      return;
+    }
+    this.state.save();
+    this.hud.sync();
+    // the tool stays live for a second one, standing on the next tile that
+    // would take it — furnishing a room is never one chair
+    this.#parkGhost(zone);
+    this.#syncPlaceBar('Placed. Move it again for another');
   }
 
   /** Keep the blueprint strip showing what is actually on the cursor. */
@@ -211,21 +270,22 @@ export class Game {
     if (!g) { this.hud.hidePlaceBar(); return; }
     if (g.kind === 'erase') {
       this.hud.showPlaceBar('Drag over things to remove them',
-        { rotate: false, title: 'Remove Tool' });
+        { rotate: false, title: 'Remove Tool', confirm: null });
       return;
     }
     const inFactory = this.zone === this.factory;
+    const belt = inFactory && g.kind === 'belt';
     const title = inFactory
-      ? (g.kind === 'belt' ? 'Conveyor' : MACHINE_BY_ID[g.id]?.label ?? 'Machine')
+      ? (belt ? 'Conveyor' : MACHINE_BY_ID[g.id]?.label ?? 'Machine')
       : (g.item?.label ?? 'Piece');
-    const text = label ?? (inFactory && g.kind === 'belt'
+    const text = belt
       ? 'Drag across the floor to draw a line'
-      : 'Tap a tile to set it down');
-    this.hud.showPlaceBar(inFactory && g.kind === 'belt'
-      ? 'Drag across the floor to draw a line' : text, {
-      rotate: g.kind !== 'belt',
+      : label ?? (g.ok ? 'Drag it about, then Place' : this.zone.placeHint?.(g.item) ?? "That won't go there");
+    this.hud.showPlaceBar(text, {
+      rotate: !belt,
       title,
       turn: (inFactory ? g.dir : g.rot) ?? 0,
+      confirm: belt ? null : { ok: !!g.ok, cost: this.zone.ghostCost?.() ?? 0 },
     });
   }
 
@@ -251,6 +311,9 @@ export class Game {
       this.factory.paint(world);
       return true;
     }
+    // something on the cursor is dragged, not panned: the room stays put and
+    // the piece follows your finger until you let go of it
+    if (g) { this.dragGhost = true; this.zone.moveGhost?.(world); return true; }
     if (this.zone === this.restaurant && !g) {
       const plate = this.restaurant.grab(world);
       if (plate) { this.dragPlate = plate; return true; }
@@ -261,6 +324,7 @@ export class Game {
   #onDrag(world) {
     this.moved = true;
     if (this.painting) { this.factory.paint(world); return; }
+    if (this.dragGhost) { this.zone.moveGhost?.(world); this.#syncPlaceBar(); return; }
     if (this.dragPlate) this.restaurant.dragTo(this.dragPlate, world);
   }
 
@@ -270,6 +334,12 @@ export class Game {
       this.painting = false;
       this.factory.paintPrev = null;
       if (!moved) this.factory.tap(world);
+      return;
+    }
+    if (this.dragGhost) {
+      this.dragGhost = false;
+      this.zone.moveGhost?.(world);
+      this.#syncPlaceBar();
       return;
     }
     if (this.dragPlate) {
@@ -290,7 +360,7 @@ export class Game {
     if (this.hud.isSheetOpen) return;
     const hint = this.zone.tap(world);
     if (hint && this.state.tipsOn) this.hud.hint(hint, 2.2);
-    this.#syncPlaceBar('Tap the floor to place another');
+    this.#syncPlaceBar();
     this.hud.sync();
   }
 

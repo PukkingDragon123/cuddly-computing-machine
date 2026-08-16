@@ -148,20 +148,29 @@
 
     <!--
       The blueprint strip. While something is on the cursor this is the only
-      control that matters, so it says what is being set down, which way it
-      faces, and how to turn it.
+      control that matters, so it says what is being carried, which way it
+      faces, how to turn it — and, since a tap on the floor now only moves the
+      piece, it carries the button that actually buys and places it.
     -->
     <div id="placebar" class="placebar hidden">
       <span class="plan-mark"></span>
       <span class="plan-text">
         <b id="placebar-title">Piece</b>
-        <span id="placebar-label">Tap a tile to place</span>
+        <span id="placebar-label">Drag it about, then Place</span>
       </span>
-      <span class="turns" id="placebar-turns" aria-hidden="true">
-        <i></i><i></i><i></i><i></i>
-      </span>
-      <button class="pill pill-sm pill-sun" id="placebar-rotate">Turn</button>
-      <button class="pill pill-sm pill-quiet" id="placebar-done">Done</button>
+      <button class="planturn" id="placebar-rotate" aria-label="Turn it a quarter">
+        <span class="planturn-dial" id="placebar-dial" aria-hidden="true">
+          <i></i><i></i><i></i><i></i>
+          <b class="planturn-hand"></b>
+        </span>
+        <span>Turn</span>
+      </button>
+      <button class="pill pill-sm pill-go pill-place" id="placebar-place">
+        Place<span class="pill-coin"><i class="ico ico-sand"></i><b id="placebar-cost"></b></span>
+      </button>
+      <button class="round round-sm placebar-x" id="placebar-done" aria-label="Put it back">
+        <i class="ico ico-x"></i>
+      </button>
     </div>
   </div>
 

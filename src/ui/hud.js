@@ -31,7 +31,10 @@ export class Hud {
       placebar: $('#placebar'),
       placeLabel: $('#placebar-label'),
       placeTitle: $('#placebar-title'),
-      placeTurns: $('#placebar-turns'),
+      placeDial: $('#placebar-dial'),
+      placeBtn: $('#placebar-place'),
+      placeCost: $('#placebar-cost'),
+      placeRotate: $('#placebar-rotate'),
       scrim: $('#scrim'),
       sheet: $('#sheet'),
       sheetTitle: $('#sheet-title'),
@@ -99,6 +102,7 @@ export class Hud {
     this.el.scrim.onclick = () => this.closeSheet();
 
     $('#placebar-rotate').onclick = () => g.rotatePlacement();
+    $('#placebar-place').onclick = () => g.confirmPlacement();
     $('#placebar-done').onclick = () => g.cancelPlacement();
 
     for (const b of $$('#zoneswitch button')) {
@@ -392,17 +396,44 @@ export class Hud {
 
   /* -------------------------------------------------------------- place bar */
 
-  showPlaceBar(label, { rotate = true, title = 'Blueprint', turn = 0 } = {}) {
+  /**
+   * The strip along the bottom while something is on the cursor.
+   *
+   * `confirm` is what turned this from a caption into a control: the piece is
+   * carried until you press Place, so the strip has to say what it will cost
+   * and whether the tile under it will take it. `null` means there is nothing
+   * to confirm — belts are painted as you drag, and the eraser buys nothing.
+   */
+  showPlaceBar(label, { rotate = true, title = 'Blueprint', turn = 0, confirm = null } = {}) {
     this.el.placeLabel.textContent = label;
     this.el.placeTitle.textContent = title;
-    show($('#placebar-rotate'), rotate);
-    show(this.el.placeTurns, rotate);
-    const dots = this.el.placeTurns?.children ?? [];
+    show(this.el.placeRotate, rotate);
+    // the dial points the way the piece faces: four ticks and a hand on one
+    const dots = this.el.placeDial?.querySelectorAll('i') ?? [];
     for (let i = 0; i < dots.length; i++) dots[i].classList.toggle('on', i === (turn % 4));
+    if (this.el.placeDial) this.el.placeDial.style.setProperty('--turn', `${(turn % 4) * 90}deg`);
+
+    show(this.el.placeBtn, !!confirm);
+    if (confirm) {
+      this.el.placeBtn.classList.toggle('nope', !confirm.ok);
+      this.el.placeCost.textContent = confirm.cost ? money(confirm.cost) : '';
+      show(this.el.placeCost.parentElement, !!confirm.cost);
+    }
+    this.el.placebar.classList.toggle('bad', !!confirm && !confirm.ok);
     show(this.el.placebar, true);
   }
 
-  hidePlaceBar() { show(this.el.placebar, false); }
+  /** A refusal you can feel. Restarted by hand, since re-adding a class that is
+   *  already there never replays the animation. */
+  shakePlaceBar() {
+    const e = this.el.placebar;
+    if (!e) return;
+    e.classList.remove('shake');
+    void e.offsetWidth;
+    e.classList.add('shake');
+  }
+
+  hidePlaceBar() { show(this.el.placebar, false); this.el.placebar.classList.remove('bad'); }
 
   /* ------------------------------------------------------------------ sheet */
 

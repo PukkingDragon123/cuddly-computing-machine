@@ -15,11 +15,128 @@ export const STYLES = [
 
 export const STYLE_BY_ID = Object.fromEntries(STYLES.map((s) => [s.id, s]));
 
-/** Sprite group a piece is drawn from, for a given finish. */
+/**
+ * Sprite group a piece is drawn from, for a given finish.
+ *
+ * The trinket set is drawn once, not three times over: a brass telescope is a
+ * brass telescope whatever the chairs are made of. Those pieces sit in their own
+ * group and ignore the finish entirely.
+ */
 export const groupFor = (item, styleId) => {
+  if (item.set === 'deco') return 'deco';
   const st = STYLE_BY_ID[styleId] ?? STYLES[0];
   return item.set === 'fixt' ? st.fixt : st.furn;
 };
+
+/* ------------------------------------------------------------------ mounts */
+
+/**
+ * Where a piece goes.
+ *
+ *   floor   — stands on a tile of its own and blocks the way (the default)
+ *   ceiling — hangs overhead. Lights and hanging plants only, and they take no
+ *             floor: a pendant lamp above a table is the whole point of one.
+ *   wall    — hung on one of the two back walls, so `c === 0` or `r === 0`
+ *   top     — a small thing that sits *on* another piece: a table, a sideboard,
+ *             a shelf, the counter. It needs a host and it never blocks the way
+ *
+ * Only `floor` takes a tile out of the room. That is the fix for the old rule,
+ * where hanging a lamp somewhere meant nobody could ever walk under it.
+ */
+export const MOUNTS = ['floor', 'ceiling', 'wall', 'top'];
+export const mountOf = (item) => item?.mount ?? 'floor';
+export const isSolid = (item) => mountOf(item) === 'floor';
+
+/** Pieces a trinket can be set down on. */
+export const isSurface = (item) => !!item?.surface;
+
+/**
+ * The catalogue's shelves, in the order they are tabbed across the top. Kept
+ * here rather than in the panel so a new piece only ever names its shelf once.
+ */
+export const SHELVES = [
+  { id: 'seating', label: 'Seating', note: 'A table, then chairs beside it. Every chair seats one.' },
+  { id: 'kitchen', label: 'Kitchen', note: 'The working side of the room. You need a pass before you can open.' },
+  { id: 'decor', label: 'Decor', note: 'Standing pieces. Every one adds ambience, and ambience is your rating.' },
+  { id: 'trinket', label: 'Trinkets', note: 'Small things that sit on a table, a shelf or the counter.' },
+  { id: 'light', label: 'Lights & Walls', note: 'Hung overhead or on a back wall. They take no floor at all.' },
+];
+
+/* ---------------------------------------------------------- the deco set */
+
+/**
+ * Forty pieces off one sheet, drawn front and back like the furniture.
+ *
+ * Most of them are small enough to belong on a table rather than in the middle
+ * of the floor, which is what `top` is for — the room was short of the thing a
+ * cafe is actually made of, which is the clutter people put on surfaces. The
+ * few that are furniture-sized (a palm, a sea chest, a telescope) stand on the
+ * floor like anything else, and the two that hang do so from the ceiling.
+ *
+ * `D` keeps the table readable: everything shares a set and a pair of drawings
+ * named after the piece, so only what differs is written out.
+ */
+const D = (id, label, cost, star, opts = {}) => ({
+  id, label, cost, star,
+  kind: 'decor', set: 'deco',
+  sprite: { f: `${id}_f`, b: `${id}_b` },
+  mount: 'top', shelf: 'trinket',
+  ...opts,
+});
+
+const FLOOR = { mount: 'floor', shelf: 'decor' };
+const HANG = { mount: 'ceiling', shelf: 'light' };
+const WALL = { mount: 'wall', shelf: 'light' };
+
+export const DECOR_SET = [
+  // --- things off the harbour, for a shelf
+  D('seahorse', 'Seahorse Figure', 70, 2, { blurb: 'Carved, and slightly smug.' }),
+  D('crab', 'Red Crab Mount', 75, 2, { blurb: 'Claws up, permanently.' }),
+  D('jelly_dome', 'Jellyfish Dome', 130, 3, { blurb: 'Under glass, and still drifting.', rank: 1 }),
+  D('turtle', 'Turtle Mount', 85, 2, { blurb: 'In no hurry whatsoever.' }),
+  D('lighthouse', 'Model Lighthouse', 120, 3, { blurb: 'Every harbour needs one.', rank: 1 }),
+  D('model_boat', 'Model Skiff', 95, 2, { blurb: 'Sails set, going nowhere.' }),
+  D('bottle_ship', 'Ship in a Bottle', 140, 3, { blurb: 'Somebody had a very long winter.', rank: 1 }),
+  D('ships_wheel', "Ship's Wheel", 150, 3, { ...FLOOR, blurb: 'Salvage, mounted and polished.', rank: 1 }),
+  D('reed_vase', 'Reed Vase', 60, 1, { blurb: 'Dry reeds in a chipped jar.' }),
+  D('bonsai', 'Bonsai', 110, 2, { blurb: 'Clipped within an inch of its life.' }),
+  D('cactus', 'Little Cactus', 55, 1, { blurb: 'Survives being forgotten.' }),
+  D('wave_vase', 'Wave Vase', 65, 1, { blurb: 'Glazed with a rolling sea.' }),
+  D('lantern', 'Brass Lantern', 80, 2, { blurb: 'Warm light on the table.' }),
+  D('candles', 'Candle Tray', 75, 2, { patienceRoom: 1.04, blurb: 'Candlelight. People linger.' }),
+  D('seascape', 'Framed Seascape', 100, 2, { blurb: 'The view, on a day it was calm.' }),
+  D('vanity_mirror', 'Table Mirror', 95, 2, { blurb: 'Everyone checks it. Everyone denies it.' }),
+  D('globe', 'Brass Globe', 125, 2, { blurb: 'Spun by every guest who passes.', rank: 1 }),
+  D('mantel_clock', 'Mantel Clock', 115, 2, { blurb: 'Runs four minutes fast. Always has.' }),
+  D('pearl_shell', 'Pearl Shell', 130, 3, { blurb: 'One pearl, kept where it can be seen.', rank: 1 }),
+  D('shell_basin', 'Shell Fountain', 145, 3, { patienceRoom: 1.06, blurb: 'Running water. Nobody minds waiting.', rank: 2 }),
+  D('fish_bowl', 'Coral Bowl', 150, 3, { blurb: 'A reef the size of a dinner plate.', rank: 2 }),
+  D('coral_bowl', 'Coral Planter', 85, 2, { blurb: 'Orange coral in a starfish pot.' }),
+  D('coral_fan', 'Coral Fan', 100, 2, { blurb: 'Pink and enormous and delicate.' }),
+  D('snake_plant', 'Snake Plant', 70, 1, { blurb: 'Unkillable, which is the appeal.' }),
+  D('blossom', 'Flowering Pot', 90, 2, { blurb: 'Pink flowers, replaced weekly.' }),
+
+  // --- trophies. Big, silly, and the regulars love them
+  D('dolphin', 'Dolphin Trophy', 160, 3, { tipRoom: 1.04, blurb: 'On a plinth, mid-leap.', rank: 2 }),
+  D('whale', 'Whale Trophy', 175, 3, { tipRoom: 1.04, blurb: 'Considerably smaller than the real thing.', rank: 2 }),
+  D('seal', 'Seal Trophy', 150, 3, { tipRoom: 1.04, blurb: 'Sat there looking pleased.', rank: 2 }),
+  D('walrus', 'Walrus Trophy', 165, 3, { tipRoom: 1.04, blurb: 'Scarf and all.', rank: 2 }),
+
+  // --- floor pieces
+  D('monstera', 'Monstera', 120, 2, { ...FLOOR, blurb: 'Big leaves, big corner.' }),
+  D('palm', 'Potted Palm', 135, 2, { ...FLOOR, blurb: 'Instant holiday.' }),
+  D('chest', 'Sea Chest', 180, 3, { ...FLOOR, blurb: 'Locked. Nobody has the key.', rank: 1 }),
+  D('telescope', 'Brass Telescope', 220, 3, { ...FLOOR, draw: 0.06, blurb: 'Pointed at the harbour mouth. Draws people in.', rank: 2 }),
+  D('gramophone', 'Gramophone', 200, 3, { ...FLOOR, tipRoom: 1.05, blurb: 'Music in the room. Tips go up.', rank: 2 }),
+  D('anchor', 'Anchor Mount', 110, 2, { ...FLOOR, blurb: 'Heavier than it looks.' }),
+  D('cushions', 'Cushion Stack', 95, 2, { ...FLOOR, patienceRoom: 1.05, blurb: 'Somewhere soft to wait.' }),
+  D('stone_fish', 'Stone Fish', 105, 2, { ...FLOOR, blurb: 'Carved, on its own slate.' }),
+
+  // --- overhead and on the wall
+  D('bulb_lamp', 'Glass Bulb Light', 100, 2, { ...HANG, blurb: 'One warm bulb on a brass flex.' }),
+  D('hanging_ivy', 'Hanging Ivy', 90, 2, { ...HANG, blurb: 'Trails down over the tables.' }),
+  D('shell_wreath', 'Shell Wreath', 85, 2, { ...WALL, blurb: 'Made from a summer of beachcombing.' }),
+];
 
 /**
  * kind:
@@ -31,74 +148,96 @@ export const groupFor = (item, styleId) => {
  * `sprite` is either one id, or `{ f, b }` — the front and back views of a
  * piece, which with a mirror give all four turns (see world/orient.js). Chairs
  * turn to face their table on their own; everything else takes the Rotate
- * button. `hang` draws above the floor (ceiling and wall pieces); `flat` draws
- * under everything, with the floor.
+ * button. `flat` draws under everything, with the floor. `shelf` names the
+ * catalogue page it is sold on.
  */
 export const FURNITURE = [
-  { id: 'game_table',  kind: 'table', set: 'furn', sprite: { f: 'game_table_f', b: 'game_table_b' },
+  /* ------------------------------------------------------------- seating */
+  { id: 'game_table',  kind: 'table', set: 'furn', shelf: 'seating', surface: true,
+    sprite: { f: 'game_table_f', b: 'game_table_b' },
     label: 'Games Table', cost: 130, star: 1, blurb: 'Square top — put a chair on any side.' },
-  { id: 'round_table', kind: 'table', set: 'furn', sprite: { f: 'round_table_f', b: 'round_table_b' },
+  { id: 'round_table', kind: 'table', set: 'furn', shelf: 'seating', surface: true,
+    sprite: { f: 'round_table_f', b: 'round_table_b' },
     label: 'Round Table', cost: 175, star: 2, tip: 1.1, blurb: 'Cosier, and guests tip a little more.' },
 
-  { id: 'chair',    kind: 'seat', set: 'furn', sprite: { f: 'chair_f', b: 'chair_b' },
+  { id: 'chair',    kind: 'seat', set: 'furn', shelf: 'seating', sprite: { f: 'chair_f', b: 'chair_b' },
     label: 'Dining Chair', cost: 50, star: 1, blurb: 'Place it beside a table — it turns to face it.' },
-  { id: 'armchair', kind: 'seat', set: 'furn', sprite: { f: 'armchair_f', b: 'armchair_b' },
+  { id: 'armchair', kind: 'seat', set: 'furn', shelf: 'seating', sprite: { f: 'armchair_f', b: 'armchair_b' },
     label: 'Armchair', cost: 120, star: 2, patience: 1.3, blurb: 'Deep and soft — guests wait far longer.', rank: 1 },
 
+  /* ------------------------------------------------------------- kitchen */
   // `tall` marks the two pieces that draw three tiles high. Anyone standing on
   // the tiles up-screen of them is sliced in half by the artwork, so the room
   // keeps those tiles as staff side — see Restaurant#behind.
-  { id: 'pass_counter', kind: 'pass', set: 'fixt', sprite: 'pass_counter', tall: true,
+  { id: 'pass_counter', kind: 'pass', set: 'fixt', shelf: 'kitchen', sprite: 'pass_counter',
+    tall: true, surface: true,
     label: 'Kitchen Pass', cost: 220, star: 2, blurb: 'Where the chef plates finished dishes.' },
-
-  { id: 'host_desk', kind: 'decor', set: 'fixt', sprite: 'host_desk', tall: true,
+  { id: 'host_desk', kind: 'decor', set: 'fixt', shelf: 'kitchen', sprite: 'host_desk',
+    tall: true, surface: true,
     label: 'Host Desk', cost: 210, star: 3, draw: 0.12, blurb: 'A welcome out front pulls guests in faster.', rank: 2 },
-  { id: 'cabinet',   kind: 'decor', set: 'furn', sprite: { f: 'cabinet_f', b: 'cabinet_b' },
-    label: 'Sideboard', cost: 95, star: 2, blurb: 'Handsome by a wall.', rank: 1 },
-  { id: 'drawers',   kind: 'decor', set: 'furn', sprite: { f: 'drawers_f', b: 'drawers_b' },
-    label: 'Chest of Drawers', cost: 90, star: 2, blurb: 'Tucks into a corner.', rank: 1 },
-  { id: 'shelf',     kind: 'decor', set: 'furn', sprite: { f: 'shelf_f', b: 'shelf_b' },
+  { id: 'shelf',     kind: 'decor', set: 'furn', shelf: 'kitchen', surface: true,
+    sprite: { f: 'shelf_f', b: 'shelf_b' },
     label: 'Basket Shelf', cost: 110, star: 2, order: 0.9, blurb: 'Keeps the kitchen stocked and quicker.', rank: 2 },
-  { id: 'lamp',      kind: 'decor', set: 'furn', sprite: { f: 'lamp_f', b: 'lamp_b' }, hang: true,
-    label: 'Pendant Lamp', cost: 115, star: 3, blurb: 'Warm light hanging overhead.', rank: 2 },
-  { id: 'rug',       kind: 'decor', set: 'furn', sprite: 'rug', flat: true,
+
+  /* --------------------------------------------------------------- decor */
+  { id: 'cabinet',   kind: 'decor', set: 'furn', shelf: 'decor', surface: true,
+    sprite: { f: 'cabinet_f', b: 'cabinet_b' },
+    label: 'Sideboard', cost: 95, star: 2, blurb: 'Handsome by a wall.', rank: 1 },
+  { id: 'drawers',   kind: 'decor', set: 'furn', shelf: 'decor', surface: true,
+    sprite: { f: 'drawers_f', b: 'drawers_b' },
+    label: 'Chest of Drawers', cost: 90, star: 2, blurb: 'Tucks into a corner.', rank: 1 },
+  { id: 'rug',       kind: 'decor', set: 'furn', shelf: 'decor', sprite: 'rug', flat: true, mount: 'floor',
     label: 'Patterned Rug', cost: 80, star: 2, patienceRoom: 1.06, blurb: 'Guests settle in more patiently.', rank: 1 },
-  { id: 'rug_rolled',kind: 'decor', set: 'furn', sprite: 'rug_rolled',
-    label: 'Rolled Rug', cost: 45, star: 1, blurb: 'Spare, leaning by the wall.' },
-  { id: 'books',     kind: 'decor', set: 'furn', sprite: 'books',
+  { id: 'books',     kind: 'decor', set: 'furn', shelf: 'decor', sprite: 'books',
     label: 'Book Stack', cost: 55, star: 1, blurb: 'Something to read while they wait.' },
-  { id: 'books_lean',kind: 'decor', set: 'furn', sprite: 'books_lean',
+  { id: 'books_lean',kind: 'decor', set: 'furn', shelf: 'decor', sprite: 'books_lean',
     label: 'Leaning Books', cost: 55, star: 1, blurb: 'A softer pile of the same.' },
-  { id: 'ornament',  kind: 'decor', set: 'furn', sprite: 'ornament',
-    label: 'Mascot', cost: 130, star: 3, tipRoom: 1.05, blurb: 'The regulars love it. Tips go up.', rank: 3 },
-  { id: 'ornament_mat', kind: 'decor', set: 'furn', sprite: 'ornament_mat',
-    label: 'Mascot on a Mat', cost: 145, star: 3, tipRoom: 1.05, blurb: 'Same charm, settled in.', rank: 3 },
-  { id: 'mirror',    kind: 'decor', set: 'furn', sprite: 'mirror', hang: true,
-    label: 'Framed Mirror', cost: 100, star: 2, blurb: 'Makes the room feel wider.', rank: 2 },
-  { id: 'mirror_wide',kind: 'decor', set: 'furn', sprite: 'mirror_wide', hang: true,
-    label: 'Cloud Mirror', cost: 105, star: 2, blurb: 'A soft shape on the wall.', rank: 3 },
-  { id: 'key_rack',  kind: 'decor', set: 'fixt', sprite: 'key_rack', hang: true,
-    label: 'Key Rack', cost: 60, star: 1, blurb: 'Small hooks by the door.', rank: 1 },
+  { id: 'ornament',  kind: 'decor', set: 'furn', shelf: 'decor', sprite: 'ornament',
+    label: 'Mascot', cost: 130, star: 3, tipRoom: 1.05, blurb: 'The regulars love it. Tips go up.', rank: 2 },
+  { id: 'ornament_mat', kind: 'decor', set: 'furn', shelf: 'decor', sprite: 'ornament_mat',
+    label: 'Mascot on a Mat', cost: 145, star: 3, tipRoom: 1.05, blurb: 'Same charm, settled in.', rank: 2 },
+
+  /* ------------------------------------------------------- lights & walls */
+  { id: 'lamp',      kind: 'decor', set: 'furn', shelf: 'light', sprite: { f: 'lamp_f', b: 'lamp_b' },
+    mount: 'ceiling',
+    label: 'Pendant Lamp', cost: 115, star: 3, blurb: 'Warm light hanging overhead. Hang it above a table.', rank: 1 },
+  { id: 'mirror',    kind: 'decor', set: 'furn', shelf: 'light', sprite: 'mirror', mount: 'wall',
+    label: 'Framed Mirror', cost: 100, star: 2, blurb: 'Makes the room feel wider.', rank: 1 },
+  { id: 'mirror_wide',kind: 'decor', set: 'furn', shelf: 'light', sprite: 'mirror_wide', mount: 'wall',
+    label: 'Cloud Mirror', cost: 105, star: 2, blurb: 'A soft shape on the wall.', rank: 2 },
+  { id: 'key_rack',  kind: 'decor', set: 'fixt', shelf: 'light', sprite: 'key_rack', mount: 'wall',
+    label: 'Key Rack', cost: 60, star: 1, blurb: 'Small hooks by the door.' },
+
+  ...DECOR_SET,
 ];
 
 export const FURNITURE_BY_ID = Object.fromEntries(FURNITURE.map((f) => [f.id, f]));
 
-/** Ids the save file may still carry from the first art pack. */
+/**
+ * Ids the save file may still carry from the first art pack, or from a piece
+ * since taken off the shelf. `rug_rolled` was a rug leaning against the wall
+ * still rolled up, which is a thing you have not unpacked rather than a thing
+ * you have decorated with — anybody who bought one gets the rug itself.
+ */
 export const LEGACY_FURNITURE = {
   table_square: 'game_table', table_round: 'round_table',
   chair_a: 'chair', chair_b: 'chair', stool: 'chair', bench: 'armchair',
   counter: 'pass_counter', display_case: 'host_desk', plant: 'ornament',
   chalkboard: 'shelf', pendant_lamp: 'lamp', floor_lamp: 'cabinet',
   rug: 'rug', wall_clock: 'mirror', coral_sconce: 'key_rack',
-  condiment_tray: 'books',
+  condiment_tray: 'books', rug_rolled: 'rug',
 };
 export const LEGACY_STYLES = { standard: 'plain', coral: 'cottage', whale: 'antique' };
 
-export const costOf = (item, styleId) =>
-  Math.round(item.cost * (STYLE_BY_ID[styleId]?.costMul ?? 1));
+/** The finish only prices the wood. The deco set is drawn once, so it is one
+ *  price whichever finish the room happens to be in. */
+export const costOf = (item, styleId) => (item.set === 'deco'
+  ? item.cost
+  : Math.round(item.cost * (STYLE_BY_ID[styleId]?.costMul ?? 1)));
 
-export const starsOf = (item, styleId) =>
-  item.star + (STYLE_BY_ID[styleId]?.star ?? 0);
+export const starsOf = (item, styleId) => (item.set === 'deco'
+  ? item.star
+  : item.star + (STYLE_BY_ID[styleId]?.star ?? 0));
 
 /* -------------------------------------------------------------- machines */
 
@@ -115,12 +254,12 @@ export const MACHINES = [
   { id: 'citrus_press',     kind: 'producer',  label: 'Citrus Press',     sprite: 'citrus_press',     out: 'lime',      interval: 3.2, cost: 180, rank: 2 },
   { id: 'onion_boiler',     kind: 'producer',  label: 'Onion Boiler',     sprite: 'onion_boiler',     out: 'onion',     interval: 2.8, cost: 160, rank: 2 },
   { id: 'egg_roller',       kind: 'producer',  label: 'Egg Roller',       sprite: 'egg_roller',       out: 'egg',       interval: 3.4, cost: 220, rank: 2 },
-  { id: 'cream_churn',      kind: 'producer',  label: 'Cream Churn',      sprite: 'cream_churn',      out: 'milk',      interval: 3.6, cost: 260, rank: 3 },
-  { id: 'pineapple_slicer', kind: 'producer',  label: 'Pineapple Slicer', sprite: 'pineapple_slicer', out: 'pineapple', interval: 4.4, cost: 340, rank: 3 },
+  { id: 'cream_churn',      kind: 'producer',  label: 'Cream Churn',      sprite: 'cream_churn',      out: 'milk',      interval: 3.6, cost: 260, rank: 2 },
+  { id: 'pineapple_slicer', kind: 'producer',  label: 'Pineapple Slicer', sprite: 'pineapple_slicer', out: 'pineapple', interval: 4.4, cost: 340, rank: 2 },
 
-  { id: 'ice_mill',         kind: 'processor', label: 'Grain Mill',   sprite: 'ice_mill',      inId: 'rice', inQty: 2, out: 'flour',  interval: 3.4, cost: 300, rank: 3 },
-  { id: 'butter_roller',    kind: 'processor', label: 'Butter Roller',sprite: 'butter_roller', inId: 'milk', inQty: 2, out: 'butter', interval: 3.8, cost: 420, rank: 3 },
-  { id: 'cheese_press',     kind: 'processor', label: 'Cheese Press', sprite: 'cheese_press',  inId: 'milk', inQty: 3, out: 'cheese', interval: 4.4, cost: 520, rank: 4 },
+  { id: 'ice_mill',         kind: 'processor', label: 'Grain Mill',   sprite: 'ice_mill',      inId: 'rice', inQty: 2, out: 'flour',  interval: 3.4, cost: 300, rank: 2 },
+  { id: 'butter_roller',    kind: 'processor', label: 'Butter Roller',sprite: 'butter_roller', inId: 'milk', inQty: 2, out: 'butter', interval: 3.8, cost: 420, rank: 2 },
+  { id: 'cheese_press',     kind: 'processor', label: 'Cheese Press', sprite: 'cheese_press',  inId: 'milk', inQty: 3, out: 'cheese', interval: 4.4, cost: 520, rank: 3 },
 ];
 
 /**
@@ -138,35 +277,35 @@ export const MACHINES = [
  */
 export const WORKSHOP = [
   { id: 'promo_stand', kind: 'promo', label: 'Promo Stand', sprite: 'plotter',
-    cost: 800, interval: 22, blurb: 'Pastes a poster up by itself every so often, and makes room for one more.', rank: 4 },
+    cost: 800, interval: 22, blurb: 'Pastes a poster up by itself every so often, and makes room for one more.', rank: 3 },
   { id: 'harbour_computer', kind: 'lab', label: 'Harbour Computer', sprite: 'computer_desk',
     cost: 1200, interval: 14, out: 1,
-    blurb: 'Turns quiet hours into research points to spend on the board.', rank: 4 },
+    blurb: 'Turns quiet hours into research points to spend on the board.', rank: 3 },
   { id: 'mainframe', kind: 'lab', label: 'Harbour Mainframe', sprite: 'computer_tall',
     cost: 4200, interval: 6, out: 3,
-    blurb: 'The big one. Three points at a time, and far faster about it.', rank: 6 },
+    blurb: 'The big one. Three points at a time, and far faster about it.', rank: 5 },
   { id: 'broadcast', kind: 'promo', label: 'Broadcast Set', sprite: 'radio_set',
     cost: 2600, interval: 9,
-    blurb: 'Puts the word out over the air — posters go up three times as often.', rank: 6 },
+    blurb: 'Puts the word out over the air — posters go up three times as often.', rank: 5 },
 ];
 
 /** The pottery works: its own tab, because it is a trade of its own. */
 export const POTTERY = [
   { id: 'kiln', kind: 'kiln', label: 'Harbour Kiln', sprite: 'bisque_kiln',
     cost: 900,
-    blurb: 'The pottery class works out of here. Tap the kiln to throw a dish.', rank: 5 },
+    blurb: 'The pottery class works out of here. Tap the kiln to throw a dish.', rank: 4 },
   { id: 'clay_press', kind: 'clay', label: 'Clay Press', sprite: 'clay_press',
     cost: 700, interval: 20, out: 1,
-    blurb: 'Packs harbour silt into usable clay, one block at a time.', rank: 5 },
+    blurb: 'Packs harbour silt into usable clay, one block at a time.', rank: 4 },
   { id: 'clay_works', kind: 'clay', label: 'Silt Works', sprite: 'glaze_mill',
     cost: 2400, interval: 8, out: 2,
-    blurb: 'Two blocks at a time, and far quicker about it.', rank: 6 },
+    blurb: 'Two blocks at a time, and far quicker about it.', rank: 5 },
   { id: 'pot_wheel', kind: 'wheel', label: "Potter's Wheel", sprite: 'pot_wheel',
     cost: 1600,
-    blurb: 'A properly balanced wheel: one round less at the kiln, every time.', rank: 5 },
+    blurb: 'A properly balanced wheel: one round less at the kiln, every time.', rank: 4 },
   { id: 'glaze_kiln', kind: 'glaze', label: 'Glaze Kiln', sprite: 'glaze_kiln',
     cost: 3200,
-    blurb: 'Fires a glaze over a finished dish — forged plates pay 15% more.', rank: 6 },
+    blurb: 'Fires a glaze over a finished dish — forged plates pay 15% more.', rank: 5 },
 ];
 
 export const ALL_MACHINES = [...MACHINES, ...WORKSHOP, ...POTTERY];

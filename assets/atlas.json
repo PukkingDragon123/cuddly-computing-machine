@@ -2130,5 +2130,487 @@
    "w": 302,
    "h": 233
   }
+ ],
+ "deco": [
+  {
+   "id": "seahorse_f",
+   "src": "deco/seahorse_f.png",
+   "w": 97,
+   "h": 153
+  },
+  {
+   "id": "seahorse_b",
+   "src": "deco/seahorse_b.png",
+   "w": 77,
+   "h": 154
+  },
+  {
+   "id": "crab_f",
+   "src": "deco/crab_f.png",
+   "w": 150,
+   "h": 153
+  },
+  {
+   "id": "crab_b",
+   "src": "deco/crab_b.png",
+   "w": 146,
+   "h": 144
+  },
+  {
+   "id": "jelly_dome_f",
+   "src": "deco/jelly_dome_f.png",
+   "w": 105,
+   "h": 146
+  },
+  {
+   "id": "jelly_dome_b",
+   "src": "deco/jelly_dome_b.png",
+   "w": 105,
+   "h": 136
+  },
+  {
+   "id": "turtle_f",
+   "src": "deco/turtle_f.png",
+   "w": 151,
+   "h": 136
+  },
+  {
+   "id": "turtle_b",
+   "src": "deco/turtle_b.png",
+   "w": 139,
+   "h": 129
+  },
+  {
+   "id": "lighthouse_f",
+   "src": "deco/lighthouse_f.png",
+   "w": 97,
+   "h": 153
+  },
+  {
+   "id": "lighthouse_b",
+   "src": "deco/lighthouse_b.png",
+   "w": 95,
+   "h": 153
+  },
+  {
+   "id": "model_boat_f",
+   "src": "deco/model_boat_f.png",
+   "w": 125,
+   "h": 154
+  },
+  {
+   "id": "model_boat_b",
+   "src": "deco/model_boat_b.png",
+   "w": 115,
+   "h": 154
+  },
+  {
+   "id": "bottle_ship_f",
+   "src": "deco/bottle_ship_f.png",
+   "w": 153,
+   "h": 115
+  },
+  {
+   "id": "bottle_ship_b",
+   "src": "deco/bottle_ship_b.png",
+   "w": 157,
+   "h": 111
+  },
+  {
+   "id": "ships_wheel_f",
+   "src": "deco/ships_wheel_f.png",
+   "w": 121,
+   "h": 136
+  },
+  {
+   "id": "ships_wheel_b",
+   "src": "deco/ships_wheel_b.png",
+   "w": 112,
+   "h": 135
+  },
+  {
+   "id": "reed_vase_f",
+   "src": "deco/reed_vase_f.png",
+   "w": 61,
+   "h": 151
+  },
+  {
+   "id": "reed_vase_b",
+   "src": "deco/reed_vase_b.png",
+   "w": 61,
+   "h": 150
+  },
+  {
+   "id": "bonsai_f",
+   "src": "deco/bonsai_f.png",
+   "w": 138,
+   "h": 148
+  },
+  {
+   "id": "bonsai_b",
+   "src": "deco/bonsai_b.png",
+   "w": 139,
+   "h": 147
+  },
+  {
+   "id": "cactus_f",
+   "src": "deco/cactus_f.png",
+   "w": 91,
+   "h": 121
+  },
+  {
+   "id": "cactus_b",
+   "src": "deco/cactus_b.png",
+   "w": 92,
+   "h": 124
+  },
+  {
+   "id": "hanging_ivy_f",
+   "src": "deco/hanging_ivy_f.png",
+   "w": 116,
+   "h": 143
+  },
+  {
+   "id": "hanging_ivy_b",
+   "src": "deco/hanging_ivy_b.png",
+   "w": 112,
+   "h": 142
+  },
+  {
+   "id": "wave_vase_f",
+   "src": "deco/wave_vase_f.png",
+   "w": 76,
+   "h": 119
+  },
+  {
+   "id": "wave_vase_b",
+   "src": "deco/wave_vase_b.png",
+   "w": 75,
+   "h": 118
+  },
+  {
+   "id": "shell_wreath_f",
+   "src": "deco/shell_wreath_f.png",
+   "w": 118,
+   "h": 129
+  },
+  {
+   "id": "shell_wreath_b",
+   "src": "deco/shell_wreath_b.png",
+   "w": 115,
+   "h": 132
+  },
+  {
+   "id": "lantern_f",
+   "src": "deco/lantern_f.png",
+   "w": 84,
+   "h": 129
+  },
+  {
+   "id": "lantern_b",
+   "src": "deco/lantern_b.png",
+   "w": 83,
+   "h": 128
+  },
+  {
+   "id": "candles_f",
+   "src": "deco/candles_f.png",
+   "w": 128,
+   "h": 119
+  },
+  {
+   "id": "candles_b",
+   "src": "deco/candles_b.png",
+   "w": 123,
+   "h": 106
+  },
+  {
+   "id": "gramophone_f",
+   "src": "deco/gramophone_f.png",
+   "w": 101,
+   "h": 113
+  },
+  {
+   "id": "gramophone_b",
+   "src": "deco/gramophone_b.png",
+   "w": 86,
+   "h": 113
+  },
+  {
+   "id": "telescope_f",
+   "src": "deco/telescope_f.png",
+   "w": 129,
+   "h": 122
+  },
+  {
+   "id": "telescope_b",
+   "src": "deco/telescope_b.png",
+   "w": 108,
+   "h": 115
+  },
+  {
+   "id": "seascape_f",
+   "src": "deco/seascape_f.png",
+   "w": 114,
+   "h": 103
+  },
+  {
+   "id": "seascape_b",
+   "src": "deco/seascape_b.png",
+   "w": 107,
+   "h": 98
+  },
+  {
+   "id": "vanity_mirror_f",
+   "src": "deco/vanity_mirror_f.png",
+   "w": 102,
+   "h": 104
+  },
+  {
+   "id": "vanity_mirror_b",
+   "src": "deco/vanity_mirror_b.png",
+   "w": 100,
+   "h": 105
+  },
+  {
+   "id": "dolphin_f",
+   "src": "deco/dolphin_f.png",
+   "w": 98,
+   "h": 154
+  },
+  {
+   "id": "dolphin_b",
+   "src": "deco/dolphin_b.png",
+   "w": 98,
+   "h": 154
+  },
+  {
+   "id": "whale_f",
+   "src": "deco/whale_f.png",
+   "w": 133,
+   "h": 154
+  },
+  {
+   "id": "whale_b",
+   "src": "deco/whale_b.png",
+   "w": 129,
+   "h": 154
+  },
+  {
+   "id": "seal_f",
+   "src": "deco/seal_f.png",
+   "w": 111,
+   "h": 154
+  },
+  {
+   "id": "seal_b",
+   "src": "deco/seal_b.png",
+   "w": 109,
+   "h": 154
+  },
+  {
+   "id": "walrus_f",
+   "src": "deco/walrus_f.png",
+   "w": 124,
+   "h": 154
+  },
+  {
+   "id": "walrus_b",
+   "src": "deco/walrus_b.png",
+   "w": 120,
+   "h": 154
+  },
+  {
+   "id": "coral_bowl_f",
+   "src": "deco/coral_bowl_f.png",
+   "w": 110,
+   "h": 149
+  },
+  {
+   "id": "coral_bowl_b",
+   "src": "deco/coral_bowl_b.png",
+   "w": 106,
+   "h": 148
+  },
+  {
+   "id": "coral_fan_f",
+   "src": "deco/coral_fan_f.png",
+   "w": 125,
+   "h": 154
+  },
+  {
+   "id": "coral_fan_b",
+   "src": "deco/coral_fan_b.png",
+   "w": 124,
+   "h": 154
+  },
+  {
+   "id": "snake_plant_f",
+   "src": "deco/snake_plant_f.png",
+   "w": 86,
+   "h": 154
+  },
+  {
+   "id": "snake_plant_b",
+   "src": "deco/snake_plant_b.png",
+   "w": 86,
+   "h": 154
+  },
+  {
+   "id": "monstera_f",
+   "src": "deco/monstera_f.png",
+   "w": 124,
+   "h": 154
+  },
+  {
+   "id": "monstera_b",
+   "src": "deco/monstera_b.png",
+   "w": 122,
+   "h": 154
+  },
+  {
+   "id": "palm_f",
+   "src": "deco/palm_f.png",
+   "w": 98,
+   "h": 141
+  },
+  {
+   "id": "palm_b",
+   "src": "deco/palm_b.png",
+   "w": 100,
+   "h": 141
+  },
+  {
+   "id": "blossom_f",
+   "src": "deco/blossom_f.png",
+   "w": 106,
+   "h": 140
+  },
+  {
+   "id": "blossom_b",
+   "src": "deco/blossom_b.png",
+   "w": 102,
+   "h": 137
+  },
+  {
+   "id": "pearl_shell_f",
+   "src": "deco/pearl_shell_f.png",
+   "w": 117,
+   "h": 120
+  },
+  {
+   "id": "pearl_shell_b",
+   "src": "deco/pearl_shell_b.png",
+   "w": 113,
+   "h": 114
+  },
+  {
+   "id": "shell_basin_f",
+   "src": "deco/shell_basin_f.png",
+   "w": 108,
+   "h": 120
+  },
+  {
+   "id": "shell_basin_b",
+   "src": "deco/shell_basin_b.png",
+   "w": 115,
+   "h": 120
+  },
+  {
+   "id": "chest_f",
+   "src": "deco/chest_f.png",
+   "w": 129,
+   "h": 121
+  },
+  {
+   "id": "chest_b",
+   "src": "deco/chest_b.png",
+   "w": 130,
+   "h": 121
+  },
+  {
+   "id": "fish_bowl_f",
+   "src": "deco/fish_bowl_f.png",
+   "w": 130,
+   "h": 120
+  },
+  {
+   "id": "fish_bowl_b",
+   "src": "deco/fish_bowl_b.png",
+   "w": 130,
+   "h": 120
+  },
+  {
+   "id": "globe_f",
+   "src": "deco/globe_f.png",
+   "w": 98,
+   "h": 129
+  },
+  {
+   "id": "globe_b",
+   "src": "deco/globe_b.png",
+   "w": 96,
+   "h": 126
+  },
+  {
+   "id": "mantel_clock_f",
+   "src": "deco/mantel_clock_f.png",
+   "w": 98,
+   "h": 122
+  },
+  {
+   "id": "mantel_clock_b",
+   "src": "deco/mantel_clock_b.png",
+   "w": 97,
+   "h": 123
+  },
+  {
+   "id": "bulb_lamp_f",
+   "src": "deco/bulb_lamp_f.png",
+   "w": 73,
+   "h": 109
+  },
+  {
+   "id": "bulb_lamp_b",
+   "src": "deco/bulb_lamp_b.png",
+   "w": 73,
+   "h": 109
+  },
+  {
+   "id": "anchor_f",
+   "src": "deco/anchor_f.png",
+   "w": 98,
+   "h": 114
+  },
+  {
+   "id": "anchor_b",
+   "src": "deco/anchor_b.png",
+   "w": 95,
+   "h": 113
+  },
+  {
+   "id": "cushions_f",
+   "src": "deco/cushions_f.png",
+   "w": 134,
+   "h": 108
+  },
+  {
+   "id": "cushions_b",
+   "src": "deco/cushions_b.png",
+   "w": 131,
+   "h": 108
+  },
+  {
+   "id": "stone_fish_f",
+   "src": "deco/stone_fish_f.png",
+   "w": 151,
+   "h": 92
+  },
+  {
+   "id": "stone_fish_b",
+   "src": "deco/stone_fish_b.png",
+   "w": 151,
+   "h": 93
+  }
  ]
 }

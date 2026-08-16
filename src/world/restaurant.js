@@ -10,7 +10,9 @@ import { Crew } from './crew.js';
 import { spring } from '../core/tween.js';
 import { CS, Customer, rollGuest } from './customer.js';
 import { TAU, clamp, money, neighbours, range, rnd, tileDist, uid } from '../core/util.js';
-import { FURNITURE_BY_ID, STYLE_BY_ID, groupFor } from '../data/catalog.js';
+import {
+  FURNITURE_BY_ID, STYLE_BY_ID, costOf, groupFor, isSolid, isSurface, mountOf,
+} from '../data/catalog.js';
 import { GUEST_BY_ID, RARITY_BY_ID, nameFor } from '../data/guests.js';
 
 /** How often somebody walks in wanting one particular thing. */
@@ -49,7 +51,8 @@ export class Restaurant {
     this.rows = 9;
     this.room = new Room(this.assets, { kind: 'cafe', cols: this.cols, rows: this.rows });
 
-    this.grid = new Map();       // "c,r" -> furniture record
+    this.grid = new Map();       // "c,r" -> the solid piece standing there
+    this.over = new Map();       // "c,r" -> the mounted piece above or upon it
     this.tables = [];
     this.seats = [];             // { c, r, f, table, taken, dirty }
     this.passes = [];
@@ -81,11 +84,21 @@ export class Restaurant {
   }
 
   key(c, r) { return `${c},${r}`; }
+
+  /** The solid piece on a tile — what blocks it and what a chair joins to. */
   at(c, r) { return this.grid.get(this.key(c, r)) ?? null; }
+
+  /** Whatever hangs above the tile or sits on top of what's there. */
+  overAt(c, r) { return this.over.get(this.key(c, r)) ?? null; }
+
+  /** What a tap on this tile should select — the small thing wins, since it is
+   *  drawn on top and is the harder of the two to hit any other way. */
+  pieceAt(c, r) { return this.overAt(c, r) ?? this.at(c, r); }
 
   /** Re-index furniture and work out which chairs belong to which table. */
   rebuild() {
     this.grid.clear();
+    this.over.clear();
     for (const f of this.state.furniture) {
       f.item = FURNITURE_BY_ID[f.id];
       if (!f.item) continue;
@@ -94,7 +107,9 @@ export class Restaurant {
       f.style = f.style ?? 'plain';
       f.uid ??= uid('f');
       f.sq ??= { value: 1, vel: 0 };
-      this.grid.set(this.key(f.c, f.r), f);
+      // Lamps, wall pieces and trinkets share their tile with whatever is under
+      // them, so they are indexed apart from the things that block the way.
+      (isSolid(f.item) ? this.grid : this.over).set(this.key(f.c, f.r), f);
     }
 
     // carry seat occupancy across the rebuild so nobody is thrown out mid-meal
@@ -188,38 +203,81 @@ export class Restaurant {
   beginPlace(id, style = 'plain') {
     const item = FURNITURE_BY_ID[id];
     if (!item) return;
-    this.ghost = { id, item, style, rot: 0, c: null, r: null, ok: false, t: 0 };
+    this.ghost = {
+      id, item, style, rot: 0, was: 0, spin: 0, c: null, r: null, ok: false, t: 0,
+    };
     this.selection = null;
   }
 
   cancelPlace() { this.ghost = null; }
 
-  rotateGhost() { if (this.ghost) this.ghost.rot = (this.ghost.rot + 1) % ROT_COUNT; }
+  /** Turn a quarter. `was` holds the turn it is coming *from* so the drawing
+   *  only swaps at the halfway point of the spin. */
+  rotateGhost() {
+    const g = this.ghost;
+    if (!g) return;
+    g.was = g.rot;
+    g.rot = (g.rot + 1) % ROT_COUNT;
+    g.spin = 1;
+  }
 
   moveGhost(world) {
     if (!this.ghost) return;
     const t = tileAt(world.x, world.y);
+    if (t.c === this.ghost.c && t.r === this.ghost.r) return;
     this.ghost.c = t.c;
     this.ghost.r = t.r;
     this.ghost.ok = this.canPlace(t.c, t.r, this.ghost.item);
   }
 
+  /**
+   * Can this piece go on this tile?
+   *
+   * Four answers, one per mount. Floor pieces want an empty tile; everything
+   * else shares one, and each has a rule about *which* tile — a light belongs
+   * overhead, a mirror belongs on a wall, and a candlestick belongs on
+   * something. The last of those is why trinkets exist: putting one down is a
+   * decision about the table it goes on, not about a square of floor.
+   */
   canPlace(c, r, item = null) {
     if (!this.room.inside(c, r)) return false;
-    if (this.grid.has(this.key(c, r))) return false;
+    const k = this.key(c, r);
+    const mount = mountOf(item);
+
+    if (mount !== 'floor') {
+      if (this.over.has(k)) return false;         // one small thing per tile
+      if (mount === 'wall') return c === 0 || r === 0;
+      if (mount === 'ceiling') return !this.at(c, r)?.item.tall;
+      return isSurface(this.at(c, r)?.item);      // 'top'
+    }
+
+    if (this.grid.has(k)) return false;
     if (c === this.entry.c && r === this.entry.r) return false;   // keep the doorway clear
     // A chair tucked in behind the counter is a chair nobody can ever reach, so
     // the seating plan stays on the guests' side of it.
     const sits = item && (item.kind === 'seat' || item.kind === 'table');
-    if (sits && this.behind.has(this.key(c, r))) return false;
+    if (sits && this.behind.has(k)) return false;
     return true;
+  }
+
+  /** What the piece on the cursor would cost, for the Place button. */
+  ghostCost() { return this.ghost ? costOf(this.ghost.item, this.ghost.style) : 0; }
+
+  /** Why that tile said no, in words the place bar can print. */
+  placeHint(item) {
+    switch (mountOf(item)) {
+      case 'ceiling': return 'Hangs from the ceiling — pick any tile';
+      case 'wall': return 'Goes on a back wall — the two far edges';
+      case 'top': return 'Sits on a table, shelf, sideboard or the pass';
+      default: return 'Needs a clear tile';
+    }
   }
 
   /** Commit the ghost. Returns the spent cost, or 0 if it could not be placed. */
   commitPlace() {
     const g = this.ghost;
     if (!g || !g.ok) return 0;
-    const cost = Math.round(g.item.cost * (STYLE_BY_ID[g.style]?.costMul ?? 1));
+    const cost = costOf(g.item, g.style);
     if (!this.state.spend(cost)) return 0;
 
     const rec = { c: g.c, r: g.r, id: g.id, style: g.style, rot: g.rot, uid: uid('f'), sq: { value: 0.82, vel: 0 } };
@@ -241,7 +299,7 @@ export class Restaurant {
     if (i < 0) return 0;
     // never strand a seated guest
     if (this.seats.some((s) => s.f === rec && s.taken)) return -1;
-    const refund = Math.round(rec.item.cost * (STYLE_BY_ID[rec.style]?.costMul ?? 1) * 0.6);
+    const refund = Math.round(costOf(rec.item, rec.style) * 0.6);
     this.state.furniture.splice(i, 1);
     this.rebuild();
     this.state.earn(refund);
@@ -255,9 +313,7 @@ export class Restaurant {
 
   /** Swap a piece to a fancier finish, paying the difference. */
   restyle(rec, styleId) {
-    const from = STYLE_BY_ID[rec.style]?.costMul ?? 1;
-    const to = STYLE_BY_ID[styleId]?.costMul ?? 1;
-    const diff = Math.max(0, Math.round(rec.item.cost * (to - from)));
+    const diff = Math.max(0, costOf(rec.item, styleId) - costOf(rec.item, rec.style));
     if (!this.state.spend(diff)) return false;
     rec.style = styleId;
     rec.sq = { value: 0.86, vel: 0 };
@@ -685,9 +741,15 @@ export class Restaurant {
 
   update(dt, t) {
     this.room.pulse = t;
-    if (this.ghost) this.ghost.t += dt;
+    if (this.ghost) {
+      this.ghost.t += dt;
+      // a fifth of a second, which is long enough to read as a turn and short
+      // enough that tapping Rotate four times fast still feels like a button
+      if (this.ghost.spin > 0) this.ghost.spin = Math.max(0, this.ghost.spin - dt * 5);
+    }
 
     for (const f of this.grid.values()) if (f.sq) spring(f.sq, 1, dt, 170, 16);
+    for (const f of this.over.values()) if (f.sq) spring(f.sq, 1, dt, 170, 16);
     this.#washUp(dt);
 
     this.kitchen.update(dt);
@@ -879,13 +941,20 @@ export class Restaurant {
 
   seatAt(c, r) { return this.seats.find((s) => s.c === c && s.r === r) ?? null; }
 
-  /** Single tap in the world. Returns a hint string for the HUD, or null. */
+  /**
+   * Single tap in the world. Returns a hint string for the HUD, or null.
+   *
+   * While something is on the cursor a tap *carries it there* — it no longer
+   * puts it down. Placing used to be one tap, which meant a mis-aimed tap was a
+   * purchase you then had to sell back at a loss; now the room is somewhere you
+   * shuffle a piece about until it looks right and Place is the moment you
+   * commit to it.
+   */
   tap(world) {
     if (this.ghost) {
       this.moveGhost(world);
-      if (!this.ghost.ok) { this.sfx.play('no'); return 'That spot is taken'; }
-      const spent = this.commitPlace();
-      if (!spent) { this.sfx.play('no'); return 'Not enough sand dollars'; }
+      if (!this.ghost.ok) { this.sfx.play('no'); return this.placeHint(this.ghost.item); }
+      this.sfx.play('tap');
       return null;
     }
 
@@ -926,7 +995,7 @@ export class Restaurant {
       if (g) { this.seatGuest(g, seat); return null; }
     }
 
-    const f = this.at(t.c, t.r);
+    const f = this.pieceAt(t.c, t.r);
     if (f) {
       if (this.state.phase === 'open') return 'Rearranging can wait until closing';
       this.selection = f;
@@ -958,24 +1027,52 @@ export class Restaurant {
 
   mirrorFor(f) { return mirrorAt(f.item.sprite, f.rot ?? 0); }
 
+  /**
+   * Where a piece is drawn, and how far after its tile it sorts.
+   *
+   * A trinket has to land on the surface of whatever it was put on rather than
+   * on the floor of that tile, so it takes its host's height off the top: the
+   * sprite height is the only measure of that available, and it is the right
+   * one, since a sideboard drawn tall *is* tall.
+   */
+  #layout(f) {
+    const p = toScreen(f.c, f.r);
+    const mount = mountOf(f.item);
+    let y = p.y + HALF_H * 0.36;
+    let bias = 0;
+    let scale = FURN_SCALE;
+    if (mount === 'ceiling') { y = p.y - 150; bias = 60; }
+    else if (mount === 'wall') { y = p.y - 92; bias = -12; }
+    else if (mount === 'top') {
+      const host = this.at(f.c, f.r);
+      const hs = host ? this.spriteFor(host) : null;
+      // sit on the surface, a touch back so it doesn't hang off the near edge
+      y = p.y + HALF_H * 0.36 - (hs ? hs.h * FURN_SCALE * 0.62 : 0) - 4;
+      bias = 24;
+      scale = FURN_SCALE * 0.74;
+    }
+    return {
+      x: p.x + (f.nudge?.x ?? 0),
+      y: y + (f.nudge?.y ?? 0),
+      d: depthOf(f.c, f.r, bias),
+      scale,
+    };
+  }
+
   /** Push depth-sorted draw jobs onto the renderer's list. */
   collect(ctx, list, t) {
-    for (const f of this.grid.values()) {
+    for (const f of [...this.grid.values(), ...this.over.values()]) {
       if (f.item.flat) continue;
       const s = this.spriteFor(f);
       if (!s) continue;
-      const p = toScreen(f.c, f.r);
-      const hang = !!f.item.hang;
-      // chairs get nudged clear of the table they belong to
-      const nx = p.x + (f.nudge?.x ?? 0);
-      const y = (hang ? p.y - 132 : p.y + HALF_H * 0.36) + (f.nudge?.y ?? 0);
+      const at = this.#layout(f);
       const { sx, sy } = squash(f.sq?.value ?? 1);
       const isSel = this.selection === f;
       list.push({
-        d: depthOf(f.c, f.r, hang ? 40 : 0),
+        d: at.d,
         fn: () => {
-          drawSprite(ctx, s, 0, nx, y, {
-            scale: FURN_SCALE,
+          drawSprite(ctx, s, 0, at.x, at.y, {
+            scale: at.scale,
             scaleX: sx, scaleY: sy,
             flipX: this.mirrorFor(f),
           });
@@ -1011,18 +1108,31 @@ export class Restaurant {
     return !!(sel && g.state === CS.WAIT && g.dish === sel.recipeId);
   }
 
-  /** Ghost preview + tile marks, drawn on the floor above the room. */
+  /**
+   * Ghost preview + tile marks, drawn on the floor above the room.
+   *
+   * The ghost is held rather than dropped now — you drag it about and confirm —
+   * so it has to read as a thing being carried. It rides a little above the
+   * tile it would land on, and a turn of the Rotate button plays out as a spin
+   * rather than a jump cut, because a piece that changed silhouette between two
+   * frames never looked like it had turned. Sitting still, it breathes.
+   */
   drawBuildLayer(ctx, t) {
     const g = this.ghost;
     if (!g || g.c === null) return;
     Room.markTile(ctx, g.c, g.r, g.ok ? 'ok' : 'bad', t);
     const s = this.#ghostSprite(g);
     if (!s) return;
-    const p = toScreen(g.c, g.r);
-    const hang = !!g.item.hang;
-    blueprint(ctx, s, 0, p.x, hang ? p.y - 132 : p.y + HALF_H * 0.36, {
-      scale: FURN_SCALE,
-      scaleY: 1 + Math.sin(t * 6) * 0.02,
+    const at = this.#layout({ ...g, item: g.item, nudge: null });
+    // the turn: squeezed flat through the halfway point, over in a fifth of a
+    // second, so the two drawings read as one piece swinging round
+    const spin = Math.max(0, g.spin ?? 0);
+    const flat = Math.sin(Math.min(1, spin) * Math.PI);
+    const hover = 5 + Math.sin(t * 3.4) * 2.5;
+    blueprint(ctx, s, 0, at.x, at.y - hover, {
+      scale: at.scale,
+      scaleX: 1 - flat * 0.82,
+      scaleY: (1 + Math.sin(t * 6) * 0.02) * (1 + flat * 0.12),
       flipX: mirrorAt(g.item.sprite, this.#ghostRot(g)),
       ok: g.ok,
     });
@@ -1034,12 +1144,17 @@ export class Restaurant {
     return this.spriteFor({ item: g.item, style: g.style, rot: this.#ghostRot(g) });
   }
 
-  /** A chair on the cursor faces its table; everything else obeys Rotate. */
+  /**
+   * A chair on the cursor faces its table; everything else obeys Rotate.
+   * Mid-spin it is still showing the turn it came from, so the swap happens
+   * behind the squeeze instead of in front of it.
+   */
   #ghostRot(g) {
-    if (g.item.kind !== 'seat') return g.rot;
+    const rot = (g.spin ?? 0) > 0.5 ? (g.was ?? g.rot) : g.rot;
+    if (g.item.kind !== 'seat') return rot;
     const table = this.tables.find((tb) => neighbours(tb).some((n) => n.c === g.c && n.r === g.r));
-    if (!table) return g.rot;
-    return rotationToward(table.c - g.c, table.r - g.r) ?? g.rot;
+    if (!table) return rot;
+    return rotationToward(table.c - g.c, table.r - g.r) ?? rot;
   }
 
   /** Floor-level marks: a soft glow under seats a waiting guest could take. */

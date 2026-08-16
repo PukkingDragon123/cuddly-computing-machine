@@ -95,17 +95,24 @@ export class Factory {
   /* ------------------------------------------------------------- placement */
 
   beginPlace(kind, id) {
-    this.ghost = { kind, id, dir: 0, c: null, r: null, ok: false, t: 0 };
+    this.ghost = { kind, id, dir: 0, spin: 0, c: null, r: null, ok: false, t: 0 };
     this.selection = null;
   }
 
   beginErase() { this.ghost = { kind: 'erase', c: null, r: null, ok: false, t: 0 }; }
   cancelPlace() { this.ghost = null; this.painting = false; this.paintPrev = null; }
-  rotateGhost() { if (this.ghost) this.ghost.dir = (this.ghost.dir + 1) % 4; }
+
+  /** Turn the output a quarter. `spin` runs the flourish that says so. */
+  rotateGhost() {
+    if (!this.ghost) return;
+    this.ghost.dir = (this.ghost.dir + 1) % 4;
+    this.ghost.spin = 1;
+  }
 
   moveGhost(world) {
     if (!this.ghost) return;
     const t = tileAt(world.x, world.y);
+    if (t.c === this.ghost.c && t.r === this.ghost.r) return;
     this.ghost.c = t.c;
     this.ghost.r = t.r;
     this.ghost.ok = this.ghost.kind === 'erase'
@@ -115,12 +122,31 @@ export class Factory {
 
   canPlace(c, r) { return this.room.inside(c, r) && !this.grid.has(this.key(c, r)); }
 
+  /** Why that tile said no. The works only have one reason. */
+  placeHint() { return 'Needs a clear tile'; }
+
   costOfGhost() {
     const g = this.ghost;
     if (!g) return 0;
     if (g.kind === 'belt') return BELT.cost;
     if (g.kind === 'silo') return SILO.cost;
     return MACHINE_BY_ID[g.id]?.cost ?? 0;
+  }
+
+  ghostCost() { return this.costOfGhost(); }
+
+  /**
+   * Buy the thing on the cursor and set it down where it is standing.
+   *
+   * The dining room and the works place the same way now, so both answer to
+   * one Place button: `commit` still takes a tile because belt-painting calls
+   * it per tile as you drag, and this is the single-piece door into it.
+   */
+  commitPlace() {
+    const g = this.ghost;
+    if (!g || g.c === null || !g.ok) return 0;
+    const cost = this.costOfGhost();
+    return this.commit(g.c, g.r) ? 0 : cost;
   }
 
   /** Place whatever the ghost is holding. Returns a hint on failure. */
@@ -250,7 +276,10 @@ export class Factory {
 
   update(dt) {
     const speed = this.state.factorySpeed;
-    if (this.ghost) this.ghost.t += dt;
+    if (this.ghost) {
+      this.ghost.t += dt;
+      if (this.ghost.spin > 0) this.ghost.spin = Math.max(0, this.ghost.spin - dt * 5);
+    }
 
     for (const m of this.grid.values()) {
       if (m.sq) spring(m.sq, 1, dt, 170, 16);
@@ -446,9 +475,10 @@ export class Factory {
         if (!this.erase(t.c, t.r)) { this.sfx.play('no'); return 'Nothing there'; }
         return null;
       }
-      const err = this.commit(t.c, t.r);
-      if (err === 'taken') { this.sfx.play('no'); return 'That tile is taken'; }
-      if (err === 'broke') { this.sfx.play('no'); return 'Not enough sand dollars'; }
+      // carry it here; Place is what buys it
+      this.moveGhost(world);
+      if (!this.ghost.ok) { this.sfx.play('no'); return 'That tile is taken'; }
+      this.sfx.play('tap');
       return null;
     }
     const m = this.at(t.c, t.r);
@@ -716,27 +746,36 @@ export class Factory {
       ? this.assets.get(SILO.group, SILO.sprite)
       : this.assets.get('machines', MACHINE_BY_ID[g.id]?.sprite);
     if (!sprite) return;
-    blueprint(ctx, sprite, 0, s.x, s.y + HALF_H * 0.42, {
+    const flat = Math.sin(Math.min(1, Math.max(0, g.spin ?? 0)) * Math.PI);
+    const hover = 5 + Math.sin(t * 3.4) * 2.5;
+    blueprint(ctx, sprite, 0, s.x, s.y + HALF_H * 0.42 - hover, {
       scale: MACHINE_SCALE,
-      scaleY: 1 + Math.sin(t * 6) * 0.02,
+      scaleX: 1 - flat * 0.8,
+      scaleY: (1 + Math.sin(t * 6) * 0.02) * (1 + flat * 0.12),
       ok: g.ok,
     });
     Room.outlineTile(ctx, g.c, g.r, g.ok ? 'ok' : 'bad', t);
-    if (g.kind !== 'silo') this.#arrow(ctx, s, g.dir, g.ok ? PAL.leafDeep : PAL.coralDeep);
+    // the output arrow is the whole point of turning a machine, so it grows
+    // while the turn is playing out — you see what you changed
+    if (g.kind !== 'silo') {
+      this.#arrow(ctx, s, g.dir, g.ok ? PAL.leafDeep : PAL.coralDeep, 1 + flat * 0.6);
+    }
   }
 
-  /** Output-direction arrow on the tile a machine feeds. */
-  #arrow(ctx, s, dir, color) {
+  /** Output-direction arrow on the tile a machine feeds. `grow` swells it while
+   *  a turn is playing, so the thing that changed is the thing that moves. */
+  #arrow(ctx, s, dir, color, grow = 1) {
     const v = dirVec(dir);
-    const tip = { x: s.x + v.x * 0.72, y: s.y + v.y * 0.72 };
+    const reach = 0.72 * grow;
+    const tip = { x: s.x + v.x * reach, y: s.y + v.y * reach };
     const base = { x: s.x + v.x * 0.22, y: s.y + v.y * 0.22 };
     ctx.save();
-    ctx.strokeStyle = INK; ctx.lineWidth = 8; ctx.lineCap = 'round';
+    ctx.strokeStyle = INK; ctx.lineWidth = 8 * grow; ctx.lineCap = 'round';
     ctx.beginPath(); ctx.moveTo(base.x, base.y); ctx.lineTo(tip.x, tip.y); ctx.stroke();
-    ctx.strokeStyle = color; ctx.lineWidth = 4.5;
+    ctx.strokeStyle = color; ctx.lineWidth = 4.5 * grow;
     ctx.beginPath(); ctx.moveTo(base.x, base.y); ctx.lineTo(tip.x, tip.y); ctx.stroke();
     const ang = Math.atan2(v.y, v.x);
-    ctx.translate(tip.x, tip.y); ctx.rotate(ang);
+    ctx.translate(tip.x, tip.y); ctx.rotate(ang); ctx.scale(grow, grow);
     ctx.beginPath(); ctx.moveTo(-9, -7); ctx.lineTo(3, 0); ctx.lineTo(-9, 7); ctx.closePath();
     ctx.fillStyle = color; ctx.fill(); ctx.strokeStyle = INK; ctx.lineWidth = 2.4; ctx.stroke();
     ctx.restore();
