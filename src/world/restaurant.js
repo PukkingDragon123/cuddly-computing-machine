@@ -12,6 +12,7 @@ import { CS, Customer, rollGuest } from './customer.js';
 import { TAU, clamp, money, neighbours, range, rnd, tileDist, uid } from '../core/util.js';
 import {
   FURNITURE_BY_ID, STYLE_BY_ID, costOf, groupFor, isSolid, isSurface, mountOf,
+  surfaceOf,
 } from '../data/catalog.js';
 import { GUEST_BY_ID, RARITY_BY_ID, nameFor } from '../data/guests.js';
 
@@ -1041,15 +1042,18 @@ export class Restaurant {
     let y = p.y + HALF_H * 0.36;
     let bias = 0;
     let scale = FURN_SCALE;
-    if (mount === 'ceiling') { y = p.y - 150; bias = 60; }
+    // the ceiling: high enough over the tile that a lamp hangs above head
+    // height rather than sitting on the table under it
+    if (mount === 'ceiling') { y = p.y - 196; bias = 60; }
     else if (mount === 'wall') { y = p.y - 92; bias = -12; }
     else if (mount === 'top') {
       const host = this.at(f.c, f.r);
       const hs = host ? this.spriteFor(host) : null;
-      // sit on the surface, a touch back so it doesn't hang off the near edge
-      y = p.y + HALF_H * 0.36 - (hs ? hs.h * FURN_SCALE * 0.62 : 0) - 4;
+      // stand it on the host's top face, which is a fraction of the way up the
+      // host's own drawing — see surfaceOf in data/catalog.js
+      y = p.y + HALF_H * 0.36 - (hs ? hs.fh * FURN_SCALE * surfaceOf(host.item) : 0);
       bias = 24;
-      scale = FURN_SCALE * 0.74;
+      scale = FURN_SCALE * 0.7;
     }
     return {
       x: p.x + (f.nudge?.x ?? 0),

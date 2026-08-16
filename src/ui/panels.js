@@ -1306,8 +1306,11 @@ export class Panels {
     if (!item) return;
     const cur = STYLE_BY_ID[rec.style];
     const seat = this.game.restaurant.seats.find((x) => x.f === rec);
+    // the deco set is drawn once, in no wood at all, so there is nothing to
+    // refinish and the whole Finish section comes off the page
+    const woody = item.set !== 'deco';
 
-    const styleCards = STYLES.map((st) => {
+    const styleCards = !woody ? [] : STYLES.map((st) => {
       const diff = Math.max(0, Math.round(item.cost * (st.costMul - cur.costMul)));
       const isCur = st.id === rec.style;
       const downgrade = st.costMul < cur.costMul;
@@ -1337,9 +1340,14 @@ export class Panels {
           item.blurb, ' ',
           seat && !seat.table ? h('b', null, 'This chair is not beside a table, so nobody can sit here.') : null,
         ),
-        h('div.section', null, 'Finish'),
+        woody ? h('div.section', null, 'Finish') : null,
         ...styleCards,
-      ],
+        woody ? null : h('div.card', null,
+          h('div.thumb', null, this.#sprite('deco', spriteIdOf(item))),
+          h('div.card-main', null,
+            h('div.card-title', null, Panels.WHERE[mountOf(item)] ?? 'Stands on the floor'),
+            h('div.card-sub', null, `${starsOf(item, rec.style)}★ ambience`))),
+      ].filter(Boolean),
       foot: h('div.rowline', null,
         h('span.card-sub.grow', null, `Worth ${money(Math.round(costOf(item, rec.style) * 0.6))} back`),
         this.#goBtn('Sell', {

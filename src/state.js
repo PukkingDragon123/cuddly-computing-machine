@@ -5,7 +5,7 @@ import { INGREDIENTS, DAILY_DELIVERY, MARKET_ORDER } from './data/ingredients.js
 import { RECIPE_BY_ID, priceAt, prepAt, starsAt } from './data/recipes.js';
 import {
   FURNITURE_BY_ID, MACHINE_BY_ID, STYLE_BY_ID, STAFF_BY_ID,
-  LEGACY_FURNITURE, LEGACY_STYLES,
+  LEGACY_FURNITURE, LEGACY_STYLES, isSolid, mountOf,
 } from './data/catalog.js';
 import { rotOf } from './world/orient.js';
 import {
@@ -21,7 +21,7 @@ import {
 } from './data/quests.js';
 
 const KEY = 'bubbleworks.harbor.save.v1';
-const VERSION = 10;
+const VERSION = 11;
 export const SAVE_KEY = KEY;
 
 function fresh() {
@@ -90,14 +90,35 @@ function migrate(data) {
       style: LEGACY_STYLES[f.style] ?? f.style ?? 'plain',
     }))
     .filter((f) => FURNITURE_BY_ID[f.id]);
-  // two legacy pieces can collapse onto one tile; keep the first of each
+  // Two legacy pieces can collapse onto one tile; keep the first of each. The
+  // layer matters: a candlestick and the table it stands on share a tile on
+  // purpose, so they are only rivals for the same spot within their own layer.
   const seen = new Set();
   data.furniture = data.furniture.filter((f) => {
-    const k = `${f.c},${f.r}`;
+    const k = `${f.c},${f.r}:${isSolid(FURNITURE_BY_ID[f.id]) ? 'floor' : 'over'}`;
     if (seen.has(k)) return false;
     seen.add(k);
     return true;
   });
+
+  // Mirrors and key racks used to stand anywhere and take a tile; they hang on
+  // a back wall now. One left in the middle of the floor would draw at wall
+  // height over open floor, so it is walked to the nearest wall tile going free.
+  const taken = new Set(data.furniture.map((f) => `${f.c},${f.r}`));
+  for (const f of data.furniture) {
+    if (mountOf(FURNITURE_BY_ID[f.id]) !== 'wall') continue;
+    if (f.c === 0 || f.r === 0) continue;
+    const wall = [];
+    for (let i = 0; i < 13; i++) { wall.push({ c: 0, r: i }, { c: i, r: 0 }); }
+    const free = wall
+      .filter((w) => !taken.has(`${w.c},${w.r}`))
+      .sort((a, b) => (Math.abs(a.c - f.c) + Math.abs(a.r - f.r))
+        - (Math.abs(b.c - f.c) + Math.abs(b.r - f.r)))[0];
+    if (!free) continue;
+    taken.delete(`${f.c},${f.r}`);
+    f.c = free.c; f.r = free.r;
+    taken.add(`${f.c},${f.r}`);
+  }
   // furniture used to store a mirror flag; it now stores one of four turns
   for (const f of data.furniture) { f.rot = rotOf(f); delete f.flip; }
   // everything the long game keeps track of, defaulted for an older save

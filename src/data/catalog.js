@@ -47,8 +47,16 @@ export const MOUNTS = ['floor', 'ceiling', 'wall', 'top'];
 export const mountOf = (item) => item?.mount ?? 'floor';
 export const isSolid = (item) => mountOf(item) === 'floor';
 
-/** Pieces a trinket can be set down on. */
+/**
+ * Pieces a trinket can be set down on.
+ *
+ * `surface` is not a flag but a height: how far up its own drawing the top face
+ * sits, as a fraction. A sideboard's top is near the top of the picture; a
+ * counter's is halfway down one, because the art carries the shelving above it.
+ * That number is what puts a candlestick *on* the table rather than through it.
+ */
 export const isSurface = (item) => !!item?.surface;
+export const surfaceOf = (item) => (typeof item?.surface === 'number' ? item.surface : 0.62);
 
 /**
  * The catalogue's shelves, in the order they are tabbed across the top. Kept
@@ -153,10 +161,10 @@ export const DECOR_SET = [
  */
 export const FURNITURE = [
   /* ------------------------------------------------------------- seating */
-  { id: 'game_table',  kind: 'table', set: 'furn', shelf: 'seating', surface: true,
+  { id: 'game_table',  kind: 'table', set: 'furn', shelf: 'seating', surface: 0.58,
     sprite: { f: 'game_table_f', b: 'game_table_b' },
     label: 'Games Table', cost: 130, star: 1, blurb: 'Square top — put a chair on any side.' },
-  { id: 'round_table', kind: 'table', set: 'furn', shelf: 'seating', surface: true,
+  { id: 'round_table', kind: 'table', set: 'furn', shelf: 'seating', surface: 0.62,
     sprite: { f: 'round_table_f', b: 'round_table_b' },
     label: 'Round Table', cost: 175, star: 2, tip: 1.1, blurb: 'Cosier, and guests tip a little more.' },
 
@@ -170,20 +178,20 @@ export const FURNITURE = [
   // the tiles up-screen of them is sliced in half by the artwork, so the room
   // keeps those tiles as staff side — see Restaurant#behind.
   { id: 'pass_counter', kind: 'pass', set: 'fixt', shelf: 'kitchen', sprite: 'pass_counter',
-    tall: true, surface: true,
+    tall: true, surface: 0.36,
     label: 'Kitchen Pass', cost: 220, star: 2, blurb: 'Where the chef plates finished dishes.' },
   { id: 'host_desk', kind: 'decor', set: 'fixt', shelf: 'kitchen', sprite: 'host_desk',
-    tall: true, surface: true,
+    tall: true, surface: 0.34,
     label: 'Host Desk', cost: 210, star: 3, draw: 0.12, blurb: 'A welcome out front pulls guests in faster.', rank: 2 },
-  { id: 'shelf',     kind: 'decor', set: 'furn', shelf: 'kitchen', surface: true,
+  { id: 'shelf',     kind: 'decor', set: 'furn', shelf: 'kitchen', surface: 0.66,
     sprite: { f: 'shelf_f', b: 'shelf_b' },
     label: 'Basket Shelf', cost: 110, star: 2, order: 0.9, blurb: 'Keeps the kitchen stocked and quicker.', rank: 2 },
 
   /* --------------------------------------------------------------- decor */
-  { id: 'cabinet',   kind: 'decor', set: 'furn', shelf: 'decor', surface: true,
+  { id: 'cabinet',   kind: 'decor', set: 'furn', shelf: 'decor', surface: 0.72,
     sprite: { f: 'cabinet_f', b: 'cabinet_b' },
     label: 'Sideboard', cost: 95, star: 2, blurb: 'Handsome by a wall.', rank: 1 },
-  { id: 'drawers',   kind: 'decor', set: 'furn', shelf: 'decor', surface: true,
+  { id: 'drawers',   kind: 'decor', set: 'furn', shelf: 'decor', surface: 0.8,
     sprite: { f: 'drawers_f', b: 'drawers_b' },
     label: 'Chest of Drawers', cost: 90, star: 2, blurb: 'Tucks into a corner.', rank: 1 },
   { id: 'rug',       kind: 'decor', set: 'furn', shelf: 'decor', sprite: 'rug', flat: true, mount: 'floor',
