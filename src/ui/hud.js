@@ -470,6 +470,9 @@ export class Hud {
         const on = t.id === spec.tab;
         this.el.sheetTabs.append(h(`button.tab${on ? '.on' : ''}`, {
           type: 'button',
+          // named, so a job's pointer trail can say which tab it means rather
+          // than counting along the row and going wrong the day one is added
+          dataset: { tab: t.id },
           onclick: () => { if (!on) this.bookPage[this.sheetOpen] = 0; spec.onTab?.(t.id); },
         }, t.label));
       }
@@ -490,7 +493,7 @@ export class Hud {
 
     let leaves = null;
     if (book === 'page') {
-      leaves = this.#writeInto(this.el.sheetBody, [].concat(spec.body ?? []));
+      leaves = this.#writeInto(this.el.sheetBody, [].concat(spec.body ?? []), spec.seek);
       if (leaves.pages > 1) this.el.sheetFoot.append(this.#pageArrows(leaves));
     } else if (book === 'board') {
       // the notice board: not paginated, because a board is one surface you
@@ -538,7 +541,7 @@ export class Hud {
    * back, so a two-line card and a five-line card both land where they should
    * without a table of guessed row heights to keep in step with the CSS.
    */
-  #writeInto(host, nodes) {
+  #writeInto(host, nodes, seek = null) {
     const wide = this.wideBook;
     const cols = wide ? 2 : 1;
     const pens = [h('div.pagecol'), h('div.pagecol')];
@@ -591,7 +594,18 @@ export class Hud {
 
     const key = this.sheetOpen;
     this.bookPage ??= {};
-    const at = clamp(this.bookPage[key] ?? 0, 0, starts.length - 1);
+    let at = clamp(this.bookPage[key] ?? 0, 0, starts.length - 1);
+    // `seek` is a job saying "the thing I want is that one" — the book turns to
+    // the leaf it is on, so being told to buy a chair opens at the chair rather
+    // than at whichever page you last had open.
+    if (seek) {
+      const want = items.findIndex((el) => el.matches?.(seek) || el.querySelector?.(seek));
+      if (want >= 0) {
+        for (let n = starts.length - 1; n >= 0; n--) {
+          if (starts[n] <= want) { at = n; break; }
+        }
+      }
+    }
     this.bookPage[key] = at;
 
     const from = starts[at];

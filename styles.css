@@ -2156,9 +2156,11 @@ html, body {
 }
 .card-sub.faint { color: var(--ink-faint); font-size: 0.74rem }
 
-.swatches { display: flex; gap: 0.4rem; }
+/* The three finishes. Half a book page wide, three across, so they are stacked
+   down the page instead — a name that ellipses to "Cos..." is not a name. */
+.swatches { display: flex; flex-direction: column; gap: 0.28rem; }
 .swatch {
-  flex: 1;
+  flex: none;
   display: flex; align-items: center; gap: 0.35rem;
   border: var(--bw) solid var(--ink);
   border-radius: 999px;
@@ -2178,6 +2180,7 @@ html, body {
   box-shadow: none;
 }
 .swatch .lbl { overflow: hidden; text-overflow: ellipsis; white-space: nowrap }
+.swatch .lbl { flex: 1 }
 .swatch .bonus { flex: none; color: var(--ink-faint); font-size: 0.7rem }
 .swatch.on .bonus { color: var(--ink-deep) }
 .swatch.on { background-color: var(--sun); color: var(--ink-deep); box-shadow: none}
@@ -3024,6 +3027,29 @@ body.still .tutor-hole { animation: none }
 @keyframes bookOpen { from { opacity: 0; transform: translateY(1.2rem) } }
 @keyframes pageFwd  { from { opacity: 0; transform: translateX(2.5%) } }
 @keyframes pageBack { from { opacity: 0; transform: translateX(-2.5%) } }
+
+/* The one the job means.
+
+   "Build → Decoration" leaves you looking at a page of fourteen things
+   wondering which; this is the answer to that. The ring is a ::after so the
+   card's own box is never animated — an infinite animation on a control's box
+   makes it unhittable, which has caught this file out more than once. */
+.card.want { border-color: var(--tangerine) }
+.card.want::before {
+  content: '';
+  position: absolute; inset: -0.28rem;
+  border: 0.16rem dashed var(--tangerine);
+  border-radius: inherit;
+  pointer-events: none;
+  animation: wantRing 1.5s ease-in-out infinite;
+}
+.card.want { position: relative }
+@keyframes wantRing {
+  0%, 100% { opacity: .95; transform: scale(1) }
+  50% { opacity: .45; transform: scale(1.022) }
+}
+body.still .card.want::before { animation: none }
+@media (prefers-reduced-motion: reduce) { .card.want::before { animation: none } }
 
 /* the catalogue, two across ------------------------------------------- */
 

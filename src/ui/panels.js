@@ -8,9 +8,10 @@ import {
   MAX_LEVEL, RECIPES, RECIPE_BY_ID, priceAt, prepAt, starsAt, upgradeCost,
 } from '../data/recipes.js';
 import {
-  BELT, CREW_ROOMS, FURNITURE, MACHINES, MACHINE_MAX_LEVEL, POTTERY, SHELVES,
-  SILO, STAFF, STYLES, STYLE_BY_ID, WORKSHOP, costOf, groupFor, machineInterval,
-  machineUpgradeCost, mountOf, starsOf,
+  BELT, CREW_ROOMS, FURNITURE, FURNITURE_BY_ID, MACHINES, MACHINE_BY_ID,
+  MACHINE_MAX_LEVEL, POTTERY, SHELVES, SILO, STAFF, STAFF_BY_ID, STYLES,
+  STYLE_BY_ID, WORKSHOP, costOf, groupFor, machineInterval, machineUpgradeCost,
+  mountOf, starsOf,
 } from '../data/catalog.js';
 import {
   GUESTS, GUEST_BY_ID, MAX_FRIEND, TASTES, heartsToNext, nameFor,
@@ -22,7 +23,7 @@ import {
 import { DIR_NAMES } from '../world/factory.js';
 import { settingRows } from './title.js';
 import { RANKS } from '../data/fame.js';
-import { CHAPTERS, KEYS, QUESTS, SIDE_BY_ID } from '../data/quests.js';
+import { CHAPTERS, KEYS, QUESTS, SIDE_BY_ID, wantedItem } from '../data/quests.js';
 
 /** The wood each finish is painted in, for the swatch picker. */
 /**
@@ -57,12 +58,66 @@ export class Panels {
   /** Re-render whatever panel is showing. */
   refresh() { if (this.hud.isSheetOpen) this.reopen?.(true); }
 
+  /**
+   * The one thing the standing job wants you to buy, if it wants one.
+   *
+   * A hint that reads "Build → Decoration" leaves you looking at a page of
+   * fourteen things wondering which. Every catalogue plate is stamped with its
+   * id, so the job's own pointer trail can name one — and this is what turns
+   * that name into a highlight on the plate itself.
+   */
+  get wanted() { return wantedItem(this.game.story?.quest?.id); }
+
+  /**
+   * The selector for the book to open at, but only once per opening.
+   *
+   * Turning to the right page is help; turning back to it every time the panel
+   * re-renders is the book arguing with you about which page you are on. So
+   * the seek is armed when the panel opens or the tab changes, and spent the
+   * first time the book asks for it.
+   */
+  #seek() {
+    if (!this.seekArm) return null;
+    this.seekArm = false;
+    const id = this.wanted;
+    return id ? `[data-item="${id}"]` : null;
+  }
+
+  /** Which page of which catalogue a thing is sold on. */
+  static shelfOf(id) {
+    const f = FURNITURE_BY_ID[id];
+    if (f) return { book: 'room', tab: f.shelf ?? 'decor' };
+    if (STAFF_BY_ID[id]) return { book: 'room', tab: 'crew' };
+    if (id === 'belt') return { book: 'works', tab: 'belt' };
+    if (id === 'silo') return { book: 'works', tab: 'store' };
+    const m = MACHINE_BY_ID[id];
+    if (!m) return null;
+    if (MACHINES.includes(m)) return { book: 'works', tab: m.kind };
+    return { book: 'works', tab: POTTERY.includes(m) ? 'pottery' : 'workshop' };
+  }
+
+  /**
+   * Open on the page the job is talking about.
+   *
+   * Only when the panel is opened fresh, and only when the standing job names
+   * a thing to buy: after that the tabs are yours. Being sent to "Build →
+   * Pottery" and landing on Belts is the sort of small unhelpfulness that makes
+   * a hint feel like a riddle.
+   */
+  #aimTab(book) {
+    const at = Panels.shelfOf(this.wanted);
+    if (!at || at.book !== book) return;
+    if (book === 'room') this.buildTab = at.tab;
+    else this.factoryTab = at.tab;
+  }
+
   /* --------------------------------------------------------------- helpers */
 
-  #card({ src, title, sub, tags = [], side = null, onclick = null, cls = '', locked = false, wide = false, frames = 1, icon = null }) {
+  #card({ src, title, sub, tags = [], side = null, onclick = null, cls = '', locked = false, wide = false, frames = 1, icon = null, name = null }) {
     const t = icon ? h('div.thumb.icon', null, h(`i.ico.ico-${icon}`)) : thumb(src, { wide, frames });
-    return h(`div.card${onclick ? '.tap' : ''}${cls ? `.${cls}` : ''}${locked ? '.locked' : ''}`,
-      onclick ? { onclick } : null,
+    const want = name && name === this.wanted;
+    return h(`div.card${onclick ? '.tap' : ''}${cls ? `.${cls}` : ''}${locked ? '.locked' : ''}${want ? '.want' : ''}`,
+      { ...(name ? { dataset: { item: name } } : {}), ...(onclick ? { onclick } : {}) },
       t,
       h('div.card-main', null,
         h('div.card-title', null, title),
@@ -80,8 +135,9 @@ export class Panels {
    * game from one place.
    */
   #gated(item, spec) {
-    if (this.state.open(item)) return this.#card(spec);
+    if (this.state.open(item)) return this.#card({ name: item.id, ...spec });
     return this.#card({
+      name: item.id,
       ...spec,
       sub: spec.sub,
       tags: [tag(this.state.rankNeeded(item), 'tag-need')],
@@ -176,8 +232,10 @@ export class Panels {
     const mount = mountOf(item);
     const note = Panels.perkOf(item) ?? Panels.WHERE[mount] ?? null;
     const style = { backgroundImage: `url("${this.assets.url(groupFor(item, this.buildStyle), spriteIdOf(item))}")` };
-    return h(`div.card.piece${shut ? '.shut' : '.tap'}${!shut && this.state.coins < cost ? '.thin' : ''}`,
-      shut ? null : { onclick: () => this.game.startPlacing(item.id, this.buildStyle) },
+    const want = item.id === this.wanted;
+    return h(`div.card.piece${shut ? '.shut' : '.tap'}${!shut && this.state.coins < cost ? '.thin' : ''}${want ? '.want' : ''}`,
+      { dataset: { item: item.id },
+        ...(shut ? {} : { onclick: () => this.game.startPlacing(item.id, this.buildStyle) }) },
       h('div.stage', null,
         h('i', { style }),
         stars > 0 && !shut ? h('span.piece-star', null, `${stars}★`) : null,
@@ -244,7 +302,9 @@ export class Panels {
    */
   openBuild(keep = false) {
     this.reopen = () => this.openBuild(true);
-    if (this.game.zone === this.game.factory) return this.#openFactoryBuild(keep);
+    const works = this.game.zone === this.game.factory;
+    if (!keep) { this.seekArm = true; this.#aimTab(works ? 'works' : 'room'); }
+    if (works) return this.#openFactoryBuild(keep);
 
     const shelf = SHELVES.find((sh) => sh.id === this.buildTab);
     const body = this.buildTab === 'expand' ? this.#expandTab()
@@ -260,7 +320,8 @@ export class Panels {
         { id: 'expand', label: 'Expand' },
       ],
       tab: this.buildTab,
-      onTab: (id) => { this.buildTab = id; this.openBuild(true); },
+      onTab: (id) => { this.buildTab = id; this.seekArm = true; this.openBuild(true); },
+      seek: this.#seek(),
       body,
       foot: h('div.rowline', null,
         h('span.card-sub.grow', null, `Ambience ${this.state.ambience}★ · Rating ${'★'.repeat(this.state.rating)}`),
@@ -417,7 +478,8 @@ export class Panels {
       title: 'Build the Works',
       tabs,
       tab: this.factoryTab,
-      onTab: (id) => { this.factoryTab = id; this.#openFactoryBuild(true); },
+      onTab: (id) => { this.factoryTab = id; this.seekArm = true; this.#openFactoryBuild(true); },
+      seek: this.#seek(),
       body,
       foot: h('div.rowline', null,
         h('span.card-sub.grow', null,
@@ -1202,7 +1264,9 @@ export class Panels {
     const hired = s.hasStaff(st.id);
     const shut = !s.open(st);
     const poor = s.coins < st.cost;
-    return h(`div.card.hire${hired ? '.on' : ''}${!hired && (poor || shut) ? '.thin' : ''}${shut ? '.shut' : ''}`, null,
+    const want = st.id === this.wanted;
+    return h(`div.card.hire${hired ? '.on' : ''}${!hired && (poor || shut) ? '.thin' : ''}${shut ? '.shut' : ''}${want ? '.want' : ''}`,
+      { dataset: { item: st.id } },
       h('div.port', null, this.#sprite('staff', st.sprite)),
       h('div.card-main', null,
         h('div.card-title', null, st.label),

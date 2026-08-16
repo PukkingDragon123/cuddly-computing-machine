@@ -235,7 +235,9 @@ export const KEY_SOURCE = Object.fromEntries(
  * there is nothing to point at and a finger waving at nothing is worse than
  * no finger at all.
  */
-const TAB = (n) => `#sheet-tabs .tab:nth-child(${n})`;
+const TAB = (id) => `#sheet-tabs [data-tab="${id}"]`;
+const ITEM = (id) => `[data-item="${id}"]`;
+const WORKS = '#zoneswitch [data-zone="factory"]';
 
 export const SPOTS = {
   // reaching a rung is a job too, and the ladder is where it is spelled out
@@ -243,7 +245,7 @@ export const SPOTS = {
   r5: ['#chip-rank'], r6: ['#chip-rank'], r7: ['#chip-rank'],
 
   // the first shift
-  plate: ['#btn-recipes', TAB(1), '#sheet-body .stepper button:last-child'],
+  plate: ['#btn-recipes', TAB('menu'), '#sheet-body .stepper button:last-child'],
   open: ['#btn-service', '#menu-open'],
   serve: { world: (g) => g.restaurant.guests.find((x) => x.state === 'queue') ?? null },
   board: ['#btn-flyer'],
@@ -251,41 +253,57 @@ export const SPOTS = {
   day2: ['#btn-service'],
 
   // buying and building
-  second: ['#btn-recipes', TAB(2)],
-  market: ['#btn-pantry', TAB(2)],
-  cheap: ['#btn-pantry', TAB(2)],
-  seats: ['#btn-build', TAB(1)],
-  decor: ['#btn-build', TAB(1)],
-  finish: ['#btn-build', '#sheet-body .swatch:nth-child(2)'],
-  crew: ['#btn-build', TAB(2)],
-  learn: ['#btn-recipes', TAB(2)],
-  upgrade: ['#btn-recipes', TAB(3)],
+  second: ['#btn-recipes', TAB('learn')],
+  market: ['#btn-pantry', TAB('market')],
+  cheap: ['#btn-pantry', TAB('market')],
+  seats: ['#btn-build', TAB('seating'), ITEM('chair')],
+  decor: ['#btn-build', TAB('decor'), ITEM('cabinet')],
+  finish: ['#btn-build', TAB('seating'), '#sheet-body .swatch:nth-child(2)'],
+  crew: ['#btn-build', TAB('crew'), ITEM('sea_lion_dish')],
+  learn: ['#btn-recipes', TAB('learn')],
+  upgrade: ['#btn-recipes', TAB('upgrade')],
 
   // the works
-  machine: ['#zoneswitch [data-zone="factory"]', '#btn-build', TAB(1)],
-  belt: ['#zoneswitch [data-zone="factory"]', '#btn-build', TAB(2)],
-  intake: ['#zoneswitch [data-zone="factory"]', '#btn-build', TAB(3)],
-  expand: ['#btn-build', TAB(3)],
-  refine: ['#zoneswitch [data-zone="factory"]', '#btn-build', TAB(2)],
+  machine: [WORKS, '#btn-build', TAB('producer'), ITEM('rice_grinder')],
+  belt: [WORKS, '#btn-build', TAB('belt')],
+  intake: [WORKS, '#btn-build', TAB('store'), ITEM('silo')],
+  expand: ['#btn-build', TAB('expand')],
+  refine: [WORKS, '#btn-build', TAB('processor'), ITEM('ice_mill')],
   upmachine: { world: (g) => g.state.machines.find((m) => m.kind === 'producer') ?? null },
+  freefood: [WORKS],
 
   // regulars
   meet: ['#btn-diary'],
   like: ['#btn-diary'],
+  hearts: ['#btn-diary'],
 
   // trade and craft
-  lab: ['#zoneswitch [data-zone="factory"]', '#btn-build', TAB(4)],
-  research: { world: (g) => g.state.machines.find((m) => m.id === 'computer_desk') ?? null },
-  freefood: ['#zoneswitch [data-zone="factory"]'],
-  kilnup: ['#zoneswitch [data-zone="factory"]', '#btn-build', TAB(4)],
+  lab: [WORKS, '#btn-build', TAB('workshop'), ITEM('harbour_computer')],
+  research: { world: (g) => g.state.machines.find((m) => m.id === 'harbour_computer') ?? null },
+  kilnup: [WORKS, '#btn-build', TAB('pottery'), ITEM('kiln')],
   forge: ['#btn-plate'],
   forge3: ['#btn-plate'],
+  class: ['#btn-plate'],
 
   // the long climb
-  terrace: ['#btn-build', TAB(3)],
-  crew5: ['#btn-build', TAB(2)],
-  twelve: ['#btn-build', TAB(1)],
-  all: ['#btn-recipes', TAB(2)],
+  terrace: ['#btn-build', TAB('expand')],
+  crew5: ['#btn-build', TAB('crew')],
+  twelve: ['#btn-build', TAB('seating'), ITEM('chair')],
+  all: ['#btn-recipes', TAB('learn')],
+};
+
+/**
+ * The one thing a job wants you to buy, off the end of its own trail.
+ *
+ * Rather than a second table to keep in step, the item is simply the last hop
+ * of the pointer trail when that hop names one. The catalogue uses it twice:
+ * to turn to the leaf the piece is printed on, and to ring the piece itself.
+ */
+export const wantedItem = (questId) => {
+  const trail = SPOTS[questId];
+  if (!Array.isArray(trail) || !trail.length) return null;
+  const m = /^\[data-item="(.+)"\]$/.exec(trail[trail.length - 1]);
+  return m ? m[1] : null;
 };
 
 /* -------------------------------------------------------------- side jobs */
