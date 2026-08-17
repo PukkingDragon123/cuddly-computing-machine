@@ -2,289 +2,289 @@
  "machines": [
   {
    "id": "berry_tumbler",
-   "src": "machines/berry_tumbler.png",
+   "src": "machines/berry_tumbler.webp",
    "w": 198,
    "h": 214
   },
   {
    "id": "citrus_press",
-   "src": "machines/citrus_press.png",
+   "src": "machines/citrus_press.webp",
    "w": 198,
    "h": 214
   },
   {
    "id": "pineapple_slicer",
-   "src": "machines/pineapple_slicer.png",
+   "src": "machines/pineapple_slicer.webp",
    "w": 209,
    "h": 214
   },
   {
    "id": "onion_boiler",
-   "src": "machines/onion_boiler.png",
+   "src": "machines/onion_boiler.webp",
    "w": 209,
    "h": 214
   },
   {
    "id": "ice_mill",
-   "src": "machines/ice_mill.png",
+   "src": "machines/ice_mill.webp",
    "w": 221,
    "h": 214
   },
   {
    "id": "rice_grinder",
-   "src": "machines/rice_grinder.png",
+   "src": "machines/rice_grinder.webp",
    "w": 182,
    "h": 214
   },
   {
    "id": "egg_roller",
-   "src": "machines/egg_roller.png",
+   "src": "machines/egg_roller.webp",
    "w": 222,
    "h": 214
   },
   {
    "id": "cream_churn",
-   "src": "machines/cream_churn.png",
+   "src": "machines/cream_churn.webp",
    "w": 195,
    "h": 214
   },
   {
    "id": "butter_roller",
-   "src": "machines/butter_roller.png",
+   "src": "machines/butter_roller.webp",
    "w": 224,
    "h": 214
   },
   {
    "id": "cheese_press",
-   "src": "machines/cheese_press.png",
+   "src": "machines/cheese_press.webp",
    "w": 189,
    "h": 214
   },
   {
    "id": "roaster",
-   "src": "machines/roaster.png",
+   "src": "machines/roaster.webp",
    "w": 224,
    "h": 214
   },
   {
    "id": "grill",
-   "src": "machines/grill.png",
+   "src": "machines/grill.webp",
    "w": 239,
    "h": 214
   },
   {
    "id": "smoker",
-   "src": "machines/smoker.png",
+   "src": "machines/smoker.webp",
    "w": 289,
    "h": 214
   },
   {
    "id": "steamer",
-   "src": "machines/steamer.png",
+   "src": "machines/steamer.webp",
    "w": 230,
    "h": 214
   },
   {
    "id": "press_ring",
-   "src": "machines/press_ring.png",
+   "src": "machines/press_ring.webp",
    "w": 232,
    "h": 214
   },
   {
    "id": "mincer",
-   "src": "machines/mincer.png",
+   "src": "machines/mincer.webp",
    "w": 231,
    "h": 214
   },
   {
    "id": "crate_filler",
-   "src": "machines/crate_filler.png",
+   "src": "machines/crate_filler.webp",
    "w": 234,
    "h": 214
   },
   {
    "id": "sorter",
-   "src": "machines/sorter.png",
+   "src": "machines/sorter.webp",
    "w": 211,
    "h": 214
   },
   {
    "id": "extruder",
-   "src": "machines/extruder.png",
+   "src": "machines/extruder.webp",
    "w": 207,
    "h": 214
   },
   {
    "id": "tumbler_wide",
-   "src": "machines/tumbler_wide.png",
+   "src": "machines/tumbler_wide.webp",
    "w": 225,
    "h": 214
   },
   {
    "id": "wok",
-   "src": "machines/wok.png",
+   "src": "machines/wok.webp",
    "w": 226,
    "h": 214
   },
   {
    "id": "baker",
-   "src": "machines/baker.png",
+   "src": "machines/baker.webp",
    "w": 218,
    "h": 214
   },
   {
    "id": "keg_small",
-   "src": "machines/keg_small.png",
+   "src": "machines/keg_small.webp",
    "w": 165,
    "h": 202
   },
   {
    "id": "kettle",
-   "src": "machines/kettle.png",
+   "src": "machines/kettle.webp",
    "w": 155,
    "h": 214
   },
   {
    "id": "locker",
-   "src": "machines/locker.png",
+   "src": "machines/locker.webp",
    "w": 152,
    "h": 214
   },
   {
    "id": "drum",
-   "src": "machines/drum.png",
+   "src": "machines/drum.webp",
    "w": 205,
    "h": 214
   },
   {
    "id": "boiler_tall",
-   "src": "machines/boiler_tall.png",
+   "src": "machines/boiler_tall.webp",
    "w": 118,
    "h": 214
   },
   {
    "id": "twin_still",
-   "src": "machines/twin_still.png",
+   "src": "machines/twin_still.webp",
    "w": 177,
    "h": 214
   },
   {
    "id": "vault",
-   "src": "machines/vault.png",
+   "src": "machines/vault.webp",
    "w": 147,
    "h": 214
   },
   {
    "id": "refinery",
-   "src": "machines/refinery.png",
+   "src": "machines/refinery.webp",
    "w": 169,
    "h": 214
   },
   {
    "id": "computer_desk",
-   "src": "machines/computer_desk.png",
+   "src": "machines/computer_desk.webp",
    "w": 232,
    "h": 214
   },
   {
    "id": "radio_set",
-   "src": "machines/radio_set.png",
+   "src": "machines/radio_set.webp",
    "w": 188,
    "h": 214
   },
   {
    "id": "plotter",
-   "src": "machines/plotter.png",
+   "src": "machines/plotter.webp",
    "w": 222,
    "h": 214
   },
   {
    "id": "computer_tall",
-   "src": "machines/computer_tall.png",
+   "src": "machines/computer_tall.webp",
    "w": 216,
    "h": 214
   },
   {
    "id": "beacon",
-   "src": "machines/beacon.png",
+   "src": "machines/beacon.webp",
    "w": 175,
    "h": 214
   },
   {
    "id": "ledger_press",
-   "src": "machines/ledger_press.png",
+   "src": "machines/ledger_press.webp",
    "w": 223,
    "h": 214
   },
   {
    "id": "gauge_stack",
-   "src": "machines/gauge_stack.png",
+   "src": "machines/gauge_stack.webp",
    "w": 154,
    "h": 214
   },
   {
    "id": "spin_drum",
-   "src": "machines/spin_drum.png",
+   "src": "machines/spin_drum.webp",
    "w": 198,
    "h": 214
   },
   {
    "id": "stamp_press",
-   "src": "machines/stamp_press.png",
+   "src": "machines/stamp_press.webp",
    "w": 157,
    "h": 214
   },
   {
    "id": "gas_works",
-   "src": "machines/gas_works.png",
+   "src": "machines/gas_works.webp",
    "w": 216,
    "h": 214
   },
   {
    "id": "pot_wheel",
-   "src": "machines/pot_wheel.png",
+   "src": "machines/pot_wheel.webp",
    "w": 165,
    "h": 214
   },
   {
    "id": "glaze_mill",
-   "src": "machines/glaze_mill.png",
+   "src": "machines/glaze_mill.webp",
    "w": 236,
    "h": 214
   },
   {
    "id": "clay_press",
-   "src": "machines/clay_press.png",
+   "src": "machines/clay_press.webp",
    "w": 153,
    "h": 214
   },
   {
    "id": "round_kiln",
-   "src": "machines/round_kiln.png",
+   "src": "machines/round_kiln.webp",
    "w": 173,
    "h": 214
   },
   {
    "id": "drying_rack",
-   "src": "machines/drying_rack.png",
+   "src": "machines/drying_rack.webp",
    "w": 194,
    "h": 214
   },
   {
    "id": "bisque_kiln",
-   "src": "machines/bisque_kiln.png",
+   "src": "machines/bisque_kiln.webp",
    "w": 175,
    "h": 214
   },
   {
    "id": "glaze_kiln",
-   "src": "machines/glaze_kiln.png",
+   "src": "machines/glaze_kiln.webp",
    "w": 161,
    "h": 214
   },
   {
    "id": "master_kiln",
-   "src": "machines/master_kiln.png",
+   "src": "machines/master_kiln.webp",
    "w": 174,
    "h": 214
   }
@@ -292,181 +292,181 @@
  "ingredients": [
   {
    "id": "shrimp",
-   "src": "ingredients/shrimp.png",
+   "src": "ingredients/shrimp.webp",
    "w": 168,
    "h": 132
   },
   {
    "id": "crab",
-   "src": "ingredients/crab.png",
+   "src": "ingredients/crab.webp",
    "w": 160,
    "h": 132
   },
   {
    "id": "lobster_tail",
-   "src": "ingredients/lobster_tail.png",
+   "src": "ingredients/lobster_tail.webp",
    "w": 151,
    "h": 132
   },
   {
    "id": "squid",
-   "src": "ingredients/squid.png",
+   "src": "ingredients/squid.webp",
    "w": 123,
    "h": 132
   },
   {
    "id": "octopus_leg",
-   "src": "ingredients/octopus_leg.png",
+   "src": "ingredients/octopus_leg.webp",
    "w": 116,
    "h": 132
   },
   {
    "id": "scallop",
-   "src": "ingredients/scallop.png",
+   "src": "ingredients/scallop.webp",
    "w": 160,
    "h": 132
   },
   {
    "id": "clam",
-   "src": "ingredients/clam.png",
+   "src": "ingredients/clam.webp",
    "w": 138,
    "h": 132
   },
   {
    "id": "oyster",
-   "src": "ingredients/oyster.png",
+   "src": "ingredients/oyster.webp",
    "w": 137,
    "h": 132
   },
   {
    "id": "salmon",
-   "src": "ingredients/salmon.png",
+   "src": "ingredients/salmon.webp",
    "w": 166,
    "h": 132
   },
   {
    "id": "tuna",
-   "src": "ingredients/tuna.png",
+   "src": "ingredients/tuna.webp",
    "w": 154,
    "h": 132
   },
   {
    "id": "kelp",
-   "src": "ingredients/kelp.png",
+   "src": "ingredients/kelp.webp",
    "w": 128,
    "h": 132
   },
   {
    "id": "sea_grapes",
-   "src": "ingredients/sea_grapes.png",
+   "src": "ingredients/sea_grapes.webp",
    "w": 139,
    "h": 132
   },
   {
    "id": "nori",
-   "src": "ingredients/nori.png",
+   "src": "ingredients/nori.webp",
    "w": 154,
    "h": 132
   },
   {
    "id": "lemon",
-   "src": "ingredients/lemon.png",
+   "src": "ingredients/lemon.webp",
    "w": 144,
    "h": 132
   },
   {
    "id": "coconut",
-   "src": "ingredients/coconut.png",
+   "src": "ingredients/coconut.webp",
    "w": 144,
    "h": 132
   },
   {
    "id": "tomato",
-   "src": "ingredients/tomato.png",
+   "src": "ingredients/tomato.webp",
    "w": 141,
    "h": 132
   },
   {
    "id": "cabbage",
-   "src": "ingredients/cabbage.png",
+   "src": "ingredients/cabbage.webp",
    "w": 147,
    "h": 132
   },
   {
    "id": "potato",
-   "src": "ingredients/potato.png",
+   "src": "ingredients/potato.webp",
    "w": 148,
    "h": 132
   },
   {
    "id": "carrot",
-   "src": "ingredients/carrot.png",
+   "src": "ingredients/carrot.webp",
    "w": 135,
    "h": 132
   },
   {
    "id": "strawberry",
-   "src": "ingredients/strawberry.png",
+   "src": "ingredients/strawberry.webp",
    "w": 153,
    "h": 132
   },
   {
    "id": "blueberry",
-   "src": "ingredients/blueberry.png",
+   "src": "ingredients/blueberry.webp",
    "w": 176,
    "h": 132
   },
   {
    "id": "lime",
-   "src": "ingredients/lime.png",
+   "src": "ingredients/lime.webp",
    "w": 138,
    "h": 132
   },
   {
    "id": "pineapple",
-   "src": "ingredients/pineapple.png",
+   "src": "ingredients/pineapple.webp",
    "w": 114,
    "h": 132
   },
   {
    "id": "onion",
-   "src": "ingredients/onion.png",
+   "src": "ingredients/onion.webp",
    "w": 120,
    "h": 132
   },
   {
    "id": "rice",
-   "src": "ingredients/rice.png",
+   "src": "ingredients/rice.webp",
    "w": 140,
    "h": 132
   },
   {
    "id": "flour",
-   "src": "ingredients/flour.png",
+   "src": "ingredients/flour.webp",
    "w": 138,
    "h": 132
   },
   {
    "id": "egg",
-   "src": "ingredients/egg.png",
+   "src": "ingredients/egg.webp",
    "w": 161,
    "h": 132
   },
   {
    "id": "milk",
-   "src": "ingredients/milk.png",
+   "src": "ingredients/milk.webp",
    "w": 76,
    "h": 132
   },
   {
    "id": "butter",
-   "src": "ingredients/butter.png",
+   "src": "ingredients/butter.webp",
    "w": 164,
    "h": 132
   },
   {
    "id": "cheese",
-   "src": "ingredients/cheese.png",
+   "src": "ingredients/cheese.webp",
    "w": 160,
    "h": 132
   }
@@ -474,145 +474,145 @@
  "food": [
   {
    "id": "oyster_plate",
-   "src": "food/oyster_plate.png",
+   "src": "food/oyster_plate.webp",
    "w": 128,
    "h": 136
   },
   {
    "id": "crab_burger",
-   "src": "food/crab_burger.png",
+   "src": "food/crab_burger.webp",
    "w": 155,
    "h": 136
   },
   {
    "id": "coral_platter",
-   "src": "food/coral_platter.png",
+   "src": "food/coral_platter.webp",
    "w": 137,
    "h": 136
   },
   {
    "id": "kelp_ramen",
-   "src": "food/kelp_ramen.png",
+   "src": "food/kelp_ramen.webp",
    "w": 127,
    "h": 136
   },
   {
    "id": "scallop_tart",
-   "src": "food/scallop_tart.png",
+   "src": "food/scallop_tart.webp",
    "w": 144,
    "h": 136
   },
   {
    "id": "shrimp_toast",
-   "src": "food/shrimp_toast.png",
+   "src": "food/shrimp_toast.webp",
    "w": 153,
    "h": 136
   },
   {
    "id": "puffer_burger",
-   "src": "food/puffer_burger.png",
+   "src": "food/puffer_burger.webp",
    "w": 123,
    "h": 136
   },
   {
    "id": "kelp_fries",
-   "src": "food/kelp_fries.png",
+   "src": "food/kelp_fries.webp",
    "w": 125,
    "h": 136
   },
   {
    "id": "octopus_skewer",
-   "src": "food/octopus_skewer.png",
+   "src": "food/octopus_skewer.webp",
    "w": 103,
    "h": 136
   },
   {
    "id": "miso_chowder",
-   "src": "food/miso_chowder.png",
+   "src": "food/miso_chowder.webp",
    "w": 133,
    "h": 136
   },
   {
    "id": "starfish_cookie",
-   "src": "food/starfish_cookie.png",
+   "src": "food/starfish_cookie.webp",
    "w": 122,
    "h": 136
   },
   {
    "id": "clam_congee",
-   "src": "food/clam_congee.png",
+   "src": "food/clam_congee.webp",
    "w": 135,
    "h": 136
   },
   {
    "id": "sea_roll",
-   "src": "food/sea_roll.png",
+   "src": "food/sea_roll.webp",
    "w": 143,
    "h": 136
   },
   {
    "id": "reef_soda",
-   "src": "food/reef_soda.png",
+   "src": "food/reef_soda.webp",
    "w": 118,
    "h": 136
   },
   {
    "id": "anchor_pretzel",
-   "src": "food/anchor_pretzel.png",
+   "src": "food/anchor_pretzel.webp",
    "w": 141,
    "h": 136
   },
   {
    "id": "mermaid_pop",
-   "src": "food/mermaid_pop.png",
+   "src": "food/mermaid_pop.webp",
    "w": 94,
    "h": 136
   },
   {
    "id": "lobster_roll",
-   "src": "food/lobster_roll.png",
+   "src": "food/lobster_roll.webp",
    "w": 144,
    "h": 136
   },
   {
    "id": "scallop_bowl",
-   "src": "food/scallop_bowl.png",
+   "src": "food/scallop_bowl.webp",
    "w": 158,
    "h": 136
   },
   {
    "id": "kelp_latte",
-   "src": "food/kelp_latte.png",
+   "src": "food/kelp_latte.webp",
    "w": 141,
    "h": 136
   },
   {
    "id": "pearl_boba",
-   "src": "food/pearl_boba.png",
+   "src": "food/pearl_boba.webp",
    "w": 99,
    "h": 136
   },
   {
    "id": "tide_sundae",
-   "src": "food/tide_sundae.png",
+   "src": "food/tide_sundae.webp",
    "w": 104,
    "h": 136
   },
   {
    "id": "taiyaki",
-   "src": "food/taiyaki.png",
+   "src": "food/taiyaki.webp",
    "w": 154,
    "h": 136
   },
   {
    "id": "cinnamon_swirls",
-   "src": "food/cinnamon_swirls.png",
+   "src": "food/cinnamon_swirls.webp",
    "w": 158,
    "h": 136
   },
   {
    "id": "treasure_bento",
-   "src": "food/treasure_bento.png",
+   "src": "food/treasure_bento.webp",
    "w": 128,
    "h": 136
   }
@@ -621,7 +621,7 @@
   {
    "id": "01_sea_bunny_nudibranch",
    "name": "Sea-bunny nudibranch",
-   "src": "customers/01_sea_bunny_nudibranch.png",
+   "src": "customers/01_sea_bunny_nudibranch.webp",
    "fw": 118,
    "fh": 176,
    "frames": [
@@ -633,7 +633,7 @@
   {
    "id": "02_dumbo_octopus",
    "name": "Dumbo octopus",
-   "src": "customers/02_dumbo_octopus.png",
+   "src": "customers/02_dumbo_octopus.webp",
    "fw": 172,
    "fh": 176,
    "frames": [
@@ -645,7 +645,7 @@
   {
    "id": "03_hermit_crab",
    "name": "Hermit crab",
-   "src": "customers/03_hermit_crab.png",
+   "src": "customers/03_hermit_crab.webp",
    "fw": 197,
    "fh": 176,
    "frames": [
@@ -657,7 +657,7 @@
   {
    "id": "04_pufferfish",
    "name": "Pufferfish",
-   "src": "customers/04_pufferfish.png",
+   "src": "customers/04_pufferfish.webp",
    "fw": 216,
    "fh": 176,
    "frames": [
@@ -669,7 +669,7 @@
   {
    "id": "05_sea_otter",
    "name": "Sea otter",
-   "src": "customers/05_sea_otter.png",
+   "src": "customers/05_sea_otter.webp",
    "fw": 135,
    "fh": 176,
    "frames": [
@@ -681,7 +681,7 @@
   {
    "id": "06_manta_ray",
    "name": "Manta ray",
-   "src": "customers/06_manta_ray.png",
+   "src": "customers/06_manta_ray.webp",
    "fw": 223,
    "fh": 176,
    "frames": [
@@ -693,7 +693,7 @@
   {
    "id": "07_whale_shark",
    "name": "Whale shark",
-   "src": "customers/07_whale_shark.png",
+   "src": "customers/07_whale_shark.webp",
    "fw": 175,
    "fh": 176,
    "frames": [
@@ -705,7 +705,7 @@
   {
    "id": "08_moon_jellyfish",
    "name": "Moon jellyfish",
-   "src": "customers/08_moon_jellyfish.png",
+   "src": "customers/08_moon_jellyfish.webp",
    "fw": 163,
    "fh": 176,
    "frames": [
@@ -717,7 +717,7 @@
   {
    "id": "09_seahorse",
    "name": "Seahorse",
-   "src": "customers/09_seahorse.png",
+   "src": "customers/09_seahorse.webp",
    "fw": 123,
    "fh": 176,
    "frames": [
@@ -729,7 +729,7 @@
   {
    "id": "10_horseshoe_crab",
    "name": "Horseshoe crab",
-   "src": "customers/10_horseshoe_crab.png",
+   "src": "customers/10_horseshoe_crab.webp",
    "fw": 184,
    "fh": 176,
    "frames": [
@@ -741,7 +741,7 @@
   {
    "id": "11_lobster",
    "name": "Lobster",
-   "src": "customers/11_lobster.png",
+   "src": "customers/11_lobster.webp",
    "fw": 155,
    "fh": 176,
    "frames": [
@@ -753,7 +753,7 @@
   {
    "id": "12_blobfish",
    "name": "Blobfish",
-   "src": "customers/12_blobfish.png",
+   "src": "customers/12_blobfish.webp",
    "fw": 182,
    "fh": 176,
    "frames": [
@@ -765,7 +765,7 @@
   {
    "id": "13_green_sea_turtle",
    "name": "Green sea turtle",
-   "src": "customers/13_green_sea_turtle.png",
+   "src": "customers/13_green_sea_turtle.webp",
    "fw": 152,
    "fh": 176,
    "frames": [
@@ -777,7 +777,7 @@
   {
    "id": "14_anglerfish",
    "name": "Anglerfish",
-   "src": "customers/14_anglerfish.png",
+   "src": "customers/14_anglerfish.webp",
    "fw": 189,
    "fh": 176,
    "frames": [
@@ -789,7 +789,7 @@
   {
    "id": "15_cleaner_shrimp",
    "name": "Cleaner shrimp",
-   "src": "customers/15_cleaner_shrimp.png",
+   "src": "customers/15_cleaner_shrimp.webp",
    "fw": 118,
    "fh": 176,
    "frames": [
@@ -801,7 +801,7 @@
   {
    "id": "16_tuna",
    "name": "Tuna",
-   "src": "customers/16_tuna.png",
+   "src": "customers/16_tuna.webp",
    "fw": 125,
    "fh": 176,
    "frames": [
@@ -813,7 +813,7 @@
   {
    "id": "17_clownfish",
    "name": "Clownfish",
-   "src": "customers/17_clownfish.png",
+   "src": "customers/17_clownfish.webp",
    "fw": 139,
    "fh": 176,
    "frames": [
@@ -825,7 +825,7 @@
   {
    "id": "18_angelfish",
    "name": "Angelfish",
-   "src": "customers/18_angelfish.png",
+   "src": "customers/18_angelfish.webp",
    "fw": 140,
    "fh": 176,
    "frames": [
@@ -837,7 +837,7 @@
   {
    "id": "19_dolphin",
    "name": "Dolphin",
-   "src": "customers/19_dolphin.png",
+   "src": "customers/19_dolphin.webp",
    "fw": 130,
    "fh": 176,
    "frames": [
@@ -849,7 +849,7 @@
   {
    "id": "20_whale",
    "name": "Whale",
-   "src": "customers/20_whale.png",
+   "src": "customers/20_whale.webp",
    "fw": 165,
    "fh": 176,
    "frames": [
@@ -861,7 +861,7 @@
   {
    "id": "21_manatee",
    "name": "Manatee",
-   "src": "customers/21_manatee.png",
+   "src": "customers/21_manatee.webp",
    "fw": 118,
    "fh": 176,
    "frames": [
@@ -873,7 +873,7 @@
   {
    "id": "22_walrus",
    "name": "Walrus",
-   "src": "customers/22_walrus.png",
+   "src": "customers/22_walrus.webp",
    "fw": 143,
    "fh": 176,
    "frames": [
@@ -884,7 +884,7 @@
   },
   {
    "id": "23_royal_whale_shark",
-   "src": "customers/23_royal_whale_shark.png",
+   "src": "customers/23_royal_whale_shark.webp",
    "fw": 171,
    "fh": 176,
    "frames": [
@@ -895,7 +895,7 @@
   },
   {
    "id": "24_pearl_manta_ray",
-   "src": "customers/24_pearl_manta_ray.png",
+   "src": "customers/24_pearl_manta_ray.webp",
    "fw": 223,
    "fh": 176,
    "frames": [
@@ -906,7 +906,7 @@
   },
   {
    "id": "25_golden_seahorse",
-   "src": "customers/25_golden_seahorse.png",
+   "src": "customers/25_golden_seahorse.webp",
    "fw": 133,
    "fh": 176,
    "frames": [
@@ -917,7 +917,7 @@
   },
   {
    "id": "26_giant_clam",
-   "src": "customers/26_giant_clam.png",
+   "src": "customers/26_giant_clam.webp",
    "fw": 164,
    "fh": 176,
    "frames": [
@@ -928,7 +928,7 @@
   },
   {
    "id": "27_celebrity_narwhal",
-   "src": "customers/27_celebrity_narwhal.png",
+   "src": "customers/27_celebrity_narwhal.webp",
    "fw": 173,
    "fh": 176,
    "frames": [
@@ -939,7 +939,7 @@
   },
   {
    "id": "28_aristocratic_octopus",
-   "src": "customers/28_aristocratic_octopus.png",
+   "src": "customers/28_aristocratic_octopus.webp",
    "fw": 152,
    "fh": 176,
    "frames": [
@@ -950,7 +950,7 @@
   },
   {
    "id": "29_dunkleosteus",
-   "src": "customers/29_dunkleosteus.png",
+   "src": "customers/29_dunkleosteus.webp",
    "fw": 157,
    "fh": 176,
    "frames": [
@@ -961,7 +961,7 @@
   },
   {
    "id": "30_coelacanth",
-   "src": "customers/30_coelacanth.png",
+   "src": "customers/30_coelacanth.webp",
    "fw": 199,
    "fh": 176,
    "frames": [
@@ -972,7 +972,7 @@
   },
   {
    "id": "31_helicoprion",
-   "src": "customers/31_helicoprion.png",
+   "src": "customers/31_helicoprion.webp",
    "fw": 166,
    "fh": 176,
    "frames": [
@@ -983,7 +983,7 @@
   },
   {
    "id": "32_xiphactinus",
-   "src": "customers/32_xiphactinus.png",
+   "src": "customers/32_xiphactinus.webp",
    "fw": 146,
    "fh": 176,
    "frames": [
@@ -997,7 +997,7 @@
   {
    "id": "01_oyster_host",
    "name": "Oyster host",
-   "src": "staff/01_oyster_host.png",
+   "src": "staff/01_oyster_host.webp",
    "fw": 152,
    "fh": 184,
    "frames": [
@@ -1009,7 +1009,7 @@
   {
    "id": "02_cuttlefish_server",
    "name": "Cuttlefish server",
-   "src": "staff/02_cuttlefish_server.png",
+   "src": "staff/02_cuttlefish_server.webp",
    "fw": 161,
    "fh": 184,
    "frames": [
@@ -1021,7 +1021,7 @@
   {
    "id": "03_sea_lion_dishwasher",
    "name": "Sea lion dishwasher",
-   "src": "staff/03_sea_lion_dishwasher.png",
+   "src": "staff/03_sea_lion_dishwasher.webp",
    "fw": 165,
    "fh": 184,
    "frames": [
@@ -1033,7 +1033,7 @@
   {
    "id": "04_octopus_head_chef",
    "name": "Octopus head chef",
-   "src": "staff/04_octopus_head_chef.png",
+   "src": "staff/04_octopus_head_chef.webp",
    "fw": 153,
    "fh": 184,
    "frames": [
@@ -1045,7 +1045,7 @@
   {
    "id": "05_moray_eel_noodle_cook",
    "name": "Moray eel noodle cook",
-   "src": "staff/05_moray_eel_noodle_cook.png",
+   "src": "staff/05_moray_eel_noodle_cook.webp",
    "fw": 136,
    "fh": 184,
    "frames": [
@@ -1057,7 +1057,7 @@
   {
    "id": "06_walrus_grill_cook",
    "name": "Walrus grill cook",
-   "src": "staff/06_walrus_grill_cook.png",
+   "src": "staff/06_walrus_grill_cook.webp",
    "fw": 177,
    "fh": 184,
    "frames": [
@@ -1069,7 +1069,7 @@
   {
    "id": "07_hammerhead_mechanic",
    "name": "Hammerhead mechanic",
-   "src": "staff/07_hammerhead_mechanic.png",
+   "src": "staff/07_hammerhead_mechanic.webp",
    "fw": 218,
    "fh": 184,
    "frames": [
@@ -1081,7 +1081,7 @@
   {
    "id": "08_giant_isopod_boiler_operator",
    "name": "Giant isopod boiler operator",
-   "src": "staff/08_giant_isopod_boiler_operator.png",
+   "src": "staff/08_giant_isopod_boiler_operator.webp",
    "fw": 214,
    "fh": 184,
    "frames": [
@@ -1093,7 +1093,7 @@
   {
    "id": "09_swordfish_quality_inspector",
    "name": "Swordfish quality inspector",
-   "src": "staff/09_swordfish_quality_inspector.png",
+   "src": "staff/09_swordfish_quality_inspector.webp",
    "fw": 216,
    "fh": 184,
    "frames": [
@@ -1105,7 +1105,7 @@
   {
    "id": "10_orca_harbor_manager",
    "name": "Orca harbor manager",
-   "src": "staff/10_orca_harbor_manager.png",
+   "src": "staff/10_orca_harbor_manager.webp",
    "fw": 220,
    "fh": 184,
    "frames": [
@@ -1118,145 +1118,145 @@
  "furn_plain": [
   {
    "id": "cabinet_f",
-   "src": "furn_plain/cabinet_f.png",
+   "src": "furn_plain/cabinet_f.webp",
    "w": 163,
    "h": 165
   },
   {
    "id": "cabinet_b",
-   "src": "furn_plain/cabinet_b.png",
+   "src": "furn_plain/cabinet_b.webp",
    "w": 162,
    "h": 165
   },
   {
    "id": "chair_f",
-   "src": "furn_plain/chair_f.png",
+   "src": "furn_plain/chair_f.webp",
    "w": 111,
    "h": 178
   },
   {
    "id": "chair_b",
-   "src": "furn_plain/chair_b.png",
+   "src": "furn_plain/chair_b.webp",
    "w": 112,
    "h": 154
   },
   {
    "id": "drawers_f",
-   "src": "furn_plain/drawers_f.png",
+   "src": "furn_plain/drawers_f.webp",
    "w": 139,
    "h": 158
   },
   {
    "id": "drawers_b",
-   "src": "furn_plain/drawers_b.png",
+   "src": "furn_plain/drawers_b.webp",
    "w": 140,
    "h": 158
   },
   {
    "id": "armchair_f",
-   "src": "furn_plain/armchair_f.png",
+   "src": "furn_plain/armchair_f.webp",
    "w": 162,
    "h": 166
   },
   {
    "id": "armchair_b",
-   "src": "furn_plain/armchair_b.png",
+   "src": "furn_plain/armchair_b.webp",
    "w": 164,
    "h": 142
   },
   {
    "id": "shelf_f",
-   "src": "furn_plain/shelf_f.png",
+   "src": "furn_plain/shelf_f.webp",
    "w": 144,
    "h": 188
   },
   {
    "id": "shelf_b",
-   "src": "furn_plain/shelf_b.png",
+   "src": "furn_plain/shelf_b.webp",
    "w": 144,
    "h": 188
   },
   {
    "id": "lamp_f",
-   "src": "furn_plain/lamp_f.png",
+   "src": "furn_plain/lamp_f.webp",
    "w": 105,
    "h": 127
   },
   {
    "id": "lamp_b",
-   "src": "furn_plain/lamp_b.png",
+   "src": "furn_plain/lamp_b.webp",
    "w": 105,
    "h": 121
   },
   {
    "id": "rug",
-   "src": "furn_plain/rug.png",
+   "src": "furn_plain/rug.webp",
    "w": 216,
    "h": 124
   },
   {
    "id": "rug_rolled",
-   "src": "furn_plain/rug_rolled.png",
+   "src": "furn_plain/rug_rolled.webp",
    "w": 212,
    "h": 120
   },
   {
    "id": "ornament",
-   "src": "furn_plain/ornament.png",
+   "src": "furn_plain/ornament.webp",
    "w": 78,
    "h": 143
   },
   {
    "id": "ornament_mat",
-   "src": "furn_plain/ornament_mat.png",
+   "src": "furn_plain/ornament_mat.webp",
    "w": 191,
    "h": 128
   },
   {
    "id": "game_table_f",
-   "src": "furn_plain/game_table_f.png",
+   "src": "furn_plain/game_table_f.webp",
    "w": 157,
    "h": 168
   },
   {
    "id": "game_table_b",
-   "src": "furn_plain/game_table_b.png",
+   "src": "furn_plain/game_table_b.webp",
    "w": 157,
    "h": 168
   },
   {
    "id": "books",
-   "src": "furn_plain/books.png",
+   "src": "furn_plain/books.webp",
    "w": 128,
    "h": 144
   },
   {
    "id": "books_lean",
-   "src": "furn_plain/books_lean.png",
+   "src": "furn_plain/books_lean.webp",
    "w": 131,
    "h": 138
   },
   {
    "id": "round_table_f",
-   "src": "furn_plain/round_table_f.png",
+   "src": "furn_plain/round_table_f.webp",
    "w": 157,
    "h": 140
   },
   {
    "id": "round_table_b",
-   "src": "furn_plain/round_table_b.png",
+   "src": "furn_plain/round_table_b.webp",
    "w": 156,
    "h": 139
   },
   {
    "id": "mirror",
-   "src": "furn_plain/mirror.png",
+   "src": "furn_plain/mirror.webp",
    "w": 101,
    "h": 139
   },
   {
    "id": "mirror_wide",
-   "src": "furn_plain/mirror_wide.png",
+   "src": "furn_plain/mirror_wide.webp",
    "w": 102,
    "h": 148
   }
@@ -1264,145 +1264,145 @@
  "furn_cottage": [
   {
    "id": "cabinet_f",
-   "src": "furn_cottage/cabinet_f.png",
+   "src": "furn_cottage/cabinet_f.webp",
    "w": 163,
    "h": 165
   },
   {
    "id": "cabinet_b",
-   "src": "furn_cottage/cabinet_b.png",
+   "src": "furn_cottage/cabinet_b.webp",
    "w": 162,
    "h": 166
   },
   {
    "id": "chair_f",
-   "src": "furn_cottage/chair_f.png",
+   "src": "furn_cottage/chair_f.webp",
    "w": 114,
    "h": 179
   },
   {
    "id": "chair_b",
-   "src": "furn_cottage/chair_b.png",
+   "src": "furn_cottage/chair_b.webp",
    "w": 113,
    "h": 154
   },
   {
    "id": "drawers_f",
-   "src": "furn_cottage/drawers_f.png",
+   "src": "furn_cottage/drawers_f.webp",
    "w": 140,
    "h": 158
   },
   {
    "id": "drawers_b",
-   "src": "furn_cottage/drawers_b.png",
+   "src": "furn_cottage/drawers_b.webp",
    "w": 140,
    "h": 158
   },
   {
    "id": "armchair_f",
-   "src": "furn_cottage/armchair_f.png",
+   "src": "furn_cottage/armchair_f.webp",
    "w": 163,
    "h": 167
   },
   {
    "id": "armchair_b",
-   "src": "furn_cottage/armchair_b.png",
+   "src": "furn_cottage/armchair_b.webp",
    "w": 165,
    "h": 143
   },
   {
    "id": "shelf_f",
-   "src": "furn_cottage/shelf_f.png",
+   "src": "furn_cottage/shelf_f.webp",
    "w": 148,
    "h": 190
   },
   {
    "id": "shelf_b",
-   "src": "furn_cottage/shelf_b.png",
+   "src": "furn_cottage/shelf_b.webp",
    "w": 148,
    "h": 190
   },
   {
    "id": "lamp_f",
-   "src": "furn_cottage/lamp_f.png",
+   "src": "furn_cottage/lamp_f.webp",
    "w": 111,
    "h": 148
   },
   {
    "id": "lamp_b",
-   "src": "furn_cottage/lamp_b.png",
+   "src": "furn_cottage/lamp_b.webp",
    "w": 108,
    "h": 146
   },
   {
    "id": "rug",
-   "src": "furn_cottage/rug.png",
+   "src": "furn_cottage/rug.webp",
    "w": 219,
    "h": 126
   },
   {
    "id": "rug_rolled",
-   "src": "furn_cottage/rug_rolled.png",
+   "src": "furn_cottage/rug_rolled.webp",
    "w": 222,
    "h": 126
   },
   {
    "id": "ornament",
-   "src": "furn_cottage/ornament.png",
+   "src": "furn_cottage/ornament.webp",
    "w": 85,
    "h": 162
   },
   {
    "id": "ornament_mat",
-   "src": "furn_cottage/ornament_mat.png",
+   "src": "furn_cottage/ornament_mat.webp",
    "w": 192,
    "h": 124
   },
   {
    "id": "game_table_f",
-   "src": "furn_cottage/game_table_f.png",
+   "src": "furn_cottage/game_table_f.webp",
    "w": 157,
    "h": 168
   },
   {
    "id": "game_table_b",
-   "src": "furn_cottage/game_table_b.png",
+   "src": "furn_cottage/game_table_b.webp",
    "w": 157,
    "h": 168
   },
   {
    "id": "books",
-   "src": "furn_cottage/books.png",
+   "src": "furn_cottage/books.webp",
    "w": 129,
    "h": 144
   },
   {
    "id": "books_lean",
-   "src": "furn_cottage/books_lean.png",
+   "src": "furn_cottage/books_lean.webp",
    "w": 131,
    "h": 137
   },
   {
    "id": "round_table_f",
-   "src": "furn_cottage/round_table_f.png",
+   "src": "furn_cottage/round_table_f.webp",
    "w": 125,
    "h": 140
   },
   {
    "id": "round_table_b",
-   "src": "furn_cottage/round_table_b.png",
+   "src": "furn_cottage/round_table_b.webp",
    "w": 176,
    "h": 149
   },
   {
    "id": "mirror",
-   "src": "furn_cottage/mirror.png",
+   "src": "furn_cottage/mirror.webp",
    "w": 100,
    "h": 139
   },
   {
    "id": "mirror_wide",
-   "src": "furn_cottage/mirror_wide.png",
+   "src": "furn_cottage/mirror_wide.webp",
    "w": 102,
    "h": 148
   }
@@ -1410,145 +1410,145 @@
  "furn_antique": [
   {
    "id": "cabinet_f",
-   "src": "furn_antique/cabinet_f.png",
+   "src": "furn_antique/cabinet_f.webp",
    "w": 163,
    "h": 165
   },
   {
    "id": "cabinet_b",
-   "src": "furn_antique/cabinet_b.png",
+   "src": "furn_antique/cabinet_b.webp",
    "w": 163,
    "h": 165
   },
   {
    "id": "chair_f",
-   "src": "furn_antique/chair_f.png",
+   "src": "furn_antique/chair_f.webp",
    "w": 114,
    "h": 175
   },
   {
    "id": "chair_b",
-   "src": "furn_antique/chair_b.png",
+   "src": "furn_antique/chair_b.webp",
    "w": 113,
    "h": 157
   },
   {
    "id": "drawers_f",
-   "src": "furn_antique/drawers_f.png",
+   "src": "furn_antique/drawers_f.webp",
    "w": 146,
    "h": 152
   },
   {
    "id": "drawers_b",
-   "src": "furn_antique/drawers_b.png",
+   "src": "furn_antique/drawers_b.webp",
    "w": 145,
    "h": 152
   },
   {
    "id": "armchair_f",
-   "src": "furn_antique/armchair_f.png",
+   "src": "furn_antique/armchair_f.webp",
    "w": 161,
    "h": 166
   },
   {
    "id": "armchair_b",
-   "src": "furn_antique/armchair_b.png",
+   "src": "furn_antique/armchair_b.webp",
    "w": 163,
    "h": 141
   },
   {
    "id": "shelf_f",
-   "src": "furn_antique/shelf_f.png",
+   "src": "furn_antique/shelf_f.webp",
    "w": 144,
    "h": 190
   },
   {
    "id": "shelf_b",
-   "src": "furn_antique/shelf_b.png",
+   "src": "furn_antique/shelf_b.webp",
    "w": 144,
    "h": 190
   },
   {
    "id": "lamp_f",
-   "src": "furn_antique/lamp_f.png",
+   "src": "furn_antique/lamp_f.webp",
    "w": 105,
    "h": 133
   },
   {
    "id": "lamp_b",
-   "src": "furn_antique/lamp_b.png",
+   "src": "furn_antique/lamp_b.webp",
    "w": 104,
    "h": 129
   },
   {
    "id": "rug",
-   "src": "furn_antique/rug.png",
+   "src": "furn_antique/rug.webp",
    "w": 213,
    "h": 123
   },
   {
    "id": "rug_rolled",
-   "src": "furn_antique/rug_rolled.png",
+   "src": "furn_antique/rug_rolled.webp",
    "w": 211,
    "h": 119
   },
   {
    "id": "ornament",
-   "src": "furn_antique/ornament.png",
+   "src": "furn_antique/ornament.webp",
    "w": 77,
    "h": 142
   },
   {
    "id": "ornament_mat",
-   "src": "furn_antique/ornament_mat.png",
+   "src": "furn_antique/ornament_mat.webp",
    "w": 191,
    "h": 128
   },
   {
    "id": "game_table_f",
-   "src": "furn_antique/game_table_f.png",
+   "src": "furn_antique/game_table_f.webp",
    "w": 157,
    "h": 166
   },
   {
    "id": "game_table_b",
-   "src": "furn_antique/game_table_b.png",
+   "src": "furn_antique/game_table_b.webp",
    "w": 158,
    "h": 166
   },
   {
    "id": "books",
-   "src": "furn_antique/books.png",
+   "src": "furn_antique/books.webp",
    "w": 129,
    "h": 144
   },
   {
    "id": "books_lean",
-   "src": "furn_antique/books_lean.png",
+   "src": "furn_antique/books_lean.webp",
    "w": 131,
    "h": 139
   },
   {
    "id": "round_table_f",
-   "src": "furn_antique/round_table_f.png",
+   "src": "furn_antique/round_table_f.webp",
    "w": 157,
    "h": 139
   },
   {
    "id": "round_table_b",
-   "src": "furn_antique/round_table_b.png",
+   "src": "furn_antique/round_table_b.webp",
    "w": 158,
    "h": 139
   },
   {
    "id": "mirror",
-   "src": "furn_antique/mirror.png",
+   "src": "furn_antique/mirror.webp",
    "w": 100,
    "h": 139
   },
   {
    "id": "mirror_wide",
-   "src": "furn_antique/mirror_wide.png",
+   "src": "furn_antique/mirror_wide.webp",
    "w": 102,
    "h": 148
   }
@@ -1556,77 +1556,77 @@
  "fixt_oak": [
   {
    "id": "window_plain_r",
-   "src": "fixt_oak/window_plain_r.png",
+   "src": "fixt_oak/window_plain_r.webp",
    "w": 164,
    "h": 300,
    "slope": 0.583
   },
   {
    "id": "window_bay_r",
-   "src": "fixt_oak/window_bay_r.png",
+   "src": "fixt_oak/window_bay_r.webp",
    "w": 164,
    "h": 299,
    "slope": 0.583
   },
   {
    "id": "door_closed_l",
-   "src": "fixt_oak/door_closed_l.png",
+   "src": "fixt_oak/door_closed_l.webp",
    "w": 123,
    "h": 304,
    "slope": -0.556
   },
   {
    "id": "door_open_r",
-   "src": "fixt_oak/door_open_r.png",
+   "src": "fixt_oak/door_open_r.webp",
    "w": 120,
    "h": 304,
    "slope": 0.556
   },
   {
    "id": "window_palm_r",
-   "src": "fixt_oak/window_palm_r.png",
+   "src": "fixt_oak/window_palm_r.webp",
    "w": 164,
    "h": 299,
    "slope": 0.581
   },
   {
    "id": "window_open_r",
-   "src": "fixt_oak/window_open_r.png",
+   "src": "fixt_oak/window_open_r.webp",
    "w": 203,
    "h": 304,
    "slope": 0.177
   },
   {
    "id": "door_open_l",
-   "src": "fixt_oak/door_open_l.png",
+   "src": "fixt_oak/door_open_l.webp",
    "w": 123,
    "h": 304,
    "slope": -0.556
   },
   {
    "id": "door_closed_r",
-   "src": "fixt_oak/door_closed_r.png",
+   "src": "fixt_oak/door_closed_r.webp",
    "w": 123,
    "h": 304,
    "slope": 0.552
   },
   {
    "id": "key_rack",
-   "src": "fixt_oak/key_rack.png",
+   "src": "fixt_oak/key_rack.webp",
    "w": 115,
    "h": 129,
    "slope": -0.547
   },
   {
    "id": "pass_counter",
-   "src": "fixt_oak/pass_counter.png",
+   "src": "fixt_oak/pass_counter.webp",
    "w": 299,
    "h": 304,
    "slope": -0.711
   },
   {
    "id": "host_desk",
-   "src": "fixt_oak/host_desk.png",
+   "src": "fixt_oak/host_desk.webp",
    "w": 318,
    "h": 304,
    "slope": -0.404
@@ -1635,77 +1635,77 @@
  "fixt_walnut": [
   {
    "id": "window_plain_r",
-   "src": "fixt_walnut/window_plain_r.png",
+   "src": "fixt_walnut/window_plain_r.webp",
    "w": 164,
    "h": 300,
    "slope": 0.585
   },
   {
    "id": "window_bay_r",
-   "src": "fixt_walnut/window_bay_r.png",
+   "src": "fixt_walnut/window_bay_r.webp",
    "w": 164,
    "h": 300,
    "slope": 0.583
   },
   {
    "id": "door_closed_l",
-   "src": "fixt_walnut/door_closed_l.png",
+   "src": "fixt_walnut/door_closed_l.webp",
    "w": 123,
    "h": 304,
    "slope": -0.554
   },
   {
    "id": "door_open_r",
-   "src": "fixt_walnut/door_open_r.png",
+   "src": "fixt_walnut/door_open_r.webp",
    "w": 121,
    "h": 304,
    "slope": 0.556
   },
   {
    "id": "window_palm_r",
-   "src": "fixt_walnut/window_palm_r.png",
+   "src": "fixt_walnut/window_palm_r.webp",
    "w": 164,
    "h": 300,
    "slope": 0.581
   },
   {
    "id": "window_open_r",
-   "src": "fixt_walnut/window_open_r.png",
+   "src": "fixt_walnut/window_open_r.webp",
    "w": 203,
    "h": 304,
    "slope": 0.176
   },
   {
    "id": "door_open_l",
-   "src": "fixt_walnut/door_open_l.png",
+   "src": "fixt_walnut/door_open_l.webp",
    "w": 122,
    "h": 304,
    "slope": -0.558
   },
   {
    "id": "door_closed_r",
-   "src": "fixt_walnut/door_closed_r.png",
+   "src": "fixt_walnut/door_closed_r.webp",
    "w": 123,
    "h": 304,
    "slope": 0.554
   },
   {
    "id": "key_rack",
-   "src": "fixt_walnut/key_rack.png",
+   "src": "fixt_walnut/key_rack.webp",
    "w": 117,
    "h": 130,
    "slope": -0.545
   },
   {
    "id": "pass_counter",
-   "src": "fixt_walnut/pass_counter.png",
+   "src": "fixt_walnut/pass_counter.webp",
    "w": 299,
    "h": 304,
    "slope": -0.712
   },
   {
    "id": "host_desk",
-   "src": "fixt_walnut/host_desk.png",
+   "src": "fixt_walnut/host_desk.webp",
    "w": 317,
    "h": 304,
    "slope": -0.4
@@ -1714,241 +1714,241 @@
  "plates": [
   {
    "id": "plate_a01",
-   "src": "plates/plate_a01.png",
+   "src": "plates/plate_a01.webp",
    "w": 182,
    "h": 154
   },
   {
    "id": "plate_a02",
-   "src": "plates/plate_a02.png",
+   "src": "plates/plate_a02.webp",
    "w": 183,
    "h": 154
   },
   {
    "id": "plate_a03",
-   "src": "plates/plate_a03.png",
+   "src": "plates/plate_a03.webp",
    "w": 187,
    "h": 154
   },
   {
    "id": "plate_a04",
-   "src": "plates/plate_a04.png",
+   "src": "plates/plate_a04.webp",
    "w": 228,
    "h": 154
   },
   {
    "id": "plate_a05",
-   "src": "plates/plate_a05.png",
+   "src": "plates/plate_a05.webp",
    "w": 194,
    "h": 154
   },
   {
    "id": "plate_a06",
-   "src": "plates/plate_a06.png",
+   "src": "plates/plate_a06.webp",
    "w": 196,
    "h": 154
   },
   {
    "id": "plate_a07",
-   "src": "plates/plate_a07.png",
+   "src": "plates/plate_a07.webp",
    "w": 195,
    "h": 154
   },
   {
    "id": "plate_a08",
-   "src": "plates/plate_a08.png",
+   "src": "plates/plate_a08.webp",
    "w": 203,
    "h": 154
   },
   {
    "id": "plate_a09",
-   "src": "plates/plate_a09.png",
+   "src": "plates/plate_a09.webp",
    "w": 194,
    "h": 154
   },
   {
    "id": "plate_a10",
-   "src": "plates/plate_a10.png",
+   "src": "plates/plate_a10.webp",
    "w": 201,
    "h": 154
   },
   {
    "id": "plate_a11",
-   "src": "plates/plate_a11.png",
+   "src": "plates/plate_a11.webp",
    "w": 204,
    "h": 154
   },
   {
    "id": "plate_a12",
-   "src": "plates/plate_a12.png",
+   "src": "plates/plate_a12.webp",
    "w": 208,
    "h": 154
   },
   {
    "id": "plate_a13",
-   "src": "plates/plate_a13.png",
+   "src": "plates/plate_a13.webp",
    "w": 210,
    "h": 154
   },
   {
    "id": "plate_a14",
-   "src": "plates/plate_a14.png",
+   "src": "plates/plate_a14.webp",
    "w": 205,
    "h": 154
   },
   {
    "id": "plate_a15",
-   "src": "plates/plate_a15.png",
+   "src": "plates/plate_a15.webp",
    "w": 208,
    "h": 154
   },
   {
    "id": "plate_a16",
-   "src": "plates/plate_a16.png",
+   "src": "plates/plate_a16.webp",
    "w": 212,
    "h": 154
   },
   {
    "id": "plate_a17",
-   "src": "plates/plate_a17.png",
+   "src": "plates/plate_a17.webp",
    "w": 214,
    "h": 154
   },
   {
    "id": "plate_a18",
-   "src": "plates/plate_a18.png",
+   "src": "plates/plate_a18.webp",
    "w": 212,
    "h": 154
   },
   {
    "id": "plate_a19",
-   "src": "plates/plate_a19.png",
+   "src": "plates/plate_a19.webp",
    "w": 209,
    "h": 154
   },
   {
    "id": "plate_a20",
-   "src": "plates/plate_a20.png",
+   "src": "plates/plate_a20.webp",
    "w": 200,
    "h": 154
   },
   {
    "id": "plate_b01",
-   "src": "plates/plate_b01.png",
+   "src": "plates/plate_b01.webp",
    "w": 197,
    "h": 154
   },
   {
    "id": "plate_b02",
-   "src": "plates/plate_b02.png",
+   "src": "plates/plate_b02.webp",
    "w": 205,
    "h": 154
   },
   {
    "id": "plate_b03",
-   "src": "plates/plate_b03.png",
+   "src": "plates/plate_b03.webp",
    "w": 208,
    "h": 154
   },
   {
    "id": "plate_b04",
-   "src": "plates/plate_b04.png",
+   "src": "plates/plate_b04.webp",
    "w": 207,
    "h": 154
   },
   {
    "id": "plate_b05",
-   "src": "plates/plate_b05.png",
+   "src": "plates/plate_b05.webp",
    "w": 205,
    "h": 154
   },
   {
    "id": "plate_b06",
-   "src": "plates/plate_b06.png",
+   "src": "plates/plate_b06.webp",
    "w": 232,
    "h": 154
   },
   {
    "id": "plate_b07",
-   "src": "plates/plate_b07.png",
+   "src": "plates/plate_b07.webp",
    "w": 195,
    "h": 154
   },
   {
    "id": "plate_b08",
-   "src": "plates/plate_b08.png",
+   "src": "plates/plate_b08.webp",
    "w": 239,
    "h": 154
   },
   {
    "id": "plate_b09",
-   "src": "plates/plate_b09.png",
+   "src": "plates/plate_b09.webp",
    "w": 191,
    "h": 154
   },
   {
    "id": "plate_b10",
-   "src": "plates/plate_b10.png",
+   "src": "plates/plate_b10.webp",
    "w": 224,
    "h": 154
   },
   {
    "id": "plate_b11",
-   "src": "plates/plate_b11.png",
+   "src": "plates/plate_b11.webp",
    "w": 223,
    "h": 154
   },
   {
    "id": "plate_b12",
-   "src": "plates/plate_b12.png",
+   "src": "plates/plate_b12.webp",
    "w": 220,
    "h": 154
   },
   {
    "id": "plate_b13",
-   "src": "plates/plate_b13.png",
+   "src": "plates/plate_b13.webp",
    "w": 229,
    "h": 154
   },
   {
    "id": "plate_b14",
-   "src": "plates/plate_b14.png",
+   "src": "plates/plate_b14.webp",
    "w": 230,
    "h": 154
   },
   {
    "id": "plate_b15",
-   "src": "plates/plate_b15.png",
+   "src": "plates/plate_b15.webp",
    "w": 214,
    "h": 154
   },
   {
    "id": "plate_b16",
-   "src": "plates/plate_b16.png",
+   "src": "plates/plate_b16.webp",
    "w": 218,
    "h": 154
   },
   {
    "id": "plate_b17",
-   "src": "plates/plate_b17.png",
+   "src": "plates/plate_b17.webp",
    "w": 225,
    "h": 154
   },
   {
    "id": "plate_b18",
-   "src": "plates/plate_b18.png",
+   "src": "plates/plate_b18.webp",
    "w": 231,
    "h": 154
   },
   {
    "id": "plate_b19",
-   "src": "plates/plate_b19.png",
+   "src": "plates/plate_b19.webp",
    "w": 217,
    "h": 154
   },
   {
    "id": "plate_b20",
-   "src": "plates/plate_b20.png",
+   "src": "plates/plate_b20.webp",
    "w": 201,
    "h": 154
   }
@@ -1956,55 +1956,55 @@
  "ui": [
   {
    "id": "diary",
-   "src": "ui/diary.png",
+   "src": "ui/diary.webp",
    "w": 95,
    "h": 100
   },
   {
    "id": "book",
-   "src": "ui/book.png",
+   "src": "ui/book.webp",
    "w": 114,
    "h": 100
   },
   {
    "id": "market",
-   "src": "ui/market.png",
+   "src": "ui/market.webp",
    "w": 85,
    "h": 100
   },
   {
    "id": "crew",
-   "src": "ui/crew.png",
+   "src": "ui/crew.webp",
    "w": 98,
    "h": 100
   },
   {
    "id": "tools",
-   "src": "ui/tools.png",
+   "src": "ui/tools.webp",
    "w": 104,
    "h": 100
   },
   {
    "id": "help",
-   "src": "ui/help.png",
+   "src": "ui/help.webp",
    "w": 94,
    "h": 100
   },
   {
    "id": "refresh",
-   "src": "ui/refresh.png",
+   "src": "ui/refresh.webp",
    "w": 97,
    "h": 100
   },
   {
    "id": "list",
-   "src": "ui/list.png",
+   "src": "ui/list.webp",
    "w": 98,
    "h": 100
   },
   {
    "id": "recipes",
-   "src": "ui/recipes.png",
+   "src": "ui/recipes.webp",
    "w": 119,
    "h": 100
   }
@@ -2012,121 +2012,121 @@
  "cards": [
   {
    "id": "card_shrimp",
-   "src": "cards/card_shrimp.png",
+   "src": "cards/card_shrimp.webp",
    "w": 229,
    "h": 245
   },
   {
    "id": "card_crab",
-   "src": "cards/card_crab.png",
+   "src": "cards/card_crab.webp",
    "w": 246,
    "h": 250
   },
   {
    "id": "card_grilled_fish",
-   "src": "cards/card_grilled_fish.png",
+   "src": "cards/card_grilled_fish.webp",
    "w": 234,
    "h": 260
   },
   {
    "id": "card_sashimi",
-   "src": "cards/card_sashimi.png",
+   "src": "cards/card_sashimi.webp",
    "w": 244,
    "h": 244
   },
   {
    "id": "card_ramen",
-   "src": "cards/card_ramen.png",
+   "src": "cards/card_ramen.webp",
    "w": 290,
    "h": 237
   },
   {
    "id": "card_oyster",
-   "src": "cards/card_oyster.png",
+   "src": "cards/card_oyster.webp",
    "w": 240,
    "h": 240
   },
   {
    "id": "card_feast",
-   "src": "cards/card_feast.png",
+   "src": "cards/card_feast.webp",
    "w": 269,
    "h": 234
   },
   {
    "id": "card_stein",
-   "src": "cards/card_stein.png",
+   "src": "cards/card_stein.webp",
    "w": 235,
    "h": 237
   },
   {
    "id": "card_hotpot",
-   "src": "cards/card_hotpot.png",
+   "src": "cards/card_hotpot.webp",
    "w": 250,
    "h": 244
   },
   {
    "id": "card_cloche",
-   "src": "cards/card_cloche.png",
+   "src": "cards/card_cloche.webp",
    "w": 292,
    "h": 243
   },
   {
    "id": "card_stars",
-   "src": "cards/card_stars.png",
+   "src": "cards/card_stars.webp",
    "w": 247,
    "h": 201
   },
   {
    "id": "card_stamps",
-   "src": "cards/card_stamps.png",
+   "src": "cards/card_stamps.webp",
    "w": 247,
    "h": 200
   },
   {
    "id": "card_discount",
-   "src": "cards/card_discount.png",
+   "src": "cards/card_discount.webp",
    "w": 261,
    "h": 187
   },
   {
    "id": "card_cake",
-   "src": "cards/card_cake.png",
+   "src": "cards/card_cake.webp",
    "w": 252,
    "h": 203
   },
   {
    "id": "card_dolphin",
-   "src": "cards/card_dolphin.png",
+   "src": "cards/card_dolphin.webp",
    "w": 301,
    "h": 204
   },
   {
    "id": "card_royal",
-   "src": "cards/card_royal.png",
+   "src": "cards/card_royal.webp",
    "w": 245,
    "h": 232
   },
   {
    "id": "card_reef",
-   "src": "cards/card_reef.png",
+   "src": "cards/card_reef.webp",
    "w": 249,
    "h": 227
   },
   {
    "id": "card_squid",
-   "src": "cards/card_squid.png",
+   "src": "cards/card_squid.webp",
    "w": 251,
    "h": 232
   },
   {
    "id": "card_whale",
-   "src": "cards/card_whale.png",
+   "src": "cards/card_whale.webp",
    "w": 253,
    "h": 229
   },
   {
    "id": "card_platter",
-   "src": "cards/card_platter.png",
+   "src": "cards/card_platter.webp",
    "w": 302,
    "h": 233
   }
@@ -2134,481 +2134,481 @@
  "deco": [
   {
    "id": "seahorse_f",
-   "src": "deco/seahorse_f.png",
+   "src": "deco/seahorse_f.webp",
    "w": 97,
    "h": 153
   },
   {
    "id": "seahorse_b",
-   "src": "deco/seahorse_b.png",
+   "src": "deco/seahorse_b.webp",
    "w": 77,
    "h": 154
   },
   {
    "id": "crab_f",
-   "src": "deco/crab_f.png",
+   "src": "deco/crab_f.webp",
    "w": 150,
    "h": 153
   },
   {
    "id": "crab_b",
-   "src": "deco/crab_b.png",
+   "src": "deco/crab_b.webp",
    "w": 146,
    "h": 144
   },
   {
    "id": "jelly_dome_f",
-   "src": "deco/jelly_dome_f.png",
+   "src": "deco/jelly_dome_f.webp",
    "w": 105,
    "h": 146
   },
   {
    "id": "jelly_dome_b",
-   "src": "deco/jelly_dome_b.png",
+   "src": "deco/jelly_dome_b.webp",
    "w": 105,
    "h": 136
   },
   {
    "id": "turtle_f",
-   "src": "deco/turtle_f.png",
+   "src": "deco/turtle_f.webp",
    "w": 151,
    "h": 136
   },
   {
    "id": "turtle_b",
-   "src": "deco/turtle_b.png",
+   "src": "deco/turtle_b.webp",
    "w": 139,
    "h": 129
   },
   {
    "id": "lighthouse_f",
-   "src": "deco/lighthouse_f.png",
+   "src": "deco/lighthouse_f.webp",
    "w": 97,
    "h": 153
   },
   {
    "id": "lighthouse_b",
-   "src": "deco/lighthouse_b.png",
+   "src": "deco/lighthouse_b.webp",
    "w": 95,
    "h": 153
   },
   {
    "id": "model_boat_f",
-   "src": "deco/model_boat_f.png",
+   "src": "deco/model_boat_f.webp",
    "w": 125,
    "h": 154
   },
   {
    "id": "model_boat_b",
-   "src": "deco/model_boat_b.png",
+   "src": "deco/model_boat_b.webp",
    "w": 115,
    "h": 154
   },
   {
    "id": "bottle_ship_f",
-   "src": "deco/bottle_ship_f.png",
+   "src": "deco/bottle_ship_f.webp",
    "w": 153,
    "h": 115
   },
   {
    "id": "bottle_ship_b",
-   "src": "deco/bottle_ship_b.png",
+   "src": "deco/bottle_ship_b.webp",
    "w": 157,
    "h": 111
   },
   {
    "id": "ships_wheel_f",
-   "src": "deco/ships_wheel_f.png",
+   "src": "deco/ships_wheel_f.webp",
    "w": 121,
    "h": 136
   },
   {
    "id": "ships_wheel_b",
-   "src": "deco/ships_wheel_b.png",
+   "src": "deco/ships_wheel_b.webp",
    "w": 112,
    "h": 135
   },
   {
    "id": "reed_vase_f",
-   "src": "deco/reed_vase_f.png",
+   "src": "deco/reed_vase_f.webp",
    "w": 61,
    "h": 151
   },
   {
    "id": "reed_vase_b",
-   "src": "deco/reed_vase_b.png",
+   "src": "deco/reed_vase_b.webp",
    "w": 61,
    "h": 150
   },
   {
    "id": "bonsai_f",
-   "src": "deco/bonsai_f.png",
+   "src": "deco/bonsai_f.webp",
    "w": 138,
    "h": 148
   },
   {
    "id": "bonsai_b",
-   "src": "deco/bonsai_b.png",
+   "src": "deco/bonsai_b.webp",
    "w": 139,
    "h": 147
   },
   {
    "id": "cactus_f",
-   "src": "deco/cactus_f.png",
+   "src": "deco/cactus_f.webp",
    "w": 91,
    "h": 121
   },
   {
    "id": "cactus_b",
-   "src": "deco/cactus_b.png",
+   "src": "deco/cactus_b.webp",
    "w": 92,
    "h": 124
   },
   {
    "id": "hanging_ivy_f",
-   "src": "deco/hanging_ivy_f.png",
+   "src": "deco/hanging_ivy_f.webp",
    "w": 116,
    "h": 143
   },
   {
    "id": "hanging_ivy_b",
-   "src": "deco/hanging_ivy_b.png",
+   "src": "deco/hanging_ivy_b.webp",
    "w": 112,
    "h": 142
   },
   {
    "id": "wave_vase_f",
-   "src": "deco/wave_vase_f.png",
+   "src": "deco/wave_vase_f.webp",
    "w": 76,
    "h": 119
   },
   {
    "id": "wave_vase_b",
-   "src": "deco/wave_vase_b.png",
+   "src": "deco/wave_vase_b.webp",
    "w": 75,
    "h": 118
   },
   {
    "id": "shell_wreath_f",
-   "src": "deco/shell_wreath_f.png",
+   "src": "deco/shell_wreath_f.webp",
    "w": 118,
    "h": 129
   },
   {
    "id": "shell_wreath_b",
-   "src": "deco/shell_wreath_b.png",
+   "src": "deco/shell_wreath_b.webp",
    "w": 115,
    "h": 132
   },
   {
    "id": "lantern_f",
-   "src": "deco/lantern_f.png",
+   "src": "deco/lantern_f.webp",
    "w": 84,
    "h": 129
   },
   {
    "id": "lantern_b",
-   "src": "deco/lantern_b.png",
+   "src": "deco/lantern_b.webp",
    "w": 83,
    "h": 128
   },
   {
    "id": "candles_f",
-   "src": "deco/candles_f.png",
+   "src": "deco/candles_f.webp",
    "w": 128,
    "h": 119
   },
   {
    "id": "candles_b",
-   "src": "deco/candles_b.png",
+   "src": "deco/candles_b.webp",
    "w": 123,
    "h": 106
   },
   {
    "id": "gramophone_f",
-   "src": "deco/gramophone_f.png",
+   "src": "deco/gramophone_f.webp",
    "w": 101,
    "h": 113
   },
   {
    "id": "gramophone_b",
-   "src": "deco/gramophone_b.png",
+   "src": "deco/gramophone_b.webp",
    "w": 86,
    "h": 113
   },
   {
    "id": "telescope_f",
-   "src": "deco/telescope_f.png",
+   "src": "deco/telescope_f.webp",
    "w": 129,
    "h": 122
   },
   {
    "id": "telescope_b",
-   "src": "deco/telescope_b.png",
+   "src": "deco/telescope_b.webp",
    "w": 108,
    "h": 115
   },
   {
    "id": "seascape_f",
-   "src": "deco/seascape_f.png",
+   "src": "deco/seascape_f.webp",
    "w": 114,
    "h": 103
   },
   {
    "id": "seascape_b",
-   "src": "deco/seascape_b.png",
+   "src": "deco/seascape_b.webp",
    "w": 107,
    "h": 98
   },
   {
    "id": "vanity_mirror_f",
-   "src": "deco/vanity_mirror_f.png",
+   "src": "deco/vanity_mirror_f.webp",
    "w": 102,
    "h": 104
   },
   {
    "id": "vanity_mirror_b",
-   "src": "deco/vanity_mirror_b.png",
+   "src": "deco/vanity_mirror_b.webp",
    "w": 100,
    "h": 105
   },
   {
    "id": "dolphin_f",
-   "src": "deco/dolphin_f.png",
+   "src": "deco/dolphin_f.webp",
    "w": 98,
    "h": 154
   },
   {
    "id": "dolphin_b",
-   "src": "deco/dolphin_b.png",
+   "src": "deco/dolphin_b.webp",
    "w": 98,
    "h": 154
   },
   {
    "id": "whale_f",
-   "src": "deco/whale_f.png",
+   "src": "deco/whale_f.webp",
    "w": 133,
    "h": 154
   },
   {
    "id": "whale_b",
-   "src": "deco/whale_b.png",
+   "src": "deco/whale_b.webp",
    "w": 129,
    "h": 154
   },
   {
    "id": "seal_f",
-   "src": "deco/seal_f.png",
+   "src": "deco/seal_f.webp",
    "w": 111,
    "h": 154
   },
   {
    "id": "seal_b",
-   "src": "deco/seal_b.png",
+   "src": "deco/seal_b.webp",
    "w": 109,
    "h": 154
   },
   {
    "id": "walrus_f",
-   "src": "deco/walrus_f.png",
+   "src": "deco/walrus_f.webp",
    "w": 124,
    "h": 154
   },
   {
    "id": "walrus_b",
-   "src": "deco/walrus_b.png",
+   "src": "deco/walrus_b.webp",
    "w": 120,
    "h": 154
   },
   {
    "id": "coral_bowl_f",
-   "src": "deco/coral_bowl_f.png",
+   "src": "deco/coral_bowl_f.webp",
    "w": 110,
    "h": 149
   },
   {
    "id": "coral_bowl_b",
-   "src": "deco/coral_bowl_b.png",
+   "src": "deco/coral_bowl_b.webp",
    "w": 106,
    "h": 148
   },
   {
    "id": "coral_fan_f",
-   "src": "deco/coral_fan_f.png",
+   "src": "deco/coral_fan_f.webp",
    "w": 125,
    "h": 154
   },
   {
    "id": "coral_fan_b",
-   "src": "deco/coral_fan_b.png",
+   "src": "deco/coral_fan_b.webp",
    "w": 124,
    "h": 154
   },
   {
    "id": "snake_plant_f",
-   "src": "deco/snake_plant_f.png",
+   "src": "deco/snake_plant_f.webp",
    "w": 86,
    "h": 154
   },
   {
    "id": "snake_plant_b",
-   "src": "deco/snake_plant_b.png",
+   "src": "deco/snake_plant_b.webp",
    "w": 86,
    "h": 154
   },
   {
    "id": "monstera_f",
-   "src": "deco/monstera_f.png",
+   "src": "deco/monstera_f.webp",
    "w": 124,
    "h": 154
   },
   {
    "id": "monstera_b",
-   "src": "deco/monstera_b.png",
+   "src": "deco/monstera_b.webp",
    "w": 122,
    "h": 154
   },
   {
    "id": "palm_f",
-   "src": "deco/palm_f.png",
+   "src": "deco/palm_f.webp",
    "w": 98,
    "h": 141
   },
   {
    "id": "palm_b",
-   "src": "deco/palm_b.png",
+   "src": "deco/palm_b.webp",
    "w": 100,
    "h": 141
   },
   {
    "id": "blossom_f",
-   "src": "deco/blossom_f.png",
+   "src": "deco/blossom_f.webp",
    "w": 106,
    "h": 140
   },
   {
    "id": "blossom_b",
-   "src": "deco/blossom_b.png",
+   "src": "deco/blossom_b.webp",
    "w": 102,
    "h": 137
   },
   {
    "id": "pearl_shell_f",
-   "src": "deco/pearl_shell_f.png",
+   "src": "deco/pearl_shell_f.webp",
    "w": 117,
    "h": 120
   },
   {
    "id": "pearl_shell_b",
-   "src": "deco/pearl_shell_b.png",
+   "src": "deco/pearl_shell_b.webp",
    "w": 113,
    "h": 114
   },
   {
    "id": "shell_basin_f",
-   "src": "deco/shell_basin_f.png",
+   "src": "deco/shell_basin_f.webp",
    "w": 108,
    "h": 120
   },
   {
    "id": "shell_basin_b",
-   "src": "deco/shell_basin_b.png",
+   "src": "deco/shell_basin_b.webp",
    "w": 115,
    "h": 120
   },
   {
    "id": "chest_f",
-   "src": "deco/chest_f.png",
+   "src": "deco/chest_f.webp",
    "w": 129,
    "h": 121
   },
   {
    "id": "chest_b",
-   "src": "deco/chest_b.png",
+   "src": "deco/chest_b.webp",
    "w": 130,
    "h": 121
   },
   {
    "id": "fish_bowl_f",
-   "src": "deco/fish_bowl_f.png",
+   "src": "deco/fish_bowl_f.webp",
    "w": 130,
    "h": 120
   },
   {
    "id": "fish_bowl_b",
-   "src": "deco/fish_bowl_b.png",
+   "src": "deco/fish_bowl_b.webp",
    "w": 130,
    "h": 120
   },
   {
    "id": "globe_f",
-   "src": "deco/globe_f.png",
+   "src": "deco/globe_f.webp",
    "w": 98,
    "h": 129
   },
   {
    "id": "globe_b",
-   "src": "deco/globe_b.png",
+   "src": "deco/globe_b.webp",
    "w": 96,
    "h": 126
   },
   {
    "id": "mantel_clock_f",
-   "src": "deco/mantel_clock_f.png",
+   "src": "deco/mantel_clock_f.webp",
    "w": 98,
    "h": 122
   },
   {
    "id": "mantel_clock_b",
-   "src": "deco/mantel_clock_b.png",
+   "src": "deco/mantel_clock_b.webp",
    "w": 97,
    "h": 123
   },
   {
    "id": "bulb_lamp_f",
-   "src": "deco/bulb_lamp_f.png",
+   "src": "deco/bulb_lamp_f.webp",
    "w": 73,
    "h": 109
   },
   {
    "id": "bulb_lamp_b",
-   "src": "deco/bulb_lamp_b.png",
+   "src": "deco/bulb_lamp_b.webp",
    "w": 73,
    "h": 109
   },
   {
    "id": "anchor_f",
-   "src": "deco/anchor_f.png",
+   "src": "deco/anchor_f.webp",
    "w": 98,
    "h": 114
   },
   {
    "id": "anchor_b",
-   "src": "deco/anchor_b.png",
+   "src": "deco/anchor_b.webp",
    "w": 95,
    "h": 113
   },
   {
    "id": "cushions_f",
-   "src": "deco/cushions_f.png",
+   "src": "deco/cushions_f.webp",
    "w": 134,
    "h": 108
   },
   {
    "id": "cushions_b",
-   "src": "deco/cushions_b.png",
+   "src": "deco/cushions_b.webp",
    "w": 131,
    "h": 108
   },
   {
    "id": "stone_fish_f",
-   "src": "deco/stone_fish_f.png",
+   "src": "deco/stone_fish_f.webp",
    "w": 151,
    "h": 92
   },
   {
    "id": "stone_fish_b",
-   "src": "deco/stone_fish_b.png",
+   "src": "deco/stone_fish_b.webp",
    "w": 151,
    "h": 93
   }

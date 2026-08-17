@@ -51,6 +51,9 @@ export class Assets {
   constructor(atlas, sprites) {
     this.atlas = atlas;
     this.groups = sprites;
+    /** Resolves when the second wave has landed. See loadAssets. */
+    this.rest = Promise.resolve();
+    this.complete = false;
   }
   /** Sprite by group + id, or null. */
   get(group, id) { return this.groups[group]?.get(id) ?? null; }
@@ -66,44 +69,81 @@ export class Assets {
   frameCount(group, id) { return this.get(group, id)?.count ?? 1; }
 }
 
+/**
+ * What has to be here before the doors can open, and what can follow.
+ *
+ * The loading screen used to wait for all of it — four hundred sprites,
+ * including forty serving plates you cannot forge for an hour and twenty menu
+ * cards you have not unlocked. Nothing about that is needed to look at your own
+ * dining room, so the first wave is the room: its joinery, its furniture, the
+ * people in it, and the food. Everything else arrives quietly behind the title
+ * screen while you read it.
+ *
+ * A sprite that has not landed yet resolves to null, and every draw path in the
+ * game already skips a null sprite rather than throwing — which is what makes
+ * this safe rather than a race.
+ */
+const FIRST = [
+  'ui', 'fixt_oak', 'fixt_walnut',
+  'furn_plain', 'furn_cottage', 'furn_antique',
+  'staff', 'customers', 'food', 'ingredients',
+];
+
 export async function loadAssets(onProgress = () => {}) {
   const res = await fetch(`${BASE}atlas.json`, { cache: 'no-cache' });
   if (!res.ok) throw new Error(`atlas.json: HTTP ${res.status}`);
   const atlas = await res.json();
 
-  const jobs = [];
-  for (const [group, entries] of Object.entries(atlas)) {
-    for (const entry of entries) jobs.push({ group, entry });
-  }
-
-  let done = 0;
   const groups = {};
   const missing = [];
   const CONCURRENCY = 12;
-  let cursor = 0;
 
-  async function worker() {
-    while (cursor < jobs.length) {
-      const { group, entry } = jobs[cursor++];
-      const img = await loadImage(BASE + entry.src);
-      if (img) (groups[group] ??= new Map()).set(entry.id, new Sprite(entry, img));
-      else missing.push(entry.src);
-      onProgress(++done / jobs.length, entry.id);
-    }
+  /** Pull one list of sprites, `concurrency` at a time. */
+  async function pull(jobs, report) {
+    let cursor = 0;
+    let done = 0;
+    const worker = async () => {
+      while (cursor < jobs.length) {
+        const { group, entry } = jobs[cursor++];
+        const img = await loadImage(BASE + entry.src);
+        if (img) (groups[group] ??= new Map()).set(entry.id, new Sprite(entry, img));
+        else missing.push(entry.src);
+        report?.(++done / jobs.length, entry.id);
+      }
+    };
+    await Promise.all(Array.from({ length: CONCURRENCY }, worker));
   }
-  await Promise.all(Array.from({ length: CONCURRENCY }, worker));
+
+  /** Put a group back in atlas order rather than load-completion order. */
+  const tidy = (group) => {
+    const map = groups[group];
+    if (!map) return;
+    groups[group] = new Map(
+      atlas[group].map((e) => [e.id, map.get(e.id)]).filter(([, v]) => v));
+  };
+
+  const jobsIn = (names) => names.flatMap(
+    (group) => (atlas[group] ?? []).map((entry) => ({ group, entry })));
+
+  const first = FIRST.filter((g) => atlas[g]);
+  const later = Object.keys(atlas).filter((g) => !first.includes(g));
+
+  const wave1 = jobsIn(first);
+  await pull(wave1, onProgress);
+  for (const g of first) tidy(g);
 
   // every sprite failing means the art never arrived at all, which is worth
   // saying out loud rather than opening an empty restaurant
-  if (missing.length === jobs.length) throw new Error('no art could be loaded');
-  if (missing.length) console.warn(`${missing.length} sprites missing:`, missing.slice(0, 8));
+  if (wave1.length && missing.length === wave1.length) throw new Error('no art could be loaded');
 
-  // keep atlas ordering rather than load-completion ordering
-  for (const [group, entries] of Object.entries(atlas)) {
-    const map = groups[group];
-    if (!map) continue;
-    groups[group] = new Map(entries.map((e) => [e.id, map.get(e.id)]).filter(([, v]) => v));
-  }
-
-  return new Assets(atlas, groups);
+  const assets = new Assets(atlas, groups);
+  // Not awaited: this is the whole point. `assets.rest` is there for anything
+  // that genuinely needs to wait — the test harness does — and is never awaited
+  // on the way to the title screen.
+  assets.rest = pull(jobsIn(later)).then(() => {
+    for (const g of later) tidy(g);
+    assets.complete = true;
+    if (missing.length) console.warn(`${missing.length} sprites missing:`, missing.slice(0, 8));
+  });
+  return assets;
 }

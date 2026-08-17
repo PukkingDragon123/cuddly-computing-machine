@@ -77,8 +77,12 @@ function bootGame() {
   };
   const gone = (e, ms) => setTimeout(() => e.remove(), ms);
   const pick = (a) => a[(Math.random() * a.length) | 0];
+  /* The loading screen runs before the atlas is read, so it names its art by
+     hand — which means it is the one place that can fall out of step with what
+     the pack is actually encoded as. One helper, one extension. */
+  const art = (group, id) => `url("assets/${group}/${id}.webp")`;
 
-  chef.style.backgroundImage = 'url("assets/staff/04_octopus_head_chef.png")';
+  chef.style.backgroundImage = art('staff', '04_octopus_head_chef');
 
   let served = 0;
   let cooked = 0;            // 0..1 through the dish on the go
@@ -106,7 +110,7 @@ function bootGame() {
   const feed = () => {
     if (beat !== 'cook') return;
     const d = el('boot-drop', {
-      backgroundImage: `url("assets/ingredients/${pick(BOOT_ING)}.png")`,
+      backgroundImage: art('ingredients', pick(BOOT_ING)),
     });
     d.style.setProperty('--off', `${-0.9 + Math.random() * 1.8}rem`);
     d.style.setProperty('--spin', `${-40 + Math.random() * 80}deg`);
@@ -148,7 +152,7 @@ function bootGame() {
   const startCook = () => {
     recipe = pick(BOOT_DISH);
     cooked = 0;
-    food.style.backgroundImage = `url("assets/food/${recipe}.png")`;
+    food.style.backgroundImage = art('food', recipe);
     ring.style.setProperty('--at', '0');
     setBeat('cook');
   };
@@ -156,12 +160,12 @@ function bootGame() {
   /** Somebody walks in for it. */
   const startArrive = () => {
     const [id, fw] = pick(BOOT_GUEST);
-    guest.style.backgroundImage = `url("assets/customers/${id}.png")`;
+    guest.style.backgroundImage = art('customers', id);
     guest.style.setProperty('--w', `${(fw / 176) * 7.8}rem`);
     setBeat('arrive');
     setTimeout(() => {
       if (stopped) return;
-      bubble.style.backgroundImage = `url("assets/food/${recipe}.png")`;
+      bubble.style.backgroundImage = art('food', recipe);
       bubble.classList.add('up');
     }, 900);
     setTimeout(() => { if (!stopped) startServe(); }, 1500);

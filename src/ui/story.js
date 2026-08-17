@@ -152,11 +152,48 @@ export class Story {
     this.s.story.seen.push(beat.id);
     this.game.hud.closeSheet();
     this.#lookAt(beat.at);
+    // The last beat's fade-out is still counting down to hide this element. If
+    // it lands now it hides the scene we are opening, and since `playing` stays
+    // true nothing else ever fires and there is nothing left on screen to tap:
+    // a dead game. Two beats a third of a second apart is all it took.
+    clearTimeout(this.hideT);
+    this.hideT = null;
     show(this.el.scene, true);
     this.el.scene.classList.remove('out');
     document.getElementById('hud').classList.add('scening');
     this.#show();
     this.game.sfx.play('select');
+  }
+
+  /**
+   * Put the cutscene away, whatever state it is in.
+   *
+   * Every path out of a scene comes through here — the last line, a skip, the
+   * watchdog — so there is exactly one place that can leave the screen wrong,
+   * and it always leaves it right.
+   */
+  #close() {
+    this.playing = false;
+    this.#sayItAll();
+    document.getElementById('hud').classList.remove('scening');
+    this.el.scene.classList.add('out');
+    clearTimeout(this.hideT);
+    this.hideT = setTimeout(() => {
+      this.hideT = null;
+      show(this.el.scene, false);
+      this.el.scene.classList.remove('out');
+    }, 260);
+    this.#restoreCam();
+    this.s.save();
+  }
+
+  /** Cut it short — the settings button, and the harness. */
+  skip() {
+    if (!this.playing) return;
+    this.#close();
+    const then = this.then;
+    this.then = null;
+    then?.();
   }
 
   /**
@@ -204,14 +241,8 @@ export class Story {
     if (this.typer) { this.#sayItAll(); this.game.sfx.play('tap'); return; }
     this.line += 1;
     if (this.line < this.beat.lines.length) { this.#show(); this.game.sfx.play('tap'); return; }
-    this.playing = false;
-    this.#sayItAll();
-    document.getElementById('hud').classList.remove('scening');
-    this.el.scene.classList.add('out');
-    setTimeout(() => show(this.el.scene, false), 260);
+    this.#close();
     this.game.sfx.play('pop');
-    this.#restoreCam();
-    this.s.save();
     const then = this.then;
     this.then = null;
     if (then) setTimeout(then, 320);
@@ -294,9 +325,14 @@ export class Story {
     const r = g.restaurant;
     const tile = (t) => (t ? toScreen(t.c, t.r) : null);
     let p = null;
-    if (what === 'pass') p = tile(r.furniture?.find((f) => f.item?.kind === 'pass'));
+    // `passes` and `seats` are the room's own indexes, rebuilt whenever the
+    // furniture moves. An earlier version read `r.furniture`, which is not a
+    // thing the room has, so every shot quietly fell back to the middle of the
+    // floor and the camera never actually looked at anything.
+    if (what === 'pass') p = tile(r.passes?.[0]);
     if (what === 'door') p = r.entryWorld ?? null;
     if (what === 'seats') p = tile(r.seats?.find((x) => x.table) ?? r.seats?.[0]);
+    if (what === 'works') p = tile(g.factory?.grid?.values?.().next?.().value);
     const b = z.bounds();
     const to = p ?? { x: b.x + b.w / 2, y: b.y + b.h / 2 };
     z.cam.zoom = Math.min(1.5, this.camWas.zoom * 1.35);
@@ -454,10 +490,38 @@ export class Story {
 
   #aimOff() { this.game.hud.point?.hide(); }
 
+  /* -------------------------------------------------------------- watchdog */
+
+  /**
+   * Never let a cutscene trap anybody.
+   *
+   * A scene claims the whole screen and only a tap on it lets go, so if it is
+   * ever marked playing while the element that takes the tap is not on screen,
+   * the player is looking at a dark room with no way out and no way forward —
+   * which is exactly what the stale fade-out timer used to cause. That specific
+   * bug is fixed above; this is here so the next one like it lasts half a
+   * second rather than ending the session.
+   *
+   * It also catches the honest cases: a line that somehow never landed, or a
+   * scene left up while the tab was in the background for a minute.
+   */
+  #watchdog(dt) {
+    if (!this.playing) { this.stuck = 0; return; }
+    const gone = this.el.scene.classList.contains('hidden')
+      || this.el.scene.classList.contains('out');
+    if (!gone) { this.stuck = 0; return; }
+    this.stuck = (this.stuck ?? 0) + dt;
+    if (this.stuck < 0.5) return;
+    this.stuck = 0;
+    console.warn('story: scene was playing with nothing on screen — closing it');
+    this.skip();
+  }
+
   /* ---------------------------------------------------------------- update */
 
   update(dt) {
     if (this.game.attract) { this.#aimOff(); return; }
+    this.#watchdog(dt);
     // The finger tracks every frame. Everything else in here is throttled to
     // three ticks a second, which is plenty for a progress bar and nowhere near
     // enough for a pointer sitting on a guest walking across the room.
