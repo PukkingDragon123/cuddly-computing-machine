@@ -60,11 +60,11 @@ export function toNextRank(fame) {
 /** What the chef makes of each promotion. He is warming up, slowly. */
 export const RANK_LINES = [
   null,
-  "A stall. People know where we are.",
-  "Café. There's a word for us now.",
-  "Bistro. Tablecloths next, I suppose.",
-  "Supper room. They book ahead.",
-  "We're somebody's favourite. Don't ruin it.",
-  "A landmark. They put us on the map. The actual map.",
-  "Legend. Now cook me something.",
+  "A stall of our own! People know where to find us now.",
+  "A café. We have a proper name over the door.",
+  "A bistro! Tablecloths and everything.",
+  "A supper room. People book a table days ahead.",
+  "We are somebody's favourite place. That is the nicest one.",
+  "A landmark! We are on the actual map.",
+  "A legend. Right — come on, cook me something.",
 ];

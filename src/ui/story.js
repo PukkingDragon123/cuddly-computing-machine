@@ -17,48 +17,58 @@ import { KEYS, QUESTS, SIDE_BY_ID, SPOTS } from '../data/quests.js';
  * Scripted moments. `at` names what the camera should look at; `when` is
  * checked once a second and fires the beat the first time it is true.
  *
- * Lines are short on purpose. Nobody reads a paragraph from a cartoon octopus.
+ * Tako is the only voice in the game, so he carries all of the teaching. He is
+ * warm about it: he is delighted you turned up, he says one useful thing per
+ * beat, and he says it in words a nine-year-old reading their second language
+ * can take in at a glance. The old draft was drier and funnier and taught
+ * nothing — "front of house is your problem" is a joke about a job, not an
+ * explanation of one.
+ *
+ * Rules for anything written here: short lines, plain words, no idiom, and
+ * every beat leaves you knowing what to do next.
  */
 export const BEATS = [
   { id: 'arrive', at: 'pass', when: () => true, lines: [
-    "Place is yours, then.",
-    "Kitchen's mine. Front of house is your problem.",
+    "Hello! You must be the new owner.",
+    "I am Tako. I do the cooking.",
+    "You look after the guests. Deal?",
   ] },
   { id: 'plated', at: 'pass', when: (g) => g.state.plannedCount > 0, lines: [
-    "Good. Food doesn't cook itself.",
-    "Well. It does. But not until you ask.",
+    "Lovely — now we have something to sell!",
+    "Plating uses up ingredients, so plate what you can sell.",
   ] },
   { id: 'opened', at: 'door', when: (g) => g.state.phase === 'open', lines: [
-    "Doors are open.",
-    "Don't leave anybody standing.",
+    "The doors are open. Here they come!",
+    "Tap a guest who is waiting, and they will sit down.",
   ] },
   { id: 'fed', at: 'seats', when: (g) => g.state.stats.served >= 1, lines: [
-    "One fed.",
-    "They tip on the wait, not the food. Be quick.",
+    "Our first happy guest. Look at that!",
+    "Be quick with people and they tip you more.",
   ] },
   { id: 'closed', at: 'pass', when: (g) => g.state.day >= 2, lines: [
-    "We covered the ice. That's a day.",
-    "Do it again. Better.",
+    "That is a whole day done. Well done, you.",
+    "Tomorrow we do the same thing, a little better.",
   ] },
   { id: 'works', at: 'works', when: (g) => g.zone === g.factory, lines: [
-    "The works. Belts do the fetching.",
-    "You do the thinking. Allegedly.",
+    "Welcome to the works! This room is yours too.",
+    "Machines make ingredients while you are busy out front.",
+    "Belts carry things along. You just point them the right way.",
   ] },
   { id: 'crewed', at: 'seats', when: (g) => g.state.staff.length >= 1, lines: [
-    "Another pair of hands. Eight, in her case.",
-    "Pay them properly and they stay.",
+    "You hired someone! Now there are two of us.",
+    "They help forever, and they never ask for a day off.",
   ] },
   { id: 'kiln', at: 'works', when: (g) => g.state.hasWorks?.('kiln'), lines: [
-    "Clay's cheap. A good plate isn't.",
-    "Same soup, better bowl, twice the money. People are like that.",
+    "The kiln! Clay is cheap. A lovely plate is not.",
+    "The same soup in a nicer bowl earns more. People are funny like that.",
   ] },
   { id: 'busy', at: 'seats', when: (g) => g.state.stats.served >= 25, lines: [
-    "Full house.",
-    "Don't let it go to your head. I've seen the head.",
+    "Look at this. Every single seat full!",
+    "I am very proud of you. Do not tell anybody I said so.",
   ] },
   { id: 'famous', at: 'door', when: (g) => g.state.rating >= 3, lines: [
-    "Harbour's talking about us.",
-    "Keep them talking. I'll keep cooking.",
+    "The whole harbour is talking about us!",
+    "You keep them talking. I will keep cooking.",
   ] },
 ];
 
@@ -291,9 +301,12 @@ export class Story {
     this.asideTyper = null;
     this.el.asideText.textContent = this.asideFull ?? '';
     this.el.aside.classList.remove('talking');
-    // held long enough to read, then it moves itself along
+    // Held long enough to read, then it moves itself along. Long enough is a
+    // function of the line, not a constant: a fixed 2.6s was fine for "One
+    // fed." and gone before you finished the friendlier lines that replaced it.
     clearTimeout(this.asideHold);
-    this.asideHold = setTimeout(() => this.#asideNext(), 2600);
+    const read = Math.min(6000, 1500 + (this.asideFull?.length ?? 0) * 55);
+    this.asideHold = setTimeout(() => this.#asideNext(), read);
   }
 
   #asideNext() {

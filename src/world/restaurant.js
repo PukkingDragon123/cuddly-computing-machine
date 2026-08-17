@@ -1091,7 +1091,11 @@ export class Restaurant {
     if (this.passes.length) {
       const p0 = this.passes[0];
       const ct = this.kitchen.chefTile;
-      if (ct) list.push({ d: depthOf(ct.c, ct.r, 10), fn: () => this.kitchen.drawChef(ctx) });
+      // He is out front doing the talking during a cutscene — and now that the
+      // camera actually looks at the pass, leaving him behind it too would put
+      // two of the same octopus in one shot.
+      const talking = this.game.story?.playing;
+      if (ct && !talking) list.push({ d: depthOf(ct.c, ct.r, 10), fn: () => this.kitchen.drawChef(ctx) });
       list.push({ d: depthOf(p0.c, p0.r, 60), fn: () => this.kitchen.drawPlates(ctx, t) });
     }
 

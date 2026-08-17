@@ -38,30 +38,30 @@ const STEPS = [
   {
     id: 'kitchen',
     lock: true,
-    title: 'The kitchen',
-    text: 'Nothing sells until it is plated. Open the Kitchen.',
+    title: 'Open the Kitchen',
+    text: 'Food has to be plated before anyone can buy it. Tap the Kitchen book.',
     at: () => '#btn-recipes',
     done: (g) => g.hud.sheetOpen === 'recipes',
   },
   {
     id: 'plate',
     lock: true,
-    title: 'Plate a dish',
+    title: 'Plate three lattes',
     // Three, to match the job on the HUD. One was enough to satisfy the step,
     // which meant the guide moved on and fenced the + off while the job was
     // still asking for two more — the two things telling you different stories
     // about the same button.
-    text: 'Tap + beside the latte three times. Plating costs ingredients, so plate what you can sell.',
+    text: 'Tap the + beside the latte three times. Each one uses ingredients, so plate what you can sell.',
     at: () => '#sheet-body .stepper button:last-child',
     done: (g) => g.state.plannedCount >= 3,
   },
   {
     id: 'open',
     lock: true,
-    title: 'Open up',
+    title: 'Open the doors',
     // the doors open from inside the kitchen book, beside the plating you have
     // just done, so the guide stays on the page rather than sending you out
-    text: 'That is the morning done. Open the doors.',
+    text: 'That is the morning done. Let them in!',
     at: () => '#menu-open',
     before: (g) => { if (g.hud.sheetOpen !== 'recipes') g.openRecipes(); },
     done: (g) => g.state.phase === 'open',
@@ -69,10 +69,10 @@ const STEPS = [
   {
     id: 'seat',
     lock: true,
-    title: 'Seat a guest',
+    title: 'Sit somebody down',
     // the doors closing takes the guests with them, so the step goes too
     stale: (g) => g.state.phase !== 'open',
-    text: 'Tap whoever is waiting to sit them down.',
+    text: 'Tap the guest who is waiting and they will find a chair.',
     world: (g) => {
       const q = g.restaurant.guests.find((x) => x.state === 'queue');
       return q ? { x: q.pos.x, y: q.headY } : null;
@@ -82,9 +82,9 @@ const STEPS = [
   {
     id: 'order',
     lock: true,
-    title: 'Ring it in',
+    title: 'Take their order',
     stale: (g) => g.state.phase !== 'open',
-    text: 'Tap the ! bubble to send the ticket to the chef.',
+    text: 'Tap the ! above their head. That sends the order to Tako.',
     world: (g) => {
       const o = g.restaurant.guests.find((x) => x.state === 'order');
       return o ? { x: o.pos.x, y: o.headY - 60 } : null;
@@ -95,9 +95,9 @@ const STEPS = [
   {
     id: 'serve',
     lock: true,
-    title: 'Run the plate',
+    title: 'Bring the food',
     stale: (g) => g.state.phase !== 'open',
-    text: 'Drag it off the pass onto whoever ordered it.',
+    text: 'Drag the plate off the counter and onto the guest who ordered it.',
     world: (g) => {
       const p = g.restaurant.kitchen.plates[0];
       return p ? { x: p.x, y: p.y } : null;
@@ -106,23 +106,23 @@ const STEPS = [
   },
   {
     id: 'board',
-    title: 'The board',
+    title: 'Call people in',
     stale: (g) => g.state.phase !== 'open',
-    text: 'Ten taps calls somebody in. As often as you like — only the food runs out.',
+    text: 'Tap the board ten times and somebody comes in. Do it as often as you like — only the food runs out.',
     at: () => '#btn-flyer',
     done: null,          // read-and-carry-on
   },
   {
     id: 'jobs',
-    title: 'Your jobs',
-    text: 'The chef always has one on the go, top left. It pays.',
+    title: 'Your job list',
+    text: 'There is always one job on the go, up in the corner. Finishing it pays you.',
     at: () => '#quest',
     done: null,
   },
   {
     id: 'done',
-    title: "That's the shift",
-    text: 'Serve, get paid, spend it. Everything else is on the job list.',
+    title: 'That is the whole game!',
+    text: 'Serve people, get paid, spend it on the place. The job list always says what to try next.',
     at: () => '#btn-quests',
     done: null,
   },
@@ -179,7 +179,7 @@ export class Tutor {
     const s = this.game.state;
     s.tutorial = { step: this.i, done: true };
     s.save();
-    if (skipped) this.game.hud.toast('Guide put away — the job list has the rest', '');
+    if (skipped) this.game.hud.toast('Guide put away. The job list has the rest!', '');
   }
 
   #next() {
@@ -188,7 +188,7 @@ export class Tutor {
       this.#pay();
       this.stop();
       this.game.state.earn(TUTOR_BONUS);
-      this.game.celebrate(`You know the job! +${TUTOR_BONUS}`);
+      this.game.celebrate(`You have the hang of it! +${TUTOR_BONUS}`);
       return;
     }
     // Every step pays. A guide that only tells you things is homework; a guide
@@ -197,7 +197,7 @@ export class Tutor {
     const step = STEPS[this.i];
     // the moment the fence comes down for good is worth marking
     if (STEPS[this.i - 1]?.lock && !step.lock) {
-      this.game.hud.toast('The place is yours — have a poke about', 'good');
+      this.game.hud.toast('The place is yours now. Have a look around!', 'good');
     }
     step.before?.(this.game);
     this.el.title.textContent = step.title;
@@ -330,7 +330,7 @@ export class Tutor {
     this.game.sfx.play('coin');
     const cam = this.game.zone.cam;
     this.game.zone.fx.coins(cam.x, cam.y - 20, 6, 60);
-    this.game.hud.toast(`+${STEP_PAY} — nice`, 'good');
+    this.game.hud.toast(`Nicely done! +${STEP_PAY}`, 'good');
   }
 
   /** Screen-space box of whatever this step is pointing at. */

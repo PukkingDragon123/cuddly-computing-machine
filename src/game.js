@@ -143,7 +143,7 @@ export class Game {
     const entries = Object.entries(got);
     if (!entries.length) return;
     const summary = entries.slice(0, 3).map(([id, n]) => `${n}× ${ingName(id)}`).join(', ');
-    this.hud.toast(`While you were away: ${summary}`, 'good');
+    this.hud.toast(`The works kept going while you were away: ${summary}`, 'good');
   }
 
   /* ---------------------------------------------------------------- zones  */
@@ -252,7 +252,7 @@ export class Game {
     const spent = zone.commitPlace?.();
     if (!spent) {
       this.sfx.play('no');
-      this.hud.toast('Not enough sand dollars', 'bad');
+      this.hud.toast('Not enough sand dollars for that', 'bad');
       this.hud.shakePlaceBar();
       return;
     }
@@ -371,19 +371,19 @@ export class Game {
     if (this.state.phase === 'report') return;
 
     const r = this.restaurant;
-    if (!r.hasPass) { this.hud.toast('You need a Kitchen Pass first', 'bad'); this.openBuild(); return; }
-    if (r.seatCount === 0) { this.hud.toast('Put a chair beside a table', 'bad'); this.openBuild(); return; }
-    if (this.state.plannedCount === 0) { this.hud.toast('Plate up a menu first', 'bad'); this.openRecipes(); return; }
+    if (!r.hasPass) { this.hud.toast('Build a Kitchen Pass first — Tako needs somewhere to put the plates', 'bad'); this.openBuild(); return; }
+    if (r.seatCount === 0) { this.hud.toast('Nowhere to sit! Put a chair beside a table', 'bad'); this.openBuild(); return; }
+    if (this.state.plannedCount === 0) { this.hud.toast('Nothing on the menu yet — plate a dish first', 'bad'); this.openRecipes(); return; }
     this.setZone('restaurant');
     this.cancelPlacement();
     this.state.openDoors();
     r.startService();
     this.closing = false;
     this.sfx.play('open');
-    this.hud.titleCard(`Day ${this.state.day}`, 'Doors open');
+    this.hud.titleCard(`Day ${this.state.day}`, 'Doors open!');
     // the hint shares the centre of the screen with the card, so let it land after
     this.tweens.after(2.0, () => {
-      if (this.state.phase === 'open') this.hud.hint('Tap a waiting guest to seat them.', 3.2);
+      if (this.state.phase === 'open') this.hud.hint('Tap a guest who is waiting to sit them down.', 3.2);
     });
     this.hud.sync();
   }
@@ -409,7 +409,7 @@ export class Game {
     this.state.nextDay();
     this.closing = false;
     this.hud.sync();
-    this.hud.titleCard(`Day ${this.state.day}`, 'Off the boats');
+    this.hud.titleCard(`Day ${this.state.day}`, "Today's catch");
     this.sfx.play('ding');
     this.tweens.after(1.1, () => this.panels.openCatch());
   }
@@ -435,7 +435,7 @@ export class Game {
     if (s.phase === 'open') { this.#barkOutside(); return; }
     if (s.phase !== 'prep') return;
     if (s.posters >= s.flyerMax) {
-      this.hud.toast('The satchel is full', '');
+      this.hud.toast('The satchel is full of flyers already', '');
       return;
     }
     const done = s.tapFlyer();
@@ -456,7 +456,7 @@ export class Game {
   #barkOutside() {
     const r = this.restaurant;
     if (this.state.stockCount <= 0) {
-      this.hud.toast('Nothing left to serve them', 'bad');
+      this.hud.toast('Nothing left to serve — plate more tomorrow', 'bad');
       this.sfx.play('no');
       this.hud.sync();
       return;
@@ -467,7 +467,7 @@ export class Game {
     if (!r.summonGuest()) {
       // no seats or no pass — the taps are not wasted, they simply have nowhere
       // to send anyone, so say which
-      this.hud.toast(r.hasPass ? 'Put a chair beside a table first' : 'You need a kitchen pass', 'bad');
+      this.hud.toast(r.hasPass ? 'Put a chair beside a table first' : 'Build a kitchen pass first', 'bad');
       this.sfx.play('no');
       this.hud.sync();
       return;
@@ -482,7 +482,7 @@ export class Game {
     if (!this.#applyRoomSize()) return;
     this.restaurant.cam.bounds = this.restaurant.bounds();
     this.restaurant.framed = false;
-    this.hud.toast('The dining room just got bigger', 'good');
+    this.hud.toast('The dining room just got bigger!', 'good');
   }
 
   #applyRoomSize() {
@@ -591,7 +591,7 @@ export class Game {
   #rankUp(n) {
     if (this.attract) return;
     const name = RANKS[n]?.name ?? 'Fame';
-    this.hud.titleCard(name, 'Fame rank up');
+    this.hud.titleCard(name, 'We moved up!');
     this.sfx.play('level');
     const cam = this.zone.cam;
     this.zone.fx.sparkles(cam.x, cam.y - 20, 26, 140);
