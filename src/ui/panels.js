@@ -236,6 +236,10 @@ export class Panels {
     return h(`div.card.piece${shut ? '.shut' : '.tap'}${!shut && this.state.coins < cost ? '.thin' : ''}${want ? '.want' : ''}`,
       { dataset: { item: item.id },
         ...(shut ? {} : { onclick: () => this.game.startPlacing(item.id, this.buildStyle) }) },
+      // The stock number. Every mail-order page has one and nobody has ever
+      // needed it — it is there because a catalogue without one does not look
+      // like a catalogue. Derived from the id so it never moves.
+      h('span.piece-ref', null, Panels.stockRef(item)),
       h('div.stage', null,
         h('i', { style }),
         stars > 0 && !shut ? h('span.piece-star', null, `${stars}★`) : null,
@@ -245,6 +249,19 @@ export class Panels {
       h('div.piece-price', null, shut
         ? h('i.ico.ico-lock')
         : this.#cost(cost)));
+  }
+
+  /**
+   * A catalogue reference for a piece — "BH-418".
+   *
+   * Hashed off the id, so the same chair is the same number every time you open
+   * the book, and a new piece cannot collide with an old one just by being
+   * added in the middle of the list.
+   */
+  static stockRef(item) {
+    let n = 0;
+    for (let i = 0; i < item.id.length; i++) n = (n * 31 + item.id.charCodeAt(i)) % 900;
+    return `BH-${100 + n}`;
   }
 
   /* ------------------------------------------------------------------ fame  */

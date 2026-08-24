@@ -122,6 +122,20 @@ function migrate(data) {
   // everything the long game keeps track of, defaulted for an older save
   data.diary ??= {};
   delete data.flyer;   // the noticeboard is gone; see data/progress.js
+  // Anyone who bought a flyer upgrade paid research points for it, so the
+  // equivalents carry over rather than quietly vanishing. The satchel node has
+  // no equivalent — there is no satchel — so its points come back instead.
+  const RETIRED = { flyer_1: 'word_1', flyer_2: 'word_2', flyer_auto: 'word_3' };
+  if (Array.isArray(data.researched)) {
+    let refund = 0;
+    const kept = new Set();
+    for (const id of data.researched) {
+      if (id === 'flyer_board') { refund += 12; continue; }
+      kept.add(RETIRED[id] ?? id);
+    }
+    data.researched = [...kept].filter((id) => RESEARCH_BY_ID[id]);
+    data.research = (data.research ?? 0) + refund;
+  }
   data.research ??= 0;
   data.researched ??= [];
   data.bought ??= [];

@@ -5,20 +5,45 @@ import { ellipse, heartPath, starPath, text } from './paint.js';
 
 const GRAV = 900;
 
+/**
+ * How much of what every emitter asks for actually gets made.
+ *
+ * Every one of these was tuned on its own, in isolation, and they looked lovely
+ * one at a time. Together — a plate landing, a coin burst, hearts off a happy
+ * guest, sparkles off the pass, a puff off a chair, all inside a second — the
+ * room disappeared behind its own confetti and you could not see the game you
+ * were playing. Rather than re-argue thirty call sites, the counts are scaled
+ * once, here: the call sites still say how showy each moment is *relative to
+ * the others*, which is the part worth keeping.
+ *
+ * There is a floor of one, because an effect that sometimes emits nothing is
+ * worse than a small one — a plate that lands silently reads as a bug.
+ */
+const THRIFT = 0.5;
+const many = (n) => Math.max(1, Math.round(n * THRIFT));
+
+/** A cap, so a pile-up cannot cost frames either. Oldest go first. */
+const MAX_PARTS = 130;
+
 export class Fx {
   constructor() { this.parts = []; this.shake = 0; }
 
-  #add(p) { this.parts.push(p); return p; }
+  #add(p) {
+    if (this.parts.length >= MAX_PARTS) this.parts.shift();
+    this.parts.push(p);
+    return p;
+  }
 
   clear() { this.parts.length = 0; }
 
-  /** Screen shake in world units, decays fast. */
-  kick(amount = 5) { this.shake = Math.max(this.shake, amount); }
+  /** Screen shake in world units, decays fast. Halved along with the rest —
+   *  the camera lurching at every placed chair was most of the noise. */
+  kick(amount = 5) { this.shake = Math.max(this.shake, amount * 0.55); }
 
   /* ------------------------------------------------------------- emitters */
 
   coins(x, y, count = 6, spread = 60) {
-    for (let i = 0; i < count; i++) {
+    for (let i = 0, k = many(count); i < k; i++) {
       this.#add({
         kind: 'coin', x, y,
         vx: range(-spread, spread), vy: range(-460, -280),
@@ -29,7 +54,7 @@ export class Fx {
   }
 
   hearts(x, y, count = 3) {
-    for (let i = 0; i < count; i++) {
+    for (let i = 0, k = many(count); i < k; i++) {
       this.#add({
         kind: 'heart', x: x + range(-14, 14), y,
         vx: range(-30, 30), vy: range(-120, -70), g: -30,
@@ -41,8 +66,10 @@ export class Fx {
   }
 
   stars(x, y, count = 6) {
-    for (let i = 0; i < count; i++) {
-      const a = (i / count) * TAU + range(-0.3, 0.3);
+    for (let i = 0, k = many(count); i < k; i++) {
+      // spread over what is actually emitted, not what was asked for, or a
+      // thinned burst would only cover part of the circle
+      const a = (i / k) * TAU + range(-0.3, 0.3);
       this.#add({
         kind: 'star', x, y,
         vx: Math.cos(a) * range(90, 190), vy: Math.sin(a) * range(60, 130) - 110,
@@ -53,7 +80,7 @@ export class Fx {
   }
 
   sparkles(x, y, count = 5, spread = 26) {
-    for (let i = 0; i < count; i++) {
+    for (let i = 0, k = many(count); i < k; i++) {
       this.#add({
         kind: 'spark', x: x + range(-spread, spread), y: y + range(-spread, spread),
         vx: range(-18, 18), vy: range(-52, -18), g: 40,
@@ -64,7 +91,7 @@ export class Fx {
   }
 
   crumbs(x, y, count = 5, color = '#c98f5c') {
-    for (let i = 0; i < count; i++) {
+    for (let i = 0, k = many(count); i < k; i++) {
       this.#add({
         kind: 'crumb', x, y,
         vx: range(-130, 130), vy: range(-250, -90), g: GRAV,
@@ -75,7 +102,7 @@ export class Fx {
   }
 
   puff(x, y, count = 4, size = 12) {
-    for (let i = 0; i < count; i++) {
+    for (let i = 0, k = many(count); i < k; i++) {
       this.#add({
         kind: 'puff', x: x + range(-10, 10), y: y + range(-3, 3),
         vx: range(-45, 45), vy: range(-26, -6), g: -14,
@@ -96,7 +123,7 @@ export class Fx {
 
   /** Soap suds off a plate being washed: light, wobbly, and they pop. */
   bubbles(x, y, count = 3, spread = 14) {
-    for (let i = 0; i < count; i++) {
+    for (let i = 0, k = many(count); i < k; i++) {
       this.#add({
         kind: 'bubble', x: x + range(-spread, spread), y: y + range(-4, 4),
         vx: range(-16, 16), vy: range(-46, -22), g: -18,
@@ -134,7 +161,7 @@ export class Fx {
    */
   burst(sprite, x, y, count = 6, { spread = 90, size = 26, up = 320 } = {}) {
     if (!sprite) return;
-    for (let i = 0; i < count; i++) {
+    for (let i = 0, k = many(count); i < k; i++) {
       this.#add({
         kind: 'sprite', x, y, sprite,
         vx: range(-spread, spread), vy: range(-up, -up * 0.6), g: GRAV * 0.8,
