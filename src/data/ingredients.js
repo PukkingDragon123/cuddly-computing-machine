@@ -70,4 +70,15 @@ export const MARKET_SHELVES = [
 export const MARKET_ORDER = MARKET_SHELVES.flatMap((s) => s.ids);
 
 /** Small free delivery each morning so a bad day is never a dead end. */
-export const DAILY_DELIVERY = { kelp: 4, milk: 3, potato: 2 };
+/**
+ * What the boat drops off every morning, free.
+ *
+ * This used to be nine items between three ingredients, which is two or three
+ * dishes — you plated your little menu, sold out before lunch and spent the
+ * rest of the day watching people leave. A day's cooking should be a day's
+ * cooking, so the delivery is a proper crate now and it covers the staples the
+ * early recipes actually want.
+ */
+export const DAILY_DELIVERY = {
+  kelp: 14, milk: 10, potato: 8, clam: 5, rice: 6, egg: 5,
+};

@@ -105,14 +105,6 @@ const STEPS = [
     done: (g) => g.restaurant.served > 0 || g.restaurant.guests.some((x) => x.state === 'eat'),
   },
   {
-    id: 'board',
-    title: 'Call people in',
-    stale: (g) => g.state.phase !== 'open',
-    text: 'Tap the board ten times and somebody comes in. Do it as often as you like — only the food runs out.',
-    at: () => '#btn-flyer',
-    done: null,          // read-and-carry-on
-  },
-  {
     id: 'jobs',
     title: 'Your job list',
     text: 'There is always one job on the go, up in the corner. Finishing it pays you.',

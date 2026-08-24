@@ -171,7 +171,7 @@ html, body {
 
 /* the bottom bar ------------------------------------------------------- */
 
-/* The thumb row: the flyer on the left, Open! on the right, and nothing else
+/* The thumb row: nothing on the left, Open! on the right, and nothing else
    competing for the corner a hand covers anyway. */
 #bottombar {
   grid-area: 3 / 1 / 4 / 4;
@@ -388,7 +388,7 @@ html, body {
 }
 /* Everything else that reads as a raised face takes the same sheen. The sheet
    itself does not: it is a sheet of paper, and paper does not catch light. */
-.flyer, .toast, .hint, .titlecard, .placebar, .sb-row, .daytag,
+.toast, .hint, .titlecard, .placebar, .sb-row, .daytag,
 .ing, .ing-cell, .swatch, .sheet-foot, .stepper button, .zoneswitch button.on,
 .tab.on, .boot-card .pill {
   background-image: var(--sheen);
@@ -436,159 +436,6 @@ html, body {
   text-shadow: 0 1px 0 rgba(0, 0, 0, 0.25);
   white-space: nowrap;
 }
-
-/* flyers ---------------------------------------------------------------- */
-
-/* The morning chore, right where the thumb already is. It reads as a pinned-up
-   poster: a raised face with a sunken gauge across it that fills as you tap. */
-.flyer {
-  display: flex; align-items: center; gap: 0.45rem;
-  border: var(--bw) solid var(--ink);
-  border-radius: var(--r-md);
-  background-color: var(--paper);
-  box-shadow: none;
-  padding: 0.32rem 0.6rem 0.32rem 0.42rem;
-  font: inherit;
-  cursor: pointer;
-  transition: transform .06s ease, box-shadow .06s ease;
-}
-.flyer:active { transform: translateY(var(--lift)); box-shadow: none; }
-.flyer .ico { width: 1.55rem; height: 1.55rem; }
-.flyer-body { display: flex; flex-direction: column; gap: 0.2rem; align-items: stretch; }
-.flyer-body b {
-  font-size: 0.84rem; font-weight: 900; line-height: 1;
-  font-variant-numeric: tabular-nums; color: var(--ink-deep);
-}
-.flyer-bar {
-  display: block; width: 3.4rem; height: 0.42rem;
-  border-radius: 999px;
-  background: var(--panel-2);
-  box-shadow: none;
-  overflow: hidden;
-}
-.flyer-bar i {
-  display: block; height: 100%; width: 0;
-  background: var(--tangerine); border-radius: 999px;
-  transition: width .12s ease;
-}
-.flyer.full { background-color: var(--leaf-pale); }
-.flyer.full .flyer-bar i { background: var(--leaf); }
-
-/* Once the doors are open the satchel is what it hands out rather than what it
-   fills, so the gauge counts down instead of up — and an empty one says so
-   plainly, because tapping it then is the one thing that does nothing. */
-.flyer.handout { background-color: var(--sun-pale); }
-.flyer.handout .flyer-bar i { background: var(--sun-deep); }
-.flyer.spent { filter: grayscale(.55) opacity(.62); }
-
-/* an empty satchel of a morning is the one thing you have to do before opening,
-   so it nudges until it is not empty any more */
-@keyframes flyerNudge {
-  0%, 72%, 100% { transform: translateY(0) rotate(0deg) }
-  80%           { transform: translateY(-0.22rem) rotate(-2.5deg) }
-  90%           { transform: translateY(-0.1rem) rotate(1.5deg) }
-}
-.flyer.nudge { animation: flyerNudge 2.6s ease-in-out infinite }
-@media (prefers-reduced-motion: reduce) { .flyer.nudge { animation: none } }
-
-/* the pottery --------------------------------------------------------------
-
-   The class is the one thing you level by working rather than by paying, so
-   its page is a workshop wall rather than a list: the kiln itself, the level
-   fired into a clay medallion, and the climb drawn as rungs you can count. */
-
-.kiln {
-  border: var(--bw) solid var(--ink);
-  border-radius: var(--r-hand);
-  background-color: var(--panel);
-  overflow: hidden;
-}
-.kiln-top {
-  position: relative;
-  display: flex; align-items: center; gap: 0.6rem;
-  padding: 0.55rem 0.7rem 0.6rem;
-  background:
-    radial-gradient(80% 120% at 18% 100%, rgba(228, 101, 47,.16), rgba(228, 101, 47,0) 70%),
-    linear-gradient(var(--panel-2), var(--panel));
-}
-.kiln-art {
-  flex: none;
-  width: 3.4rem; height: 3.4rem;
-  background: center/contain no-repeat;
-  filter: drop-shadow(0 0.14rem 0.1rem rgba(95, 61, 38,.28));
-}
-/* a thrown disc with the level pressed into it */
-.kiln-medal {
-  flex: none;
-  width: 3rem; height: 3rem;
-  display: grid; place-content: center; text-align: center;
-  border-radius: 999px;
-  border: var(--bw) solid var(--ink);
-  background: radial-gradient(70% 70% at 38% 32%, #f6e2c4, #d9ae76 74%, #c1935c);
-}
-.kiln-medal b { font-size: 1.35rem; font-weight: 900; line-height: 1; color: var(--ink) }
-.kiln-medal span { font-size: 0.52rem; font-weight: 900; letter-spacing: .12em;
-  text-transform: uppercase; color: var(--ink-soft) }
-.kiln-main { min-width: 0; flex: 1 }
-.kiln-title { font-size: 0.98rem; font-weight: 900; line-height: 1.1 }
-.kiln-sub { font-size: 0.74rem; font-weight: 700; color: var(--ink-soft); line-height: 1.25 }
-.kiln-bar {
-  height: 0.55rem; margin-top: 0.32rem;
-  border: 0.11rem solid var(--ink);
-  border-radius: 999px;
-  background: var(--tan);
-  overflow: hidden;
-}
-.kiln-bar > i {
-  display: block; height: 100%;
-  border-radius: 999px;
-  background: linear-gradient(90deg, var(--sun), var(--tangerine));
-  transition: width .4s var(--spring);
-}
-.still .kiln-bar > i { transition: none }
-
-/* three readouts along the bottom, on the darker band */
-.kiln-stock {
-  display: flex;
-  border-top: var(--bw) solid var(--ink);
-  background: var(--tan);
-}
-.kiln-stat {
-  flex: 1 1 0; min-width: 0;
-  display: flex; align-items: center; gap: 0.25rem;
-  padding: 0.3rem 0.4rem;
-  font-size: 0.68rem; font-weight: 800;
-}
-.kiln-stat + .kiln-stat { border-left: 0.11rem solid rgba(95, 61, 38,.3) }
-.kiln-stat .ico { flex: none; width: 1rem; height: 1rem }
-.kiln-stat b { font-size: 0.86rem; font-weight: 900 }
-.kiln-stat span { color: var(--ink-soft); overflow: hidden; text-overflow: ellipsis; white-space: nowrap }
-
-/* the climb to the wheel, as rungs */
-.kiln-rungs { display: flex; gap: 0.3rem; align-items: center }
-.kiln-rung {
-  flex: 1 1 0;
-  display: grid; place-content: center;
-  height: 1.7rem;
-  border: var(--bw) solid var(--ink);
-  border-radius: var(--r-sm);
-  background: var(--panel-2);
-  color: var(--ink-faint);
-  font-size: 0.78rem; font-weight: 900;
-}
-.kiln-rung.on { background: var(--sun); color: var(--ink) }
-.kiln-rung.last { background: var(--panel-2); border-style: dashed }
-.kiln-rung.last.on { background: var(--tangerine); color: #fff9ec; border-style: solid }
-
-/* how good a recipe's plate already is */
-.pips { display: flex; gap: 0.16rem }
-.pip {
-  width: 0.42rem; height: 0.42rem;
-  border-radius: 999px;
-  border: 0.1rem solid var(--ink);
-  background: var(--panel-2);
-}
-.pip.on { background: var(--tangerine) }
 
 /* the potter's wheel ---------------------------------------------------- */
 
@@ -850,26 +697,6 @@ html, body {
 #hud.serving .quest,
 #hud.serving .sb-row,
 #hud.serving .sb-dish,
-#hud.serving .flyer {
-  background-color: var(--ink);
-  color: #fff;
-  border-color: var(--ink-deep);
-}
-#hud.serving .wallet .seg + .seg { background-color: var(--ink-deep) }
-/* every number inside an inverted plaque, whatever wrapper it sits in */
-#hud.serving .rankchip b,
-#hud.serving .quest b,
-#hud.serving .flyer b,
-#hud.serving .wallet b { color: #fff }
-#hud.serving .sb-label,
-#hud.serving .rank-day,
-#hud.serving .quest-hint,
-#hud.serving .quest .quest-n { color: var(--sun) }
-#hud.serving .sb-sep { background: var(--wood) }
-#hud.serving .rank-bar,
-#hud.serving .quest-bar,
-#hud.serving .flyer-bar { background: rgba(255, 255, 255, .22) }
-#hud.serving .flyer.handout .flyer-bar i { background: var(--sun) }
 #hud.serving .zoneswitch { opacity: .55 }
 /* the room itself is the thing to watch, so the rail steps back a little */
 #hud.serving .rail { opacity: .9 }
@@ -2234,19 +2061,14 @@ html, body {
   padding: calc(1rem + var(--safe-t)) clamp(1rem, 5vw, 4rem) calc(1.6rem + var(--safe-b));
   animation: fade .5s ease both;
 }
-/* The wash. A title screen is not gameplay, so it does not look like gameplay:
-   the room is warmed, darkened at the edges and given a soft horizon, and the
-   right-hand third is pulled down so the type has something to sit on. */
-.title-wash {
-  position: absolute; inset: 0;
-  pointer-events: none;
-  /* A wash to sit the signs on, not a dimmer. It darkens only the side the
-     signs are on and lifts the rest, so the room behind reads bright — a grey
-     veil over your own dining room is not an invitation to go into it. */
-  background:
-    linear-gradient(90deg, rgba(74, 48, 28, 0) 46%, rgba(58, 36, 20, .6) 100%),
-    radial-gradient(110% 80% at 38% 44%, rgba(255, 250, 236, .3), rgba(226, 204, 168, .14) 62%, rgba(96, 64, 38, .26) 100%);
-}
+/* No wash.
+   There were two gradients here — a brown fade down the right-hand side for the
+   signs to sit on, and a soft glow over the middle "for warmth". Together they
+   read as a smear of dirt across your own dining room, or as a screenshot that
+   had not finished loading. The room is the nicest thing on this screen and it
+   does not need help. The signs are painted boards with a heavy ink outline;
+   they can hold their own against a checkerboard floor. */
+.title-wash { display: none }
 .title.out { animation: titleOut .3s ease both; pointer-events: none }
 @keyframes titleOut { to { opacity: 0; transform: scale(1.04) } }
 
@@ -2550,7 +2372,6 @@ body.still .point-ring, body.still .point-hand { animation: none }
    answer — feedback is not decoration. */
 body.still .railbtn .ico,
 body.still .railbtn,
-body.still .flyer.nudge,
 body.still .title-logo,
 body.still #btn-service.pill-go:not([disabled])::after,
 body.still .plate-face i.posing,
@@ -2936,8 +2757,6 @@ body.still .tutor-hole { animation: none }
   .railbtn .ico { width: 2.8rem; height: 2.8rem }
   .railbtn-sm { width: 2.5rem; height: 2.5rem }
   .railbtn-sm .ico { width: 1.9rem; height: 1.9rem }
-  .flyer { padding: .3rem .5rem .3rem .36rem }
-  .flyer-bar { width: 2.8rem }
 }
 
 /* =====================================================================
@@ -2959,7 +2778,7 @@ body.still .tutor-hole { animation: none }
    with its own outline, and a second one round it is the same line twice */
 .railbtn { border: 0 }
 /* surfaces the eye reads as paper, not as objects */
-.thumb, .port, .stage, .ing-cell, .bar, .flyer-bar, .forge-track, .sheet-tabs {
+.thumb, .port, .stage, .ing-cell, .bar, .forge-track, .sheet-tabs {
   border: 0.13rem solid var(--ink-faint);
 }
 
@@ -2977,7 +2796,6 @@ body.still .tutor-hole { animation: none }
   filter: brightness(.94);
 }
 .card.tap:active { transform: scale(.985); filter: brightness(.97) }
-.flyer:active { transform: scale(.95) }
 
 /* the tab track is a ruled line under the tabs, not a trough */
 .sheet-tabs {
@@ -2988,8 +2806,8 @@ body.still .tutor-hole { animation: none }
 .tab.on { border: var(--bw) solid var(--ink); background-color: var(--sun) }
 
 /* meters: an outlined tube with a flat fill, the way a drawn gauge reads */
-.bar > i, .flyer-bar > i { border-radius: 999px }
-.bar, .flyer-bar { border-radius: 999px; background: var(--paper) }
+.bar > i { border-radius: 999px }
+.bar { border-radius: 999px; background: var(--paper) }
 
 /* a wallet is written on the paper, so it needs its own line. The service
    readout is not on this list: it is a stack of three separately drawn things
@@ -3126,8 +2944,18 @@ body.still .card.want::before { animation: none }
   max-width: min(18rem, 76vw);
   text-align: center;
 }
-.title-by { text-align: center; text-shadow: 0 0.08rem 0 rgba(58, 36, 20, .35); color: #fff5e0 }
-.title-by b { color: #fff }
+/* With the wash gone this sits straight on the floorboards, so it carries its
+   own little plaque rather than a text-shadow doing the work. */
+.title-by {
+  align-self: center;
+  padding: 0.18rem 0.7rem;
+  border: 0.16rem solid var(--ink);
+  border-radius: 999px;
+  background-color: var(--paper);
+  color: var(--ink-soft);
+  text-shadow: none;
+}
+.title-by b { color: var(--ink-deep) }
 
 /* A sign hung on a nail: painted board, ink outline, hanging a little crooked
    and swinging when you press it. */
@@ -3201,11 +3029,6 @@ body.still .card.want::before { animation: none }
 @media (max-width: 34rem) {
   .title { place-items: end center; padding-bottom: calc(2.4rem + var(--safe-b)) }
   .title-card { max-width: min(20rem, 88vw) }
-  .title-wash {
-    background:
-      linear-gradient(rgba(74, 48, 28, 0) 46%, rgba(58, 36, 20, .64) 100%),
-      radial-gradient(110% 66% at 50% 32%, rgba(255, 250, 236, .3), rgba(96, 64, 38, .2) 100%);
-  }
 }
 
 /* cutscenes ------------------------------------------------------------ */

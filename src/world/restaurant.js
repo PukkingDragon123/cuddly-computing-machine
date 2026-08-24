@@ -401,7 +401,6 @@ export class Restaurant {
   summonGuest(loud = true) {
     if (this.seatCount === 0 || !this.hasPass) return false;
     this.#spawn();
-    if (loud) this.state.stats.called = (this.state.stats.called ?? 0) + 1;
     const g = this.guests[this.guests.length - 1];
     if (g && loud) {
       this.fx.pop(g.pos.x, g.headY - 30, 'Heard you calling!', {
@@ -541,6 +540,23 @@ export class Restaurant {
     if (this.state.stock[chosen.id] <= 0) delete this.state.stock[chosen.id];
     guest.setState(CS.ORDER);
     guest.sq.vel -= 2;
+  }
+
+  /**
+   * Have a word with a guest who is running out of patience.
+   *
+   * The fallback for a tap that could not do the obvious thing — sit them down,
+   * hand them a plate. Rather than a refusal noise and a hint, the tap does the
+   * next most useful thing available, which is buy the guest some time. The
+   * hint still goes up, because the player should know *why* the tap did not do
+   * what they meant.
+   */
+  #calmGuest(guest, fallback) {
+    const said = guest.calm();
+    if (!said) { this.sfx.play('no'); return fallback; }
+    this.sfx.play('pop');
+    this.state.stats.calmed = (this.state.stats.calmed ?? 0) + 1;
+    return fallback;
   }
 
   /** Player tapped the order bubble — the ticket goes to the chef. */
@@ -981,11 +997,17 @@ export class Restaurant {
       if (guest.state === CS.ORDER) { this.sendOrder(guest); return null; }
       if (guest.state === CS.QUEUE) {
         const err = this.seatGuest(guest);
-        if (err === 'noseats') { this.sfx.play('no'); return 'No free seats — build more chairs'; }
-        if (err === 'blocked') { this.sfx.play('no'); return "Can't reach that seat"; }
+        // Nowhere to sit them is not the end of the conversation. A word from
+        // you buys them time, which is exactly what you want when the room is
+        // full and something is still cooking.
+        if (err) return this.#calmGuest(guest, err === 'noseats'
+          ? 'Every seat is taken — they will hang on a bit'
+          : "Can't reach a seat — they will hang on a bit");
         return null;
       }
-      if (guest.state === CS.WAIT) return 'Their dish is still cooking';
+      // Somebody waiting on food is the case this is really for: you cannot
+      // cook faster, but you can go and be nice to them.
+      if (guest.state === CS.WAIT) return this.#calmGuest(guest, 'Their dish is still cooking');
       return null;
     }
 

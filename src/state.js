@@ -12,8 +12,7 @@ import {
   GIFTS, GUEST_BY_ID, HEART_STEPS, MAX_FRIEND, levelForHearts, tasteOf,
 } from './data/guests.js';
 import {
-  FLYER_BASE_MAX, FLYER_TAPS, RESEARCH_BY_ID, SHOP_BY_ID, dishPrice, dishStars,
-  flyerDraw, potteryLevel,
+  RESEARCH_BY_ID, SHOP_BY_ID, dishPrice, dishStars, potteryLevel, wordOfMouth,
 } from './data/progress.js';
 import { RANKS, rankAt, rankProgress, toNextRank } from './data/fame.js';
 import {
@@ -31,7 +30,7 @@ function fresh() {
     stars: 0,
     day: 1,
     phase: 'prep',
-    pantry: { kelp: 10, milk: 12, potato: 4, clam: 2 },
+    pantry: { kelp: 30, milk: 26, potato: 18, clam: 10, rice: 12, egg: 10 },
     // One recipe. The whole first hour is turning that into two, and the
     // market sells everything, so it is a choice rather than a wait.
     unlocked: ['kelp_latte'],
@@ -49,7 +48,6 @@ function fresh() {
     machines: [],
     // the long game — see data/progress.js
     diary: {},                       // species id -> { met, served, hearts, level, likeSeen, hateSeen }
-    flyer: { taps: 0, posters: 0 },  // posters go up before the doors open
     research: 0,
     researched: [],
     bought: [],                      // one-off shop purchases
@@ -71,7 +69,7 @@ function fresh() {
       served: 0, walkouts: 0, earned: 0, best: 0, bought: 0,
       // the rest of the counters the job list reads. Every one of them is a
       // thing somebody has to be told to try at least once.
-      cheap: 0, called: 0, washed: 0, delivered: 0,
+      cheap: 0, calmed: 0, washed: 0, delivered: 0,
       loved: 0, vips: 0, myths: 0, gifts: 0, favours: 0,
     },
   };
@@ -123,7 +121,7 @@ function migrate(data) {
   for (const f of data.furniture) { f.rot = rotOf(f); delete f.flip; }
   // everything the long game keeps track of, defaulted for an older save
   data.diary ??= {};
-  data.flyer ??= { taps: 0, posters: 0 };
+  delete data.flyer;   // the noticeboard is gone; see data/progress.js
   data.research ??= 0;
   data.researched ??= [];
   data.bought ??= [];
@@ -137,7 +135,7 @@ function migrate(data) {
   data.auto ??= false;
   data.stats = {
     served: 0, walkouts: 0, earned: 0, best: 0, bought: 0,
-    cheap: 0, called: 0, washed: 0, delivered: 0,
+    cheap: 0, calmed: 0, washed: 0, delivered: 0,
     loved: 0, vips: 0, myths: 0, gifts: 0, favours: 0,
     ...(data.stats ?? {}),
   };
@@ -208,7 +206,7 @@ export class GameState {
       pantry: this.pantry, unlocked: this.unlocked, levels: this.levels,
       menu: this.menu, stock: this.stock, staff: this.staff,
       seenHelp: this.seenHelp, stats: this.stats, lastSeen: this.lastSeen ?? Date.now(),
-      diary: this.diary, flyer: this.flyer, research: this.research,
+      diary: this.diary, research: this.research,
       researched: this.researched, bought: this.bought,
       pottery: this.pottery, clay: this.clay, dishes: this.dishes,
       catch: this.catch,
@@ -421,20 +419,23 @@ export class GameState {
   }
 
   /**
-   * Seconds between guest arrivals. Posters are the biggest term by design:
-   * a room full of lovely furniture still sits empty if nobody put the word out.
+   * Seconds between guest arrivals.
+   *
+   * The room does the work: how nice it is, how well known you are, the pieces
+   * that draw people in, and what the harbour has been told about you. Not one
+   * term of it is a button you hold down.
    */
   get arrivalGap() {
-    let draw = flyerDraw(this.posters) + 0.5;
+    let draw = this.wordDraw;
     for (const f of this.furniture) draw += FURNITURE_BY_ID[f.id]?.draw ?? 0;
-    if (this.hasResearch('lantern_string')) draw += 0.2;
     const base = 6.2 / (1 + this.ambience * 0.02 + draw + Math.min(1.2, this.stars * 0.0025));
-    return clamp(base, 1.2, 7);
+    return clamp(base, 1.0, 5.5);
   }
 
   /** How hard the harbour pulls in rare guests. */
   get rarityPull() {
-    let pull = Math.min(1.4, this.stars * 0.0015) + this.posters * 0.06;
+    let pull = Math.min(1.4, this.stars * 0.0015) + 0.25;
+    if (this.hasResearch('word_3')) pull += 0.6;
     if (this.hasResearch('money_2')) pull += 0.5;
     return pull;
   }
@@ -533,56 +534,24 @@ export class GameState {
     return Object.values(this.diary).reduce((n, p) => n + (p.hearts ?? 0), 0);
   }
 
-  /* -------------------------------------------------------------- flyers  */
+  /* --------------------------------------------------------- word of mouth */
 
-  /** Taps to finish one poster, after research and crew have had their say. */
-  get flyerTaps() {
-    let n = FLYER_TAPS;
-    if (this.hasResearch('flyer_1')) n -= 2;
-    if (this.hasResearch('flyer_2')) n -= 3;
-    if (this.hasStaff('gull_courier')) n -= 3;
-    return Math.max(1, n);
-  }
-
-  get flyerMax() {
-    let n = FLYER_BASE_MAX;
-    if (this.hasResearch('flyer_2')) n += 2;
-    if (this.hasResearch('flyer_board')) n += 4;
-    n += this.machines.filter((m) => m.id === 'promo_stand' || m.id === 'broadcast').length * 2;
-    return n;
-  }
-
-  get posters() { return this.flyer?.posters ?? 0; }
-  get autoPost() { return this.hasResearch('flyer_auto'); }
-
-  /** One tap on the flyer. Returns true when that finished a poster. */
   /**
-   * One tap on the flyer. Returns true on the tap that completes a round.
+   * How hard the harbour pulls people through your door.
    *
-   * The round is the same ten taps in both halves of the day; what it produces
-   * changes. In the morning it finishes a poster for the satchel. Once the doors
-   * are open it is a barker's board out front, and finishing the round walks
-   * somebody in off the harbour — no satchel needed and no ceiling on it, since
-   * the thing that actually limits a day is how much food you plated.
+   * Nobody taps for this any more — see wordOfMouth in data/progress.js for why
+   * the noticeboard went. A promo stand or a broadcast set in the works still
+   * counts, because those are machines doing the shouting rather than you.
    */
-  tapFlyer() {
-    const f = this.flyer;
-    const barking = this.phase === 'open';
-    if (!barking && f.posters >= this.flyerMax) return false;
-    f.taps += 1;
-    if (f.taps < this.flyerTaps) { this.bus.emit('change'); return false; }
-    f.taps = 0;
-    if (!barking) f.posters += 1;
-    this.bus.emit('change');
-    return true;
-  }
-
-  addPoster() {
-    if (this.flyer.posters >= this.flyerMax) return false;
-    this.flyer.posters += 1;
-    this.flyer.taps = 0;
-    this.bus.emit('change');
-    return true;
+  get wordDraw() {
+    let draw = wordOfMouth(this);
+    draw += this.machines.filter((m) => m.id === 'promo_stand').length * 0.4;
+    draw += this.machines.filter((m) => m.id === 'broadcast').length * 0.9;
+    for (const id of this.staff) {
+      const st = STAFF_BY_ID[id];
+      if (st?.effect === 'word') draw += st.amount ?? 0;
+    }
+    return draw;
   }
 
   /* ------------------------------------------------------------ research  */
@@ -728,8 +697,10 @@ export class GameState {
     const price = {};
     for (const id of MARKET_ORDER) {
       const base = INGREDIENTS[id].price;
-      // cheap staples come in by the crate, the pricey catch in ones and twos
-      const plenty = Math.max(2, Math.round(26 / Math.max(2, base)));
+      // Cheap staples come in by the crate, the pricey catch in ones and twos —
+      // but a "crate" of four was not a crate. The whole point of the market is
+      // that you can go and buy a day's worth of something.
+      const plenty = Math.max(6, Math.round(90 / Math.max(2, base)));
       stock[id] = plenty + Math.floor(rand() * plenty);
       // ±35%, quantised to whole sand dollars, never free
       const swing = 0.65 + rand() * 0.7;
@@ -914,17 +885,17 @@ export class GameState {
   }
 
   /**
-   * Advance to tomorrow: clear the menu, drop the morning delivery, and take
-   * yesterday's flyers down. Reposting every morning is the chore the whole
-   * automation ladder exists to take off your hands — a promo stand or the
-   * Paste Crew quietly puts them back up while you do something else.
+   * Advance to tomorrow: clear the menu and drop off the morning delivery.
+   *
+   * The delivery is a real crate — see DAILY_DELIVERY. A morning that hands you
+   * two dishes' worth of ingredients is a morning spent shopping rather than
+   * cooking, which is the wrong game.
    */
   nextDay() {
     this.day += 1;
     this.phase = 'prep';
     this.menu = {};
     this.stock = {};
-    this.flyer = { taps: 0, posters: 0 };
     this.favours = [];   // the room emptied; nobody is asking for anything
     this.rollCatch();
     for (const [id, qty] of Object.entries(DAILY_DELIVERY)) this.addIng(id, qty);

@@ -17,6 +17,15 @@ export const CS = {
   ORDER: 'order', WAIT: 'wait', EAT: 'eat', DONE: 'done', LEAVE: 'leave',
 };
 
+/* Talking somebody round. Generous on purpose: this is the button that turns a
+   room going wrong into a room you are saving. */
+const CALM_GIVES = 0.34;
+const CALM_COOLDOWN = 4.5;
+const CALM_REPLIES = [
+  'No rush!', 'Take your time.', 'Ooh, thanks.', "That's alright.",
+  'Smells lovely.', 'I can wait.', 'Kind of you.',
+];
+
 const STEP = 0.34;        // seconds per tile hop
 const HOP_H = 15;         // hop arc height, px
 const FLIP_TIME = 0.16;   // paper-flip turn
@@ -158,6 +167,34 @@ export class Customer {
 
   setState(s) { this.state = s; this.stateT = 0; }
 
+  /**
+   * A word from you, and they settle down.
+   *
+   * The one thing a player could see going wrong and do nothing about was
+   * somebody running out of patience: you watched the little meter drain and
+   * either you had a plate ready or you did not. Now you can go and talk to
+   * them. It gives back a slice of patience and it can be done again after a
+   * cooldown, so a busy room becomes something you work rather than something
+   * you watch — and it costs nothing but the tap, which is the point.
+   *
+   * Returns the thing they say back, or null if they are not in a state to be
+   * cheered up (walking in, eating, leaving).
+   */
+  calm() {
+    const open = this.state === CS.QUEUE || this.state === CS.ORDER || this.state === CS.WAIT;
+    if (!open || this.dead) return null;
+    if ((this.calmT ?? 0) > 0) return null;
+    this.calmT = CALM_COOLDOWN;
+    this.patience = Math.min(1, this.patience + CALM_GIVES);
+    this.mood = this.patience < 0.3 ? 'cross' : this.patience < 0.6 ? 'rush' : 'ok';
+    this.impatient = this.patience < 0.3;
+    this.sq.vel += 2.2;
+    this.saying = CALM_REPLIES[(rnd() * CALM_REPLIES.length) | 0];
+    this.sayT = 1.5;
+    this.zone.fx.hearts(this.pos.x, this.headY - 6, 2);
+    return this.saying;
+  }
+
   /** Pop into existence at the door. */
   arrive() {
     this.spawn = 0;
@@ -170,6 +207,12 @@ export class Customer {
     if (this.spawn < 1) this.spawn = Math.min(1, this.spawn + dt * 4);
     if (this.flip > 0) this.flip = Math.max(0, this.flip - dt);
     spring(this.sq, 1, dt, 150, 15);
+
+    if (this.calmT > 0) this.calmT = Math.max(0, this.calmT - dt);
+    if (this.sayT > 0) {
+      this.sayT = Math.max(0, this.sayT - dt);
+      if (this.sayT === 0) this.saying = null;
+    }
 
     const drains = this.state === CS.QUEUE || this.state === CS.ORDER || this.state === CS.WAIT;
     if (drains) {
@@ -407,6 +450,18 @@ export class Customer {
 
   /** Bubbles and meters, drawn after every sprite so nothing occludes them. */
   drawOverlay(ctx, t) {
+    // What they said back when you cheered them up. Over everything, including
+    // their own order bubble — for a second and a half it is the only thing on
+    // this guest worth reading.
+    if (this.saying && this.sayT > 0) {
+      const fade = Math.min(1, this.sayT * 3);
+      const lift = (1.5 - this.sayT) * 10;
+      ctx.save();
+      ctx.globalAlpha = fade * this.alpha;
+      text(ctx, this.saying, this.pos.x, this.headY - 30 - lift,
+        { size: 17, fill: '#3f7d52', stroke: '#fff8e6', lw: 5 });
+      ctx.restore();
+    }
     if (this.state === CS.EAT || this.state === CS.DONE) {
       if (this.state === CS.DONE && this.stateT < 0.9) {
         text(ctx, 'Yum!', this.pos.x, this.headY - 18, { size: 20, fill: '#e4652f', stroke: '#fff8e6', lw: 5 });

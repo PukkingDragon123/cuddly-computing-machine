@@ -423,60 +423,6 @@ export class Game {
   openPottery() { this.panels.openPottery(); }
   openCatch() { this.panels.openCatch(); }
 
-  /**
-   * The flyer button does two different jobs, one per phase. In the morning each
-   * tap prints part of a flyer and a finished one goes in the satchel. During
-   * service a tap hands one out, and that brings a guest through the door there
-   * and then — one flyer, one customer. Printing a stack before opening is
-   * therefore how you decide how busy the day gets.
-   */
-  tapFlyer() {
-    const s = this.state;
-    if (s.phase === 'open') { this.#barkOutside(); return; }
-    if (s.phase !== 'prep') return;
-    if (s.posters >= s.flyerMax) {
-      this.hud.toast('The satchel is full of flyers already', '');
-      return;
-    }
-    const done = s.tapFlyer();
-    this.sfx.play(done ? 'star' : 'tap');
-    if (done) {
-      this.hud.toast(`Flyer printed — ${s.posters}/${s.flyerMax}`, 'good');
-      this.hud.bumpFlyer();
-    }
-    this.hud.sync();
-  }
-
-  /**
-   * Working the board out front. Ten taps brings somebody in off the harbour,
-   * and there is no ceiling on how many — the queue can be as long as you can
-   * feed. What stops the day is the stock you plated this morning, which is the
-   * number worth watching, so it is the one the board shows.
-   */
-  #barkOutside() {
-    const r = this.restaurant;
-    if (this.state.stockCount <= 0) {
-      this.hud.toast('Nothing left to serve — plate more tomorrow', 'bad');
-      this.sfx.play('no');
-      this.hud.sync();
-      return;
-    }
-    const done = this.state.tapFlyer();
-    if (!done) { this.sfx.play('tap'); this.hud.sync(); return; }
-
-    if (!r.summonGuest()) {
-      // no seats or no pass — the taps are not wasted, they simply have nowhere
-      // to send anyone, so say which
-      this.hud.toast(r.hasPass ? 'Put a chair beside a table first' : 'Build a kitchen pass first', 'bad');
-      this.sfx.play('no');
-      this.hud.sync();
-      return;
-    }
-    this.sfx.play('star');
-    this.hud.bumpFlyer();
-    this.hud.sync();
-  }
-
   /** Area unlocks widen the dining room, so the grid has to follow. */
   syncRoomSize() {
     if (!this.#applyRoomSize()) return;

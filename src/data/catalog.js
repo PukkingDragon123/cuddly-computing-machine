@@ -368,7 +368,8 @@ export const STAFF = [
   { id: 'orca_manager',   sprite: '10_orca_harbor_manager', crew: 'office', label: 'Harbor Manager',
     cost: 2200, blurb: 'Guests tip 15% more.', effect: 'tips', amount: 0.15, rank: 6 },
   { id: 'gull_courier',   sprite: '02_cuttlefish_server', crew: 'floor', label: 'Gull Courier',
-    cost: 1300, blurb: 'Three fewer taps to call somebody in.', effect: 'flyer', rank: 2 },
+    cost: 1300, blurb: 'Flies the harbour telling everyone about you. Guests arrive quicker.',
+    effect: 'word', amount: 0.7, rank: 2 },
 ];
 
 export const STAFF_BY_ID = Object.fromEntries(STAFF.map((s) => [s.id, s]));

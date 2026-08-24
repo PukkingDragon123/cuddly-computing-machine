@@ -1629,7 +1629,7 @@ export class Panels {
       }));
     }
 
-    const icons = { flyer: 'flyer', works: 'hammer', trade: 'sand' };
+    const icons = { flyer: 'crew', works: 'hammer', trade: 'sand' };
     for (const grp of RESEARCH_GROUPS) {
       const mine = RESEARCH.filter((n) => n.group === grp.id);
       if (!mine.length) continue;

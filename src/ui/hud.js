@@ -45,11 +45,8 @@ export class Hud {
       hud: $('#hud'),
       sbDay: $('#sb-day'),
       card: $('#titlecard'),
-      flyer: $('#btn-flyer'),
       rail: $('#rail'),
       researchBadge: $('[data-bind="research-badge"]'),
-      flyerCount: $('#flyer-count'),
-      flyerFill: $('#flyer-fill'),
       cardMain: $('#titlecard-main'),
       cardSub: $('#titlecard-sub'),
     };
@@ -87,7 +84,6 @@ export class Hud {
         open();
       };
     }
-    this.el.flyer.onclick = () => g.tapFlyer();
     this.el.sound.onclick = () => g.toggleSound();
     this.el.rankChip.onclick = () => g.panels.openFame();
     // One button, two jobs, because the day only ever has two: get the menu
@@ -155,20 +151,6 @@ export class Hud {
     // Arranging the menu is never blocked — it is where you find out what you
     // are missing. Only the closing-up paperwork locks the button.
     this.el.service.disabled = s.phase === 'report';
-
-    // The board out front. It is only a thing while the doors are open — a
-    // button that prints a poster for tomorrow was one more morning chore, and
-    // the morning is for the menu. Ten taps calls somebody in, as many times as
-    // you like; what ends the day is the food running out.
-    show(this.el.flyer, open);
-    const taps = s.flyer?.taps ?? 0;
-    const need = s.flyerTaps;
-    this.el.flyer.classList.add('handout');
-    this.#text('flyerCount', `${taps}/${need}`);
-    const w = `${Math.round(clamp(taps / need, 0, 1) * 100)}%`;
-    if (this.el.flyerFill.style.width !== w) this.el.flyerFill.style.width = w;
-    // nothing plated is the only thing that stops the board working
-    this.el.flyer.classList.toggle('spent', s.stockCount <= 0);
 
     const icon = `ico ico-${this.game.sfx.enabled ? 'sound' : 'mute'}`;
     if (this.el.sound.firstElementChild.className !== icon) {
@@ -294,28 +276,6 @@ export class Hud {
     );
   }
 
-  /**
-   * A flyer went out — or came off the press. Kick the satchel so a tap that
-   * costs a poster is felt in the HUD and not only in the room.
-   */
-  bumpFlyer() {
-    this.el.flyer.animate(
-      [
-        { transform: 'scale(1) rotate(0deg)' },
-        { transform: 'scale(1.1) rotate(-4deg)' },
-        { transform: 'scale(1)' },
-      ],
-      { duration: 300, easing: 'cubic-bezier(.2,1.7,.4,1)' },
-    );
-  }
-
-  /** Draw the eye to the flyer when someone tries to open with no posters up. */
-  pulseFlyer() {
-    this.el.flyer.animate(
-      [{ transform: 'scale(1)' }, { transform: 'scale(1.16) rotate(-3deg)' }, { transform: 'scale(1)' }],
-      { duration: 480, iterations: 2, easing: 'cubic-bezier(.2,1.6,.4,1)' },
-    );
-  }
 
   /** The rank strip, when a job or a guest pushes the fame up. */
   bumpRank() {

@@ -1,19 +1,29 @@
-// The long game: flyers, research, the shop, and the pottery class.
+// The long game: word of mouth, research, the shop, and the pottery class.
 
-/* ---------------------------------------------------------------- flyers  */
+/* ------------------------------------------------------------ word of mouth */
 
 /**
- * Flyers are made in the morning and handed out during service. Ten taps prints
- * one; during a shift, handing one out brings a guest through the door there and
- * then — one flyer, one customer, no waiting on the arrival clock. That makes the
- * stack you printed before opening the thing that paces your day, and it is why
- * every automation in the game eventually points back at the printing.
+ * Guests turn up on their own.
+ *
+ * There used to be a noticeboard on the HUD: ten taps printed a flyer, and
+ * during a shift handing one out pulled a guest through the door there and
+ * then. It made the arrival rate something you *operated* — tap, tap, tap,
+ * customer — and the whole day became a button-mashing chore sitting on top of
+ * a game about running a restaurant. Worse, it was load-bearing: a room full of
+ * lovely furniture sat empty if you had not done your tapping.
+ *
+ * So the door is the room's job now. Ambience, fame, the pieces that draw
+ * people in and the Word of Mouth research all feed one number, and nobody has
+ * to hold a button down to be allowed customers.
  */
-export const FLYER_TAPS = 10;
-export const FLYER_BASE_MAX = 8;
+export const WORD_STEPS = { word_1: 0.55, word_2: 0.9, lantern_string: 0.35 };
 
-/** Passive draw from the flyers still in hand — word gets round on its own. */
-export const flyerDraw = (posters) => posters * 0.22;
+/** Everything the harbour knows about you, as one pull on the door. */
+export const wordOfMouth = (state) => {
+  let draw = 1.15;
+  for (const [id, n] of Object.entries(WORD_STEPS)) if (state.hasResearch(id)) draw += n;
+  return draw;
+};
 
 /* -------------------------------------------------------------- research  */
 
@@ -23,12 +33,12 @@ export const flyerDraw = (posters) => posters * 0.22;
  * within a day — because the tree exists to retire chores, not to gate them.
  */
 export const RESEARCH = [
-  { id: 'flyer_1', label: 'Bigger Print', cost: 6, group: 'flyer',
-    blurb: 'Two fewer taps to finish a poster.' },
-  { id: 'flyer_2', label: 'Stencil Set', cost: 18, group: 'flyer', needs: 'flyer_1',
-    blurb: 'Another three taps off, and room for a fourth poster.' },
-  { id: 'flyer_auto', label: 'Paste Crew', cost: 44, group: 'flyer', needs: 'flyer_2',
-    blurb: 'Posters go up on their own, one every twelve seconds.' },
+  { id: 'word_1', label: 'Painted Sign', cost: 6, group: 'flyer',
+    blurb: 'A proper sign over the door. More guests find their way in.' },
+  { id: 'word_2', label: 'Harbour Gossip', cost: 18, group: 'flyer', needs: 'word_1',
+    blurb: 'Everyone tells everyone. Guests arrive noticeably faster.' },
+  { id: 'word_3', label: 'Postcards', cost: 44, group: 'flyer', needs: 'word_2',
+    blurb: 'Visitors send them home. Rare guests turn up far more often.' },
 
   { id: 'speed_1', label: 'Greased Bearings', cost: 10, group: 'works',
     blurb: 'Every machine runs 15% faster.' },
@@ -44,10 +54,8 @@ export const RESEARCH = [
   { id: 'kiln_1', label: 'Hotter Kiln', cost: 22, group: 'trade',
     blurb: 'Pottery earns experience twice as fast.' },
 
-  { id: 'flyer_board', label: 'Harbour Notice Board', cost: 12, group: 'flyer',
-    blurb: 'Room for four more flyers in the satchel.' },
   { id: 'lantern_string', label: 'String of Lanterns', cost: 20, group: 'flyer',
-    blurb: 'Guests drift in 20% quicker on their own.' },
+    blurb: 'Warm light out front. Guests drift in a little quicker.' },
   { id: 'quick_wash', label: 'Deep Sink', cost: 16, group: 'works',
     blurb: 'Tables are cleared in half the time.' },
 ];
