@@ -19,11 +19,11 @@ const GRAV = 900;
  * There is a floor of one, because an effect that sometimes emits nothing is
  * worse than a small one — a plate that lands silently reads as a bug.
  */
-const THRIFT = 0.5;
+const THRIFT = 0.3;
 const many = (n) => Math.max(1, Math.round(n * THRIFT));
 
 /** A cap, so a pile-up cannot cost frames either. Oldest go first. */
-const MAX_PARTS = 130;
+const MAX_PARTS = 70;
 
 export class Fx {
   constructor() { this.parts = []; this.shake = 0; }
@@ -36,9 +36,16 @@ export class Fx {
 
   clear() { this.parts.length = 0; }
 
-  /** Screen shake in world units, decays fast. Halved along with the rest —
-   *  the camera lurching at every placed chair was most of the noise. */
-  kick(amount = 5) { this.shake = Math.max(this.shake, amount * 0.55); }
+  /**
+   * Screen shake — or rather, the absence of it.
+   *
+   * The camera lurched every time a chair went down or a plate landed. In a
+   * game about arranging a quiet room that is not weight, it is a flinch, and
+   * it was most of what made the place feel frantic. The hook stays so the call
+   * sites still read honestly; it simply does very little now, and the calls
+   * that used to be worth a real jolt are the only ones you notice.
+   */
+  kick(amount = 5) { this.shake = Math.max(this.shake, Math.min(1.4, amount * 0.28)); }
 
   /* ------------------------------------------------------------- emitters */
 

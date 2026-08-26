@@ -17,58 +17,65 @@ import { KEYS, QUESTS, SIDE_BY_ID, SPOTS } from '../data/quests.js';
  * Scripted moments. `at` names what the camera should look at; `when` is
  * checked once a second and fires the beat the first time it is true.
  *
- * Tako is the only voice in the game, so he carries all of the teaching. He is
- * warm about it: he is delighted you turned up, he says one useful thing per
- * beat, and he says it in words a nine-year-old reading their second language
- * can take in at a glance. The old draft was drier and funnier and taught
- * nothing — "front of house is your problem" is a joke about a job, not an
- * explanation of one.
+ * Tako is the only voice in the game, so he carries all of the teaching — and
+ * the last draft carried it in the voice of a manual. "Plating uses up
+ * ingredients, so plate what you can sell" is a true sentence nobody has ever
+ * said out loud. Every line here is written to be *spoken*: he starts in the
+ * middle of a thought, he corrects himself, he tails off, he asks you things.
  *
- * Rules for anything written here: short lines, plain words, no idiom, and
- * every beat leaves you knowing what to do next.
+ * The rules that produce that, since it is easy to drift back:
+ *
+ *   - Contractions, always. "You'll" and "I've", never "you will".
+ *   - Let a line start with And, So, Right, Anyway, Oh.
+ *   - One clause is usually enough. Two is the most.
+ *   - He talks to you, not at you — questions, and answers to questions you
+ *     did not ask out loud but obviously just thought.
+ *   - Still no idiom you would have to be English to get, and still one useful
+ *     fact per beat. Sounding human is not a licence to stop teaching.
  */
 export const BEATS = [
   { id: 'arrive', at: 'pass', when: () => true, lines: [
-    "Hello! You must be the new owner.",
-    "I am Tako. I do the cooking.",
-    "You look after the guests. Deal?",
+    "Oh — hello! Sorry, I was miles away.",
+    "You're the new owner, then. I'm Tako. I cook.",
+    "You'll look after everybody out front. That alright?",
   ] },
   { id: 'plated', at: 'pass', when: (g) => g.state.plannedCount > 0, lines: [
-    "Lovely — now we have something to sell!",
-    "Plating uses up ingredients, so plate what you can sell.",
+    "There we go. Now we've got something to sell.",
+    "Watch the larder, though — every plate uses it up.",
   ] },
   { id: 'opened', at: 'door', when: (g) => g.state.phase === 'open', lines: [
-    "The doors are open. Here they come!",
-    "Tap a guest who is waiting, and they will sit down.",
+    "Right, doors are open. Here they come!",
+    "Somebody's waiting — give them a tap and they'll sit down.",
   ] },
   { id: 'fed', at: 'seats', when: (g) => g.state.stats.served >= 1, lines: [
-    "Our first happy guest. Look at that!",
-    "Be quick with people and they tip you more.",
+    "There. Our first one, fed and happy.",
+    "Be quick with people and they leave you a bit more. Every time.",
   ] },
   { id: 'closed', at: 'pass', when: (g) => g.state.day >= 2, lines: [
-    "That is a whole day done. Well done, you.",
-    "Tomorrow we do the same thing, a little better.",
+    "Well. That's a whole day, that is.",
+    "And tomorrow we do it again, only better. That's the job.",
   ] },
   { id: 'works', at: 'works', when: (g) => g.zone === g.factory, lines: [
-    "Welcome to the works! This room is yours too.",
-    "Machines make ingredients while you are busy out front.",
-    "Belts carry things along. You just point them the right way.",
+    "Ah, you found the works. This is ours too.",
+    "The machines keep making things while you're busy out front.",
+    "And the belts carry it along — you just point them the right way.",
   ] },
   { id: 'crewed', at: 'seats', when: (g) => g.state.staff.length >= 1, lines: [
-    "You hired someone! Now there are two of us.",
-    "They help forever, and they never ask for a day off.",
+    "You hired somebody! Look at us, we're a team.",
+    "They'll keep at it forever, too. Never once asked for a day off.",
   ] },
   { id: 'kiln', at: 'works', when: (g) => g.state.hasWorks?.('kiln'), lines: [
-    "The kiln! Clay is cheap. A lovely plate is not.",
-    "The same soup in a nicer bowl earns more. People are funny like that.",
+    "Now then. Clay costs almost nothing.",
+    "A really lovely plate does not.",
+    "Same soup, nicer bowl, more money. People are funny.",
   ] },
   { id: 'busy', at: 'seats', when: (g) => g.state.stats.served >= 25, lines: [
-    "Look at this. Every single seat full!",
-    "I am very proud of you. Do not tell anybody I said so.",
+    "Would you look at that. Not a spare chair in here.",
+    "I'm proud of you, actually. Don't tell anyone I said it.",
   ] },
   { id: 'famous', at: 'door', when: (g) => g.state.rating >= 3, lines: [
-    "The whole harbour is talking about us!",
-    "You keep them talking. I will keep cooking.",
+    "So the whole harbour's talking about us now.",
+    "You keep them talking. I'll keep cooking.",
   ] },
 ];
 

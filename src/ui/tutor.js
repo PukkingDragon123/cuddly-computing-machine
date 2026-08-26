@@ -39,7 +39,7 @@ const STEPS = [
     id: 'kitchen',
     lock: true,
     title: 'Open the Kitchen',
-    text: 'Food has to be plated before anyone can buy it. Tap the Kitchen book.',
+    text: "Nothing sells until it's plated up. Open the Kitchen and I'll show you.",
     at: () => '#btn-recipes',
     done: (g) => g.hud.sheetOpen === 'recipes',
   },
@@ -51,7 +51,7 @@ const STEPS = [
     // which meant the guide moved on and fenced the + off while the job was
     // still asking for two more — the two things telling you different stories
     // about the same button.
-    text: 'Tap the + beside the latte three times. Each one uses ingredients, so plate what you can sell.',
+    text: "Tap the + by the latte three times. Each one costs you ingredients, so don't go mad.",
     at: () => '#sheet-body .stepper button:last-child',
     done: (g) => g.state.plannedCount >= 3,
   },
@@ -61,7 +61,7 @@ const STEPS = [
     title: 'Open the doors',
     // the doors open from inside the kitchen book, beside the plating you have
     // just done, so the guide stays on the page rather than sending you out
-    text: 'That is the morning done. Let them in!',
+    text: "Right, that's the morning done. Shall we let them in?",
     at: () => '#menu-open',
     before: (g) => { if (g.hud.sheetOpen !== 'recipes') g.openRecipes(); },
     done: (g) => g.state.phase === 'open',
@@ -72,7 +72,7 @@ const STEPS = [
     title: 'Sit somebody down',
     // the doors closing takes the guests with them, so the step goes too
     stale: (g) => g.state.phase !== 'open',
-    text: 'Tap the guest who is waiting and they will find a chair.',
+    text: "Somebody's waiting. Give them a tap and they'll find a chair.",
     world: (g) => {
       const q = g.restaurant.guests.find((x) => x.state === 'queue');
       return q ? { x: q.pos.x, y: q.headY } : null;
@@ -84,7 +84,7 @@ const STEPS = [
     lock: true,
     title: 'Take their order',
     stale: (g) => g.state.phase !== 'open',
-    text: 'Tap the ! above their head. That sends the order to Tako.',
+    text: "See the ! over their head? Tap it and the order comes through to me.",
     world: (g) => {
       const o = g.restaurant.guests.find((x) => x.state === 'order');
       return o ? { x: o.pos.x, y: o.headY - 60 } : null;
@@ -95,9 +95,9 @@ const STEPS = [
   {
     id: 'serve',
     lock: true,
-    title: 'Bring the food',
+    title: 'Bring the food over',
     stale: (g) => g.state.phase !== 'open',
-    text: 'Drag the plate off the counter and onto the guest who ordered it.',
+    text: "That's yours. Drag it off the counter and onto whoever ordered it.",
     world: (g) => {
       const p = g.restaurant.kitchen.plates[0];
       return p ? { x: p.x, y: p.y } : null;
@@ -107,14 +107,14 @@ const STEPS = [
   {
     id: 'jobs',
     title: 'Your job list',
-    text: 'There is always one job on the go, up in the corner. Finishing it pays you.',
+    text: "There's always a job on the go up there. They pay, so keep an eye on it.",
     at: () => '#quest',
     done: null,
   },
   {
     id: 'done',
-    title: 'That is the whole game!',
-    text: 'Serve people, get paid, spend it on the place. The job list always says what to try next.',
+    title: "And that's the whole of it",
+    text: "Serve people, get paid, put it back into the place. The job list says what's next.",
     at: () => '#btn-quests',
     done: null,
   },
@@ -171,7 +171,7 @@ export class Tutor {
     const s = this.game.state;
     s.tutorial = { step: this.i, done: true };
     s.save();
-    if (skipped) this.game.hud.toast('Guide put away. The job list has the rest!', '');
+    if (skipped) this.game.hud.toast("Right, I'll leave you to it. The job list has the rest", '');
   }
 
   #next() {
@@ -180,7 +180,7 @@ export class Tutor {
       this.#pay();
       this.stop();
       this.game.state.earn(TUTOR_BONUS);
-      this.game.celebrate(`You have the hang of it! +${TUTOR_BONUS}`);
+      this.game.celebrate(`You've got it. Here — take this. +${TUTOR_BONUS}`);
       return;
     }
     // Every step pays. A guide that only tells you things is homework; a guide
@@ -189,7 +189,7 @@ export class Tutor {
     const step = STEPS[this.i];
     // the moment the fence comes down for good is worth marking
     if (STEPS[this.i - 1]?.lock && !step.lock) {
-      this.game.hud.toast('The place is yours now. Have a look around!', 'good');
+      this.game.hud.toast("Place is yours. Go on, have a poke about", 'good');
     }
     step.before?.(this.game);
     this.el.title.textContent = step.title;
@@ -322,7 +322,7 @@ export class Tutor {
     this.game.sfx.play('coin');
     const cam = this.game.zone.cam;
     this.game.zone.fx.coins(cam.x, cam.y - 20, 6, 60);
-    this.game.hud.toast(`Nicely done! +${STEP_PAY}`, 'good');
+    this.game.hud.toast(`That's it. +${STEP_PAY}`, 'good');
   }
 
   /** Screen-space box of whatever this step is pointing at. */

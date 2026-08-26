@@ -143,7 +143,7 @@ export class Game {
     const entries = Object.entries(got);
     if (!entries.length) return;
     const summary = entries.slice(0, 3).map(([id, n]) => `${n}× ${ingName(id)}`).join(', ');
-    this.hud.toast(`The works kept going while you were away: ${summary}`, 'good');
+    this.hud.toast(`The works kept at it while you were out: ${summary}`, 'good');
   }
 
   /* ---------------------------------------------------------------- zones  */
@@ -252,7 +252,7 @@ export class Game {
     const spent = zone.commitPlace?.();
     if (!spent) {
       this.sfx.play('no');
-      this.hud.toast('Not enough sand dollars for that', 'bad');
+      this.hud.toast("Can't afford that one yet", 'bad');
       this.hud.shakePlaceBar();
       return;
     }
@@ -371,9 +371,9 @@ export class Game {
     if (this.state.phase === 'report') return;
 
     const r = this.restaurant;
-    if (!r.hasPass) { this.hud.toast('Build a Kitchen Pass first — Tako needs somewhere to put the plates', 'bad'); this.openBuild(); return; }
-    if (r.seatCount === 0) { this.hud.toast('Nowhere to sit! Put a chair beside a table', 'bad'); this.openBuild(); return; }
-    if (this.state.plannedCount === 0) { this.hud.toast('Nothing on the menu yet — plate a dish first', 'bad'); this.openRecipes(); return; }
+    if (!r.hasPass) { this.hud.toast("Tako needs a Kitchen Pass — somewhere to put the plates", 'bad'); this.openBuild(); return; }
+    if (r.seatCount === 0) { this.hud.toast("Nowhere to sit — pop a chair beside a table", 'bad'); this.openBuild(); return; }
+    if (this.state.plannedCount === 0) { this.hud.toast("Nothing on the menu yet. Plate something first", 'bad'); this.openRecipes(); return; }
     this.setZone('restaurant');
     this.cancelPlacement();
     this.state.openDoors();
@@ -383,7 +383,7 @@ export class Game {
     this.hud.titleCard(`Day ${this.state.day}`, 'Doors open!');
     // the hint shares the centre of the screen with the card, so let it land after
     this.tweens.after(2.0, () => {
-      if (this.state.phase === 'open') this.hud.hint('Tap a guest who is waiting to sit them down.', 3.2);
+      if (this.state.phase === 'open') this.hud.hint("Somebody's waiting — give them a tap.", 3.2);
     });
     this.hud.sync();
   }
@@ -428,7 +428,7 @@ export class Game {
     if (!this.#applyRoomSize()) return;
     this.restaurant.cam.bounds = this.restaurant.bounds();
     this.restaurant.framed = false;
-    this.hud.toast('The dining room just got bigger!', 'good');
+    this.hud.toast('Look at the size of it now', 'good');
   }
 
   #applyRoomSize() {
@@ -537,7 +537,7 @@ export class Game {
   #rankUp(n) {
     if (this.attract) return;
     const name = RANKS[n]?.name ?? 'Fame';
-    this.hud.titleCard(name, 'We moved up!');
+    this.hud.titleCard(name, 'We moved up');
     this.sfx.play('level');
     const cam = this.zone.cam;
     this.zone.fx.sparkles(cam.x, cam.y - 20, 26, 140);

@@ -2262,11 +2262,10 @@ body.still .point-ring, body.still .point-hand { animation: none }
   box-shadow: 0 0 0 100vmax rgba(58, 36, 20, .5);
   border: 0.2rem solid var(--sun);
   transition: left .18s ease, top .18s ease, width .18s ease, height .18s ease;
-  animation: holePulse 1.6s ease-in-out infinite;
-}
-@keyframes holePulse {
-  0%, 100% { border-color: var(--sun); box-shadow: 0 0 0 100vmax rgba(58, 36, 20, .5)}
-  50%      { border-color: #fff3c8; box-shadow: 0 0 0 100vmax rgba(58, 36, 20, .58)}
+  /* It used to pulse. A spotlight is already the brightest thing on a darkened
+     screen and the pointer is already jabbing at it, so the pulse was a third
+     voice saying the same thing — and it repainted a 100vmax shadow sixty times
+     a second to say it. */
 }
 .tutor-say {
   position: absolute;
@@ -2314,9 +2313,7 @@ body.still .point-ring, body.still .point-hand { animation: none }
 .tutor-dots i.here {
   background: var(--sun); border-color: var(--ink);
   transform: scale(1.5);
-  animation: pipPulse 1.4s ease-in-out infinite;
 }
-@keyframes pipPulse { 50% { transform: scale(1.85) } }
 /* a step with nothing to wait for says so, and so does one that gave up waiting */
 .tutor-say.freed::after { content: "tap to skip this one" !important }
 .tutor-say:not(.waits)::after, .tutor-say.freed::after {
