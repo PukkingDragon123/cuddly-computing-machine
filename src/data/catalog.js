@@ -24,6 +24,7 @@ export const STYLE_BY_ID = Object.fromEntries(STYLES.map((s) => [s.id, s]));
  */
 export const groupFor = (item, styleId) => {
   if (item.set === 'deco') return 'deco';
+  if (item.set === 'card') return 'cards';
   const st = STYLE_BY_ID[styleId] ?? STYLES[0];
   return item.set === 'fixt' ? st.fixt : st.furn;
 };
@@ -69,6 +70,7 @@ export const SHELVES = [
   { id: 'trinket', label: 'Trinkets', note: 'Small things that sit on a table, a shelf or the counter.' },
   { id: 'plants', label: 'Plants', note: 'Greenery, in a pot. Some for a table, some for a corner of the floor.' },
   { id: 'light', label: 'Lights & Walls', note: 'Hung overhead or on a back wall. They take no floor at all.' },
+  { id: 'poster', label: 'Posters', note: 'Printed for the harbour and sold by the sheet. Hang one on a back wall.' },
 ];
 
 /* ---------------------------------------------------------- the deco set */
@@ -149,6 +151,42 @@ export const DECOR_SET = [
   D('shell_wreath', 'Shell Wreath', 85, 2, { ...WALL, blurb: 'Made from a summer of beachcombing.' }),
 ];
 
+/* ------------------------------------------------------------- the posters */
+
+/**
+ * Twenty illustrated cards ship with the pack and, until now, ten of them were
+ * a 2MB download nobody ever saw: they back a recipe page and a diary entry and
+ * that is all. They are drawn face-on rather than in projection, which is
+ * useless for anything standing in the room and exactly right for something
+ * hung flat on a wall — so they are posters, and the room finally has art in it.
+ *
+ * `set: 'card'` sends them to the cards group whatever finish the room is in;
+ * a printed sheet is not made of wood.
+ */
+const P = (id, label, cost, star, blurb, opts = {}) => ({
+  id: `poster_${id}`, label, cost, star, blurb,
+  kind: 'decor', set: 'card', sprite: `card_${id}`,
+  mount: 'wall', shelf: 'poster',
+  ...opts,
+});
+
+export const POSTERS = [
+  P('shrimp', 'Sweet Shrimp', 60, 1, 'The one everybody orders.'),
+  P('crab', 'Crab Season', 65, 1, 'Up all summer, down all winter.'),
+  P('grilled_fish', 'Catch of the Day', 70, 2, 'Whatever the boats brought in.'),
+  P('ramen', 'Bowl of Ramen', 75, 2, 'Steam drawn on with a very fine brush.'),
+  P('oyster', 'Oyster Bar', 80, 2, 'One pearl, if you are lucky.'),
+  P('stein', 'Half a Pint', 70, 2, 'Cheerful, and slightly foamy.'),
+  P('cloche', 'Under the Cloche', 85, 2, 'Nobody knows. That is the joke.', { rank: 1 }),
+  P('reef', 'The Reef', 95, 3, 'Out past the harbour wall.', { rank: 1 }),
+  P('squid', 'Night Swim', 100, 3, 'A squid and a moon and not much else.', { rank: 1 }),
+  P('whale', 'The Whale', 110, 3, 'Spouting, pleased with itself.', { rank: 2 }),
+  P('feast', 'The Whole Table', 120, 3, 'Everyone you have ever served, eating at once.',
+    { tipRoom: 1.04, rank: 2 }),
+  P('royal', 'Harbour Royal', 140, 3, 'Gold leaf. Actual gold leaf.',
+    { tipRoom: 1.05, rank: 3 }),
+];
+
 /**
  * kind:
  *   table — guests eat here; seats come from adjacent chairs
@@ -220,6 +258,7 @@ export const FURNITURE = [
     label: 'Key Rack', cost: 60, star: 1, blurb: 'Small hooks by the door.' },
 
   ...DECOR_SET,
+  ...POSTERS,
 ];
 
 export const FURNITURE_BY_ID = Object.fromEntries(FURNITURE.map((f) => [f.id, f]));
@@ -240,13 +279,15 @@ export const LEGACY_FURNITURE = {
 };
 export const LEGACY_STYLES = { standard: 'plain', coral: 'cottage', whale: 'antique' };
 
-/** The finish only prices the wood. The deco set is drawn once, so it is one
- *  price whichever finish the room happens to be in. */
-export const costOf = (item, styleId) => (item.set === 'deco'
+/** The finish only prices the wood. The deco set and the posters are drawn
+ *  once, so they are one price whichever finish the room happens to be in. */
+const PLAIN_SET = (item) => item.set === 'deco' || item.set === 'card';
+
+export const costOf = (item, styleId) => (PLAIN_SET(item)
   ? item.cost
   : Math.round(item.cost * (STYLE_BY_ID[styleId]?.costMul ?? 1)));
 
-export const starsOf = (item, styleId) => (item.set === 'deco'
+export const starsOf = (item, styleId) => (PLAIN_SET(item)
   ? item.star
   : item.star + (STYLE_BY_ID[styleId]?.star ?? 0));
 

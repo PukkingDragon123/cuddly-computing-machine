@@ -2871,6 +2871,74 @@ body.still .card.want::before { animation: none }
 .duo > * { flex: 1 1 0; min-width: 0 }
 .duo-gap { visibility: hidden }
 
+/* the printed furniture --------------------------------------------------- */
+
+/* The line across the top of every page. A catalogue is a publication: it has
+   a masthead, it has a section, and it has a number, and those three things do
+   more to say "this is a thing you browse" than any amount of styling on the
+   cards below them. */
+.masthead {
+  display: flex; align-items: center; gap: 0.5rem;
+  padding-bottom: 0.3rem;
+  border-bottom: 0.14rem solid var(--ink);
+}
+.masthead-mark {
+  flex: none;
+  width: 1.5rem; height: 1.5rem;
+  display: grid; place-content: center;
+  border: 0.14rem solid var(--ink);
+  border-radius: 0.25rem;
+  background: var(--ink);
+  color: var(--paper);
+  font-size: 0.66rem; font-weight: 900; letter-spacing: .02em;
+}
+.masthead-body { flex: 1; min-width: 0; display: flex; flex-direction: column; line-height: 1.05 }
+.masthead-body b { font-size: 0.94rem; font-weight: 900; letter-spacing: .01em }
+.masthead-body span {
+  font-size: 0.56rem; font-weight: 800; letter-spacing: .09em;
+  text-transform: uppercase; color: var(--ink-faint);
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.masthead-no {
+  flex: none;
+  font-size: 0.62rem; font-weight: 900; color: var(--ink-soft);
+  font-variant-numeric: tabular-nums;
+}
+
+/* The advertisement. Boxed off with a heavy rule, the drawing hanging out of
+   the frame a little, and a price in the corner — every catalogue has one of
+   these on about every third page and they are always the nicest thing on it. */
+.advert {
+  position: relative;
+  display: flex; align-items: center; gap: 0.5rem;
+  padding: 0.4rem 0.5rem;
+  border: 0.2rem solid var(--ink);
+  border-radius: var(--r-hand);
+  background-color: var(--sun);
+  background-image: repeating-linear-gradient(
+    -45deg, rgba(255, 255, 255,.22) 0 0.4rem, rgba(255, 255, 255,0) 0.4rem 0.8rem);
+  overflow: hidden;
+}
+.advert-art {
+  flex: none;
+  width: 3.6rem; height: 3.2rem;
+  background: center bottom/contain no-repeat;
+  filter: drop-shadow(0 0.12rem 0.1rem rgba(95, 61, 38, .3));
+}
+.advert-body { flex: 1; min-width: 0; display: flex; flex-direction: column; line-height: 1.12 }
+.advert-kicker {
+  font-size: 0.55rem; font-weight: 900; letter-spacing: .1em;
+  text-transform: uppercase; color: var(--tangerine-deep);
+}
+.advert-body b { font-size: 0.92rem; font-weight: 900 }
+.advert-line {
+  font-size: 0.62rem; font-weight: 800; color: var(--ink-soft);
+  font-style: italic;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.advert-price { flex: none }
+.advert:active { transform: translateY(0.1rem) }
+
 /* A page out of a mail-order catalogue.
  *
  * It was a plain box with a picture in it, which is a spreadsheet row with a

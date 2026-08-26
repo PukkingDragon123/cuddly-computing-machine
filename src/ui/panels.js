@@ -36,6 +36,17 @@ import { CHAPTERS, KEYS, QUESTS, SIDE_BY_ID, wantedItem } from '../data/quests.j
  */
 const STYLE_SWATCH = { plain: '#be8c64', cottage: '#b46e32', antique: '#8c5028' };
 
+/** What the advertisement on each page is shouting about. */
+const ADVERT_KICKER = {
+  seating: 'Sit somebody down',
+  kitchen: 'For the working side',
+  decor: 'The centrepiece',
+  trinket: 'Small but mighty',
+  plants: 'Bring the outside in',
+  light: 'Turn the lights on',
+  poster: 'Fresh off the press',
+};
+
 /** Thumbnail sprite for a catalogue entry — pairs show their front view. */
 const spriteIdOf = (item) =>
   (typeof item.sprite === 'string' ? item.sprite : item.sprite.f ?? item.sprite.b);
@@ -347,18 +358,70 @@ export class Panels {
     keep ? this.hud.refreshSheet(spec) : this.hud.openSheet(spec);
   }
 
-  /** One page of the catalogue: what this shelf is, then the pieces on it. */
+  /**
+   * One page of the catalogue.
+   *
+   * A masthead, a line about the shelf, the finish picker where a finish means
+   * anything, then the plates — and an advertisement dropped in among them,
+   * because a catalogue that never once tries to sell you something is not a
+   * catalogue, it is a stock list. The advert falls wherever the pagination
+   * puts it, exactly like a printed one.
+   */
   #shelfPage(shelf) {
     const items = FURNITURE.filter((f) => (f.shelf ?? 'decor') === shelf.id);
     // the finish only prices the wood, so the swatches belong on the pages that
-    // sell wood and nowhere near the deco set, which is drawn once
-    const woody = items.some((f) => f.set !== 'deco');
+    // sell wood and nowhere near the deco set or the posters, drawn once each
+    const woody = items.some((f) => f.set !== 'deco' && f.set !== 'card');
+    const rows = this.#pieceRows(items);
+    const advert = this.#advert(shelf, items);
+    // a third of the way down, so on a two-page shelf it lands on the first
+    if (advert && rows.length > 2) rows.splice(Math.max(1, Math.round(rows.length / 3)), 0, advert);
     return [
+      this.#masthead(shelf),
       this.#shutNote(items) ?? h('div.note', null, shelf.note),
       woody ? this.#styleRow() : null,
-      ...this.#pieceRows(items),
+      ...rows,
       items.length ? null : h('div.empty', null, 'Nothing on this shelf yet.'),
     ].filter(Boolean);
+  }
+
+  /** The line across the top of every page: who printed it, and what section. */
+  #masthead(shelf) {
+    return h('div.masthead', null,
+      h('span.masthead-mark', null, 'BH'),
+      h('span.masthead-body', null,
+        h('b', null, shelf.label),
+        h('span', null, 'The Bubbleworks Harbor Catalogue')),
+      h('span.masthead-no', null, `No. ${SHELVES.findIndex((x) => x.id === shelf.id) + 1}`));
+  }
+
+  /**
+   * The advertisement.
+   *
+   * A real one: it picks the best thing on the shelf you have not bought yet,
+   * draws it big, and says something about it. Tapping it starts placing, so it
+   * is a shortcut as well as a joke — and it is the one place in the panel that
+   * recommends rather than lists.
+   */
+  #advert(shelf, items) {
+    const s = this.state;
+    const open = items.filter((i) => s.open(i));
+    if (open.length < 3) return null;
+    const owned = (i) => s.furniture.some((f) => f.id === i.id);
+    const pick = open.filter((i) => !owned(i)).sort((a, b) => b.star - a.star)[0]
+      ?? open[open.length - 1];
+    const cost = costOf(pick, this.buildStyle);
+    return h('div.advert.tap', {
+      onclick: () => this.game.startPlacing(pick.id, this.buildStyle),
+    },
+      h('div.advert-art', {
+        style: { backgroundImage: `url("${this.assets.url(groupFor(pick, this.buildStyle), spriteIdOf(pick))}")` },
+      }),
+      h('div.advert-body', null,
+        h('span.advert-kicker', null, ADVERT_KICKER[shelf.id] ?? 'This week'),
+        h('b', null, pick.label),
+        h('span.advert-line', null, pick.blurb ?? 'A very good one of these.')),
+      h('div.advert-price', null, this.#cost(cost)));
   }
 
   /**

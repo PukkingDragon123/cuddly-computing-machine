@@ -1067,7 +1067,12 @@ export class Restaurant {
     // the ceiling: high enough over the tile that a lamp hangs above head
     // height rather than sitting on the table under it
     if (mount === 'ceiling') { y = p.y - 196; bias = 60; }
-    else if (mount === 'wall') { y = p.y - 92; bias = -12; }
+    else if (mount === 'wall') {
+      y = p.y - 92; bias = -12;
+      // A poster is a printed sheet, not a framed mirror — the card art is
+      // drawn much larger than the wall pieces it hangs beside.
+      if (f.item.set === 'card') { y = p.y - 104; scale = FURN_SCALE * 0.62; }
+    }
     else if (mount === 'top') {
       const host = this.at(f.c, f.r);
       const hs = host ? this.spriteFor(host) : null;
