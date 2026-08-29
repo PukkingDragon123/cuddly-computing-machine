@@ -376,10 +376,9 @@ export class Hud {
       mark.classList.toggle('has-art', !!art);
     }
     show(this.el.placeRotate, rotate);
-    // the dial points the way the piece faces: four ticks and a hand on one
+    // four ticks, one lit — which way the piece is facing
     const dots = this.el.placeDial?.querySelectorAll('i') ?? [];
     for (let i = 0; i < dots.length; i++) dots[i].classList.toggle('on', i === (turn % 4));
-    if (this.el.placeDial) this.el.placeDial.style.setProperty('--turn', `${(turn % 4) * 90}deg`);
 
     show(this.el.placeBtn, !!confirm);
     if (confirm) {
