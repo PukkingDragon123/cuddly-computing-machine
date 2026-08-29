@@ -1,27 +1,38 @@
-// The finger.
+// The pointer.
 //
 // One element that follows whatever you are being told to press, used by both
 // the guide and the job list so there is only ever one thing pointing at
-// anything. It is a ring round the target and a hand beside it, and it takes no
-// pointer events whatsoever — the whole point is to draw the eye, never to
-// catch the finger that follows it.
+// anything. It is a ring round the target with Tako leaning in beside it, and
+// it takes no pointer events whatsoever — the whole point is to draw the eye,
+// never to catch the finger that follows it.
+//
+// He used to be an arrow. A drawn one, in the right colours, and it still
+// looked like a symbol in a game that has no other symbols in it: everything
+// else on screen is a picture of a thing. Since he is already the voice telling
+// you what to do, having him lean round the edge of the button and point at it
+// is the same instruction twice rather than two different ones.
 //
 // Nothing here animates the target itself. A control that is being pointed at
 // still has to be a still box you can hit, so the motion lives entirely on this
 // overlay, which sits on top of it and cannot be tapped.
 
 import { $, show } from './dom.js';
+import { CHEF_SPRITE } from '../data/catalog.js';
 
 /** How far outside the target the ring sits. */
 const PAD = 10;
 
 export class Point {
-  constructor() {
+  /** @param {import('../core/loader.js').Assets} [assets] for the chef's art */
+  constructor(assets = null) {
     this.el = $('#point');
     this.ring = $('#point-ring');
     this.hand = $('#point-hand');
     this.on = false;
     this.loudUntil = 0;
+    // the strip is three poses wide and the stylesheet holds it on the first
+    const url = assets?.url('staff', CHEF_SPRITE);
+    if (url && this.hand) this.hand.style.backgroundImage = `url("${url}")`;
   }
 
   /**

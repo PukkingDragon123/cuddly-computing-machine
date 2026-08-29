@@ -31,6 +31,7 @@ export class Hud {
       placebar: $('#placebar'),
       placeLabel: $('#placebar-label'),
       placeTitle: $('#placebar-title'),
+      placeMark: $('#placebar .plan-mark'),
       placeDial: $('#placebar-dial'),
       placeBtn: $('#placebar-place'),
       placeCost: $('#placebar-cost'),
@@ -53,7 +54,7 @@ export class Hud {
     this.hintTimer = 0;
     this.sheetOpen = null;
     // one finger, shared by the guide and the job list
-    this.point = new Point();
+    this.point = new Point(game.assets);
     this.#wire();
   }
 
@@ -364,9 +365,16 @@ export class Hud {
    * and whether the tile under it will take it. `null` means there is nothing
    * to confirm — belts are painted as you drag, and the eraser buys nothing.
    */
-  showPlaceBar(label, { rotate = true, title = 'Blueprint', turn = 0, confirm = null } = {}) {
+  showPlaceBar(label, { rotate = true, title = 'Blueprint', turn = 0, confirm = null, art = null } = {}) {
     this.el.placeLabel.textContent = label;
     this.el.placeTitle.textContent = title;
+    // The little square used to be two CSS gradients crossed into an X — a
+    // diagram of a thing, on a strip about a thing. It is the thing now.
+    const mark = this.el.placeMark;
+    if (mark) {
+      mark.style.backgroundImage = art ? `url("${art}")` : '';
+      mark.classList.toggle('has-art', !!art);
+    }
     show(this.el.placeRotate, rotate);
     // the dial points the way the piece faces: four ticks and a hand on one
     const dots = this.el.placeDial?.querySelectorAll('i') ?? [];

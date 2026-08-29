@@ -59,6 +59,14 @@ export function skinIcons(assets) {
     // both pointed at tools.png, which put the same drawing twice in a rail of
     // seven — the fastest way to make a column of icons unreadable.
     'ico-tools': 'list', 'ico-crew': 'crew', 'ico-refresh': 'refresh',
+    // The interface kit. Everything here used to be an inline SVG drawn by
+    // hand in the stylesheet — a cross, a padlock, a rotate arrow, a tick. They
+    // were legible and the right colours and they still read as geometry
+    // sitting in a game made of drawings, which is the one thing a drawn game
+    // cannot have. Every one had a hand-drawn twin sitting unused on the kit
+    // sheet; see tools/slice_uikit.py.
+    'ico-x': 'kit_x', 'ico-lock': 'kit_lock', 'ico-turn': 'kit_turn',
+    'ico-tick': 'kit_tick',
   };
   const rules = [];
   for (const [cls, id] of Object.entries(swap)) {

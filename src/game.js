@@ -15,10 +15,14 @@ import { Story } from './ui/story.js';
 import { GameState, SAVE_KEY } from './state.js';
 import { TAU, range, rnd } from './core/util.js';
 import { ingName } from './data/ingredients.js';
-import { FURNITURE_BY_ID, MACHINE_BY_ID } from './data/catalog.js';
+import { FURNITURE_BY_ID, MACHINE_BY_ID, SILO, groupFor } from './data/catalog.js';
+import { artFor } from './world/orient.js';
 import { RANKS, RANK_LINES } from './data/fame.js';
 
 const OFFLINE_CAP = 4 * 3600;   // seconds of away-time the works will catch up on
+
+/** Which of a piece's two drawings the strip should show, for its turn. */
+const spriteOf = (item, rot) => artFor(item.sprite, rot ?? 0);
 
 export class Game {
   constructor(canvas, assets) {
@@ -286,7 +290,20 @@ export class Game {
       title,
       turn: (inFactory ? g.dir : g.rot) ?? 0,
       confirm: belt ? null : { ok: !!g.ok, cost: this.zone.ghostCost?.() ?? 0 },
+      art: this.#ghostArt(g, inFactory),
     });
+  }
+
+  /** The drawing of whatever is on the cursor, for the strip along the bottom. */
+  #ghostArt(g, inFactory) {
+    if (!g || g.kind === 'erase') return null;
+    if (inFactory) {
+      if (g.kind === 'belt') return null;
+      if (g.kind === 'silo') return this.assets.url(SILO.group, SILO.sprite);
+      return this.assets.url('machines', MACHINE_BY_ID[g.id]?.sprite);
+    }
+    if (!g.item) return null;
+    return this.assets.url(groupFor(g.item, g.style), spriteOf(g.item, g.rot));
   }
 
   cancelPlacement() {

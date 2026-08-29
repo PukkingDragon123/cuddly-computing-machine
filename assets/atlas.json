@@ -2007,6 +2007,78 @@
    "src": "ui/recipes.webp",
    "w": 119,
    "h": 100
+  },
+  {
+   "id": "kit_x",
+   "src": "ui/kit_x.webp",
+   "w": 84,
+   "h": 84
+  },
+  {
+   "id": "kit_back",
+   "src": "ui/kit_back.webp",
+   "w": 69,
+   "h": 70
+  },
+  {
+   "id": "kit_gear",
+   "src": "ui/kit_gear.webp",
+   "w": 65,
+   "h": 67
+  },
+  {
+   "id": "kit_alert",
+   "src": "ui/kit_alert.webp",
+   "w": 58,
+   "h": 56
+  },
+  {
+   "id": "kit_tick",
+   "src": "ui/kit_tick.webp",
+   "w": 62,
+   "h": 50
+  },
+  {
+   "id": "kit_redo",
+   "src": "ui/kit_redo.webp",
+   "w": 59,
+   "h": 55
+  },
+  {
+   "id": "kit_speech",
+   "src": "ui/kit_speech.webp",
+   "w": 51,
+   "h": 41
+  },
+  {
+   "id": "kit_lock",
+   "src": "ui/kit_lock.webp",
+   "w": 103,
+   "h": 103
+  },
+  {
+   "id": "kit_wand",
+   "src": "ui/kit_wand.webp",
+   "w": 123,
+   "h": 65
+  },
+  {
+   "id": "kit_turn",
+   "src": "ui/kit_turn.webp",
+   "w": 56,
+   "h": 55
+  },
+  {
+   "id": "kit_crown",
+   "src": "ui/kit_crown.webp",
+   "w": 43,
+   "h": 55
+  },
+  {
+   "id": "kit_clock",
+   "src": "ui/kit_clock.webp",
+   "w": 46,
+   "h": 51
   }
  ],
  "cards": [

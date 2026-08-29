@@ -727,15 +727,25 @@ html, body {
   70% { transform: translateX(-3px) }
 }
 
+/* The piece you are carrying, drawn on a scrap of drafting paper. It used to be
+   two CSS gradients crossed into an X: a diagram of a thing, on a strip that is
+   about a thing. */
 .plan-mark {
   flex: none;
-  width: 1.5rem; height: 1.5rem;
+  width: 2rem; height: 2rem;
   border: 0.16rem solid #2f5771;
   border-radius: 0.3rem;
-  background:
+  background-color: #d7e8f4;
+  background-repeat: no-repeat;
+  background-position: center 78%;
+  background-size: 82% auto;
+}
+.plan-mark:not(.has-art) {
+  background-image:
     linear-gradient(45deg, transparent 46%, #2f5771 46% 54%, transparent 54%),
-    linear-gradient(-45deg, transparent 46%, #2f5771 46% 54%, transparent 54%),
-    #d7e8f4;
+    linear-gradient(-45deg, transparent 46%, #2f5771 46% 54%, transparent 54%);
+  background-size: auto;
+  background-position: center;
 }
 .placebar.bad .plan-mark { border-color: #b8481c; background-color: #f6ddd0 }
 .plan-text { display: flex; flex-direction: column; line-height: 1.15; min-width: 0 }
@@ -2185,46 +2195,50 @@ html, body {
 }
 
 /*
- * The arrow, not a hand.
+ * Tako does the pointing.
  *
- * A pointing finger is lovely at forty pixels and unreadable at twenty, and
- * twenty is the size this thing lives at beside a rail icon. So: a stubby
- * drawn arrow with a broad head, in the same cream and brown as everything
- * else. It is drawn pointing up and turned to face whichever side of the
- * target it is standing on, and it nudges along the line it points down —
- * toward the thing, never away from it.
+ * There was an arrow here — a drawn one, in the right colours, and it still
+ * looked like an arrow somebody had drawn in a stylesheet rather than anything
+ * belonging to this game. Nothing else on screen is a symbol; everything else
+ * is a picture of a thing.
+ *
+ * So the chef leans in and points, which is better on every count: he is
+ * already the voice that tells you what to do, so seeing him do it is the same
+ * instruction twice rather than two different ones, and a small octopus craning
+ * round the edge of a button is funnier than any arrow. He faces the target,
+ * and he bobs toward it — never away.
+ *
+ * The sprite is the three-frame chef strip, held on its first frame.
  */
 .point-hand {
   position: absolute;
-  width: 1.6rem; height: 1.8rem;
-  background: center / contain no-repeat;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 34'%3E%3Cpath d='M15 2.6 28 16.4h-7.4v12.2c0 1.6-1.2 2.8-2.8 2.8h-5.6c-1.6 0-2.8-1.2-2.8-2.8V16.4H2z' fill='%23fdf7e8' stroke='%235f3d26' stroke-width='2.6' stroke-linejoin='round'/%3E%3Cpath d='M15 8.6 22.4 16.4h-3.6' fill='none' stroke='%23e4652f' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
-  filter: drop-shadow(0 0.1rem 0.08rem rgba(95, 61, 38, .3));
+  width: 3.1rem; height: 3.1rem;
+  background: left bottom / 300% 100% no-repeat;
+  filter: drop-shadow(0 0.12rem 0.1rem rgba(95, 61, 38, .32));
 }
-/* target on the left of the screen: hand stands to its right, pointing left */
+/* target on the left of the screen: he stands to its right, leaning left */
 .point.from-left .point-hand {
-  right: -2.3rem; top: 50%; margin-top: -0.9rem;
-  rotate: -90deg;
+  right: -3.1rem; top: 50%; margin-top: -1.55rem;
+  scale: -1 1;
   animation: pointTapX 1.15s cubic-bezier(.4, 0, .3, 1) infinite;
-  --tap: -0.5rem;
+  --tap: -0.45rem;
 }
 /* and the mirror of that */
 .point.from-right .point-hand {
-  left: -2.3rem; top: 50%; margin-top: -0.9rem;
-  rotate: 90deg;
+  left: -3.1rem; top: 50%; margin-top: -1.55rem;
   animation: pointTapX 1.15s cubic-bezier(.4, 0, .3, 1) infinite;
-  --tap: 0.5rem;
+  --tap: 0.45rem;
 }
-/* pinned to the top of the screen: hand comes up from underneath */
+/* pinned to the top of the screen: he comes up from underneath */
 .point.from-below .point-hand {
-  left: 50%; margin-left: -0.8rem; top: 100%; margin-top: 0.5rem;
-  right: auto; rotate: 0deg;
+  left: 50%; margin-left: -1.55rem; top: 100%; margin-top: 0.3rem;
+  right: auto;
   animation: pointTapY 1.15s cubic-bezier(.4, 0, .3, 1) infinite;
-  --tap: -0.5rem;
+  --tap: -0.45rem;
 }
-/* the rotate is on the element, so the tap has to travel in its own frame */
-@keyframes pointTapX { 0%, 100% { translate: 0 0 } 45% { translate: 0 var(--tap) } }
+@keyframes pointTapX { 0%, 100% { translate: 0 0 } 45% { translate: var(--tap) 0 } }
 @keyframes pointTapY { 0%, 100% { translate: 0 0 } 45% { translate: 0 var(--tap) } }
+
 
 /* somebody asked "where?": the same thing, louder, for two seconds */
 .point.loud .point-ring { animation-duration: .55s; border-width: 0.26rem }
@@ -2997,6 +3011,8 @@ body.still .card.want::before { animation: none }
   background: rgba(95, 61, 38, .5);
 }
 .piece-price .ico { width: 1rem; height: 1rem }
+/* the padlock is a drawn coin, so it earns a bit more room than a glyph did */
+.piece-price .ico-lock { width: 1.5rem; height: 1.5rem }
 /* the ambience it adds, stamped in the corner of the picture like a grade */
 .piece-star {
   position: absolute; left: 0.16rem; top: 0.16rem;
