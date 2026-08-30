@@ -125,8 +125,11 @@ export async function loadAssets(onProgress = () => {}) {
   const jobsIn = (names) => names.flatMap(
     (group) => (atlas[group] ?? []).map((entry) => ({ group, entry })));
 
-  const first = FIRST.filter((g) => atlas[g]);
-  const later = Object.keys(atlas).filter((g) => !first.includes(g));
+  // Keys starting with an underscore are notes to the tools, not sprite groups
+  // — see the `_tone` marker tools/brighten.py leaves behind.
+  const groupNames = Object.keys(atlas).filter((g) => !g.startsWith('_'));
+  const first = FIRST.filter((g) => groupNames.includes(g));
+  const later = groupNames.filter((g) => !first.includes(g));
 
   const wave1 = jobsIn(first);
   await pull(wave1, onProgress);

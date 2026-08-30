@@ -15,7 +15,7 @@
   {
    "id": "pineapple_slicer",
    "src": "machines/pineapple_slicer.webp",
-   "w": 205,
+   "w": 204,
    "h": 214
   },
   {
@@ -39,7 +39,7 @@
   {
    "id": "egg_roller",
    "src": "machines/egg_roller.webp",
-   "w": 223,
+   "w": 225,
    "h": 214
   },
   {
@@ -57,79 +57,79 @@
   {
    "id": "cheese_press",
    "src": "machines/cheese_press.webp",
-   "w": 188,
+   "w": 187,
    "h": 214
   },
   {
    "id": "roaster",
    "src": "machines/roaster.webp",
-   "w": 224,
+   "w": 216,
    "h": 214
   },
   {
    "id": "grill",
    "src": "machines/grill.webp",
-   "w": 239,
+   "w": 242,
    "h": 214
   },
   {
    "id": "smoker",
    "src": "machines/smoker.webp",
-   "w": 289,
+   "w": 277,
    "h": 214
   },
   {
    "id": "steamer",
    "src": "machines/steamer.webp",
-   "w": 230,
+   "w": 222,
    "h": 214
   },
   {
    "id": "press_ring",
    "src": "machines/press_ring.webp",
-   "w": 232,
+   "w": 235,
    "h": 214
   },
   {
    "id": "mincer",
    "src": "machines/mincer.webp",
-   "w": 231,
+   "w": 232,
    "h": 214
   },
   {
    "id": "crate_filler",
    "src": "machines/crate_filler.webp",
-   "w": 234,
+   "w": 231,
    "h": 214
   },
   {
    "id": "sorter",
    "src": "machines/sorter.webp",
-   "w": 211,
+   "w": 231,
    "h": 214
   },
   {
    "id": "extruder",
    "src": "machines/extruder.webp",
-   "w": 207,
+   "w": 188,
    "h": 214
   },
   {
    "id": "tumbler_wide",
    "src": "machines/tumbler_wide.webp",
-   "w": 225,
+   "w": 195,
    "h": 214
   },
   {
    "id": "wok",
    "src": "machines/wok.webp",
-   "w": 226,
+   "w": 212,
    "h": 214
   },
   {
    "id": "baker",
    "src": "machines/baker.webp",
-   "w": 218,
+   "w": 234,
    "h": 214
   },
   {
@@ -171,7 +171,7 @@
   {
    "id": "vault",
    "src": "machines/vault.webp",
-   "w": 177,
+   "w": 176,
    "h": 214
   },
   {
@@ -243,7 +243,7 @@
   {
    "id": "pot_wheel",
    "src": "machines/pot_wheel.webp",
-   "w": 175,
+   "w": 174,
    "h": 214
   },
   {
@@ -261,7 +261,7 @@
   {
    "id": "round_kiln",
    "src": "machines/round_kiln.webp",
-   "w": 179,
+   "w": 180,
    "h": 214
   },
   {
@@ -279,7 +279,7 @@
   {
    "id": "glaze_kiln",
    "src": "machines/glaze_kiln.webp",
-   "w": 171,
+   "w": 170,
    "h": 214
   },
   {
@@ -1126,7 +1126,7 @@
    "id": "cabinet_b",
    "src": "furn_plain/cabinet_b.webp",
    "w": 187,
-   "h": 194
+   "h": 196
   },
   {
    "id": "chair_f",
@@ -1137,7 +1137,7 @@
   {
    "id": "chair_b",
    "src": "furn_plain/chair_b.webp",
-   "w": 139,
+   "w": 140,
    "h": 184
   },
   {
@@ -1150,7 +1150,7 @@
    "id": "drawers_b",
    "src": "furn_plain/drawers_b.webp",
    "w": 173,
-   "h": 195
+   "h": 196
   },
   {
    "id": "armchair_f",
@@ -1162,55 +1162,55 @@
    "id": "armchair_b",
    "src": "furn_plain/armchair_b.webp",
    "w": 192,
-   "h": 179
+   "h": 180
   },
   {
    "id": "shelf_f",
    "src": "furn_plain/shelf_f.webp",
-   "w": 164,
+   "w": 162,
    "h": 204
   },
   {
    "id": "shelf_b",
    "src": "furn_plain/shelf_b.webp",
-   "w": 162,
+   "w": 161,
    "h": 204
   },
   {
    "id": "lamp_f",
    "src": "furn_plain/lamp_f.webp",
    "w": 140,
-   "h": 176
+   "h": 177
   },
   {
    "id": "lamp_b",
    "src": "furn_plain/lamp_b.webp",
    "w": 139,
-   "h": 177
+   "h": 178
   },
   {
    "id": "rug",
    "src": "furn_plain/rug.webp",
-   "w": 261,
-   "h": 162
+   "w": 263,
+   "h": 164
   },
   {
    "id": "rug_rolled",
    "src": "furn_plain/rug_rolled.webp",
-   "w": 259,
+   "w": 260,
    "h": 159
   },
   {
    "id": "ornament",
    "src": "furn_plain/ornament.webp",
-   "w": 109,
-   "h": 193
+   "w": 110,
+   "h": 194
   },
   {
    "id": "ornament_mat",
    "src": "furn_plain/ornament_mat.webp",
-   "w": 243,
-   "h": 171
+   "w": 244,
+   "h": 172
   },
   {
    "id": "game_table_f",
@@ -1222,25 +1222,25 @@
    "id": "game_table_b",
    "src": "furn_plain/game_table_b.webp",
    "w": 200,
-   "h": 195
+   "h": 197
   },
   {
    "id": "books",
    "src": "furn_plain/books.webp",
    "w": 168,
-   "h": 191
+   "h": 192
   },
   {
    "id": "books_lean",
    "src": "furn_plain/books_lean.webp",
-   "w": 168,
-   "h": 183
+   "w": 170,
+   "h": 184
   },
   {
    "id": "round_table_f",
    "src": "furn_plain/round_table_f.webp",
    "w": 196,
-   "h": 193
+   "h": 194
   },
   {
    "id": "round_table_b",
@@ -1252,27 +1252,27 @@
    "id": "mirror",
    "src": "furn_plain/mirror.webp",
    "w": 137,
-   "h": 192
+   "h": 193
   },
   {
    "id": "mirror_wide",
    "src": "furn_plain/mirror_wide.webp",
    "w": 136,
-   "h": 203
+   "h": 204
   }
  ],
  "furn_cottage": [
   {
    "id": "cabinet_f",
    "src": "furn_cottage/cabinet_f.webp",
-   "w": 195,
-   "h": 195
+   "w": 196,
+   "h": 196
   },
   {
    "id": "cabinet_b",
    "src": "furn_cottage/cabinet_b.webp",
-   "w": 189,
-   "h": 192
+   "w": 190,
+   "h": 194
   },
   {
    "id": "chair_f",
@@ -1283,20 +1283,20 @@
   {
    "id": "chair_b",
    "src": "furn_cottage/chair_b.webp",
-   "w": 147,
-   "h": 186
+   "w": 148,
+   "h": 188
   },
   {
    "id": "drawers_f",
    "src": "furn_cottage/drawers_f.webp",
-   "w": 176,
+   "w": 177,
    "h": 194
   },
   {
    "id": "drawers_b",
    "src": "furn_cottage/drawers_b.webp",
    "w": 175,
-   "h": 193
+   "h": 194
   },
   {
    "id": "armchair_f",
@@ -1307,8 +1307,8 @@
   {
    "id": "armchair_b",
    "src": "furn_cottage/armchair_b.webp",
-   "w": 207,
-   "h": 189
+   "w": 208,
+   "h": 190
   },
   {
    "id": "shelf_f",
@@ -1319,62 +1319,62 @@
   {
    "id": "shelf_b",
    "src": "furn_cottage/shelf_b.webp",
-   "w": 161,
+   "w": 162,
    "h": 204
   },
   {
    "id": "lamp_f",
    "src": "furn_cottage/lamp_f.webp",
-   "w": 124,
-   "h": 179
+   "w": 125,
+   "h": 181
   },
   {
    "id": "lamp_b",
    "src": "furn_cottage/lamp_b.webp",
    "w": 124,
-   "h": 180
+   "h": 184
   },
   {
    "id": "rug",
    "src": "furn_cottage/rug.webp",
-   "w": 261,
-   "h": 150
+   "w": 262,
+   "h": 152
   },
   {
    "id": "rug_rolled",
    "src": "furn_cottage/rug_rolled.webp",
-   "w": 263,
+   "w": 264,
    "h": 153
   },
   {
    "id": "ornament",
    "src": "furn_cottage/ornament.webp",
-   "w": 109,
+   "w": 108,
    "h": 204
   },
   {
    "id": "ornament_mat",
    "src": "furn_cottage/ornament_mat.webp",
-   "w": 239,
+   "w": 240,
    "h": 159
   },
   {
    "id": "game_table_f",
    "src": "furn_cottage/game_table_f.webp",
    "w": 198,
-   "h": 195
+   "h": 197
   },
   {
    "id": "game_table_b",
    "src": "furn_cottage/game_table_b.webp",
-   "w": 192,
-   "h": 195
+   "w": 193,
+   "h": 197
   },
   {
    "id": "books",
    "src": "furn_cottage/books.webp",
    "w": 163,
-   "h": 181
+   "h": 182
   },
   {
    "id": "books_lean",
@@ -1386,13 +1386,13 @@
    "id": "round_table_f",
    "src": "furn_cottage/round_table_f.webp",
    "w": 159,
-   "h": 185
+   "h": 186
   },
   {
    "id": "round_table_b",
    "src": "furn_cottage/round_table_b.webp",
    "w": 212,
-   "h": 188
+   "h": 189
   },
   {
    "id": "mirror",
@@ -1417,7 +1417,7 @@
   {
    "id": "cabinet_b",
    "src": "furn_antique/cabinet_b.webp",
-   "w": 193,
+   "w": 192,
    "h": 204
   },
   {
@@ -1430,7 +1430,7 @@
    "id": "chair_b",
    "src": "furn_antique/chair_b.webp",
    "w": 151,
-   "h": 196
+   "h": 197
   },
   {
    "id": "drawers_f",
@@ -1442,7 +1442,7 @@
    "id": "drawers_b",
    "src": "furn_antique/drawers_b.webp",
    "w": 184,
-   "h": 196
+   "h": 197
   },
   {
    "id": "armchair_f",
@@ -1453,7 +1453,7 @@
   {
    "id": "armchair_b",
    "src": "furn_antique/armchair_b.webp",
-   "w": 199,
+   "w": 200,
    "h": 185
   },
   {
@@ -1471,8 +1471,8 @@
   {
    "id": "lamp_f",
    "src": "furn_antique/lamp_f.webp",
-   "w": 134,
-   "h": 190
+   "w": 136,
+   "h": 191
   },
   {
    "id": "lamp_b",
@@ -1484,24 +1484,24 @@
    "id": "rug",
    "src": "furn_antique/rug.webp",
    "w": 265,
-   "h": 157
+   "h": 158
   },
   {
    "id": "rug_rolled",
    "src": "furn_antique/rug_rolled.webp",
-   "w": 255,
-   "h": 151
+   "w": 256,
+   "h": 152
   },
   {
    "id": "ornament",
    "src": "furn_antique/ornament.webp",
    "w": 101,
-   "h": 179
+   "h": 180
   },
   {
    "id": "ornament_mat",
    "src": "furn_antique/ornament_mat.webp",
-   "w": 241,
+   "w": 242,
    "h": 165
   },
   {
@@ -1513,37 +1513,37 @@
   {
    "id": "game_table_b",
    "src": "furn_antique/game_table_b.webp",
-   "w": 195,
+   "w": 194,
    "h": 204
   },
   {
    "id": "books",
    "src": "furn_antique/books.webp",
-   "w": 171,
+   "w": 172,
    "h": 186
   },
   {
    "id": "books_lean",
    "src": "furn_antique/books_lean.webp",
-   "w": 172,
-   "h": 170
+   "w": 173,
+   "h": 171
   },
   {
    "id": "round_table_f",
    "src": "furn_antique/round_table_f.webp",
    "w": 197,
-   "h": 184
+   "h": 185
   },
   {
    "id": "round_table_b",
    "src": "furn_antique/round_table_b.webp",
    "w": 196,
-   "h": 186
+   "h": 187
   },
   {
    "id": "mirror",
    "src": "furn_antique/mirror.webp",
-   "w": 128,
+   "w": 129,
    "h": 185
   },
   {
@@ -1557,78 +1557,78 @@
   {
    "id": "window_plain_r",
    "src": "fixt_oak/window_plain_r.webp",
-   "w": 164,
-   "h": 300,
+   "w": 185,
+   "h": 324,
    "slope": 0.583
   },
   {
    "id": "window_bay_r",
    "src": "fixt_oak/window_bay_r.webp",
-   "w": 164,
-   "h": 299,
+   "w": 186,
+   "h": 324,
    "slope": 0.583
   },
   {
    "id": "door_closed_l",
    "src": "fixt_oak/door_closed_l.webp",
-   "w": 123,
-   "h": 304,
+   "w": 136,
+   "h": 324,
    "slope": -0.556
   },
   {
    "id": "door_open_r",
    "src": "fixt_oak/door_open_r.webp",
-   "w": 120,
-   "h": 304,
+   "w": 134,
+   "h": 324,
    "slope": 0.556
   },
   {
    "id": "window_palm_r",
    "src": "fixt_oak/window_palm_r.webp",
-   "w": 164,
-   "h": 299,
+   "w": 176,
+   "h": 324,
    "slope": 0.581
   },
   {
    "id": "window_open_r",
    "src": "fixt_oak/window_open_r.webp",
-   "w": 203,
-   "h": 304,
+   "w": 217,
+   "h": 324,
    "slope": 0.177
   },
   {
    "id": "door_open_l",
    "src": "fixt_oak/door_open_l.webp",
-   "w": 123,
-   "h": 304,
+   "w": 135,
+   "h": 324,
    "slope": -0.556
   },
   {
    "id": "door_closed_r",
    "src": "fixt_oak/door_closed_r.webp",
-   "w": 123,
-   "h": 304,
+   "w": 136,
+   "h": 324,
    "slope": 0.552
   },
   {
    "id": "key_rack",
    "src": "fixt_oak/key_rack.webp",
-   "w": 115,
-   "h": 129,
+   "w": 145,
+   "h": 162,
    "slope": -0.547
   },
   {
    "id": "pass_counter",
    "src": "fixt_oak/pass_counter.webp",
-   "w": 299,
-   "h": 304,
+   "w": 320,
+   "h": 324,
    "slope": -0.711
   },
   {
    "id": "host_desk",
    "src": "fixt_oak/host_desk.webp",
-   "w": 318,
-   "h": 304,
+   "w": 338,
+   "h": 324,
    "slope": -0.404
   }
  ],
@@ -2208,54 +2208,54 @@
    "id": "seahorse_f",
    "src": "deco/seahorse_f.webp",
    "w": 97,
-   "h": 153
+   "h": 154
   },
   {
    "id": "seahorse_b",
    "src": "deco/seahorse_b.webp",
-   "w": 77,
+   "w": 95,
    "h": 154
   },
   {
    "id": "crab_f",
    "src": "deco/crab_f.webp",
-   "w": 150,
-   "h": 153
+   "w": 148,
+   "h": 154
   },
   {
    "id": "crab_b",
    "src": "deco/crab_b.webp",
-   "w": 146,
-   "h": 144
+   "w": 148,
+   "h": 154
   },
   {
    "id": "jelly_dome_f",
    "src": "deco/jelly_dome_f.webp",
-   "w": 105,
-   "h": 146
+   "w": 114,
+   "h": 154
   },
   {
    "id": "jelly_dome_b",
    "src": "deco/jelly_dome_b.webp",
-   "w": 105,
-   "h": 136
+   "w": 112,
+   "h": 154
   },
   {
    "id": "turtle_f",
    "src": "deco/turtle_f.webp",
-   "w": 151,
-   "h": 136
+   "w": 164,
+   "h": 154
   },
   {
    "id": "turtle_b",
    "src": "deco/turtle_b.webp",
-   "w": 139,
-   "h": 129
+   "w": 159,
+   "h": 146
   },
   {
    "id": "lighthouse_f",
    "src": "deco/lighthouse_f.webp",
-   "w": 96,
+   "w": 95,
    "h": 154
   },
   {
@@ -2267,31 +2267,31 @@
   {
    "id": "model_boat_f",
    "src": "deco/model_boat_f.webp",
-   "w": 125,
+   "w": 126,
    "h": 154
   },
   {
    "id": "model_boat_b",
    "src": "deco/model_boat_b.webp",
-   "w": 117,
+   "w": 118,
    "h": 154
   },
   {
    "id": "bottle_ship_f",
    "src": "deco/bottle_ship_f.webp",
-   "w": 198,
-   "h": 154
+   "w": 172,
+   "h": 134
   },
   {
    "id": "bottle_ship_b",
    "src": "deco/bottle_ship_b.webp",
-   "w": 209,
-   "h": 154
+   "w": 177,
+   "h": 131
   },
   {
    "id": "ships_wheel_f",
    "src": "deco/ships_wheel_f.webp",
-   "w": 138,
+   "w": 139,
    "h": 154
   },
   {
@@ -2303,19 +2303,19 @@
   {
    "id": "reed_vase_f",
    "src": "deco/reed_vase_f.webp",
-   "w": 79,
+   "w": 78,
    "h": 154
   },
   {
    "id": "reed_vase_b",
    "src": "deco/reed_vase_b.webp",
-   "w": 77,
+   "w": 78,
    "h": 154
   },
   {
    "id": "bonsai_f",
    "src": "deco/bonsai_f.webp",
-   "w": 146,
+   "w": 145,
    "h": 154
   },
   {
@@ -2327,14 +2327,14 @@
   {
    "id": "cactus_f",
    "src": "deco/cactus_f.webp",
-   "w": 120,
-   "h": 154
+   "w": 104,
+   "h": 132
   },
   {
    "id": "cactus_b",
    "src": "deco/cactus_b.webp",
-   "w": 123,
-   "h": 154
+   "w": 106,
+   "h": 132
   },
   {
    "id": "hanging_ivy_f",
@@ -2345,80 +2345,80 @@
   {
    "id": "hanging_ivy_b",
    "src": "deco/hanging_ivy_b.webp",
-   "w": 119,
+   "w": 120,
    "h": 154
   },
   {
    "id": "wave_vase_f",
    "src": "deco/wave_vase_f.webp",
-   "w": 104,
-   "h": 154
+   "w": 85,
+   "h": 125
   },
   {
    "id": "wave_vase_b",
    "src": "deco/wave_vase_b.webp",
-   "w": 105,
-   "h": 154
+   "w": 85,
+   "h": 125
   },
   {
    "id": "shell_wreath_f",
    "src": "deco/shell_wreath_f.webp",
-   "w": 147,
-   "h": 154
+   "w": 133,
+   "h": 138
   },
   {
    "id": "shell_wreath_b",
    "src": "deco/shell_wreath_b.webp",
-   "w": 142,
-   "h": 154
+   "w": 129,
+   "h": 139
   },
   {
    "id": "lantern_f",
    "src": "deco/lantern_f.webp",
-   "w": 97,
-   "h": 154
+   "w": 87,
+   "h": 130
   },
   {
    "id": "lantern_b",
    "src": "deco/lantern_b.webp",
-   "w": 102,
-   "h": 154
+   "w": 87,
+   "h": 131
   },
   {
    "id": "candles_f",
    "src": "deco/candles_f.webp",
-   "w": 172,
-   "h": 154
+   "w": 141,
+   "h": 127
   },
   {
    "id": "candles_b",
    "src": "deco/candles_b.webp",
-   "w": 172,
-   "h": 150
+   "w": 131,
+   "h": 112
   },
   {
    "id": "gramophone_f",
    "src": "deco/gramophone_f.webp",
-   "w": 101,
-   "h": 113
+   "w": 90,
+   "h": 154
   },
   {
    "id": "gramophone_b",
    "src": "deco/gramophone_b.webp",
-   "w": 86,
-   "h": 113
+   "w": 91,
+   "h": 154
   },
   {
    "id": "telescope_f",
    "src": "deco/telescope_f.webp",
-   "w": 129,
-   "h": 122
+   "w": 122,
+   "h": 154
   },
   {
    "id": "telescope_b",
    "src": "deco/telescope_b.webp",
-   "w": 108,
-   "h": 115
+   "w": 110,
+   "h": 154
   },
   {
    "id": "seascape_f",
@@ -2447,13 +2447,13 @@
   {
    "id": "dolphin_f",
    "src": "deco/dolphin_f.webp",
-   "w": 103,
+   "w": 102,
    "h": 154
   },
   {
    "id": "dolphin_b",
    "src": "deco/dolphin_b.webp",
-   "w": 102,
+   "w": 101,
    "h": 154
   },
   {
@@ -2465,7 +2465,7 @@
   {
    "id": "whale_b",
    "src": "deco/whale_b.webp",
-   "w": 132,
+   "w": 131,
    "h": 154
   },
   {
@@ -2489,7 +2489,7 @@
   {
    "id": "walrus_b",
    "src": "deco/walrus_b.webp",
-   "w": 122,
+   "w": 123,
    "h": 154
   },
   {
@@ -2513,19 +2513,19 @@
   {
    "id": "coral_fan_b",
    "src": "deco/coral_fan_b.webp",
-   "w": 124,
+   "w": 125,
    "h": 154
   },
   {
    "id": "snake_plant_f",
    "src": "deco/snake_plant_f.webp",
-   "w": 89,
+   "w": 88,
    "h": 154
   },
   {
    "id": "snake_plant_b",
    "src": "deco/snake_plant_b.webp",
-   "w": 88,
+   "w": 89,
    "h": 154
   },
   {
@@ -2537,152 +2537,157 @@
   {
    "id": "monstera_b",
    "src": "deco/monstera_b.webp",
-   "w": 125,
+   "w": 124,
    "h": 154
   },
   {
    "id": "palm_f",
    "src": "deco/palm_f.webp",
-   "w": 115,
-   "h": 154
+   "w": 111,
+   "h": 149
   },
   {
    "id": "palm_b",
    "src": "deco/palm_b.webp",
-   "w": 116,
-   "h": 154
+   "w": 111,
+   "h": 148
   },
   {
    "id": "blossom_f",
    "src": "deco/blossom_f.webp",
-   "w": 122,
-   "h": 154
+   "w": 117,
+   "h": 146
   },
   {
    "id": "blossom_b",
    "src": "deco/blossom_b.webp",
-   "w": 121,
-   "h": 154
+   "w": 114,
+   "h": 145
   },
   {
    "id": "pearl_shell_f",
    "src": "deco/pearl_shell_f.webp",
-   "w": 152,
-   "h": 154
+   "w": 126,
+   "h": 127
   },
   {
    "id": "pearl_shell_b",
    "src": "deco/pearl_shell_b.webp",
-   "w": 151,
-   "h": 149
+   "w": 122,
+   "h": 121
   },
   {
    "id": "shell_basin_f",
    "src": "deco/shell_basin_f.webp",
-   "w": 136,
-   "h": 154
+   "w": 113,
+   "h": 128
   },
   {
    "id": "shell_basin_b",
    "src": "deco/shell_basin_b.webp",
-   "w": 149,
-   "h": 154
+   "w": 123,
+   "h": 126
   },
   {
    "id": "chest_f",
    "src": "deco/chest_f.webp",
-   "w": 163,
-   "h": 154
+   "w": 134,
+   "h": 127
   },
   {
    "id": "chest_b",
    "src": "deco/chest_b.webp",
-   "w": 164,
-   "h": 154
+   "w": 135,
+   "h": 127
   },
   {
    "id": "fish_bowl_f",
    "src": "deco/fish_bowl_f.webp",
-   "w": 170,
-   "h": 154
+   "w": 138,
+   "h": 125
   },
   {
    "id": "fish_bowl_b",
    "src": "deco/fish_bowl_b.webp",
-   "w": 170,
-   "h": 154
+   "w": 139,
+   "h": 126
   },
   {
    "id": "globe_f",
    "src": "deco/globe_f.webp",
-   "w": 112,
-   "h": 154
+   "w": 100,
+   "h": 138
   },
   {
    "id": "globe_b",
    "src": "deco/globe_b.webp",
-   "w": 114,
-   "h": 154
+   "w": 99,
+   "h": 134
   },
   {
    "id": "mantel_clock_f",
    "src": "deco/mantel_clock_f.webp",
-   "w": 122,
-   "h": 154
+   "w": 103,
+   "h": 131
   },
   {
    "id": "mantel_clock_b",
    "src": "deco/mantel_clock_b.webp",
-   "w": 119,
-   "h": 154
+   "w": 101,
+   "h": 131
   },
   {
    "id": "bulb_lamp_f",
    "src": "deco/bulb_lamp_f.webp",
-   "w": 96,
-   "h": 154
+   "w": 78,
+   "h": 111
   },
   {
    "id": "bulb_lamp_b",
    "src": "deco/bulb_lamp_b.webp",
-   "w": 95,
-   "h": 154
+   "w": 79,
+   "h": 110
   },
   {
    "id": "anchor_f",
    "src": "deco/anchor_f.webp",
-   "w": 132,
-   "h": 151
+   "w": 107,
+   "h": 123
   },
   {
    "id": "anchor_b",
    "src": "deco/anchor_b.webp",
-   "w": 122,
-   "h": 148
+   "w": 99,
+   "h": 120
   },
   {
    "id": "cushions_f",
    "src": "deco/cushions_f.webp",
-   "w": 134,
-   "h": 108
+   "w": 133,
+   "h": 87
   },
   {
    "id": "cushions_b",
    "src": "deco/cushions_b.webp",
-   "w": 131,
-   "h": 108
+   "w": 133,
+   "h": 88
   },
   {
    "id": "stone_fish_f",
    "src": "deco/stone_fish_f.webp",
-   "w": 151,
-   "h": 92
+   "w": 150,
+   "h": 83
   },
   {
    "id": "stone_fish_b",
    "src": "deco/stone_fish_b.webp",
-   "w": 151,
-   "h": 93
+   "w": 150,
+   "h": 82
   }
- ]
+ ],
+ "_tone": {
+  "sat": 1.2,
+  "lift": 0.3,
+  "groups": "all but deco, fixt_oak, furn_antique, furn_cottage, furn_plain, machines, ui"
+ }
 }
