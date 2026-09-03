@@ -23,7 +23,9 @@ import {
 import { DIR_NAMES } from '../world/factory.js';
 import { settingRows } from './title.js';
 import { RANKS } from '../data/fame.js';
-import { CHAPTERS, KEYS, QUESTS, SIDE_BY_ID, wantedItem } from '../data/quests.js';
+import {
+  FORKS, JOBS, JOB_BY_ID, KEYS, PATHS, ROOT, SIDE_BY_ID, strandFrom, wantedItem,
+} from '../data/quests.js';
 
 /** The wood each finish is painted in, for the swatch picker. */
 /**
@@ -2124,7 +2126,7 @@ export class Panels {
       : this.questTab === 'favour' ? this.#favours()
         : this.#questLine();
     const s = this.state;
-    const at = s.story?.at ?? 0;
+    const at = s.story?.done?.length ?? 0;
     const spec = {
       key: 'quests',
       title: 'The Job Board',
@@ -2138,7 +2140,7 @@ export class Panels {
       onTab: (id) => { this.questTab = id; this.openQuests(true); },
       body,
       foot: h('div.rowline', null,
-        h('span.card-sub.grow', null, `${at} of ${QUESTS.length} taken`),
+        h('span.card-sub.grow', null, `${at} of ${JOBS.length} taken`),
         tag(s.rankName, 'tag-mint')),
     };
     keep ? this.hud.refreshSheet(spec) : this.hud.openSheet(spec);
@@ -2152,30 +2154,59 @@ export class Panels {
    * of paper that reshuffles itself while you look at it is worse than a wall
    * of paper that is straight.
    */
-  #slip({ art, title, sub, pct = null, count = null, coins, fame, state = 'open', extra = null }, i = 0) {
+  #slip({
+    art, title, sub, hint = null, pct = null, count = null, coins, fame,
+    state = 'open', extra = null, tint = null, prize = null, pinned = false,
+    onPick = null,
+  }, i = 0) {
     const tilt = [-2.4, 1.8, -1.1, 2.7, -3, 1.3, -1.9, 2.2][i % 8];
     const tack = ['tack-a', 'tack-b', 'tack-c'][i % 3];
     // `slip-done` rather than `done`: the reward banner owns `.done` globally
     // and it is `position: absolute`, which stacked every finished job on the
     // same spot. State classes on a shared component get their own prefix.
-    return h(`div.slip.slip-${state}.${tack}`, { style: { '--tilt': `${tilt}deg` } },
+    const cls = ['slip', `slip-${state}`, tack,
+      tint ? `slip-${tint}` : null, pinned ? 'slip-pinned' : null,
+      onPick ? 'slip-pick' : null].filter(Boolean).join('.');
+    const el = h(`div.${cls}`, { style: { '--tilt': `${tilt}deg` } },
       h('span.slip-tack'),
       art ? this.jobArt(art) : null,
       h('div.slip-main', null,
         h('b.slip-title', null, title),
         sub ? h('span.slip-sub', null, sub) : null,
+        hint ? h('span.slip-hint', null, hint) : null,
         pct !== null ? h('span.slip-bar', null, h('i', {
           style: { width: `${Math.round(pct * 100)}%` },
         })) : null,
+        // what is on top of the money, spelled out on the paper — a branch you
+        // cannot tell the payoff of is not a choice
+        prize ? h('span.slip-prize', null, ...this.#prizeTags(prize)) : null,
         extra),
       h('div.slip-side', null,
         count ? h('span.slip-count', null, count) : null,
+        pinned ? h('span.slip-pinned-mark', null, 'ON SCREEN') : null,
         state === 'done'
           ? h('span.slip-stamp', null, 'TAKEN')
           : h('span.slip-pay', null,
             h('span.rowline', null,
               tag(`${money(coins)}`, 'tag-cost', 'sand'),
               fame ? tag(`${fame}★`, 'tag-star') : null))));
+    if (onPick && !pinned) el.onclick = onPick;
+    return el;
+  }
+
+  /** A prize, as the little tags that go on the slip. */
+  #prizeTags(p) {
+    const out = [];
+    if (p.coins) out.push(tag(`+${money(p.coins)}`, 'tag-cost', 'sand'));
+    if (p.fame) out.push(tag(`+${p.fame}★`, 'tag-star'));
+    if (p.recipe) out.push(tag(RECIPE_BY_ID[p.recipe]?.name ?? 'a recipe', 'tag-ok'));
+    if (p.research) out.push(tag(`+${p.research} research`, 'tag-mint'));
+    if (p.clay) out.push(tag(`+${p.clay} clay`, 'tag-mint'));
+    if (p.pottery) out.push(tag(`+${p.pottery} practice`, 'tag-mint'));
+    for (const [id, n] of Object.entries(p.ing ?? {})) {
+      out.push(tag(`${n} ${INGREDIENTS[id]?.name ?? id}`, 'tag-ok'));
+    }
+    return out;
   }
 
   /**
@@ -2201,43 +2232,113 @@ export class Panels {
   }
 
   /**
-   * The line itself.
+   * The board, walked as a tree.
    *
-   * Drawn as a chain rather than a list: a rail runs down the left with a bead
-   * on it for every job, filled in behind you and hollow ahead. A list tells
-   * you what is left; a line tells you where you are on it.
+   * Read down the trunk until it forks, print the fork as two or three branch
+   * cards side by side, then pick the trunk back up where they rejoin. A job
+   * you can start right now is tappable — that is how you pin it to the corner
+   * of the screen — and one you have not reached yet is a slip you can read
+   * but not take, because knowing what is coming is half of why anybody looks
+   * at a job board.
+   *
+   * The walk is the tree's own structure rather than a second copy of it, so
+   * adding a branch in data/quests.js adds a branch here and nowhere else.
    */
   #questLine() {
-    const s = this.state;
-    const at = s.story?.at ?? 0;
+    const st = this.state.story ?? {};
+    const done = new Set(st.done ?? []);
+    const open = new Set(st.open ?? []);
+    const pinned = this.game.story.quest?.id ?? null;
     const out = [];
-    let n = 0;
-    for (const chapter of CHAPTERS) {
-      const from = n;
-      const done = chapter.jobs.filter((_, i) => from + i < at).length;
+    const drawn = new Set();
+    let i = 0;
+
+    const slipFor = (id, opts = {}) => {
+      const job = JOB_BY_ID[id];
+      if (!job) return null;
+      const got = done.has(id);
+      const live = open.has(id);
+      const prog = live ? this.game.story.progress(job) : null;
+      const key = KEYS[id];
+      const path = PATHS[job.path];
+      return this.#slip({
+        art: job.art,
+        title: job.title,
+        // the description always, because "what am I being asked to do" is the
+        // question a job board exists to answer. The hint underneath it is the
+        // extra — where to go — and only the ones you can actually start get it.
+        sub: job.desc ?? null,
+        hint: live ? (job.hint ?? null) : null,
+        pct: live ? prog.pct : null,
+        count: live && job.need > 1 ? `${prog.have}/${job.need}` : null,
+        coins: job.coins,
+        fame: job.fame,
+        prize: job.prize,
+        tint: job.path !== 'trunk' ? path?.tint : null,
+        state: got ? 'done' : live ? 'live' : 'open',
+        pinned: id === pinned,
+        onPick: live ? () => { this.game.story.pin(id); this.openQuests(true); } : null,
+        extra: key && !got ? h('span.slip-key', null, `opens ${key.label}`) : null,
+        ...opts,
+      }, i++);
+    };
+
+    const pathOf = (id) => PATHS[JOB_BY_ID[id]?.path] ?? PATHS.trunk;
+
+    /**
+     * The fork itself, as a row you can read in one look.
+     *
+     * Two or three small cards side by side — the name, the pitch, what it
+     * pays in, how far through it you are. This is the only part that has to
+     * be side by side: a choice you have to scroll between is not a choice
+     * you can compare. It is small enough to fit a page of the book, which
+     * the strands underneath are not.
+     */
+    const chooser = (ids) => h('div.forkpick', null, ...ids.map((id) => {
+      const path = pathOf(id);
+      const strand = strandFrom(id);
+      const got = strand.filter((x) => done.has(x)).length;
+      return h(`div.fp.fp-${path.tint}${got === strand.length ? '.fp-done' : ''}`, null,
+        h('span.fp-ico', null, h(`i.ico.ico-${path.ico}`)),
+        h('b.fp-name', null, path.name),
+        h('span.fp-pitch', null, path.pitch),
+        h('span.fp-pays', null, `pays in ${path.pays}`),
+        h('span.fp-count', null, `${got} of ${strand.length}`));
+    }));
+
+    /** One strand, full width, under a header naming it. */
+    const branch = (headId) => {
+      const strand = strandFrom(headId);
+      const path = pathOf(headId);
+      const got = strand.filter((id) => done.has(id)).length;
+      return h(`div.branch.branch-${path.tint}`, null,
+        h('div.branch-head', null,
+          h('span.branch-ico', null, h(`i.ico.ico-${path.ico}`)),
+          h('div.branch-name', null,
+            h('b', null, path.name),
+            h('span', null, `pays in ${path.pays}`)),
+          h('span.branch-count', null, `${got}/${strand.length}`)),
+        ...strand.map((id) => { drawn.add(id); return slipFor(id); }));
+    };
+
+    // walk the trunk; a job with more than one `next` opens a fork, and the
+    // strands all come back to the same place, so the walk resumes there
+    let at = ROOT[0];
+    let guard = 0;
+    while (at && JOB_BY_ID[at] && guard++ < JOBS.length + 8) {
+      if (!drawn.has(at)) { drawn.add(at); out.push(slipFor(at)); }
+      const next = JOB_BY_ID[at].next;
+      if (next.length <= 1) { at = next[0] ?? null; continue; }
       out.push(h('div.board-head', null,
-        h('b', null, chapter.name),
-        h('span', null, `${done}/${chapter.jobs.length}`)));
-      for (const job of chapter.jobs) {
-        const i = n; n += 1;
-        const got = i < at;
-        const live = i === at;
-        const prog = live ? this.game.story.progress(job) : null;
-        const key = KEYS[job.id];
-        out.push(this.#slip({
-          art: job.art,
-          title: job.title,
-          sub: live ? (job.hint ?? null) : null,
-          pct: live ? prog.pct : null,
-          count: live && job.need > 1 ? `${prog.have}/${job.need}` : null,
-          coins: job.coins,
-          fame: job.fame,
-          state: got ? 'done' : live ? 'live' : 'open',
-          // a job that hands over a key says so on the slip, so the reason to
-          // do this one rather than any other one is on the paper
-          extra: key && !got ? h('span.slip-key', null, `opens ${key.label}`) : null,
-        }, i));
-      }
+        h('b', null, next.length > 2 ? 'Three ways on' : 'Two ways on'),
+        h('span', null, 'pick one — the rest keep')));
+      out.push(chooser(next));
+      // ...then the strands themselves, one under another, because the book
+      // pages are measured and a three-column block cannot be split across them
+      for (const id of next) out.push(branch(id));
+      // the strands rejoin wherever the first of them ends up pointing
+      const tail = strandFrom(next[0]);
+      at = JOB_BY_ID[tail[tail.length - 1]]?.next?.[0] ?? null;
     }
     return out;
   }

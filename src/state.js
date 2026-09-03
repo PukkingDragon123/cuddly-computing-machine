@@ -16,11 +16,11 @@ import {
 } from './data/progress.js';
 import { RANKS, rankAt, rankProgress, toNextRank } from './data/fame.js';
 import {
-  KEYS, QUESTS, SIDE, SIDE_BY_ID, SIDE_SLOTS, STARTER_KEYS,
+  JOB_BY_ID, KEYS, LEGACY_ORDER, ROOT, SIDE, SIDE_BY_ID, SIDE_SLOTS, STARTER_KEYS,
 } from './data/quests.js';
 
 const KEY = 'bubbleworks.harbor.save.v1';
-const VERSION = 11;
+const VERSION = 12;
 export const SAVE_KEY = KEY;
 
 function fresh() {
@@ -59,7 +59,10 @@ function fresh() {
     settings: { sound: true, motion: true, tips: true },
     tutorial: { step: 0, done: false },
     auto: false,                     // keep the menu topped up from the larder
-    story: { at: 0, seen: [] },      // how far the chef's story has got
+    // The board is a tree now: `done` is what you have finished, `open` is the
+    // frontier it has unlocked, `pin` is the one on the HUD. `seen` is the
+    // chef's cutscenes, which have nothing to do with the jobs.
+    story: { done: [], open: [...ROOT], pin: ROOT[0], seen: [] },
     keys: [...STARTER_KEYS],         // which parts of the game are open — see data/quests.js
     side: { jobs: [] },              // three standing side jobs, see fillSide()
     favours: [],                     // what the room is asking for right now
@@ -80,6 +83,26 @@ function fresh() {
  * longer exist, and silently dropping them would empty the player's dining room,
  * so each is mapped to its closest new equivalent.
  */
+/**
+ * What the board offers, given what has been finished.
+ *
+ * A job is open when something that has been done names it and it has not
+ * been done itself. Joins take *any* one parent rather than all of them, so
+ * finishing one strand of a fork moves the line on and leaves the other
+ * strands sitting there to be picked up later rather than stranded.
+ */
+export function frontier(done) {
+  const has = new Set(done);
+  const out = [];
+  const add = (id) => {
+    if (!JOB_BY_ID[id] || has.has(id) || out.includes(id)) return;
+    out.push(id);
+  };
+  for (const id of ROOT) add(id);
+  for (const id of done) for (const n of JOB_BY_ID[id]?.next ?? []) add(n);
+  return out;
+}
+
 function migrate(data) {
   data.furniture = (data.furniture ?? [])
     .map((f) => ({
@@ -153,16 +176,38 @@ function migrate(data) {
     loved: 0, vips: 0, myths: 0, gifts: 0, favours: 0,
     ...(data.stats ?? {}),
   };
-  data.story ??= { at: 0, seen: [] };
+  data.story ??= { done: [], open: [...ROOT], pin: ROOT[0], seen: [] };
+  data.story.seen ??= [];
+
+  /*
+   * v11 and older stored one number: how far down a flat list of jobs you had
+   * got. The flat list is a tree now, so that number is meaningless on its own
+   * — but it is not ambiguous. LEGACY_ORDER is a frozen copy of exactly the
+   * array the index pointed into, so the first `at` of those ids are the jobs
+   * this save has genuinely finished, and the frontier follows from the tree.
+   *
+   * Anyone mid-run therefore lands on a board that agrees with what they have
+   * already done, on whichever branch they were on, rather than being sent
+   * back to the start of it.
+   */
+  if (!Array.isArray(data.story.done)) {
+    const at = data.story.at ?? 0;
+    data.story.done = LEGACY_ORDER.slice(0, at).filter((id) => JOB_BY_ID[id]);
+    data.story.open = frontier(data.story.done);
+    data.story.pin = data.story.open[0] ?? null;
+  }
+  delete data.story.at;
+  data.story.open = Array.isArray(data.story.open) && data.story.open.length
+    ? data.story.open.filter((id) => JOB_BY_ID[id] && !data.story.done.includes(id))
+    : frontier(data.story.done);
+  if (!data.story.open.includes(data.story.pin)) data.story.pin = data.story.open[0] ?? null;
   // Keys were added in v10. An older save has already earned whatever its job
   // list says it has, so hand those over rather than taking buttons away from
   // somebody who has been using them for a week.
   if (!Array.isArray(data.keys)) {
     data.keys = [...STARTER_KEYS];
-    const at = data.story.at ?? 0;
     for (const [questId, k] of Object.entries(KEYS)) {
-      const i = QUESTS.findIndex((q) => q.id === questId);
-      if (i >= 0 && at > i) data.keys.push(k.key);
+      if (data.story.done.includes(questId)) data.keys.push(k.key);
     }
     // and anything the save is plainly already using, whatever the job list says
     if ((data.machines ?? []).length) data.keys.push('factory');

@@ -72,6 +72,21 @@
   --leaf: #8bbb6a;
   --leaf-deep: #5f8c40;
   --leaf-pale: #ddeecc;
+  /* the branch colours — one per strand of the job board, see data/quests.js.
+     Muted on purpose: they are paper stock, not highlighter. */
+  --sky: #8fb8cf;
+  --sky-deep: #4f7f9c;
+  --sky-pale: #dff0f8;
+  --rose: #e0a2ae;
+  --rose-deep: #b06679;
+  --rose-pale: #fadfe5;
+  --plum: #b39ac4;
+  --plum-deep: #7d5f92;
+  --plum-pale: #ece0f3;
+  --slate: #a8ab9c;
+  --slate-deep: #6f7365;
+  --slate-pale: #e9eae1;
+  --mint-pale: #ddefe2;
 
   --r-lg: 1.4rem;
   --r-md: 0.95rem;
@@ -1308,6 +1323,129 @@ html, body {
 /* still to come: face down, so the board reads as work you have not read yet */
 .slip.slip-open .job-art { opacity: .5 }
 .slip.slip-open .slip-title { color: #6d5a42 }
+
+/* where to go and do it, under what it is. Only the jobs you can start now
+   carry one, because directions to somewhere you cannot get to are noise. */
+.slip-hint {
+  font-size: 0.68rem; font-weight: 800; color: var(--ink-faint);
+  line-height: 1.22;
+}
+/* the prize, as tags — what this job pays on top of the money */
+.slip-prize {
+  display: flex; flex-wrap: wrap; gap: 0.22rem;
+  margin-top: 0.2rem;
+}
+/* the one on the ticket in the corner of the screen */
+.slip-pinned { border-color: var(--tangerine); border-width: 0.19rem }
+.slip-pinned-mark {
+  padding: 0.05rem 0.4rem;
+  border: 0.12rem solid var(--tangerine);
+  border-radius: 999px;
+  background: var(--coral-pale);
+  font-size: 0.58rem; font-weight: 900; letter-spacing: .08em;
+  color: var(--tangerine-deep);
+}
+/* an open job you can take: the paper says so when you touch it */
+.slip-pick { cursor: pointer }
+.slip-pick:active { transform: rotate(var(--tilt, 0deg)) translateX(var(--shift, 0)) scale(.96) }
+
+/*
+ * A branch of the board.
+ *
+ * Its own tinted paper, its own pin, and a card at the top saying what the
+ * strand is about and what it pays in — which is the whole reason a fork is a
+ * choice rather than a coin toss. The slips inside sit straight and overlap
+ * less than the trunk's do, so a branch reads as a bundle clipped together
+ * rather than as more of the same pile.
+ */
+/*
+ * The fork, in one look.
+ *
+ * The only part of a branch that has to sit side by side: a choice you have to
+ * scroll between is not a choice you can compare. Small enough to fit one page
+ * of the book, which is why the strands themselves go underneath rather than
+ * in columns — the book measures its pages and cannot split a three-column
+ * block across two of them, so the first attempt at this simply hid the third
+ * branch off the edge of the paper.
+ */
+.forkpick {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(7.2rem, 1fr));
+  gap: 0.4rem;
+  margin: 0.1rem 0 0.5rem;
+}
+.fp {
+  display: flex; flex-direction: column; align-items: center; gap: 0.16rem;
+  padding: 0.5rem 0.4rem 0.55rem;
+  text-align: center;
+  border: 0.15rem solid var(--tint-deep, var(--ink-faint));
+  border-radius: var(--r-hand-2);
+  background: var(--tint-pale, #fbf5e6);
+}
+.fp-ico {
+  width: 1.9rem; height: 1.9rem;
+  display: grid; place-items: center;
+  border: 0.14rem solid var(--tint-deep, var(--ink));
+  border-radius: 999px;
+  background: #fffdf4;
+}
+.fp-ico .ico { width: 1.05rem; height: 1.05rem }
+.fp-name { font-size: 0.8rem; font-weight: 900; color: var(--ink-deep); line-height: 1.15 }
+.fp-pitch { font-size: 0.64rem; font-weight: 800; color: var(--ink-soft); line-height: 1.24 }
+.fp-pays {
+  margin-top: 0.14rem;
+  padding: 0.08rem 0.42rem;
+  border: 0.12rem solid var(--tint-deep, var(--ink-faint));
+  border-radius: 999px;
+  background: #fffdf4;
+  font-size: 0.62rem; font-weight: 900; color: var(--tint-deep, var(--ink-soft));
+}
+.fp-count { font-size: 0.62rem; font-weight: 900; color: var(--ink-faint); font-variant-numeric: tabular-nums }
+.fp-done { opacity: .62 }
+.branch {
+  display: flex; flex-direction: column; gap: 0.46rem;
+  padding: 0.6rem 0.55rem 0.7rem;
+  border: 0.15rem solid var(--ink-faint);
+  border-radius: var(--r-hand-2);
+  background: var(--tint-pale, #fbf5e6);
+}
+.branch .slip { width: 100%; --tilt: 0deg; --shift: 0rem }
+.branch .slip-tack { background: var(--tint, var(--sun)) }
+.branch-head { display: flex; align-items: center; gap: 0.45rem }
+.branch-ico {
+  flex: none; width: 1.9rem; height: 1.9rem;
+  display: grid; place-items: center;
+  border: 0.14rem solid var(--tint-deep, var(--ink));
+  border-radius: 999px;
+  background: #fffdf4;
+}
+.branch-ico .ico { width: 1.05rem; height: 1.05rem }
+.branch-name { flex: 1; min-width: 0; display: flex; flex-direction: column }
+.branch-name b { font-size: 0.86rem; font-weight: 900; color: var(--ink-deep) }
+.branch-name span { font-size: 0.68rem; font-weight: 800; color: var(--ink-soft); line-height: 1.24 }
+.branch-count {
+  flex: none;
+  font-size: 0.7rem; font-weight: 900; color: var(--tint-deep, var(--ink-soft));
+  font-variant-numeric: tabular-nums;
+}
+.branch-pays {
+  display: flex; align-items: center; gap: 0.28rem;
+  align-self: flex-start;
+  padding: 0.12rem 0.5rem;
+  border: 0.12rem solid var(--tint-deep, var(--ink-faint));
+  border-radius: 999px;
+  background: #fffdf4;
+  font-size: 0.68rem; font-weight: 900; color: var(--tint-deep, var(--ink-soft));
+}
+.branch-pays .ico { width: 0.8rem; height: 0.8rem }
+
+.fp-mint,  .branch-mint  { --tint: var(--mint);  --tint-deep: var(--mint-deep);  --tint-pale: var(--mint-pale) }
+.fp-coral, .branch-coral { --tint: var(--coral); --tint-deep: var(--coral-deep); --tint-pale: var(--coral-pale) }
+.fp-sky,   .branch-sky   { --tint: var(--sky);   --tint-deep: var(--sky-deep);   --tint-pale: var(--sky-pale) }
+.fp-rose,  .branch-rose  { --tint: var(--rose);  --tint-deep: var(--rose-deep);  --tint-pale: var(--rose-pale) }
+.fp-plum,  .branch-plum  { --tint: var(--plum);  --tint-deep: var(--plum-deep);  --tint-pale: var(--plum-pale) }
+.fp-slate, .branch-slate { --tint: var(--slate); --tint-deep: var(--slate-deep); --tint-pale: var(--slate-pale) }
+.fp-sun,   .branch-sun   { --tint: var(--sun);   --tint-deep: var(--sun-deep);   --tint-pale: var(--sun-pale) }
 
 @media (prefers-reduced-motion: reduce) {
   .slip, .board-head { transform: none }
@@ -3288,7 +3426,7 @@ body.still .card.want::before { animation: none }
    A job you cannot see the reward for is a chore. */
 .quest {
   display: flex; align-items: center; gap: 0.5rem;
-  width: min(21rem, 74vw);
+  width: min(23rem, 80vw);
   margin-top: 0.1rem;
   padding: 0.44rem 0.6rem 0.48rem 0.46rem;
   background-color: var(--paper);
@@ -3319,10 +3457,20 @@ body.still .card.want::before { animation: none }
 .quest-art.ico { background-size: 1.6rem; background-color: var(--panel-2) }
 .quest-body { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 0.16rem }
 .quest-top { display: flex; align-items: baseline; gap: 0.35rem }
+/* Two lines, not one with the end shaved off. "Buy a piece in Cosy Cottage"
+   is eight characters longer than the old card could show, so half the jobs
+   in the game were titled "Buy a piece in Cosy…". */
 .quest-top b {
   flex: 1; min-width: 0;
   font-size: 0.95rem; font-weight: 900; line-height: 1.14;
-  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2;
+  overflow: hidden;
+}
+/* what the job actually is. It gets the room, because it is the sentence the
+   ticket exists to carry. */
+.quest-desc {
+  font-size: 0.82rem; font-weight: 800; color: var(--ink-deep);
+  line-height: 1.28;
 }
 /* the line that says what to actually do. It used to be the smallest type in
    the game and cut off with an ellipsis halfway through the instruction, which
@@ -3371,6 +3519,37 @@ body.still .card.want::before { animation: none }
   animation: doneIn .5s cubic-bezier(.15,1.5,.4,1) both;
 }
 .payout.out { animation: doneOut .4s ease both }
+
+/*
+ * The thing on top of the money.
+ *
+ * Coins and fame go up on every job and after the fortieth one they are a
+ * number changing. A prize — a recipe, three crates, research you did not have
+ * to grind for — is the other kind of reward, so it gets its own lines and
+ * they drop in one at a time after the packet has opened. Being paid twice is
+ * only twice as good if you notice it happening twice.
+ */
+.payout-rich { max-width: min(26rem, 88vw) }
+.payout-prize {
+  display: flex; flex-direction: column; gap: 0.18rem;
+  margin-top: 0.3rem;
+}
+.payout-got {
+  display: flex; align-items: center; gap: 0.34rem;
+  align-self: flex-start;
+  padding: 0.1rem 0.5rem;
+  border: 0.13rem solid var(--leaf-deep);
+  border-radius: 999px;
+  background: var(--leaf-pale);
+  font-size: 0.76rem; font-weight: 900; color: var(--leaf-deep);
+  animation: gotIn .42s cubic-bezier(.2,1.6,.4,1) both;
+}
+.payout-got .ico { width: 0.85rem; height: 0.85rem }
+@keyframes gotIn {
+  from { opacity: 0; transform: translateX(-0.7rem) scale(.8) }
+}
+.payout.shut .payout-got { animation: none }
+body.still .payout-got { animation: none }
 
 /* --- shut, then open ---------------------------------------------------- */
 

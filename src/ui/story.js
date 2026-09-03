@@ -11,7 +11,9 @@ import { CHEF_SPRITE } from '../data/catalog.js';
 import { CHEF_NAME } from '../data/guests.js';
 import { toScreen } from '../world/iso.js';
 import { Point } from './point.js';
-import { KEYS, QUESTS, SIDE_BY_ID, SPOTS } from '../data/quests.js';
+import { JOB_BY_ID, JOBS, KEYS, PATHS, SIDE_BY_ID, SPOTS } from '../data/quests.js';
+import { INGREDIENTS } from '../data/ingredients.js';
+import { RECIPE_BY_ID } from '../data/recipes.js';
 
 /**
  * Scripted moments. `at` names what the camera should look at; `when` is
@@ -91,6 +93,7 @@ export class Story {
       text: $('#say-text'),
       quest: $('#quest'),
       qTitle: $('#quest-title'),
+      qDesc: $('#quest-desc'),
       qHint: $('#quest-hint'),
       qFill: $('#quest-fill'),
       qN: $('#quest-n'),
@@ -133,13 +136,13 @@ export class Story {
 
   /** The opening. Played before the guide, because he owns the first word. */
   intro(then) {
-    this.s.story ??= { at: 0, seen: [] };
+    this.s.story ??= { done: [], open: ['plate'], pin: 'plate', seen: [] };
     this.play(BEATS[0], then);
   }
 
   /** Mark the lot as played. For a session that is not a player's. */
   hush() {
-    this.s.story ??= { at: 0, seen: [] };
+    this.s.story ??= { done: [], open: ['plate'], pin: 'plate', seen: [] };
     this.s.story.seen = BEATS.map((b) => b.id);
   }
 
@@ -412,9 +415,29 @@ export class Story {
 
   /* ---------------------------------------------------------------- quests */
 
+  /**
+   * The job on the HUD.
+   *
+   * The board offers several at once now, so one of them is pinned and that is
+   * the one in the corner of the screen. If the pin has gone stale — finished,
+   * or from a save that predates pinning — the first thing on the frontier
+   * stands in, which is what a linear list did anyway.
+   */
   get quest() {
-    const at = this.s.story?.at ?? 0;
-    return QUESTS[at] ?? null;
+    const st = this.s.story;
+    if (!st) return null;
+    const open = st.open ?? [];
+    const id = open.includes(st.pin) ? st.pin : open[0];
+    return JOB_BY_ID[id] ?? null;
+  }
+
+  /** Put a different open job in the corner of the screen. */
+  pin(id) {
+    const st = this.s.story;
+    if (!st || !(st.open ?? []).includes(id)) return;
+    st.pin = id;
+    this.qSig = null;
+    this.s.save();
   }
 
   /** The job's picture, from the game's own art. */
@@ -453,9 +476,27 @@ export class Story {
    */
   #finish(q) {
     const s = this.s;
-    s.story.at = (s.story.at ?? 0) + 1;
+    const st = s.story;
+    st.done.push(q.id);
+    /*
+     * The board moves on.
+     *
+     * Anything this job opened joins the frontier, and the job itself leaves
+     * it. A fork therefore puts two or three things on the board at once and
+     * you choose which to pin — and the ones you do not pin stay there, so a
+     * branch is a decision about order rather than a door closing behind you.
+     */
+    st.open = st.open.filter((id) => id !== q.id);
+    for (const id of q.next) {
+      if (!st.done.includes(id) && !st.open.includes(id)) st.open.push(id);
+    }
+    // pin the thing this job opened, unless it opened a choice — a fork wants
+    // the player to look at the board and pick, not to be handed one at random
+    st.pin = q.next.length === 1 ? q.next[0] : (st.open[0] ?? null);
+
     s.earn(q.coins);
     if (q.fame) s.addStars(q.fame);
+    const prizes = this.#pay(q);
     s.save();
     this.game.sfx.play('cash');
     this.game.hud.bumpCoin?.();
@@ -471,10 +512,25 @@ export class Story {
         { spread: 120, size: 30, up: 380 });
     }
 
-    this.#banner(q);
+    this.#banner(q, 'Job done', prizes);
     this.el.quest.classList.add('ding');
     setTimeout(() => this.el.quest.classList.remove('ding'), 700);
     setTimeout(() => this.aside([q.done]), 1500);
+
+    // A fork is worth saying out loud. The board has just gone from one thing
+    // to three and nothing on screen would otherwise mention it, so he does.
+    if (q.next.length > 1) {
+      const names = q.next.map((id) => PATHS[JOB_BY_ID[id]?.path]?.name).filter(Boolean);
+      if (names.length > 1) {
+        const many = names.length > 2 ? 'three' : 'two';
+        const list = `${names.slice(0, -1).join(', ')} or ${names[names.length - 1]}`;
+        setTimeout(() => this.aside([
+          `Right — ${many} ways to go from here, and none of them wrong.`,
+          `${list}. Have a look at the board and pick one.`,
+          "The others don't go anywhere. They'll still be there after.",
+        ]), 3000);
+      }
+    }
 
     // some jobs hand over a key. It lands after the banner has had its moment,
     // so the two rewards are read one at a time rather than on top of each other
@@ -489,6 +545,38 @@ export class Story {
   }
 
   /**
+   * The thing on top of the money.
+   *
+   * Coins and fame are what every job pays, and after the fortieth one they
+   * are a number going up. A prize is the other kind of reward: a recipe you
+   * did not have to learn, three crates in the larder, research you did not
+   * have to grind for. The point of the strands is that each deals in its own
+   * one of these, so "which branch" is a real question with no right answer.
+   *
+   * Returns what to print on the payout, in the order it should be read.
+   */
+  #pay(q) {
+    const s = this.s;
+    const p = q.prize;
+    if (!p) return [];
+    const out = [];
+    if (p.coins) { s.earn(p.coins); out.push({ ico: 'sand', text: `+${p.coins} bonus` }); }
+    if (p.fame) { s.addStars(p.fame); out.push({ ico: 'star', text: `+${p.fame} fame` }); }
+    if (p.recipe && !s.isUnlocked(p.recipe)) {
+      s.unlock(p.recipe);
+      out.push({ ico: 'book', text: RECIPE_BY_ID[p.recipe]?.name ?? 'a new recipe' });
+    }
+    if (p.research) { s.addResearch(p.research); out.push({ ico: 'lab', text: `+${p.research} research` }); }
+    if (p.clay) { s.addClay(p.clay); out.push({ ico: 'kiln', text: `+${p.clay} clay` }); }
+    if (p.pottery) { s.addPottery(p.pottery); out.push({ ico: 'kiln', text: `+${p.pottery} practice` }); }
+    for (const [id, n] of Object.entries(p.ing ?? {})) {
+      s.addIng(id, n);
+      out.push({ ico: 'crate', text: `${n} ${INGREDIENTS[id]?.name ?? id}` });
+    }
+    return out;
+  }
+
+  /**
    * The reward, and you watch it open.
    *
    * It arrives shut — a little sealed packet with a wax stamp on it — sits for
@@ -497,13 +585,19 @@ export class Story {
    * rather than a reward: the whole pleasure of being paid is the half second
    * before you know how much.
    */
-  #banner(q, kind = 'Job done') {
-    const el = h('div.payout.shut', null,
+  #banner(q, kind = 'Job done', prizes = []) {
+    const el = h(`div.payout.shut${prizes.length ? '.payout-rich' : ''}`, null,
       h('span.payout-seal', null, '★'),
       h('span.payout-tick', null, '✓'),
       h('span.payout-body', null,
         h('b', null, kind),
-        h('span', null, q.title)),
+        h('span', null, q.title),
+        // the prize, listed under the job, each line dropping in after the last
+        prizes.length
+          ? h('span.payout-prize', null, ...prizes.map((p, i) => h('span.payout-got', {
+            style: { animationDelay: `${560 + i * 180}ms` },
+          }, h(`i.ico.ico-${p.ico}`), p.text)))
+          : null),
       h('span.payout-pay', null,
         h('span.payout-coin', null, h('i.ico.ico-sand'), `+${q.coins}`),
         q.fame ? h('span.payout-fame', null, h('i.ico.ico-star'), `+${q.fame}`) : null));
@@ -514,7 +608,8 @@ export class Story {
       el.classList.add('open');
       this.game.sfx.play('star');
     }, 420);
-    setTimeout(() => { el.classList.add('out'); setTimeout(() => el.remove(), 400); }, 2900);
+    const hold = 2900 + prizes.length * 320;
+    setTimeout(() => { el.classList.add('out'); setTimeout(() => el.remove(), 400); }, hold);
   }
 
   /* --------------------------------------------------------------- pointing */
@@ -622,6 +717,10 @@ export class Story {
         this.qSig = `${q.id}:${have}`;
         this.el.qTitle.textContent = q.title;
         this.#art(q.art);
+        // what the job is, then where to go and do it. The card used to show
+        // only the second of those, so the ticket in the corner of the screen
+        // said "Build → the Decor page" and never once said why.
+        this.el.qDesc.textContent = q.desc ?? '';
         this.el.qHint.textContent = q.hint ?? '';
         this.el.qN.textContent = q.need > 1 ? `${have}/${q.need}` : '';
         this.el.qPay.textContent = `+${q.coins}`;
@@ -630,7 +729,7 @@ export class Story {
       }
       if (done) this.#finish(q);
     } else show(this.el.quest, false);
-    this.game.hud.syncQuestBadge?.(QUESTS.length - (s.story.at ?? 0));
+    this.game.hud.syncQuestBadge?.(JOBS.length - (s.story.done?.length ?? 0));
 
     // the side board: three standing jobs, topped up as they are finished
     s.fillSide(this.game);
