@@ -440,7 +440,14 @@ export class Hud {
           // named, so a job's pointer trail can say which tab it means rather
           // than counting along the row and going wrong the day one is added
           dataset: { tab: t.id },
-          onclick: () => { if (!on) this.bookPage[this.sheetOpen] = 0; spec.onTab?.(t.id); },
+          // `??=` because a tab can be pressed before anything has paginated —
+          // the store is built lazily in writeInto, and turning to a tab of a
+          // book that has only ever fitted one page used to throw here and
+          // take the tab press with it.
+          onclick: () => {
+            if (!on) (this.bookPage ??= {})[this.sheetOpen] = 0;
+            spec.onTab?.(t.id);
+          },
         }, t.label));
       }
     }
