@@ -503,8 +503,26 @@ export class Story {
     // ...and it stands down while you are reading the board, where the job is
     // already in front of you and a finger jabbing at a rail button behind the
     // panel is pointing at the answer to a question nobody asked
-    if (!q || this.playing || this.game.hud.sheetOpen === 'quests') { p.hide(); return; }
-    const box = Point.box(SPOTS[q.id], this.game);
+    if (this.playing || this.game.hud.sheetOpen === 'quests') { p.hide(); return; }
+
+    /*
+     * Something in the room outranks the job list.
+     *
+     * The rooms used to shout for themselves — a green pool under every free
+     * chair, a dashed diamond in front of every beltless machine — and the
+     * pointer got on with the standing job regardless. That is two systems
+     * asking for attention in two visual languages, and the loud one was the
+     * one made of floor decals.
+     *
+     * So the rooms whisper instead: each hands back at most one thing that
+     * actually wants a player right now (Restaurant#attention,
+     * Factory#attention), and it borrows the finger. A cross guest with a
+     * chair going spare beats a rail button every time — the job will still be
+     * there in ten seconds, the guest will not.
+     */
+    const urgent = this.game.zone.attention?.() ?? null;
+    const box = (urgent && Point.box({ world: () => urgent }, this.game))
+      || (q && Point.box(SPOTS[q.id], this.game));
     if (box) p.at(box); else p.hide();
   }
 

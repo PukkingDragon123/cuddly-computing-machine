@@ -20,7 +20,7 @@ import { GUEST_BY_ID, RARITY_BY_ID, nameFor } from '../data/guests.js';
 const FAVOUR_CHANCE = 0.05;
 import { plateFor } from '../data/progress.js';
 import {
-  PAL, blueprint, drawIcon, drawSprite, ellipse, ring, squash, sticker, text,
+  PAL, blueprint, drawIcon, drawSprite, ellipse, ring, squash, sticker,
 } from '../gfx/paint.js';
 
 export { FURN_SCALE };
@@ -1192,15 +1192,38 @@ export class Restaurant {
     return rotationToward(table.c - g.c, table.r - g.r) ?? rot;
   }
 
-  /** Floor-level marks: a soft glow under seats a waiting guest could take. */
-  drawHints(ctx, t) {
-    if (this.state.phase !== 'open') return;
-    if (!this.guests.some((g) => g.state === CS.QUEUE)) return;
-    for (const s of this.seats) {
-      if (s.table && !s.taken && s.dirty <= 0) {
-        Room.glowTile(ctx, s.c, s.r, 'rgba(139, 187, 106,0.35)', t);
-      }
+  /**
+   * Nothing, now — and that is the change.
+   *
+   * Every free chair used to sit in a green pool of light the whole time
+   * anybody was queuing, which on a busy night is most of the floor glowing at
+   * once. It reads as a fault in the room rather than as advice, and it is
+   * advice nobody needs twice: the chairs are obvious, they are chairs.
+   *
+   * What is actually worth saying is "this one person needs you now", and
+   * there is already one thing in the game whose whole job is saying that —
+   * see #attention below, and src/ui/point.js.
+   */
+  drawHints() {}
+
+  /**
+   * The one thing in the room that wants the player, or nothing.
+   *
+   * Deliberately grudging. A guest who has just walked in is not a problem and
+   * does not get pointed at; a guest whose meter is past halfway down, with a
+   * chair standing empty, is. Same for a table nobody has wiped in a while.
+   * If two things qualify the crosser one wins, because the pointer is one
+   * finger and pointing at two things at once is pointing at neither.
+   */
+  attention() {
+    if (this.state.phase !== 'open') return null;
+    if (this.freeSeats().length) {
+      const waiting = this.guests
+        .filter((g) => g.state === CS.QUEUE && g.patience < 0.55)
+        .sort((a, b) => a.patience - b.patience)[0];
+      if (waiting) return waiting;
     }
+    return this.seats.find((s) => s.dirty > 0 && s.soil) ?? null;
   }
 
   /**
@@ -1211,18 +1234,14 @@ export class Restaurant {
     for (const g of this.guests) if (!g.dead) g.drawOverlay(ctx, t);
     this.kitchen.drawOverlay(ctx);
 
-    if (this.state.phase !== 'open') {
-      // the main menu is a look at the place, not a job list, so the "this chair
-      // has no table" markers stay out of the shot
-      if (this.game.attract) return;
-      for (const s of this.seats) {
-        if (s.table) continue;
-        const p = toScreen(s.c, s.r);
-        const bob = Math.sin(t * 5 + s.c) * 2;
-        sticker(ctx, p.x - 15, p.y - 154 + bob, 30, 26, { r: 9, fill: '#fbe0d6', lift: 3 });
-        text(ctx, '?', p.x, p.y - 140 + bob, { size: 17, fill: '#b8481c' });
-      }
-    }
+    /*
+     * There used to be a pink "?" bobbing over every chair without a table.
+     * Lay out a dozen chairs and you get a dozen question marks hanging in the
+     * air over your own dining room, which looks less like a hint than like the
+     * game has stopped understanding what you built. The build panel says the
+     * same thing in words, in the place where you are actually making the
+     * decision.
+     */
     for (const s of this.seats) {
       if (s.dirty > 0 && s.soil) this.#drawWash(ctx, s, t);
     }

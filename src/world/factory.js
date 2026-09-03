@@ -797,13 +797,27 @@ export class Factory {
       && (m.def?.kind === 'producer' || m.def?.kind === 'processor');
   }
 
-  drawHints(ctx, t) {
+  /**
+   * Nothing, now — and that is the change.
+   *
+   * Every machine with no belt on its spout used to put a flashing dashed
+   * diamond on the tile in front of it. Ten machines, ten flashing diamonds,
+   * scattered across a floor that also has belts moving on it, and none of
+   * them telling you anything the machine itself was not about to tell you the
+   * moment its hopper filled and it said "Backed up".
+   *
+   * The one machine that most wants a belt goes to the pointer instead —
+   * see #attention below.
+   */
+  drawHints() {}
+
+  /** The machine most in need of a belt, or nothing. */
+  attention() {
     for (const m of this.grid.values()) {
       if (m.kind === 'silo' || m.kind === 'belt' || !this.#needsLine(m)) continue;
-      if (this.outTile(m)) continue;
-      const d = DIRS[m.dir];
-      Room.markTile(ctx, m.c + d.dc, m.r + d.dr, 'pick', t);
+      if (!this.outTile(m)) return m;
     }
+    return null;
   }
 
   bounds() { return this.room.bounds(); }

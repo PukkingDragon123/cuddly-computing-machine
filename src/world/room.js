@@ -6,7 +6,7 @@
 // sheets — which means they change wood along with the furniture.
 
 import { HALF_H, HALF_W, TILE_H, toScreen } from './iso.js';
-import { INK, PAL, diamond, drawSprite, ellipse, roundRectPath } from '../gfx/paint.js';
+import { INK, PAL, diamond, drawSprite, roundRectPath } from '../gfx/paint.js';
 import { TAU } from '../core/util.js';
 
 /*
@@ -551,15 +551,6 @@ export class Room {
     ctx.strokeStyle = line; ctx.lineWidth = 3.5; ctx.setLineDash([10, 7]);
     ctx.lineDashOffset = -pulse * 16;
     ctx.stroke();
-    ctx.restore();
-  }
-
-  /** Soft glow under a highlighted object. */
-  static glowTile(ctx, c, r, color, t = 0) {
-    const { x, y } = toScreen(c, r);
-    ctx.save();
-    ctx.globalAlpha = 0.5 + Math.sin(t * 5) * 0.16;
-    ellipse(ctx, x, y, HALF_W * 0.82, HALF_H * 0.82, color);
     ctx.restore();
   }
 }
