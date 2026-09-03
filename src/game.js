@@ -95,6 +95,15 @@ export class Game {
 
   /* ---------------------------------------------------------------- canvas  */
 
+  /**
+   * What the building stands against.
+   *
+   * It used to be the same cream as the walls and the floor, so the room had no
+   * silhouette: a cream building on a cream sky, and the heavy outline drawn
+   * round it had nothing to be an outline against. It is the harbour now — a
+   * cool graded wash with the light at the top, which is both what is actually
+   * out there and the thing that makes a warm room read as warm.
+   */
   #bakeBackdrop(w, h) {
     const cv = document.createElement('canvas');
     // half resolution is plenty for a smooth gradient and keeps the blit cheap
@@ -105,9 +114,9 @@ export class Game {
       cv.width * 0.5, cv.height * 0.22, 20,
       cv.width * 0.5, cv.height * 0.3, Math.max(cv.width, cv.height) * 0.9,
     );
-    g.addColorStop(0, '#fdf6e6');
-    g.addColorStop(0.55, '#ecdfc4');
-    g.addColorStop(1, '#d9c8a6');
+    g.addColorStop(0, '#eaf4f4');
+    g.addColorStop(0.55, '#c5dde6');
+    g.addColorStop(1, '#9ec4d6');
     c.fillStyle = g;
     c.fillRect(0, 0, cv.width, cv.height);
     this.bg = { cv, w, h };
@@ -631,7 +640,7 @@ export class Game {
     ctx.setTransform(this.dpr, 0, 0, this.dpr, 0, 0);
     if (this.wipe.v > 0.002) {
       ctx.globalAlpha = this.wipe.v;
-      ctx.fillStyle = '#e6d7b8';
+      ctx.fillStyle = '#c5dde6';
       ctx.fillRect(0, 0, this.view.w, this.view.h);
       ctx.globalAlpha = 1;
     }

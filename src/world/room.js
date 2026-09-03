@@ -10,42 +10,58 @@ import { INK, PAL, diamond, drawSprite, roundRectPath } from '../gfx/paint.js';
 import { TAU } from '../core/util.js';
 
 /*
- * Blue and white, like every tiled harbour kitchen there has ever been — but
- * pale. The furniture and the guests are warm hand-drawn art and they have to
- * sit on this; a strongly coloured floor turns every sprite standing on it
- * into a sticker. So the room is nearly white, and the blue is only in the
- * check, the skirting and the shadows.
+ * The floor stays pale, and the walls stop being pale.
+ *
+ * The old note here said a strongly coloured floor turns every sprite standing
+ * on it into a sticker, which is true, and the fix went much too far: the
+ * walls, the floor and the sky behind the building all ended up within about
+ * eight percent of one another. Cream on cream on cream. No amount of ink round
+ * a room makes a room out of that, because there is nothing for the ink to
+ * separate — the whole picture was one value, and the only things in it with
+ * any colour were the chairs and the customers.
+ *
+ * So the split is by surface rather than by timidity. The floor is still nearly
+ * white and still warm, because people stand on it and a chair has to read as a
+ * chair on a floor. The walls take real local colour — harbour blue for the
+ * cafe, a sage grey for the works, each in two clearly separated values so the
+ * two planes read as two planes — and the trim stays cream and wood, which is
+ * what makes trim read as trim. Warm orange guests against a cool wall is the
+ * oldest colour idea there is, and it is most of why a cartoon looks like one.
  */
 const PALETTE = {
-  floorA: '#f6ead4',
-  floorB: '#d6bd98',
+  floorA: '#f7ecd8',
+  floorB: '#d3b98f',
   grout: 'rgba(122, 96, 66, 0.26)',
-  border: '#f8eeda',
+  border: '#faf1de',
   rim: '#cdb391',
   rimDark: '#a98f6d',
 };
 
 const CAFE = {
   ...PALETTE,
-  wallL: '#e7d9c1',
-  wallR: '#f1e5d0',
-  cornice: '#faf2e2',
-  corniceTop: '#fdf8ec',
+  wallL: '#a8c7d3',
+  wallR: '#c6dee6',
+  cornice: '#fbf3e2',
+  corniceTop: '#fefaf0',
   base: '#a9784f',
   baseDark: '#875c3a',
+  // the shade toward the inside corner, in the wall's own colour family: a warm
+  // brown wash over a blue wall goes grey, which is what "muddy" means
+  shade: 'rgba(48, 92, 112, 0.17)',
   pipes: false,
 };
 
 const FACTORY = {
   ...PALETTE,
-  floorA: '#e9dcc2',
-  floorB: '#cdbb9c',
-  wallL: '#d9cfba',
-  wallR: '#e5dcc8',
-  cornice: '#f6eddc',
-  corniceTop: '#fbf5e8',
+  floorA: '#efe3ca',
+  floorB: '#c9b593',
+  wallL: '#adbaa5',
+  wallR: '#cbd7c1',
+  cornice: '#f8f0de',
+  corniceTop: '#fdf8eb',
   base: '#8d7b62',
   baseDark: '#6f6049',
+  shade: 'rgba(64, 86, 56, 0.17)',
   pipes: true,
 };
 
@@ -268,8 +284,8 @@ export class Room {
 
     // subtle vertical shade toward the corner so the two walls separate
     const g = ctx.createLinearGradient(a.x, a.y, b.x, b.y);
-    g.addColorStop(0, 'rgba(120, 92, 60,0.12)');
-    g.addColorStop(0.45, 'rgba(120, 92, 60,0)');
+    g.addColorStop(0, this.pal.shade);
+    g.addColorStop(0.45, 'rgba(0, 0, 0,0)');
     quad(a, b, up(b, fieldTop), up(a, fieldTop), g);
 
     // wood baseboard

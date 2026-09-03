@@ -508,6 +508,22 @@ that and the chair reads as a sticker on a photograph. So the silhouette is one
 scallop per tile in the same weight — it used to be nine small ripples an edge in
 pale tan, which at any real zoom read as a smudge.
 
+**And the room has colour.** The old note in the source said a strongly coloured
+floor turns every sprite standing on it into a sticker, which is true, and the
+fix went much too far: the walls, the floor and the sky behind the building all
+ended up within about eight percent of one another. Cream on cream on cream. No
+amount of ink makes a room out of that, because there is nothing for the ink to
+separate — the whole picture was one value and the only things in it with any
+colour were the chairs and the customers.
+
+So the split is by surface. The floor stays nearly white and warm, because people
+stand on it and a chair has to read as a chair on a floor. The walls take real
+local colour — harbour blue for the cafe, sage grey for the works, each in two
+clearly separated values so the two planes read as two planes — the trim stays
+cream and wood, and the sky behind the building is the harbour rather than more
+of the same cream. Warm orange guests against a cool wall is the oldest colour
+idea there is, and it is most of why a cartoon looks like one.
+
 The doors and windows set into those walls are
 real sprites from the fixture sheets, sheared onto the wall's own 2:1 basis.
 They are drawn as flat elevations carrying a built-in perspective of roughly
