@@ -146,11 +146,24 @@ bubble has a tail, so it reads as speech.
 
 **Cutscenes** fire on their own at the moments worth marking — the first morning,
 the first machine, the first kiln, three stars. The bars come in with a gold rule
-on the inner edge, the room darkens at the corners, the camera goes to the thing
-being talked about, and **he walks on**: full height, standing on the lower bar,
-with his name on a tab hanging off the speech and a chevron nudging for the next
-line. They never interrupt an open panel and never talk over the guide, and each
-plays once.
+on the inner edge and overshoot their mark, the room darkens at the corners, and
+the camera **pushes in** on the thing being talked about rather than cutting to
+it — a push-in is one of the few moves that reads as *look at this*, and only if
+it takes a moment. Then the shot breathes: eleven pixels of drift on a slow sine,
+which nobody will ever notice and which is the whole difference between a camera
+looking at a room and a photograph of one.
+
+He does not fade up in position, he **arrives**: out of frame, a leap, an
+overshoot, and a squash on the landing that rebounds twice and settles. On every
+line after the first he does a smaller version of the same, so a run of dialogue
+has something happening in it, and while the words are coming he shifts his
+weight — the strip has three poses and flicking between the first two on a beat
+is most of what people actually do while they talk. The bubble lands a degree
+and a half crooked and straightens up, with his name on a tab popping in behind
+it and a chevron nudging for the next line.
+
+They never interrupt an open panel, never talk over the guide, and each plays
+once.
 
 **And they never run mid-service.** They used to, and it was the worst thing in
 the game: the bars came down, the HUD went to nothing, and the coins, the tally
@@ -163,31 +176,61 @@ plates is a punishment rather than a story.
 
 ## Jobs
 
-**Forty-seven of them**, in six chapters, drawn as a **line**: a rail runs down
-the left with a bead on it for every job, filled in behind you and hollow ahead,
-because a list tells you what is left and a line tells you where you are on it.
-Between them they name every system in the game — if a thing exists and nobody has ever told you to try it, it may as
-well not. Plate a menu, call somebody in off the board, clear a table, buy off
-the catch, put up decor, lay five belts, point a belt at the intake, meet six
-species, serve somebody their favourite, serve a VIP, be given a present, take
-the pottery class, forge three dishes, take a thousand in a day.
+**Forty-nine of them**, and the board is a **tree**.
+
+The first shift is one line, because a first shift is one line: plate a menu,
+open the doors, serve three, cheer somebody up, clear the tables, get to day
+two. There is one thing to do next and you have never done any of it.
+
+After that it **forks**, five times, into eleven strands. Front of house is
+chairs and colour and a room somebody would choose to sit in. The menu is more
+to cook and better at cooking it. The larder is buying well and never running
+dry mid-service. Then the works, regulars, and the craft.
+
+Three things make a fork worth having, and this one has all three.
+
+**The paths are about different things.** They are not one climb with three
+labels on it.
+
+**They pay in different currencies.** Front of house pays in fame, the menu
+hands you a recipe outright, the larder sends crates you did not buy, the works
+pay research, the craft pays clay and practice at the wheel. A branch you would
+take for the money is not a choice — it is a right answer with two wrong
+answers standing next to it.
+
+**And nothing is lost by choosing.** A fork's strands stay on the board after
+the line has moved past them, so taking the menu first means seeing the larder
+second, not never. Permanent lockout in a game you play for an hour a night is
+a way of asking people to replay from scratch, and nobody does — they just
+stop.
+
+At a fork the board prints a row of cards you can read in one look: the name,
+the pitch, what it pays in, how far through it you are. That is the only part
+that has to sit side by side, because a choice you have to scroll between is
+not a choice you can compare. The strands themselves run full width underneath.
+Tapping any job you can start **pins it** to the corner of the screen.
+
+Every job leads with **what it is**, in a sentence somebody would say — "Four
+at once instead of two. Twice the night, same rent." Underneath, and only on
+the ones you can actually start, is where to go and do it. Those were one field
+for a long time and the ticket showed the second, so the corner of the screen
+said "Build → the Decor page" and never once said why.
 
 Every one carries **its own picture**, borrowed from the game rather than drawn
 for the list: the job about chairs shows a chair, the one about the whale shark
 shows the whale shark, the one about the kiln shows the kiln. A quest log full of
 identical ticks tells you nothing at a glance.
 
-One at a time on the HUD, under the rank strip: what to do, a hint on where to do
-it, a bar filling up, and **what it pays**, because a job you cannot see the
-reward for is a chore. When it fills, a banner drops into the middle of the
-screen and counts the reward out — coins and fame both, since fame is the ladder
-and a job that only paid money would be a detour from it — the till rings, coins
-and stars come off the ticket, and the chef says his piece a beat later. Then the
-next job slides in underneath.
+When a job fills, a sealed packet drops into the middle of the screen, sits for
+a beat, and springs open — coins and fame both, since fame is the ladder and a
+job that only paid money would be a detour from it. If it carried a prize, the
+prize lists underneath, one line dropping in after the last, because being paid
+twice is only twice as good if you notice it happening twice. The till rings,
+coins and stars come off the ticket, and the chef says his piece a beat later.
 
-The rail's last button opens the whole line, chapter by chapter, ticked off as
-you go. It is also the manual: a job list that names every system beats a page of
-instructions nobody reads, which is why the How to Play panel is gone.
+The rail's last button opens the whole tree, walked rather than listed, ticked
+off as you go. It is also the manual: a job board that names every system beats
+a page of instructions nobody reads, which is why the How to Play panel is gone.
 
 **Favours** are the third tab, and the only jobs you do not go looking for. One
 guest in twenty walks in wanting *one particular dish* — a heart appears over
@@ -209,7 +252,7 @@ and still mean *ten more*.
 | **Factory** | Place a machine, drag a conveyor away from it, and end the line at a Pantry Intake. Refiners sit mid-line and turn cheap goods into valuable ones. |
 | **The morning** | Every day opens with the catch: three things cheap on the quay, and one dish the harbour has a taste for that pays a third over the odds. |
 | **The Kitchen** | One book for everything about food — today's menu, what you can learn, what you can improve, and the larder. Set how many of each dish to plate up; ingredients leave the larder immediately, so only plate what you can sell. |
-| **The board** | Only there while the doors are open, because a button that prints a poster for tomorrow was one more morning chore and the morning is for the menu. Ten taps calls somebody in there and then — as often as you like. |
+| **A word** | Tap anybody who is waiting and the chef has a word with them: it puts a slice of patience back and can be done again after a moment. There is no button for it and the guide never mentions it — somebody standing there getting crosser is the only prompt it needs. |
 | **Open up** | Guests wander in and wait by the door. Tap one to seat them at a free chair, or tap an empty seat to pull in whoever has been waiting longest. |
 | **Auto** | Beside the Open button. With it on, a dish that sells out goes straight back on for as long as the larder can pay for it — so a day ends when you run out of ingredients rather than when you run out of patience for the stepper. Nothing caps the queue either way: what is left on the menu sits on screen, dish by dish, while you serve. |
 | **Orders** | Tap the bubble over a seated guest — the one with the `!` sticker — to send the ticket to the chef. |
@@ -334,8 +377,24 @@ facing — so the ghost is a **blueprint** (drafting blue, hard white cut line, 
 drawing faint underneath) and the strip along the bottom names the piece and
 shows its facing as four dots. Nothing in the game glows any more: a coloured
 bloom around hand-drawn art only ever read as a rendering fault, so a selected
-piece is marked on its tile, a guest waiting on you gets a pointer over their
-bubble, and a plate you have picked up rides a dashed ring.
+piece is marked on its tile and a plate you have picked up rides a dashed ring.
+
+**And the rooms stopped shouting.** Three systems were competing to say *look
+here* and two of them were made of floor decals: every free chair sat in a pool
+of green light the whole time anybody was queuing, and every machine without a
+belt on its spout flashed a dashed diamond in front of it — ten machines to ten
+diamonds, over a floor that already has belts moving on it. Every chair you had
+not yet given a table wore a question mark bobbing above it. None of it said
+anything the game was not about to say better: a backed-up machine announces
+itself, the build panel explains a chair with no table in words, and a chair is
+fairly obviously a chair.
+
+So each room hands back **at most one thing** that genuinely wants a player right
+now — a guest whose meter is past halfway with a chair going spare, a table
+nobody has wiped, the one machine with nowhere to send its output — and that
+borrows the **pointer**, which is the one thing in the game whose whole job is
+saying *here*. A cross guest outranks the standing job while they are cross: the
+job will still be there in ten seconds and the guest will not.
 
 Readouts do not take pointer events. The service tally floats over the middle of
 the room, which is exactly where the kitchen pass sits, and a `<b>` inside it was
@@ -437,15 +496,34 @@ those pixels are turned back into translucent glass rather than left as a pink
 dome.
 
 Rooms are **generated** — checkerboard floor, scalloped border, sheared walls
-with cornice and baseboard — because the original painted room plates are
-hand-drawn and their floors don't sit on a consistent lattice, so build tiles
-could never line up with them. The doors and windows set into those walls are
+with cornice, baseboard and a picture rail two thirds up — because the original
+painted room plates are hand-drawn and their floors don't sit on a consistent
+lattice, so build tiles could never line up with them.
+
+The whole room is **inked**. Every object in the game is drawn with a heavy dark
+edge round it and the room was the one thing that was not: cream panels meeting
+cream panels, with a thin line on a couple of the joins. Set a 4px-inked chair on
+that and the chair reads as a sticker on a photograph. So the silhouette is one
+5px stroke, every internal join is inked, and the floor's scalloped mat runs one
+scallop per tile in the same weight — it used to be nine small ripples an edge in
+pale tan, which at any real zoom read as a smudge.
+
+The doors and windows set into those walls are
 real sprites from the fixture sheets, sheared onto the wall's own 2:1 basis.
 They are drawn as flat elevations carrying a built-in perspective of roughly
 0.58 down per across, where the wall recedes at exactly 0.5 — so the shear is
 the *difference* between the two, not the wall's full slope, or the piece ends
 up plunging at nearly twice the angle of the plaster behind it. The slicer
 measures each drawing's own slope (Theil–Sen over its top edge, which shrugs
-off a swinging casement) and writes it into the atlas. The joinery changes wood
-along with whatever finish the dining room mostly uses. The whole room is rasterised once into an offscreen canvas and
+off a swinging casement) and writes it into the atlas.
+
+Sizing them is not "how tall is the file". Every fixture sprite is 324 tall but a
+good third of that is the empty triangle either side of the drawing's own slope —
+the glass is only ever about 220. Sized against 324 the windows came out
+postage-stamp sized in the middle of a tall blank field, which is exactly how you
+draw a picture frame. The same triangle is why doors used to hover: anchoring a
+door's *box* to the floor line leaves its threshold half a slope up in the air,
+so floor-anchored pieces drop by that amount and stand on the floorboards.
+
+The joinery changes wood along with whatever finish the dining room mostly uses. The whole room is rasterised once into an offscreen canvas and
 blitted per frame.
