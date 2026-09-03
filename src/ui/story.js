@@ -86,6 +86,7 @@ export class Story {
       scene: $('#scene'),
       say: $('#say'),
       face: $('#say-face'),
+      cast: $('#scene-cast'),
       who: $('#say-who'),
       text: $('#say-text'),
       quest: $('#quest'),
@@ -192,6 +193,7 @@ export class Story {
   #close() {
     this.playing = false;
     this.#sayItAll();
+    this.el.cast?.classList.remove('hop');
     document.getElementById('hud').classList.remove('scening');
     this.el.scene.classList.add('out');
     clearTimeout(this.hideT);
@@ -229,6 +231,21 @@ export class Story {
     void this.el.say.offsetWidth;
     this.el.say.classList.add('pop');
     this.el.say.classList.add('talking');
+
+    /*
+     * He hops when he changes the subject.
+     *
+     * Only from the second line on — the first one is his entrance, and a hop
+     * on top of a leap is two animations fighting over the same element, which
+     * looks like a glitch rather than like a character. After that a small
+     * squash-and-hop on every new line is what keeps a wall of dialogue from
+     * feeling like a wall of dialogue: something moved, so something happened.
+     */
+    if (this.el.cast && this.line > 0 && this.game.state.motionOn) {
+      this.el.cast.classList.remove('hop');
+      void this.el.cast.offsetWidth;
+      this.el.cast.classList.add('hop');
+    }
 
     clearInterval(this.typer);
     this.el.text.textContent = '';
@@ -355,15 +372,41 @@ export class Story {
     if (what === 'works') p = tile(g.factory?.grid?.values?.().next?.().value);
     const b = z.bounds();
     const to = p ?? { x: b.x + b.w / 2, y: b.y + b.h / 2 };
-    z.cam.zoom = Math.min(1.5, this.camWas.zoom * 1.35);
-    z.cam.glideTo(to.x, to.y - 20, 0.55);
+    // a push-in, not a cut: the zoom used to be assigned outright, so the shot
+    // arrived already close and then slid sideways into place
+    z.cam.zoomGlide(Math.min(1.5, this.camWas.zoom * 1.4));
+    this.shot = { x: to.x, y: to.y - 20 };
+    this.driftT = 0;
+    z.cam.glideTo(this.shot.x, this.shot.y);
+  }
+
+  /**
+   * The shot breathes while he talks.
+   *
+   * A cutscene that pushes in and then holds perfectly still for four lines is
+   * a screenshot with words on it. A few pixels of drift, slower than you can
+   * follow, is the difference between a camera looking at the room and a
+   * picture of the room — and because the follow is already a spring, the
+   * camera lags the drift and rounds it off by itself.
+   *
+   * Small enough that nobody will ever point at it. That is the size it wants
+   * to be.
+   */
+  #float(dt) {
+    if (!this.playing || !this.shot || !this.game.state.motionOn) return;
+    this.driftT = (this.driftT ?? 0) + dt;
+    const t = this.driftT;
+    this.game.zone.cam.glideTo(
+      this.shot.x + Math.sin(t * 0.34) * 11,
+      this.shot.y + Math.cos(t * 0.26) * 7);
   }
 
   #restoreCam() {
     const z = this.game.zone;
+    this.shot = null;
     if (!this.camWas) return;
-    z.cam.zoom = this.camWas.zoom;
-    z.cam.glideTo(this.camWas.x, this.camWas.y, 0.5);
+    z.cam.zoomGlide(this.camWas.zoom);
+    z.cam.glideTo(this.camWas.x, this.camWas.y);
     this.camWas = null;
   }
 
@@ -560,6 +603,7 @@ export class Story {
   update(dt) {
     if (this.game.attract) { this.#aimOff(); return; }
     this.#watchdog(dt);
+    this.#float(dt);
     // The finger tracks every frame. Everything else in here is throttled to
     // three ticks a second, which is plenty for a progress bar and nowhere near
     // enough for a pointer sitting on a guest walking across the room.

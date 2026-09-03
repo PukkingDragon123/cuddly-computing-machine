@@ -39,6 +39,7 @@ export class Camera {
     this.minZoom = 0.34;
     this.maxZoom = 1.7;
     this.target = null;        // { x, y } smooth-follow goal
+    this.zoomTarget = null;    // zoom level to ease toward, see zoomGlide
     this.bounds = null;        // { minX, maxX, minY, maxY } in world px
   }
 
@@ -66,6 +67,7 @@ export class Camera {
   zoomAt(sx, sy, factor) { this.zoomTo(this.zoom * factor, sx, sy); }
 
   zoomTo(z, sx, sy) {
+    this.zoomTarget = null;
     const before = this.toWorld(sx, sy);
     this.zoom = clamp(z, this.minZoom, this.maxZoom);
     const after = this.toWorld(sx, sy);
@@ -80,8 +82,19 @@ export class Camera {
   /** Ease toward a world point over the next few frames. */
   glideTo(wx, wy) { this.target = { x: wx, y: wy }; }
 
+  /**
+   * Ease the zoom, rather than cutting to it.
+   *
+   * A cutscene used to set `zoom` outright, so the shot arrived as a hard jump
+   * to 1.35x and then eased sideways into place — half a move, and the wrong
+   * half. A push-in is one of the few camera moves that actually reads as
+   * "look at this", and it only reads that way if it takes a moment.
+   */
+  zoomGlide(z) { this.zoomTarget = clamp(z, this.minZoom, this.maxZoom); }
+
   /** Fit a world-space rect, leaving `pad` CSS pixels of margin. */
   frame(rect, pad = 48) {
+    this.zoomTarget = null;
     const zx = (this.view.w - pad * 2) / Math.max(1, rect.w);
     const zy = (this.view.h - pad * 2) / Math.max(1, rect.h);
     this.zoom = clamp(Math.min(zx, zy), this.minZoom, this.maxZoom);
@@ -89,6 +102,15 @@ export class Camera {
   }
 
   update(dt) {
+    if (this.zoomTarget != null) {
+      const k = 1 - Math.exp(-6 * dt);
+      this.zoom = lerp(this.zoom, this.zoomTarget, k);
+      if (Math.abs(this.zoomTarget - this.zoom) < 0.0025) {
+        this.zoom = this.zoomTarget;
+        this.zoomTarget = null;
+      }
+      this.#clamp();
+    }
     if (this.target) {
       const k = 1 - Math.exp(-7 * dt);
       this.x = lerp(this.x, this.target.x, k);

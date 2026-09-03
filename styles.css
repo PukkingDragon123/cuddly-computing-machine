@@ -3141,11 +3141,17 @@ body.still .card.want::before { animation: none }
 .bar-top, .bar-bot {
   position: absolute; left: 0; right: 0; height: 12%;
   background: #2f1d10;
-  animation: barIn .42s cubic-bezier(.2,.9,.25,1) both;
+  animation: barIn .5s cubic-bezier(.2,.9,.25,1) both;
 }
 .bar-top { top: 0; transform-origin: top; border-bottom: 0.14rem solid rgba(248, 209, 103, .5) }
 .bar-bot { bottom: 0; transform-origin: bottom; border-top: 0.14rem solid rgba(248, 209, 103, .5) }
-@keyframes barIn { from { transform: scaleY(0) } }
+/* they overshoot and settle — a bar that slides to exactly its mark and stops
+   is a window blind, and a bar that bounces off it is a curtain */
+@keyframes barIn {
+  0%   { transform: scaleY(0) }
+  62%  { transform: scaleY(1.22) }
+  100% { transform: scaleY(1) }
+}
 
 /* He walks on from the left and stands on the lower bar, full height, rather
    than sitting in a little box inside his own speech. */
@@ -3155,9 +3161,29 @@ body.still .card.want::before { animation: none }
   bottom: 12%;
   width: 13rem; height: 15rem;
   pointer-events: none;
-  animation: castIn .46s cubic-bezier(.2,1.2,.35,1) both;
+  transform-origin: 50% 100%;
+  animation: castIn .66s cubic-bezier(.2,.9,.3,1) both;
 }
-@keyframes castIn { from { opacity: 0; transform: translate(-2.5rem, 0.8rem) } }
+/* He arrives, rather than fading up in position. Out of frame, a leap, an
+   overshoot, and a squash on the landing that rebounds twice and settles —
+   which is the whole of cartoon weight in four keyframes. */
+@keyframes castIn {
+  0%   { opacity: 0; transform: translate(-7rem, 1.4rem) scale(.84, 1.12) }
+  42%  { opacity: 1; transform: translate(0.7rem, -1.3rem) scale(1.05, .95) }
+  64%  { transform: translate(-0.15rem, 0.3rem) scale(1.11, .89) }
+  82%  { transform: translate(0, -0.4rem) scale(.97, 1.03) }
+  100% { transform: translate(0, 0) scale(1, 1) }
+}
+/* ...and a smaller version of the same on every line after the first, so a
+   run of dialogue has something happening in it */
+.scene-cast.hop { animation: castHop .46s cubic-bezier(.25,.9,.3,1) both }
+@keyframes castHop {
+  0%   { transform: translateY(0) scale(1, 1) }
+  18%  { transform: translateY(0.16rem) scale(1.09, .91) }
+  52%  { transform: translateY(-0.95rem) scale(.95, 1.06) }
+  78%  { transform: translateY(0.08rem) scale(1.05, .95) }
+  100% { transform: translateY(0) scale(1, 1) }
+}
 .say-face {
   width: 100%; height: 100%;
   background: left bottom/300% 100% no-repeat;
@@ -3165,8 +3191,20 @@ body.still .card.want::before { animation: none }
   transform-origin: 50% 100%;
   animation: chefLean 2.6s ease-in-out infinite;
 }
+/* Talking is two things at once: he bobs, and the drawing itself changes.
+   The strip has three poses and the second is a step — flicking between the
+   first two on a beat reads as somebody shifting their weight while they
+   talk, which is most of what people do while they talk. */
 .say.talking ~ .scene-cast .say-face,
-.scene:has(.say.talking) .say-face { animation: chefTalk .26s ease-in-out infinite alternate }
+.scene:has(.say.talking) .say-face {
+  animation:
+    chefTalk .26s ease-in-out infinite alternate,
+    chefFlap .36s steps(1) infinite;
+}
+@keyframes chefFlap {
+  0%, 49%   { background-position-x: 0% }
+  50%, 100% { background-position-x: 50% }
+}
 
 .say {
   position: absolute;
@@ -3181,8 +3219,18 @@ body.still .card.want::before { animation: none }
   animation: sayIn .4s .12s cubic-bezier(.2,1.3,.35,1) both;
 }
 @keyframes sayIn { from { opacity: 0; transform: translate(-50%, 0.8rem) scale(.96) } }
-.say.pop { animation: sayPop .22s var(--spring) both }
-@keyframes sayPop { from { transform: translateX(-50%) scale(.975) } }
+/* Each new line lands, rather than swapping its text out underneath you.
+   The tilt is the part that sells it: a bubble that only scales reads as a
+   transition, and one that arrives a degree and a half crooked reads as
+   somebody saying something. */
+.say.pop { animation: sayPop .36s cubic-bezier(.25,.9,.3,1) both }
+@keyframes sayPop {
+  0%   { transform: translateX(-50%) scale(.9) rotate(-1.5deg) }
+  52%  { transform: translateX(-50%) scale(1.035) rotate(0.6deg) }
+  100% { transform: translateX(-50%) scale(1) rotate(0deg) }
+}
+.say.pop .say-who { animation: whoPop .42s .05s cubic-bezier(.25,1.5,.4,1) both }
+@keyframes whoPop { from { transform: scale(.4) rotate(-12deg) } }
 /* the name on its own tab, hanging off the top edge */
 .say-who {
   position: absolute; top: -0.95rem; left: 1rem;
@@ -3192,6 +3240,7 @@ body.still .card.want::before { animation: none }
   border-radius: 999px;
   font-size: 0.66rem; font-weight: 900; letter-spacing: .08em;
   text-transform: uppercase; color: var(--ink-deep);
+  transform-origin: 18% 90%;
 }
 .say-text { font-size: 1.08rem; font-weight: 800; line-height: 1.34; color: var(--ink-deep); min-height: 2.8em }
 /* the chevron: it only nags once the line has finished arriving */
@@ -3703,7 +3752,16 @@ body.still .node.live .node-bead, body.still .quest.near {
   animation: caret .5s steps(1) infinite;
 }
 @keyframes caret { 50% { opacity: 0 } }
-body.still .say.talking .say-face { animation: none }
+/* The Motion switch has to reach the whole cutscene, and this rule used to
+   reach none of it: .say-face is the chef's sibling's child, not .say's, so
+   `.say.talking .say-face` matched nothing at all and he kept bobbing with
+   motion turned off. */
+body.still .scene-cast,
+body.still .scene-cast.hop,
+body.still .scene .say-face,
+body.still .scene .say,
+body.still .scene .say-who,
+body.still .bar-top, body.still .bar-bot { animation: none }
 
 /* the chef, from the pass ---------------------------------------------- */
 
