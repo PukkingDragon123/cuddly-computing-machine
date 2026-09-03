@@ -19,7 +19,7 @@ import { TAU } from '../core/util.js';
 const PALETTE = {
   floorA: '#f6ead4',
   floorB: '#d6bd98',
-  grout: 'rgba(122, 96, 66, 0.15)',
+  grout: 'rgba(122, 96, 66, 0.26)',
   border: '#f8eeda',
   rim: '#cdb391',
   rimDark: '#a98f6d',
@@ -49,7 +49,15 @@ const FACTORY = {
   pipes: true,
 };
 
-const WALL_H = 212;
+/**
+ * How tall the back walls stand.
+ *
+ * It was 212, of which 30 is cornice and 26 baseboard, leaving a 156px strip of
+ * plaster for a 149px window to sit in. The result was a room with almost no
+ * wall in it: heavy trim top and bottom and a window wedged between them, which
+ * read as a picture frame rather than a window. There is room to breathe now.
+ */
+const WALL_H = 268;
 const BASE_H = 22;
 const CORNICE_H = 30;
 const THICK = 0.3;      // wall thickness, in tiles, for the top face
@@ -60,18 +68,34 @@ const RIM_H = 15;       // floor slab thickness at the front edges
  * wall from the back corner and `v` is height above the floor. The art is drawn
  * for one wall each — right-wall pieces slope down-right — so left-wall
  * placements mirror a right-facing sprite.
+ *
+ * Sizing these is not "how tall is the file". Every fixture sprite is 324 tall,
+ * but a good third of that is the empty triangle either side of the drawing's
+ * own slope: a window whose top edge falls 103px across its width leaves 103px
+ * of nothing in the top-left corner and the same in the bottom-right. The glass
+ * itself is only ever about 220 tall, so a window at scale 0.72 stands 158 in a
+ * 238px field with a hand's width of plaster above and below it. Half of the
+ * old numbers were chosen against 324 and came out postage-stamp sized.
+ *
+ * The same triangle is why doors used to hover: anchoring a door's *box* to the
+ * floor line leaves its threshold floating half a slope above the floorboards.
+ * #fixture drops floor-anchored pieces by that amount now, so `v` stays 0 and
+ * the door stands on the ground.
+ *
+ * `u` is measured from the back corner and the sprite is centred on it, so
+ * anything past about 0.72 hangs off the front end of the wall.
  */
 const FIXTURES = {
   cafe: [
-    { id: 'door_open_r', wall: 'right', u: 0.3, v: 0, scale: 0.62, anchor: 'floor', entry: true },
-    { id: 'window_bay_r', wall: 'right', u: 0.72, v: 104, scale: 0.62 },
-    { id: 'window_palm_r', wall: 'left', u: 0.42, v: 104, scale: 0.62, mirror: true },
-    { id: 'window_plain_r', wall: 'left', u: 0.78, v: 104, scale: 0.55, mirror: true },
+    { id: 'door_open_r', wall: 'right', u: 0.28, v: 0, scale: 0.66, anchor: 'floor', entry: true },
+    { id: 'window_bay_r', wall: 'right', u: 0.68, v: 132, scale: 0.72 },
+    { id: 'window_palm_r', wall: 'left', u: 0.32, v: 132, scale: 0.72, mirror: true },
+    { id: 'window_plain_r', wall: 'left', u: 0.70, v: 132, scale: 0.70, mirror: true },
   ],
   factory: [
-    { id: 'door_closed_r', wall: 'right', u: 0.74, v: 0, scale: 0.6, anchor: 'floor', entry: true },
-    { id: 'window_plain_r', wall: 'right', u: 0.3, v: 104, scale: 0.58 },
-    { id: 'window_plain_r', wall: 'left', u: 0.4, v: 104, scale: 0.58, mirror: true },
+    { id: 'door_closed_r', wall: 'right', u: 0.68, v: 0, scale: 0.66, anchor: 'floor', entry: true },
+    { id: 'window_plain_r', wall: 'right', u: 0.28, v: 132, scale: 0.70 },
+    { id: 'window_plain_r', wall: 'left', u: 0.40, v: 132, scale: 0.70, mirror: true },
   ],
 };
 
@@ -118,8 +142,8 @@ export class Room {
 
   /** World-space rect covering floor and walls, for camera framing. */
   bounds() {
-    const minX = this.W.x - 40, maxX = this.E.x + 40;
-    const minY = this.N.y - WALL_H - 60, maxY = this.S.y + RIM_H + 40;
+    const minX = this.W.x - 46, maxX = this.E.x + 46;
+    const minY = this.N.y - WALL_H - 70, maxY = this.S.y + RIM_H + 46;
     return { x: minX, y: minY, w: maxX - minX, h: maxY - minY };
   }
 
@@ -146,7 +170,53 @@ export class Room {
     c.setTransform(scale, 0, 0, scale, -box.x * scale, -box.y * scale);
     this.drawWalls(c);
     this.drawFloor(c);
+    this.#outline(c);
     this.cache = { cv, box, scale };
+  }
+
+  /**
+   * The room's own silhouette, in one heavy line.
+   *
+   * This is the difference between a cartoon and a diagram. Every object in the
+   * game is drawn with a thick dark edge round it — the chairs, the octopus,
+   * the coffee machine — and the room they stand in had none at all: it was
+   * cream panels meeting cream panels, with a thin line on a couple of the
+   * internal joins. Set a 4px-inked chair on that and the chair reads as a
+   * sticker on a photograph.
+   *
+   * So the whole outside of the room gets one continuous, heavy stroke: up the
+   * far end of the left wall, over both wall tops, down the far end of the
+   * right one, and round the front of the floor slab. Drawn last, over
+   * everything, because a cartoon outline is on top of what it contains.
+   */
+  #outline(ctx) {
+    const up = (p, h) => ({ x: p.x, y: p.y - h });
+    const off = (p, side) => ({ x: p.x + side * HALF_W * THICK, y: p.y - HALF_H * THICK });
+    const down = (p) => ({ x: p.x, y: p.y + RIM_H });
+
+    const path = [
+      this.W,                       // the left wall's open end, on the floor
+      up(this.W, WALL_H),
+      off(up(this.W, WALL_H), -1),  // across the wall's thickness
+      off(up(this.N, WALL_H), -1),
+      off(up(this.N, WALL_H), 1),   // over the back corner
+      off(up(this.E, WALL_H), 1),
+      up(this.E, WALL_H),
+      this.E,                       // down the right wall's open end
+      down(this.E),                 // and round the front of the slab
+      down(this.S),
+      down(this.W),
+    ];
+    ctx.save();
+    ctx.beginPath();
+    ctx.moveTo(path[0].x, path[0].y);
+    for (const q of path.slice(1)) ctx.lineTo(q.x, q.y);
+    ctx.closePath();
+    ctx.strokeStyle = INK;
+    ctx.lineWidth = 5;
+    ctx.lineJoin = 'round';
+    ctx.stroke();
+    ctx.restore();
   }
 
   /** Walls first — they sit behind every entity in the room. */
@@ -215,14 +285,42 @@ export class Room {
     quad(ta, tb, { x: tb.x + off.x, y: tb.y + off.y }, { x: ta.x + off.x, y: ta.y + off.y },
       this.pal.corniceTop, INK, 2.4);
 
-    // outline the field + baseboard edges
-    ctx.strokeStyle = INK; ctx.lineWidth = 2.6;
-    ctx.beginPath();
-    ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y);
-    ctx.moveTo(up(a, BASE_H).x, up(a, BASE_H).y); ctx.lineTo(up(b, BASE_H).x, up(b, BASE_H).y);
-    ctx.moveTo(up(a, fieldTop).x, up(a, fieldTop).y); ctx.lineTo(up(b, fieldTop).x, up(b, fieldTop).y);
-    ctx.moveTo(up(b, 0).x, up(b, 0).y); ctx.lineTo(up(b, topH).x, up(b, topH).y);
-    ctx.stroke();
+    /*
+     * The lines.
+     *
+     * Everything in this game is drawn with a heavy dark outline round it, and
+     * the room was the one thing that was not: it was flat panels of colour
+     * meeting flat panels of colour, with one thin 2.6px line along a couple of
+     * the joins. Next to a chair with a 4px ink edge that reads as a
+     * photograph somebody has stood a cartoon in front of.
+     *
+     * So every edge is inked, and inked thickly. The vertical at the open end
+     * of each wall gets the heaviest line, because that is the silhouette — the
+     * edge with nothing behind it — and a cartoon puts its weight there.
+     */
+    const line = (from, to, lw) => {
+      ctx.strokeStyle = INK; ctx.lineWidth = lw; ctx.lineCap = 'round';
+      ctx.beginPath(); ctx.moveTo(from.x, from.y); ctx.lineTo(to.x, to.y); ctx.stroke();
+    };
+    line(a, b, 4.2);                                    // floor line
+    line(up(a, BASE_H), up(b, BASE_H), 3.6);            // top of the skirting
+    line(up(a, fieldTop), up(b, fieldTop), 3.6);        // under the cornice
+    line(up(b, 0), up(b, topH), 4.6);                   // the open end
+    line(a, up(a, topH), 3.2);                          // the back corner
+
+    /*
+     * A picture rail, two thirds up.
+     *
+     * A blank field of plaster the height of this one has nothing for the eye
+     * to measure the room by — it could be a cupboard or a warehouse. One rail
+     * across it and suddenly there is a wall with a height. It is also where a
+     * real room of this period would put one, which is why it reads as a room
+     * rather than as a decision.
+     */
+    const railH = Math.round(fieldTop * 0.66);
+    quad(up(a, railH - 7), up(b, railH - 7), up(b, railH), up(a, railH), this.pal.cornice);
+    line(up(a, railH), up(b, railH), 2.8);
+    line(up(a, railH - 7), up(b, railH - 7), 2.2);
   }
 
   #wallPoint(wall, u, v) {
@@ -247,13 +345,27 @@ export class Room {
     const want = (d.wall === 'left' ? -1 : 1) * (HALF_H / HALF_W);
     const art = sprite.slope ?? 0;
     const shear = d.mirror ? want + art : want - art;
+    const scale = d.scale ?? 1;
+
+    /*
+     * The empty corner, and why the doors used to hover.
+     *
+     * A door drawn with its threshold sloping down across the sprite leaves a
+     * triangle of nothing under the low side. Half that triangle sits directly
+     * beneath the middle of the door, so anchoring the sprite's *box* to the
+     * floor line parks the threshold a good thirty pixels up in the air. The
+     * triangle's height is the drawing's own slope across its width, so half of
+     * it is what the door has to come down by.
+     */
+    const foot = d.anchor === 'floor' ? (sprite.fw * Math.abs(art) * scale) / 2 : 0;
+
     ctx.save();
-    ctx.translate(p.x, p.y);
+    ctx.translate(p.x, p.y + foot);
     ctx.transform(1, shear, 0, 1, 0, 0);
     // floor-anchored joinery (doors) stands on the floor line; wall-mounted
     // pieces are centred on their height
     drawSprite(ctx, sprite, 0, 0, 0, {
-      scale: d.scale ?? 1,
+      scale,
       anchorY: d.anchor === 'floor' ? 1 : 0.5,
       flipX: !!d.mirror,
     });
@@ -313,7 +425,7 @@ export class Room {
 
     // checker field, clipped to a wavy inset of the outline
     ctx.save();
-    this.#wavyPath(ctx, 0.72, 11, 74);
+    this.#wavyPath(ctx, 0.58, 9, 128);
     ctx.clip();
     for (let r = 0; r < this.rows; r++) {
       for (let c = 0; c < this.cols; c++) {
@@ -322,7 +434,7 @@ export class Room {
         ctx.fillStyle = (c + r) % 2 ? this.pal.floorA : this.pal.floorB;
         ctx.fill();
         ctx.strokeStyle = this.pal.grout;
-        ctx.lineWidth = 1.2;
+        ctx.lineWidth = 1.9;
         ctx.stroke();
       }
     }
@@ -330,8 +442,8 @@ export class Room {
 
     // wavy edge line + hard outline
     ctx.save();
-    this.#wavyPath(ctx, 0.72, 11, 74);
-    ctx.strokeStyle = 'rgba(150, 132, 96,0.35)'; ctx.lineWidth = 1.6; ctx.stroke();
+    this.#wavyPath(ctx, 0.58, 9, 128);
+    ctx.strokeStyle = INK; ctx.lineWidth = 3; ctx.lineJoin = 'round'; ctx.stroke();
     ctx.restore();
 
     ctx.beginPath();
@@ -348,6 +460,11 @@ export class Room {
    * Inset copy of the floor outline with a scalloped edge — the wavy cream
    * border from the painted plates. `wavelength` is in world pixels so the
    * scallops stay the same size whatever the room dimensions.
+   *
+   * It used to run nine small ripples down each edge in a pale tan line, which
+   * at this zoom read as a smudge on the floor rather than as a border. One
+   * scallop per floor tile, inked as heavily as everything else in the room, is
+   * a mat somebody laid down on purpose.
    */
   #wavyPath(ctx, insetTiles, amp, wavelength) {
     const pts = this.outline;

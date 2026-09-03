@@ -211,6 +211,39 @@ def cut(img: Image.Image, shape) -> Image.Image:
     return piece.crop(shape['box'])
 
 
+def edge_slope(img: Image.Image) -> float:
+    """Slope of a fixture's top edge, in pixels down per pixel right.
+
+    The joinery is drawn as flat panels with a built-in perspective of their
+    own, and that slope is almost never the 1:2 the wall recedes at. The room
+    shears each piece by the *difference*, so it has to know what the drawing
+    already does — get this wrong and a window sits on the wall at nearly twice
+    the angle of the plaster behind it.
+
+    Theil-Sen rather than a least-squares fit: a swinging casement or a doorknob
+    breaks the top edge, and a median of pairwise slopes shrugs that off where a
+    fit would be dragged sideways by it.
+    """
+    alpha = np.asarray(img.getchannel('A'))
+    xs, ys = [], []
+    for x in range(alpha.shape[1]):
+        col = np.nonzero(alpha[:, x] > 90)[0]
+        if len(col):
+            xs.append(x)
+            ys.append(col[0])
+    if len(xs) < 24:
+        return 0.0
+    xs = np.asarray(xs, float)
+    ys = np.asarray(ys, float)
+    step = max(1, len(xs) // 64)
+    span = alpha.shape[1] * 0.2
+    slopes = [(ys[b] - ys[a]) / (xs[b] - xs[a])
+              for a in range(0, len(xs), step)
+              for b in range(0, len(xs), step)
+              if xs[b] - xs[a] > span]
+    return round(float(np.median(slopes)), 3) if slopes else 0.0
+
+
 def fit(img: Image.Image, max_h: int, pad: int = 2) -> Image.Image:
     if img.height > max_h:
         k = max_h / img.height
@@ -239,12 +272,19 @@ def main():
             sprite = tone(fit(cut(img, shape), max_h))
             rel = f'{group}/{sid}.webp'
             sprite.save(os.path.join(OUT, rel), 'WEBP', quality=88, method=4)
+            meta = {'src': rel, 'w': sprite.width, 'h': sprite.height}
+            # The joinery is sheared onto the wall by the difference between the
+            # wall's slope and the drawing's own, so a redrawn window has to
+            # bring its own measurement — inheriting the old sheet's would hang
+            # it at the wrong angle. It bit exactly that way once.
+            if group.startswith('fixt_'):
+                meta['slope'] = edge_slope(sprite)
             # updated in place, so atlas order — and every panel that lists a
             # group — does not shuffle under the new art
             if sid in by_id:
-                by_id[sid].update({'src': rel, 'w': sprite.width, 'h': sprite.height})
+                by_id[sid].update(meta)
             else:
-                entries.append({'id': sid, 'src': rel, 'w': sprite.width, 'h': sprite.height})
+                entries.append({'id': sid, **meta})
             total += 1
 
     with open(path, 'w') as fh:

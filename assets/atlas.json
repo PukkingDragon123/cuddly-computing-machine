@@ -1559,77 +1559,77 @@
    "src": "fixt_oak/window_plain_r.webp",
    "w": 185,
    "h": 324,
-   "slope": 0.583
+   "slope": 0.556
   },
   {
    "id": "window_bay_r",
    "src": "fixt_oak/window_bay_r.webp",
    "w": 186,
    "h": 324,
-   "slope": 0.583
+   "slope": 0.553
   },
   {
    "id": "door_closed_l",
    "src": "fixt_oak/door_closed_l.webp",
    "w": 136,
    "h": 324,
-   "slope": -0.556
+   "slope": -0.538
   },
   {
    "id": "door_open_r",
    "src": "fixt_oak/door_open_r.webp",
    "w": 134,
    "h": 324,
-   "slope": 0.556
+   "slope": 0.515
   },
   {
    "id": "window_palm_r",
    "src": "fixt_oak/window_palm_r.webp",
    "w": 176,
    "h": 324,
-   "slope": 0.581
+   "slope": 0.585
   },
   {
    "id": "window_open_r",
    "src": "fixt_oak/window_open_r.webp",
    "w": 217,
    "h": 324,
-   "slope": 0.177
+   "slope": 0.137
   },
   {
    "id": "door_open_l",
    "src": "fixt_oak/door_open_l.webp",
    "w": 135,
    "h": 324,
-   "slope": -0.556
+   "slope": -0.542
   },
   {
    "id": "door_closed_r",
    "src": "fixt_oak/door_closed_r.webp",
    "w": 136,
    "h": 324,
-   "slope": 0.552
+   "slope": 0.567
   },
   {
    "id": "key_rack",
    "src": "fixt_oak/key_rack.webp",
    "w": 145,
    "h": 162,
-   "slope": -0.547
+   "slope": -0.521
   },
   {
    "id": "pass_counter",
    "src": "fixt_oak/pass_counter.webp",
    "w": 320,
    "h": 324,
-   "slope": -0.711
+   "slope": -0.713
   },
   {
    "id": "host_desk",
    "src": "fixt_oak/host_desk.webp",
    "w": 338,
    "h": 324,
-   "slope": -0.404
+   "slope": -0.359
   }
  ],
  "fixt_walnut": [
