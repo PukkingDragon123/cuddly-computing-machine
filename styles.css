@@ -128,10 +128,9 @@
 html, body {
   height: 100%;
   overflow: hidden;
-  /* the harbour, same as the canvas backdrop — this is what the browser paints
-     before the first frame and behind a rubber-band scroll, and a cream flash
-     in front of a blue game is a flash */
-  background: #c5dde6;
+  /* the same ground the canvas paints, so the first frame does not arrive as a
+     colour change */
+  background: #dcc59b;
   font-family: var(--font);
   color: var(--ink-deep);
   overscroll-behavior: none;
@@ -2505,7 +2504,7 @@ body.still .tutor-hole { animation: none }
 .boot {
   position: absolute; inset: 0;
   display: grid; place-items: center;
-  background: linear-gradient(#f2f9fa 0%, #dcecf1 46%, #bcd9e4 100%);
+  background: linear-gradient(#fdf9ee 0%, #fbeed3 46%, #f6e2ba 100%);
   z-index: 20;
   transition: opacity .4s ease;
   overflow: hidden;

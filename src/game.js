@@ -98,11 +98,11 @@ export class Game {
   /**
    * What the building stands against.
    *
-   * It used to be the same cream as the walls and the floor, so the room had no
-   * silhouette: a cream building on a cream sky, and the heavy outline drawn
-   * round it had nothing to be an outline against. It is the harbour now — a
-   * cool graded wash with the light at the top, which is both what is actually
-   * out there and the thing that makes a warm room read as warm.
+   * It has to be far enough from the room to give the outline something to be
+   * an outline against, and it must not be a second hue: a cool sky behind warm
+   * oak looked like two different games stitched together. So it is the same
+   * warm family, taken well down in value — the room is the lightest thing on
+   * screen and sits on a deeper ground, which is all a silhouette needs.
    */
   #bakeBackdrop(w, h) {
     const cv = document.createElement('canvas');
@@ -114,9 +114,9 @@ export class Game {
       cv.width * 0.5, cv.height * 0.22, 20,
       cv.width * 0.5, cv.height * 0.3, Math.max(cv.width, cv.height) * 0.9,
     );
-    g.addColorStop(0, '#eaf4f4');
-    g.addColorStop(0.55, '#c5dde6');
-    g.addColorStop(1, '#9ec4d6');
+    g.addColorStop(0, '#f6e9cd');
+    g.addColorStop(0.55, '#dcc59b');
+    g.addColorStop(1, '#bfa478');
     c.fillStyle = g;
     c.fillRect(0, 0, cv.width, cv.height);
     this.bg = { cv, w, h };
@@ -640,7 +640,7 @@ export class Game {
     ctx.setTransform(this.dpr, 0, 0, this.dpr, 0, 0);
     if (this.wipe.v > 0.002) {
       ctx.globalAlpha = this.wipe.v;
-      ctx.fillStyle = '#c5dde6';
+      ctx.fillStyle = '#dcc59b';
       ctx.fillRect(0, 0, this.view.w, this.view.h);
       ctx.globalAlpha = 1;
     }

@@ -10,58 +10,55 @@ import { INK, PAL, diamond, drawSprite, roundRectPath } from '../gfx/paint.js';
 import { TAU } from '../core/util.js';
 
 /*
- * The floor stays pale, and the walls stop being pale.
+ * Warm, all the way through — and separated by value, not by hue.
  *
- * The old note here said a strongly coloured floor turns every sprite standing
- * on it into a sticker, which is true, and the fix went much too far: the
- * walls, the floor and the sky behind the building all ended up within about
- * eight percent of one another. Cream on cream on cream. No amount of ink round
- * a room makes a room out of that, because there is nothing for the ink to
- * separate — the whole picture was one value, and the only things in it with
- * any colour were the chairs and the customers.
+ * Two goes at this. The first made everything nearly white so that no sprite
+ * standing on the floor would read as a sticker, which left the walls, the
+ * floor and the sky within about eight percent of one another: nothing for the
+ * ink round the room to separate. The second reached for a cool harbour blue on
+ * the walls for contrast, which separated them all right and did not belong to
+ * this game for a second — every drawing in it, the oak, the cream, the guests,
+ * is warm, and a cold wall behind warm art looks like two different games.
  *
- * So the split is by surface rather than by timidity. The floor is still nearly
- * white and still warm, because people stand on it and a chair has to read as a
- * chair on a floor. The walls take real local colour — harbour blue for the
- * cafe, a sage grey for the works, each in two clearly separated values so the
- * two planes read as two planes — and the trim stays cream and wood, which is
- * what makes trim read as trim. Warm orange guests against a cool wall is the
- * oldest colour idea there is, and it is most of why a cartoon looks like one.
+ * So the separation is done the way an illustrator would do it. One family, and
+ * the planes are told apart by how light they are: a deep warm sand on the wall
+ * in shadow, a lighter one on the wall in light, cream trim above both, wood
+ * below, and a floor lighter than either wall so people standing on it read
+ * against it. Four clear steps of value, no second hue anywhere.
  */
 const PALETTE = {
-  floorA: '#f7ecd8',
-  floorB: '#d3b98f',
+  floorA: '#fbf2e0',
+  floorB: '#dcc49b',
   grout: 'rgba(122, 96, 66, 0.26)',
-  border: '#faf1de',
+  border: '#fdf6e8',
   rim: '#cdb391',
   rimDark: '#a98f6d',
 };
 
 const CAFE = {
   ...PALETTE,
-  wallL: '#a8c7d3',
-  wallR: '#c6dee6',
+  wallL: '#d8c19c',
+  wallR: '#ecd9b8',
   cornice: '#fbf3e2',
   corniceTop: '#fefaf0',
   base: '#a9784f',
   baseDark: '#875c3a',
-  // the shade toward the inside corner, in the wall's own colour family: a warm
-  // brown wash over a blue wall goes grey, which is what "muddy" means
-  shade: 'rgba(48, 92, 112, 0.17)',
+  // the shade toward the inside corner, in the wall's own colour family
+  shade: 'rgba(120, 88, 50, 0.15)',
   pipes: false,
 };
 
 const FACTORY = {
   ...PALETTE,
-  floorA: '#efe3ca',
-  floorB: '#c9b593',
-  wallL: '#adbaa5',
-  wallR: '#cbd7c1',
+  floorA: '#f3e8d0',
+  floorB: '#cfba97',
+  wallL: '#cbbb9c',
+  wallR: '#e2d4b8',
   cornice: '#f8f0de',
   corniceTop: '#fdf8eb',
   base: '#8d7b62',
   baseDark: '#6f6049',
-  shade: 'rgba(64, 86, 56, 0.17)',
+  shade: 'rgba(96, 80, 52, 0.15)',
   pipes: true,
 };
 
@@ -85,33 +82,32 @@ const RIM_H = 15;       // floor slab thickness at the front edges
  * for one wall each — right-wall pieces slope down-right — so left-wall
  * placements mirror a right-facing sprite.
  *
- * Sizing these is not "how tall is the file". Every fixture sprite is 324 tall,
- * but a good third of that is the empty triangle either side of the drawing's
- * own slope: a window whose top edge falls 103px across its width leaves 103px
- * of nothing in the top-left corner and the same in the bottom-right. The glass
- * itself is only ever about 220 tall, so a window at scale 0.72 stands 158 in a
- * 238px field with a hand's width of plaster above and below it. Half of the
- * old numbers were chosen against 324 and came out postage-stamp sized.
+ * Sizing these is not "how tall is the file". A third of every drawing is the
+ * empty triangle either side of its own slope, so what matters is the body: a
+ * window is 272 tall on disk and 185 of that is glass and frame, a door is 338
+ * and 263 of it is door. The wall's plaster field is 238. Work from the body
+ * and the numbers fall out — a window at 0.81 stands 150 tall with a hand's
+ * width of plaster above and below it, a door at 0.80 stands 210.
  *
  * The same triangle is why doors used to hover: anchoring a door's *box* to the
- * floor line leaves its threshold floating half a slope above the floorboards.
- * #fixture drops floor-anchored pieces by that amount now, so `v` stays 0 and
- * the door stands on the ground.
+ * floor line leaves its threshold half a slope up in the air. #fixture drops
+ * floor-anchored pieces by that amount, so `v` stays 0 and the door stands on
+ * the ground.
  *
  * `u` is measured from the back corner and the sprite is centred on it, so
  * anything past about 0.72 hangs off the front end of the wall.
  */
 const FIXTURES = {
   cafe: [
-    { id: 'door_open_r', wall: 'right', u: 0.28, v: 0, scale: 0.66, anchor: 'floor', entry: true },
-    { id: 'window_bay_r', wall: 'right', u: 0.68, v: 132, scale: 0.72 },
-    { id: 'window_palm_r', wall: 'left', u: 0.32, v: 132, scale: 0.72, mirror: true },
-    { id: 'window_plain_r', wall: 'left', u: 0.70, v: 132, scale: 0.70, mirror: true },
+    { id: 'door_open_r', wall: 'right', u: 0.28, v: 0, scale: 0.80, anchor: 'floor', entry: true },
+    { id: 'window_bay_r', wall: 'right', u: 0.68, v: 128, scale: 0.81 },
+    { id: 'window_palm_r', wall: 'left', u: 0.32, v: 128, scale: 0.81, mirror: true },
+    { id: 'window_plain_r', wall: 'left', u: 0.70, v: 128, scale: 0.79, mirror: true },
   ],
   factory: [
-    { id: 'door_closed_r', wall: 'right', u: 0.68, v: 0, scale: 0.66, anchor: 'floor', entry: true },
-    { id: 'window_plain_r', wall: 'right', u: 0.28, v: 132, scale: 0.70 },
-    { id: 'window_plain_r', wall: 'left', u: 0.40, v: 132, scale: 0.70, mirror: true },
+    { id: 'door_closed_r', wall: 'right', u: 0.68, v: 0, scale: 0.80, anchor: 'floor', entry: true },
+    { id: 'window_plain_r', wall: 'right', u: 0.28, v: 128, scale: 0.79 },
+    { id: 'window_plain_r', wall: 'left', u: 0.40, v: 128, scale: 0.79, mirror: true },
   ],
 };
 
@@ -346,22 +342,36 @@ export class Room {
   }
 
   /**
-   * Joinery is drawn as a flat elevation, and the drawing carries a built-in
-   * perspective of its own — about 0.58 down per across, where the wall recedes
-   * at exactly 0.5. Shearing by the full wall slope would stack the two and
-   * leave the piece plunging at nearly twice the angle of the plaster behind
-   * it, so the shear is the *difference*: enough to bring the drawing's own
-   * slope onto the wall's, and no more. A mirrored piece has already had its
-   * slope negated, hence the sign flip.
+   * Set a piece of joinery into a wall — by stretching it, not by shearing it.
+   *
+   * The drawings are flat elevations on their own isometric, and it is not this
+   * room's. They are drawn at about 30 degrees; the room is a true 2:1, which is
+   * 26.57. Something has to give.
+   *
+   * Shearing was the obvious answer and it was the wrong one. A shear that
+   * brings a 30-degree top edge down to 26.57 leaves every *vertical* in the
+   * drawing leaning by the difference — three degrees on a door, nearly five on
+   * a window. So the head of the door lined up beautifully with the wall while
+   * both jambs quietly fell over, and every mullion in every window went with
+   * them. That is the bug: not the placement, the projection.
+   *
+   * Widening fixes it exactly and distorts nothing. Scale a drawing
+   * horizontally by k and its top edge's slope becomes slope/k, while every
+   * vertical stays vertical, because a vertical has no run for the scale to act
+   * on. So k = the drawing's own slope over the wall's, the head lands parallel
+   * to the picture rail, and the jambs stand up. It costs a window eleven per
+   * cent of its width, which nobody has ever noticed on a window.
    */
   #fixture(ctx, d) {
     const sprite = this.assets.get(this.fixtureGroup, d.id);
     if (!sprite) return;
     const p = this.#wallPoint(d.wall, d.u, d.v);
-    const want = (d.wall === 'left' ? -1 : 1) * (HALF_H / HALF_W);
-    const art = sprite.slope ?? 0;
-    const shear = d.mirror ? want + art : want - art;
+    const art = Math.abs(sprite.slope ?? 0);
     const scale = d.scale ?? 1;
+
+    // ...and if a sprite has no usable slope on it, leave it alone rather than
+    // stretch it by some number invented on the spot
+    const k = art > 0.15 ? art / (HALF_H / HALF_W) : 1;
 
     /*
      * The empty corner, and why the doors used to hover.
@@ -373,15 +383,15 @@ export class Room {
      * triangle's height is the drawing's own slope across its width, so half of
      * it is what the door has to come down by.
      */
-    const foot = d.anchor === 'floor' ? (sprite.fw * Math.abs(art) * scale) / 2 : 0;
+    const foot = d.anchor === 'floor' ? (sprite.fw * art * scale) / 2 : 0;
 
     ctx.save();
     ctx.translate(p.x, p.y + foot);
-    ctx.transform(1, shear, 0, 1, 0, 0);
-    // floor-anchored joinery (doors) stands on the floor line; wall-mounted
-    // pieces are centred on their height
+    // scaleX multiplies on top of scale in drawSprite, so this is the stretch
+    // on its own and not the stretch times the size
     drawSprite(ctx, sprite, 0, 0, 0, {
       scale,
+      scaleX: k,
       anchorY: d.anchor === 'floor' ? 1 : 0.5,
       flipX: !!d.mirror,
     });

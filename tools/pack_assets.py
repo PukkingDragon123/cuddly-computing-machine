@@ -50,6 +50,11 @@ def main():
     done = skipped = 0
 
     for group, entries in atlas.items():
+        # keys starting with an underscore are notes to the tools, not sprite
+        # groups — tools/brighten.py leaves a `_tone` marker behind, and it is a
+        # string, so walking it as a list of entries dies on the first index
+        if group.startswith('_'):
+            continue
         for entry in entries:
             src = entry['src']
             if src.endswith('.webp'):
