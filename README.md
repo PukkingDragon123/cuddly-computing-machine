@@ -508,38 +508,58 @@ that and the chair reads as a sticker on a photograph. So the silhouette is one
 scallop per tile in the same weight — it used to be nine small ripples an edge in
 pale tan, which at any real zoom read as a smudge.
 
-**And the room has colour.** The old note in the source said a strongly coloured
-floor turns every sprite standing on it into a sticker, which is true, and the
-fix went much too far: the walls, the floor and the sky behind the building all
-ended up within about eight percent of one another. Cream on cream on cream. No
-amount of ink makes a room out of that, because there is nothing for the ink to
-separate — the whole picture was one value and the only things in it with any
-colour were the chairs and the customers.
+**And the room separates by value.** Two goes at this. The note in the source
+said a strongly coloured floor turns every sprite standing on it into a sticker,
+which is true, and the fix went much too far: the walls, the floor and the ground
+behind the building all ended up within about eight percent of one another. Cream
+on cream on cream. No amount of ink makes a room out of that, because there is
+nothing for the ink to separate — the whole picture was one value and the only
+things in it with any colour were the chairs and the customers.
 
-So the split is by surface. The floor stays nearly white and warm, because people
-stand on it and a chair has to read as a chair on a floor. The walls take real
-local colour — harbour blue for the cafe, sage grey for the works, each in two
-clearly separated values so the two planes read as two planes — the trim stays
-cream and wood, and the sky behind the building is the harbour rather than more
-of the same cream. Warm orange guests against a cool wall is the oldest colour
-idea there is, and it is most of why a cartoon looks like one.
+The second go reached for a cool harbour blue on the walls, which separated them
+all right and did not belong to this game for a second. Every drawing in it — the
+oak, the cream, the guests — is warm, and a cold wall behind warm art reads as two
+different games stitched together.
 
-The doors and windows set into those walls are
-real sprites from the fixture sheets, sheared onto the wall's own 2:1 basis.
-They are drawn as flat elevations carrying a built-in perspective of roughly
-0.58 down per across, where the wall recedes at exactly 0.5 — so the shear is
-the *difference* between the two, not the wall's full slope, or the piece ends
-up plunging at nearly twice the angle of the plaster behind it. The slicer
-measures each drawing's own slope (Theil–Sen over its top edge, which shrugs
-off a swinging casement) and writes it into the atlas.
+So the separation is done the way an illustrator would do it: one family, and the
+planes told apart by how light they are. A deep warm sand on the wall in shadow,
+a lighter one on the wall in light, cream trim above both, wood below, a floor
+lighter than either wall so people standing on it read against it, and a ground
+behind the building taken well down so the outline has something to be an outline
+against. Four clear steps of value, no second hue anywhere.
 
-Sizing them is not "how tall is the file". Every fixture sprite is 324 tall but a
-good third of that is the empty triangle either side of the drawing's own slope —
-the glass is only ever about 220. Sized against 324 the windows came out
-postage-stamp sized in the middle of a tall blank field, which is exactly how you
-draw a picture frame. The same triangle is why doors used to hover: anchoring a
-door's *box* to the floor line leaves its threshold half a slope up in the air,
-so floor-anchored pieces drop by that amount and stand on the floorboards.
+The doors and windows set into those walls are real sprites from the fixture
+sheets, and they are drawn as flat elevations on their own isometric — about
+thirty degrees, where the room is a true 2:1 at 26.57. Something has to give.
+
+**Shearing is the obvious answer and it is the wrong one.** A shear that brings a
+thirty-degree top edge down to 26.57 leans every *vertical* in the drawing by the
+difference — three degrees on a door, nearly five on a window. So the head of each
+door sat beautifully parallel to the picture rail while both jambs quietly fell
+over, and every mullion in every window went with them. That was the bug people
+saw as "the placement is off": it was never the placement, it was the projection.
+
+**Widening fixes it exactly and bends nothing.** Scale a drawing horizontally by
+k and its top edge's slope becomes slope/k, while every vertical stays vertical,
+because a vertical has no run for the scale to act on. So k is the drawing's own
+slope over the wall's, the heads land parallel and the jambs stand up. It costs a
+window eleven per cent of its width, which nobody has ever noticed on a window.
+
+Sizing them is not "how tall is the file" either. A third of every drawing is the
+empty triangle either side of its own slope, so what matters is the body: a window
+is 272 tall on disk and 185 of that is glass and frame, a door is 338 and 263 of
+it is door, against a plaster field of 238. Sized against the file the windows
+came out postage-stamp sized in a tall blank field, which is exactly how you draw
+a picture frame. The same triangle is why doors used to hover: anchoring a door's
+*box* to the floor line leaves its threshold half a slope up in the air, so
+floor-anchored pieces drop by that amount and stand on the floorboards.
+
+Slope is measured off each drawing's own top edge (Theil–Sen, which shrugs off a
+door handle), and that is right for a plain window and nonsense for one topped by
+something else — an earlier slicer recorded 0.137 for the open casement and -0.713
+for the pass counter, having measured a swung leaf and a shelf of jars. A sheet is
+drawn on one projection, so a measurement outside a plausible band is a
+measurement of the wrong edge and the sheet's own median stands in.
 
 The joinery changes wood along with whatever finish the dining room mostly uses. The whole room is rasterised once into an offscreen canvas and
 blitted per frame.
