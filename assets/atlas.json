@@ -2689,5 +2689,6 @@
   "sat": 1.2,
   "lift": 0.3,
   "groups": "all but deco, fixt_oak, furn_antique, furn_cottage, furn_plain, machines, ui"
- }
+ },
+ "_despill": "edge pixels cleaned by tools/despill.py"
 }
