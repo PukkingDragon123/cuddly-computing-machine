@@ -633,11 +633,12 @@ export class Factory {
       if (m.kind === 'silo') {
         const sprite = this.assets.get(SILO.group, SILO.sprite);
         const sq = m.sq?.value ?? 1;
+        const foot = (sprite?.foot ?? 0) * MACHINE_SCALE;
         list.push({
           d: depthOf(m.c, m.r),
           fn: () => {
             const { sx, sy } = squash(sq);
-            drawSprite(ctx, sprite, 0, s.x, s.y + HALF_H * 0.42, {
+            drawSprite(ctx, sprite, 0, s.x, s.y + HALF_H * 0.42 + foot, {
               scale: MACHINE_SCALE, scaleX: sx, scaleY: sy,
             });
             if (isSel) Room.outlineTile(ctx, m.c, m.r, 'pick', t);
@@ -649,6 +650,10 @@ export class Factory {
       if (!m.def) continue;
       const sprite = this.assets.get('machines', m.def.sprite);
       const sq = m.sq?.value ?? 1;
+      // a machine whose base runs across the drawing at an angle has its lowest
+      // pixel at one end, so planting the image on the tile leaves it hovering
+      // — see tools/measure_feet.py
+      const foot = (sprite?.foot ?? 0) * MACHINE_SCALE;
       const jitter = m.shake > 0 ? Math.sin(t * 60) * m.shake * 8 : 0;
       const running = m.def.kind === 'producer' || m.def.kind === 'promo' || m.def.kind === 'lab'
         ? !m.blocked
@@ -658,7 +663,7 @@ export class Factory {
         d: depthOf(m.c, m.r),
         fn: () => {
           const { sx, sy } = squash(sq);
-          drawSprite(ctx, sprite, 0, s.x + jitter, s.y + HALF_H * 0.42 + hum, {
+          drawSprite(ctx, sprite, 0, s.x + jitter, s.y + HALF_H * 0.42 + hum + foot, {
             scale: MACHINE_SCALE, scaleX: sx, scaleY: sy,
             glow: isSel ? '#f8d167' : null, glowWidth: 3.5,
           });

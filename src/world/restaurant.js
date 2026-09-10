@@ -1061,7 +1061,22 @@ export class Restaurant {
   #layout(f) {
     const p = toScreen(f.c, f.r);
     const mount = mountOf(f.item);
-    let y = p.y + HALF_H * 0.36;
+    /*
+     * Where the floor is for this piece.
+     *
+     * Everything on the floor is planted by putting the bottom of its image on
+     * the tile, which is right for a chair — a chair's lowest pixels are its
+     * feet and its feet are under its middle. It is wrong for anything whose
+     * base runs across the drawing at an angle, and in an isometric pack that
+     * is a lot of things: the pass counter's lowest pixel is at one *end*, so
+     * planting it on the tile left the middle of its base hanging fifty pixels
+     * clear and the whole counter floating over the floorboards.
+     *
+     * `foot` is that distance, measured off the art rather than worked out from
+     * its slope — see tools/measure_feet.py.
+     */
+    const floor = p.y + HALF_H * 0.36 + (this.spriteFor(f)?.foot ?? 0) * FURN_SCALE;
+    let y = floor;
     let bias = 0;
     let scale = FURN_SCALE;
     // the ceiling: high enough over the tile that a lamp hangs above head
@@ -1077,8 +1092,11 @@ export class Restaurant {
       const host = this.at(f.c, f.r);
       const hs = host ? this.spriteFor(host) : null;
       // stand it on the host's top face, which is a fraction of the way up the
-      // host's own drawing — see surfaceOf in data/catalog.js
-      y = p.y + HALF_H * 0.36 - (hs ? hs.fh * FURN_SCALE * surfaceOf(host.item) : 0);
+      // host's own drawing — see surfaceOf in data/catalog.js. Measured from
+      // where the host is actually standing, so a trinket follows its host down
+      // rather than hovering where the host used to be.
+      const hostFloor = p.y + HALF_H * 0.36 + (hs?.foot ?? 0) * FURN_SCALE;
+      y = hostFloor - (hs ? hs.fh * FURN_SCALE * surfaceOf(host.item) : 0);
       bias = 24;
       scale = FURN_SCALE * 0.7;
     }

@@ -374,16 +374,21 @@ export class Room {
     const k = art > 0.15 ? art / (HALF_H / HALF_W) : 1;
 
     /*
-     * The empty corner, and why the doors used to hover.
+     * How far to drop it so it stands on the floor rather than above or through
+     * it — measured, not derived.
      *
-     * A door drawn with its threshold sloping down across the sprite leaves a
-     * triangle of nothing under the low side. Half that triangle sits directly
-     * beneath the middle of the door, so anchoring the sprite's *box* to the
-     * floor line parks the threshold a good thirty pixels up in the air. The
-     * triangle's height is the drawing's own slope across its width, so half of
-     * it is what the door has to come down by.
+     * A door drawn with its threshold sloping across the image leaves a triangle
+     * of nothing under the low side, so anchoring the *image* to the floor line
+     * parks the threshold up in the air. The correction used to be half the
+     * width times the slope, which assumes the base runs the full width of the
+     * image at exactly the slope of the top. A door's image is mostly the swung
+     * leaf, so that came out 37px for a door whose threshold is 14px up, and the
+     * door went 23px through the floorboards.
+     *
+     * tools/measure_feet.py looks at where the drawing's base actually is under
+     * the middle of the drawing and writes it into the atlas.
      */
-    const foot = d.anchor === 'floor' ? (sprite.fw * art * scale) / 2 : 0;
+    const foot = d.anchor === 'floor' ? sprite.foot * scale : 0;
 
     ctx.save();
     ctx.translate(p.x, p.y + foot);
