@@ -550,9 +550,33 @@ empty triangle either side of its own slope, so what matters is the body: a wind
 is 272 tall on disk and 185 of that is glass and frame, a door is 338 and 263 of
 it is door, against a plaster field of 238. Sized against the file the windows
 came out postage-stamp sized in a tall blank field, which is exactly how you draw
-a picture frame. The same triangle is why doors used to hover: anchoring a door's
-*box* to the floor line leaves its threshold half a slope up in the air, so
-floor-anchored pieces drop by that amount and stand on the floorboards.
+a picture frame.
+
+**And everything stands on a measured foot.** Everything in the game is planted
+by putting the bottom of its image on a floor tile, which is right for a chair —
+a chair's lowest pixels are its feet and its feet are under its middle — and
+wrong for anything whose base runs across the drawing at an angle. The pass
+counter's lowest pixel is at one *end*, so planting that on the tile left the
+middle of its base fifty pixels in the air. The doors had a correction of their
+own, half the image width times the slope of the top edge, which assumes the base
+runs the full width at the slope of the roof; a door's image is mostly the swung
+leaf, so it came out 37px for a threshold 34px up and the door went through the
+floorboards.
+
+`foot` is measured instead — how far the drawing's own base, under the middle of
+the drawing, sits above the bottom of the image. Zero for a chair, sixty for the
+counter, and every place that plants something adds it back: the dining room, the
+wall joinery, and the works, where more than half the machines were standing a
+little off the ground. Two subtleties, both learned the hard way. The *lowest*
+pixel in a band around the middle is the wrong statistic — on a sloping base it
+sits at the band's low end, so the answer comes out short by half the band times
+the slope, and every door stood four pixels into the floor; the median of the
+band's columns is unbiased. And a door drawn open has its leaf swung into the
+room: the leaf really does touch the floor, but in front of the wall rather than
+in it, so lining its toe up with the wall's floor line lifts the whole doorway
+off the ground. The open and closed drawings of a doorway are the same doorway,
+so the open one takes the closed one's foot, which is measurable because a closed
+door is all in the wall plane.
 
 Slope is measured off each drawing's own top edge (Theil–Sen, which shrugs off a
 door handle), and that is right for a plain window and nonsense for one topped by
